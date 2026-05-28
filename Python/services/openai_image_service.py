@@ -18,6 +18,38 @@ OPENAI_IMAGES_EDITS_URL = "https://api.openai.com/v1/images/edits"
 DEFAULT_IMAGE_MODEL = "gpt-image-1"
 
 
+def get_openai_api_key() -> Optional[str]:
+    """Read the OpenAI API key from process env, then Windows user/machine env."""
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if api_key:
+        return api_key
+
+    if os.name != "nt":
+        return None
+
+    try:
+        import winreg
+    except ImportError:
+        return None
+
+    locations = [
+        (winreg.HKEY_CURRENT_USER, r"Environment"),
+        (
+            winreg.HKEY_LOCAL_MACHINE,
+            r"SYSTEM\CurrentControlSet\Control\Session Manager\Environment",
+        ),
+    ]
+    for hive, key_path in locations:
+        try:
+            with winreg.OpenKey(hive, key_path) as key:
+                value, _ = winreg.QueryValueEx(key, "OPENAI_API_KEY")
+                if value:
+                    return str(value)
+        except OSError:
+            continue
+    return None
+
+
 def sanitize_output_name(output_name: str) -> str:
     """Return a filesystem-friendly PNG basename without an extension."""
     name = re.sub(r"[^A-Za-z0-9_.-]+", "_", output_name.strip())
@@ -110,7 +142,7 @@ def generate_texture_png(
     for the caller's model/org, the error is returned without falling back to a
     misleading text-only result.
     """
-    api_key = os.environ.get("OPENAI_API_KEY")
+    api_key = get_openai_api_key()
     if not api_key:
         return {
             "success": False,
