@@ -52,6 +52,19 @@ All these capabilities are accessible through natural language commands via AI a
 - Provides error handling and connection management
 - Loads and registers tool modules from the `tools` directory
 - Uses the FastMCP library to implement the Model Context Protocol
+- Adds local TA extensions for Unreal Python, PCG automation, and BaseColor-focused AI texture generation
+
+### Local AI Texture Tools
+
+This fork includes optional GPT Image texture tools for Unreal Editor:
+
+- Export Static Mesh UV layouts as PNG guides.
+- Generate BaseColor texture PNGs with the OpenAI Images API.
+- Import generated PNGs as Texture2D assets.
+- Create a simple BaseColor material or a material instance.
+- Apply the material to selected or named Static Mesh targets.
+
+Set `OPENAI_API_KEY` in the MCP server environment before using image generation. API keys are never stored in code. See `Docs/Tools/ai_texture_tools.md` for examples and limitations.
 
 ## 📂 Directory Structure
 

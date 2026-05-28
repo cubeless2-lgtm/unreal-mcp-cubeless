@@ -5,6 +5,7 @@ A simple MCP server for interacting with Unreal Engine.
 """
 
 import logging
+import os
 import socket
 import sys
 import json
@@ -26,6 +27,7 @@ logger = logging.getLogger("UnrealMCP")
 # Configuration
 UNREAL_HOST = "127.0.0.1"
 UNREAL_PORT = 55557
+UNREAL_RESPONSE_TIMEOUT_SECONDS = int(os.environ.get("UNREAL_MCP_RESPONSE_TIMEOUT_SECONDS", "120"))
 
 class UnrealConnection:
     """Connection to an Unreal Engine instance."""
@@ -48,7 +50,7 @@ class UnrealConnection:
             
             logger.info(f"Connecting to Unreal at {UNREAL_HOST}:{UNREAL_PORT}...")
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.socket.settimeout(5)  # 5 second timeout
+            self.socket.settimeout(UNREAL_RESPONSE_TIMEOUT_SECONDS)
             
             # Set socket options for better stability
             self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
@@ -81,7 +83,7 @@ class UnrealConnection:
     def receive_full_response(self, sock, buffer_size=4096) -> bytes:
         """Receive a complete response from Unreal, handling chunked data."""
         chunks = []
-        sock.settimeout(5)  # 5 second timeout
+        sock.settimeout(UNREAL_RESPONSE_TIMEOUT_SECONDS)
         try:
             while True:
                 chunk = sock.recv(buffer_size)
@@ -273,6 +275,7 @@ from tools.project_tools import register_project_tools
 from tools.umg_tools import register_umg_tools
 from tools.python_tools import register_python_tools
 from tools.pcg_tools import register_pcg_tools
+from tools.texture_generation import register_texture_generation_tools
 
 # Register tools
 register_editor_tools(mcp)
@@ -282,6 +285,7 @@ register_project_tools(mcp)
 register_umg_tools(mcp)  
 register_python_tools(mcp)
 register_pcg_tools(mcp)
+register_texture_generation_tools(mcp)
 
 @mcp.prompt()
 def info():
@@ -338,6 +342,15 @@ def info():
     
     ## Project Tools
     - `create_input_mapping(action_name, key, input_type)` - Create input mappings
+
+    ## AI Texture Generation
+    - `get_static_mesh_uv_layout(mesh_path, uv_channel, output_path)` - Export a Static Mesh UV wireframe PNG
+    - `generate_texture_from_prompt(prompt, output_name, output_dir, size)` - Generate a BaseColor PNG with GPT Image
+    - `generate_texture_for_mesh_uv(mesh_path, prompt, uv_channel, output_name, output_dir, size)` - Generate a UV-guided texture PNG
+    - `import_texture_to_unreal(image_path, unreal_folder, asset_name)` - Import a PNG as Texture2D
+    - `create_material_instance_with_texture(texture_asset_path, material_name, unreal_folder, base_material_path)` - Create a BaseColor material/material instance
+    - `apply_material_to_mesh(target, material_asset_path, material_slot)` - Apply a material to selected/named mesh targets
+    - `generate_and_apply_ai_texture(target, prompt, output_name, unreal_folder, uv_channel, size)` - Run the full BaseColor texture pipeline
     
     ## Best Practices
     

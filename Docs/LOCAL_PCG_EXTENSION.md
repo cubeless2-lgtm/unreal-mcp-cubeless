@@ -26,8 +26,16 @@ The extension deliberately avoids adding a separate C++ command for every TA ope
   - Registers `execute_unreal_python`.
 - `Python/tools/pcg_tools.py`
   - Registers PCG-focused automation tools.
+- `Python/tools/texture_generation.py`
+  - Registers BaseColor-focused AI texture generation tools.
+- `Python/services/openai_image_service.py`
+  - Calls OpenAI Images API without coupling to Unreal/MCP.
+- `Python/services/unreal_texture_importer.py`
+  - Wraps Unreal Python UV export, texture import, material creation, and material application helpers.
 - `Docs/Tools/pcg_tools.md`
   - User-facing tool summary.
+- `Docs/Tools/ai_texture_tools.md`
+  - User-facing AI texture tool summary.
 - `scripts/update_with_pcg_extension.ps1`
   - Helper script for updating from upstream and keeping the local branch.
 
@@ -60,6 +68,13 @@ The extension deliberately avoids adding a separate C++ command for every TA ope
 - `refresh_pcg_components(actor_name="", selected_only=false)`
 - `set_pcg_debug_enabled(enabled=false, actor_name="", selected_only=false)`
 - `resave_pcg_assets(root_path="/Game")`
+- `get_static_mesh_uv_layout(mesh_path, uv_channel=0, output_path="")`
+- `generate_texture_from_prompt(prompt, output_name, output_dir, size="1024x1024")`
+- `generate_texture_for_mesh_uv(mesh_path, prompt, uv_channel=0, output_name="T_AI_Texture", output_dir="", size="1024x1024")`
+- `import_texture_to_unreal(image_path, unreal_folder, asset_name)`
+- `create_material_instance_with_texture(texture_asset_path, material_name, unreal_folder, base_material_path="")`
+- `apply_material_to_mesh(target, material_asset_path, material_slot=0)`
+- `generate_and_apply_ai_texture(target, prompt, output_name, unreal_folder="/Game/AI_Generated", uv_channel=0, size="1024x1024")`
 
 ## Design Notes
 
@@ -68,6 +83,8 @@ The extension deliberately avoids adding a separate C++ command for every TA ope
 UE 5.7 multi-line scripts that include `import` statements should run through `ExecuteFile`. `ExecuteStatement` works for simple one-line commands but fails for the PCG helper's generated scripts.
 
 The PCG component operations are best-effort. Unreal PCG Python API details vary by engine version and project plugins, so the tools check class/property/method names dynamically instead of depending on a narrow API surface.
+
+The AI texture tools are BaseColor-first. They do not claim to create full PBR material sets. Normal, Roughness, AO, and Metallic generation should stay as separate TODO/stub work until deliberately implemented.
 
 ## Update Guidance
 
@@ -81,6 +98,7 @@ When the user asks for "최신 업데이트", "업데이트 풀", "원본 pull",
   - generic `execute_python` C++ bridge
   - `Python/tools/python_tools.py`
   - `Python/tools/pcg_tools.py`
+  - AI texture services/tools/docs
   - tool registration in `Python/unreal_mcp_server.py`
   - docs and update script
 - Run Python verification.
@@ -121,6 +139,19 @@ uv --directory D:\Git\unreal-mcp\Python sync
 uv --directory D:\Git\unreal-mcp\Python run python -m py_compile unreal_mcp_server.py tools\python_tools.py tools\pcg_tools.py
 uv --directory D:\Git\unreal-mcp\Python run python -c "import unreal_mcp_server; print('server import ok')"
 ```
+
+- Ran AI texture Python syntax/import checks:
+
+```powershell
+uv --directory D:\Git\unreal-mcp\Python run python -m py_compile unreal_mcp_server.py tools\texture_generation.py services\openai_image_service.py services\unreal_texture_importer.py
+```
+
+- Verified AI texture fallback behavior:
+  - Missing `OPENAI_API_KEY` returns `missing_openai_api_key` without making an external call.
+  - Local UV PNG renderer writes a valid PNG without Pillow.
+  - `get_static_mesh_uv_layout` exported `/Game/LevelPrototyping/Meshes/SM_Cube` UV0 to PNG through UE 5.7.
+  - Invalid mesh path returns a clear error.
+  - Texture2D import and BaseColor Material creation succeeded after routing `execute_python` through the next game-thread tick for Interchange-safe execution.
 
 - Verified against `D:\Git\CubelessStylized` running on `D:\Git\UnrealEngine` UE 5.7.4:
   - UnrealMCP socket responds on `127.0.0.1:55557`.
