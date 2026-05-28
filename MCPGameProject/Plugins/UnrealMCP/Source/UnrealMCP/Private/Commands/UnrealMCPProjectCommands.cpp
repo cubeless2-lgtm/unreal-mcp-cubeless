@@ -1,6 +1,8 @@
 #include "Commands/UnrealMCPProjectCommands.h"
 #include "Commands/UnrealMCPCommonUtils.h"
 #include "GameFramework/InputSettings.h"
+#include "IPythonScriptPlugin.h"
+#include "PythonScriptTypes.h"
 
 FUnrealMCPProjectCommands::FUnrealMCPProjectCommands()
 {
@@ -11,6 +13,10 @@ TSharedPtr<FJsonObject> FUnrealMCPProjectCommands::HandleCommand(const FString& 
     if (CommandType == TEXT("create_input_mapping"))
     {
         return HandleCreateInputMapping(Params);
+    }
+    if (CommandType == TEXT("execute_python"))
+    {
+        return HandleExecutePython(Params);
     }
     
     return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("Unknown project command: %s"), *CommandType));
@@ -70,3 +76,58 @@ TSharedPtr<FJsonObject> FUnrealMCPProjectCommands::HandleCreateInputMapping(cons
     ResultObj->SetStringField(TEXT("key"), Key);
     return ResultObj;
 } 
+
+TSharedPtr<FJsonObject> FUnrealMCPProjectCommands::HandleExecutePython(const TSharedPtr<FJsonObject>& Params)
+{
+    FString Code;
+    if (!Params->TryGetStringField(TEXT("code"), Code))
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Missing 'code' parameter"));
+    }
+
+    IPythonScriptPlugin* PythonPlugin = IPythonScriptPlugin::Get();
+    if (!PythonPlugin || !PythonPlugin->IsPythonAvailable())
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("PythonScriptPlugin is not available"));
+    }
+
+    FString Mode;
+    Params->TryGetStringField(TEXT("mode"), Mode);
+
+    FPythonCommandEx PythonCommand;
+    PythonCommand.Command = Code;
+    PythonCommand.ExecutionMode = EPythonCommandExecutionMode::ExecuteStatement;
+    PythonCommand.FileExecutionScope = EPythonFileExecutionScope::Public;
+
+    if (!Mode.IsEmpty())
+    {
+        EPythonCommandExecutionMode ParsedMode;
+        if (LexTryParseString(ParsedMode, *Mode))
+        {
+            PythonCommand.ExecutionMode = ParsedMode;
+        }
+    }
+
+    const bool bExecuted = PythonPlugin->ExecPythonCommandEx(PythonCommand);
+
+    TSharedPtr<FJsonObject> ResultObj = MakeShared<FJsonObject>();
+    ResultObj->SetBoolField(TEXT("success"), bExecuted);
+    ResultObj->SetStringField(TEXT("command_result"), PythonCommand.CommandResult);
+
+    TArray<TSharedPtr<FJsonValue>> Logs;
+    for (const FPythonLogOutputEntry& Entry : PythonCommand.LogOutput)
+    {
+        TSharedPtr<FJsonObject> LogObj = MakeShared<FJsonObject>();
+        LogObj->SetStringField(TEXT("type"), LexToString(Entry.Type));
+        LogObj->SetStringField(TEXT("output"), Entry.Output);
+        Logs.Add(MakeShared<FJsonValueObject>(LogObj));
+    }
+    ResultObj->SetArrayField(TEXT("logs"), Logs);
+
+    if (!bExecuted && PythonCommand.CommandResult.IsEmpty())
+    {
+        ResultObj->SetStringField(TEXT("error"), TEXT("Python execution failed"));
+    }
+
+    return ResultObj;
+}

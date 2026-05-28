@@ -264,7 +264,8 @@ FString UUnrealMCPBridge::ExecuteCommand(const FString& CommandType, const TShar
                 ResultJson = BlueprintNodeCommands->HandleCommand(CommandType, Params);
             }
             // Project Commands
-            else if (CommandType == TEXT("create_input_mapping"))
+            else if (CommandType == TEXT("create_input_mapping") ||
+                     CommandType == TEXT("execute_python"))
             {
                 ResultJson = ProjectCommands->HandleCommand(CommandType, Params);
             }
