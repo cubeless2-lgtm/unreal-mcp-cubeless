@@ -69,6 +69,21 @@ The PCG component operations are best-effort. Unreal PCG Python API details vary
 
 ## Update Guidance
 
+When the user asks for "최신 업데이트", "업데이트 풀", "원본 pull", "upstream 최신", or similar wording, the expected behavior is:
+
+- Keep the PCG/Python extension.
+- Pull/fetch from `upstream`.
+- Fast-forward local `main` to `upstream/main`.
+- Rebase `local/pcg-tools` onto `main`.
+- Resolve conflicts in favor of preserving:
+  - generic `execute_python` C++ bridge
+  - `Python/tools/python_tools.py`
+  - `Python/tools/pcg_tools.py`
+  - tool registration in `Python/unreal_mcp_server.py`
+  - docs and update script
+- Run Python verification.
+- Push `local/pcg-tools` to `origin`; use `--force-with-lease` after a successful rebase.
+
 Use this shape when updating:
 
 ```powershell
@@ -78,6 +93,9 @@ git checkout main
 git merge --ff-only upstream/main
 git checkout local/pcg-tools
 git rebase main
+uv --directory D:\Git\unreal-mcp\Python run python -m py_compile unreal_mcp_server.py tools\python_tools.py tools\pcg_tools.py
+uv --directory D:\Git\unreal-mcp\Python run python -c "import unreal_mcp_server; print('server import ok')"
+git push origin local/pcg-tools --force-with-lease
 ```
 
 If the remote names are not set yet, the recommended layout is:

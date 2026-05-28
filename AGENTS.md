@@ -28,6 +28,17 @@ Always read these files before editing the extension:
 
 Do not rewrite upstream files broadly. Keep the local patch small and easy to rebase.
 
+If the user says any of the following, treat it as a request to update from upstream while preserving the local PCG/Python extension:
+
+- "최신 업데이트 받아줘"
+- "업데이트 풀 받아줘"
+- "원본에서 pull 받아줘"
+- "upstream 최신 받아줘"
+- "chongdashu 최신으로 업데이트해줘"
+- Similar Korean/English wording about getting the latest original/upstream changes.
+
+For those requests, update `main` from `upstream/main`, rebase `local/pcg-tools` on top, resolve conflicts by preserving the local extension, run verification, then push `local/pcg-tools` to `origin` with `--force-with-lease` if the rebase rewrote history.
+
 Preferred update flow:
 
 ```powershell
