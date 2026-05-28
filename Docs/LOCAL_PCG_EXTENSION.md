@@ -54,7 +54,7 @@ The extension deliberately avoids adding a separate C++ command for every TA ope
 
 ## Added MCP Tools
 
-- `execute_unreal_python(code, mode="ExecuteStatement")`
+- `execute_unreal_python(code, mode="ExecuteFile")`
 - `list_pcg_assets(root_path="/Game")`
 - `list_pcg_components()`
 - `refresh_pcg_components(actor_name="", selected_only=false)`
@@ -64,6 +64,8 @@ The extension deliberately avoids adding a separate C++ command for every TA ope
 ## Design Notes
 
 `pcg_tools.py` writes Unreal Python results to a JSON file in the temp directory because Unreal's Python command result capture is limited for multi-line scripts. The MCP tool reads that JSON file and returns structured data.
+
+UE 5.7 multi-line scripts that include `import` statements should run through `ExecuteFile`. `ExecuteStatement` works for simple one-line commands but fails for the PCG helper's generated scripts.
 
 The PCG component operations are best-effort. Unreal PCG Python API details vary by engine version and project plugins, so the tools check class/property/method names dynamically instead of depending on a narrow API surface.
 
@@ -119,6 +121,12 @@ uv --directory D:\Git\unreal-mcp\Python sync
 uv --directory D:\Git\unreal-mcp\Python run python -m py_compile unreal_mcp_server.py tools\python_tools.py tools\pcg_tools.py
 uv --directory D:\Git\unreal-mcp\Python run python -c "import unreal_mcp_server; print('server import ok')"
 ```
+
+- Verified against `D:\Git\CubelessStylized` running on `D:\Git\UnrealEngine` UE 5.7.4:
+  - UnrealMCP socket responds on `127.0.0.1:55557`.
+  - PCG Python API exposes `PCGComponent` and `PCGGraph`.
+  - `list_pcg_assets` found 3 PCG-related `/Game` assets.
+  - Current editor level had 0 PCG components, so component refresh/debug tools had no live targets.
 
 ## Build Caveat
 

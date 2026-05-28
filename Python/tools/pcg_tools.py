@@ -45,7 +45,7 @@ with open(RESULT_PATH, "w", encoding="utf-8") as result_file:
 
     response = unreal.send_command(
         "execute_python",
-        {"code": wrapped_code, "mode": "ExecuteStatement"},
+        {"code": wrapped_code, "mode": "ExecuteFile"},
     )
     if not response or response.get("status") == "error":
         return response or {"success": False, "message": "No response from Unreal Engine"}
@@ -89,7 +89,7 @@ for asset in assets:
             "asset_name": asset_name,
             "package_name": package_name,
             "class_name": class_name,
-            "object_path": str(asset.get_soft_object_path()),
+            "object_path": f"{package_name}.{asset_name}",
         }})
 RESULT = {{"success": True, "count": len(items), "assets": items}}
 """

@@ -20,14 +20,14 @@ def register_python_tools(mcp: FastMCP):
     def execute_unreal_python(
         ctx: Context,
         code: str,
-        mode: str = "ExecuteStatement",
+        mode: str = "ExecuteFile",
     ) -> Dict[str, Any]:
         """
         Execute Python inside the running Unreal Editor.
 
         Args:
             code: Python code to execute in Unreal.
-            mode: Python execution mode. Usually ExecuteStatement.
+            mode: Python execution mode. ExecuteFile supports multiline TA scripts.
 
         Returns:
             Response from Unreal, including Python logs and command_result.
