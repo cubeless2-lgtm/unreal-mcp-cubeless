@@ -14,13 +14,11 @@ if ([string]::IsNullOrWhiteSpace($ProjectRoot)) {
 }
 
 $projectRootPath = Resolve-Path -LiteralPath $ProjectRoot
-$projectParent = Split-Path -Parent $projectRootPath.Path
-$repoRoot = Join-Path $projectParent "unreal-mcp"
 $pythonRoot = Join-Path $repoRoot "Python"
 $serverScript = Join-Path $pythonRoot "unreal_mcp_server.py"
 
 if (-not (Test-Path -LiteralPath $repoRoot -PathType Container)) {
-    throw "Expected unreal-mcp at '$repoRoot'. Clone it under the CubelessStylized parent folder first."
+    throw "Expected Unreal MCP checkout at '$repoRoot'. Clone it under the CubelessStylized parent folder first."
 }
 
 if (-not (Test-Path -LiteralPath $serverScript -PathType Leaf)) {
