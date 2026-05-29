@@ -22,7 +22,20 @@
 #include "Engine/Selection.h"
 #include "Kismet/GameplayStatics.h"
 #include "Async/Async.h"
+#include "Engine/Texture2D.h"
 #include "Containers/Ticker.h"
+#include "Framework/Application/SlateApplication.h"
+#include "ImageUtils.h"
+#include "Interfaces/IPluginManager.h"
+#include "Styling/SlateBrush.h"
+#include "Styling/CoreStyle.h"
+#include "Widgets/Images/SImage.h"
+#include "Widgets/Layout/SBorder.h"
+#include "Widgets/Layout/SBox.h"
+#include "Widgets/SBoxPanel.h"
+#include "Widgets/SWindow.h"
+#include "Widgets/Notifications/SProgressBar.h"
+#include "Widgets/Text/STextBlock.h"
 // Add Blueprint related includes
 #include "Engine/Blueprint.h"
 #include "Engine/BlueprintGeneratedClass.h"
@@ -62,6 +75,278 @@
 // Default settings
 #define MCP_SERVER_HOST "127.0.0.1"
 #define MCP_SERVER_PORT 55557
+
+namespace
+{
+class FIetaMCPStatusWindow
+{
+public:
+    static void Show(const FString& CommandType)
+    {
+        if (!FSlateApplication::IsInitialized())
+        {
+            return;
+        }
+
+        if (StatusWindow.IsValid())
+        {
+            StatusWindow.Pin()->BringToFront();
+            LastShowTime = FPlatformTime::Seconds();
+            return;
+        }
+
+        const TSharedPtr<IPlugin> Plugin = IPluginManager::Get().FindPlugin(TEXT("UnrealMCP"));
+        const FString ImagePath = Plugin.IsValid()
+            ? FPaths::Combine(Plugin->GetBaseDir(), TEXT("Resources"), TEXT("Ieta.png"))
+            : FString();
+
+        if (!AvatarTexture && FPaths::FileExists(ImagePath))
+        {
+            AvatarTexture = FImageUtils::ImportFileAsTexture2D(ImagePath);
+            if (AvatarTexture)
+            {
+                AvatarTexture->AddToRoot();
+                AvatarTexture->SRGB = true;
+            }
+        }
+
+        if (AvatarTexture)
+        {
+            AvatarBrush = MakeShared<FSlateBrush>();
+            AvatarBrush->SetResourceObject(AvatarTexture);
+            AvatarBrush->ImageSize = FVector2D(96.0f, 96.0f);
+            AvatarBrush->DrawAs = ESlateBrushDrawType::Image;
+        }
+        else
+        {
+            AvatarBrush.Reset();
+        }
+
+        const FText TitleText = FText::FromString(TEXT("이에타가 처리 중"));
+        const FText BodyText = FText::FromString(FString::Printf(
+            TEXT("흥, 잠깐 기다려.\n")
+            TEXT("이에타가 MCP 작업을 지켜보고 있어.\n")
+            TEXT("명령: %s\n")
+            TEXT("끝나면 티브렛이 알아서 정리해둘 거야."),
+            *CommandType));
+
+        TSharedRef<SWindow> Window = SNew(SWindow)
+            .Title(TitleText)
+            .ClientSize(FVector2D(540.0f, 190.0f))
+            .SizingRule(ESizingRule::FixedSize)
+            .SupportsMaximize(false)
+            .SupportsMinimize(false)
+            .HasCloseButton(true)
+            .IsTopmostWindow(true)
+            [
+                SNew(SBorder)
+                .Padding(18.0f)
+                .BorderBackgroundColor(FLinearColor(0.035f, 0.035f, 0.042f, 0.96f))
+                [
+                    SNew(SHorizontalBox)
+
+                    + SHorizontalBox::Slot()
+                    .AutoWidth()
+                    .VAlign(VAlign_Center)
+                    [
+                        SNew(SBox)
+                        .WidthOverride(112.0f)
+                        .HeightOverride(112.0f)
+                        [
+                            SNew(SImage)
+                            .Image(AvatarBrush.IsValid() ? AvatarBrush.Get() : FCoreStyle::Get().GetDefaultBrush())
+                        ]
+                    ]
+
+                    + SHorizontalBox::Slot()
+                    .FillWidth(1.0f)
+                    .Padding(18.0f, 0.0f, 0.0f, 0.0f)
+                    .VAlign(VAlign_Center)
+                    [
+                        SNew(SVerticalBox)
+
+                        + SVerticalBox::Slot()
+                        .AutoHeight()
+                        [
+                            SNew(STextBlock)
+                            .Text(TitleText)
+                            .ColorAndOpacity(FLinearColor(1.0f, 0.86f, 0.48f, 1.0f))
+                            .Font(FCoreStyle::GetDefaultFontStyle("Bold", 18))
+                        ]
+
+                        + SVerticalBox::Slot()
+                        .AutoHeight()
+                        .Padding(0.0f, 10.0f, 0.0f, 0.0f)
+                        [
+                            SAssignNew(BodyTextBlock, STextBlock)
+                            .Text(BodyText)
+                            .AutoWrapText(true)
+                            .ColorAndOpacity(FLinearColor(0.93f, 0.93f, 0.96f, 1.0f))
+                            .Font(FCoreStyle::GetDefaultFontStyle("Regular", 12))
+                        ]
+
+                        + SVerticalBox::Slot()
+                        .AutoHeight()
+                        .Padding(0.0f, 14.0f, 0.0f, 0.0f)
+                        [
+                            SAssignNew(ProgressBar, SProgressBar)
+                            .Percent(0.05f)
+                        ]
+                    ]
+                ]
+            ];
+
+        StatusWindow = Window;
+        LastShowTime = FPlatformTime::Seconds();
+        FSlateApplication::Get().AddWindow(Window);
+    }
+
+    static void UpdateStatus(const FString& StatusText, const FString& CommandType, TOptional<float> Progress = TOptional<float>())
+    {
+        if (!FSlateApplication::IsInitialized())
+        {
+            return;
+        }
+
+        if (!StatusWindow.IsValid())
+        {
+            Show(CommandType.IsEmpty() ? TEXT("ieta_status") : CommandType);
+        }
+
+        const FString EffectiveCommand = CommandType.IsEmpty() ? TEXT("작업 상태") : CommandType;
+        const FText UpdatedBodyText = FText::FromString(FString::Printf(
+            TEXT("흥, 보고는 해줄게.\n")
+            TEXT("%s\n")
+            TEXT("명령: %s\n")
+            TEXT("끝날 때까지 얌전히 기다려."),
+            *StatusText,
+            *EffectiveCommand));
+
+        if (BodyTextBlock.IsValid())
+        {
+            BodyTextBlock->SetText(UpdatedBodyText);
+        }
+
+        if (ProgressBar.IsValid() && Progress.IsSet())
+        {
+            ProgressBar->SetPercent(FMath::Clamp(Progress.GetValue(), 0.0f, 1.0f));
+        }
+
+        LastShowTime = FPlatformTime::Seconds();
+        if (StatusWindow.IsValid())
+        {
+            StatusWindow.Pin()->BringToFront();
+        }
+    }
+
+    static void CompleteCommand(const FString& CommandType, const TSharedPtr<FJsonObject>& ResponseJson)
+    {
+        FString ResponseStatus;
+        if (ResponseJson.IsValid())
+        {
+            ResponseJson->TryGetStringField(TEXT("status"), ResponseStatus);
+        }
+
+        const bool bSucceeded = ResponseStatus == TEXT("success");
+        FString DetailText;
+        if (!bSucceeded && ResponseJson.IsValid())
+        {
+            ResponseJson->TryGetStringField(TEXT("error"), DetailText);
+            if (DetailText.IsEmpty())
+            {
+                ResponseJson->TryGetStringField(TEXT("message"), DetailText);
+            }
+        }
+
+        const FString CompletionText = bSucceeded
+            ? TEXT("MCP 작업 완료: 성공")
+            : FString::Printf(TEXT("MCP 작업 완료: 실패%s%s"),
+                DetailText.IsEmpty() ? TEXT("") : TEXT("\n"),
+                *DetailText);
+
+        UpdateStatus(CompletionText, CommandType, 1.0f);
+    }
+
+    static void Hide()
+    {
+        if (!FSlateApplication::IsInitialized())
+        {
+            StatusWindow.Reset();
+            AvatarBrush.Reset();
+            BodyTextBlock.Reset();
+            ProgressBar.Reset();
+            return;
+        }
+
+        if (StatusWindow.IsValid())
+        {
+            const double RemainingSeconds = CompletionVisibleSeconds - (FPlatformTime::Seconds() - LastShowTime);
+            if (RemainingSeconds > 0.0)
+            {
+                const TWeakPtr<SWindow> WindowToClose = StatusWindow;
+                FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([WindowToClose](float)
+                {
+                    if (WindowToClose.IsValid())
+                    {
+                        WindowToClose.Pin()->RequestDestroyWindow();
+                    }
+                    const TSharedPtr<SWindow> CurrentWindow = StatusWindow.Pin();
+                    const TSharedPtr<SWindow> ExpectedWindow = WindowToClose.Pin();
+                    if ((CurrentWindow.IsValid() && ExpectedWindow.IsValid() && CurrentWindow.Get() == ExpectedWindow.Get()) ||
+                        (!CurrentWindow.IsValid() && !ExpectedWindow.IsValid()))
+                    {
+                        StatusWindow.Reset();
+                        AvatarBrush.Reset();
+                        BodyTextBlock.Reset();
+                        ProgressBar.Reset();
+                    }
+                    return false;
+                }), static_cast<float>(RemainingSeconds));
+                return;
+            }
+        }
+
+        if (StatusWindow.IsValid())
+        {
+            StatusWindow.Pin()->RequestDestroyWindow();
+        }
+
+        StatusWindow.Reset();
+        AvatarBrush.Reset();
+        BodyTextBlock.Reset();
+        ProgressBar.Reset();
+    }
+
+private:
+    static constexpr double CompletionVisibleSeconds = 10.0;
+    static double LastShowTime;
+    static TWeakPtr<SWindow> StatusWindow;
+    static TSharedPtr<STextBlock> BodyTextBlock;
+    static TSharedPtr<SProgressBar> ProgressBar;
+    static TSharedPtr<FSlateBrush> AvatarBrush;
+    static UTexture2D* AvatarTexture;
+};
+
+double FIetaMCPStatusWindow::LastShowTime = 0.0;
+TWeakPtr<SWindow> FIetaMCPStatusWindow::StatusWindow;
+TSharedPtr<STextBlock> FIetaMCPStatusWindow::BodyTextBlock;
+TSharedPtr<SProgressBar> FIetaMCPStatusWindow::ProgressBar;
+TSharedPtr<FSlateBrush> FIetaMCPStatusWindow::AvatarBrush;
+UTexture2D* FIetaMCPStatusWindow::AvatarTexture = nullptr;
+
+struct FScopedIetaMCPStatus
+{
+    explicit FScopedIetaMCPStatus(const FString& CommandType)
+    {
+        FIetaMCPStatusWindow::Show(CommandType);
+    }
+
+    ~FScopedIetaMCPStatus()
+    {
+        FIetaMCPStatusWindow::Hide();
+    }
+};
+}
 
 UUnrealMCPBridge::UUnrealMCPBridge()
 {
@@ -212,6 +497,7 @@ FString UUnrealMCPBridge::ExecuteCommand(const FString& CommandType, const TShar
     
     auto RunCommand = [this, CommandType, Params, Promise]()
     {
+        FScopedIetaMCPStatus IetaStatus(CommandType);
         TSharedPtr<FJsonObject> ResponseJson = MakeShareable(new FJsonObject);
         
         try
@@ -222,6 +508,37 @@ FString UUnrealMCPBridge::ExecuteCommand(const FString& CommandType, const TShar
             {
                 ResultJson = MakeShareable(new FJsonObject);
                 ResultJson->SetStringField(TEXT("message"), TEXT("pong"));
+            }
+            else if (CommandType == TEXT("ieta_status"))
+            {
+                FString StatusText;
+                FString StatusCommand;
+                double ProgressValue = -1.0;
+                if (Params.IsValid())
+                {
+                    Params->TryGetStringField(TEXT("text"), StatusText);
+                    Params->TryGetStringField(TEXT("command"), StatusCommand);
+                    Params->TryGetNumberField(TEXT("progress"), ProgressValue);
+                }
+
+                if (StatusText.IsEmpty())
+                {
+                    StatusText = TEXT("이에타가 작업 상태를 확인하는 중이야.");
+                }
+
+                FIetaMCPStatusWindow::UpdateStatus(
+                    StatusText,
+                    StatusCommand,
+                    ProgressValue >= 0.0 ? TOptional<float>(static_cast<float>(ProgressValue)) : TOptional<float>());
+
+                ResultJson = MakeShareable(new FJsonObject);
+                ResultJson->SetBoolField(TEXT("success"), true);
+                ResultJson->SetStringField(TEXT("text"), StatusText);
+                ResultJson->SetStringField(TEXT("command"), StatusCommand);
+                if (ProgressValue >= 0.0)
+                {
+                    ResultJson->SetNumberField(TEXT("progress"), ProgressValue);
+                }
             }
             // Editor Commands (including actor manipulation)
             else if (CommandType == TEXT("get_actors_in_level") || 
@@ -284,6 +601,8 @@ FString UUnrealMCPBridge::ExecuteCommand(const FString& CommandType, const TShar
                 ResponseJson->SetStringField(TEXT("status"), TEXT("error"));
                 ResponseJson->SetStringField(TEXT("error"), FString::Printf(TEXT("Unknown command: %s"), *CommandType));
                 
+                FIetaMCPStatusWindow::CompleteCommand(CommandType, ResponseJson);
+
                 FString ResultString;
                 TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ResultString);
                 FJsonSerializer::Serialize(ResponseJson.ToSharedRef(), Writer);
@@ -323,30 +642,28 @@ FString UUnrealMCPBridge::ExecuteCommand(const FString& CommandType, const TShar
             ResponseJson->SetStringField(TEXT("error"), UTF8_TO_TCHAR(e.what()));
         }
         
+        FIetaMCPStatusWindow::CompleteCommand(CommandType, ResponseJson);
+
         FString ResultString;
         TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ResultString);
         FJsonSerializer::Serialize(ResponseJson.ToSharedRef(), Writer);
         Promise->SetValue(ResultString);
     };
 
-    // Queue execution on Game Thread. Python import workflows can enter UE's
-    // Interchange pipeline, which must not run inside a TaskGraph task because
-    // it may wait on TaskGraph work internally.
-    if (CommandType == TEXT("execute_python"))
+    // Queue execution on Game Thread. Show the assistant window first, then run
+    // the command on the next tick so the editor has a chance to paint the UI.
+    // Python import workflows can enter UE's Interchange pipeline, which must
+    // not run inside a TaskGraph task because it may wait on TaskGraph work
+    // internally.
+    AsyncTask(ENamedThreads::GameThread, [CommandType, RunCommand]()
     {
-        AsyncTask(ENamedThreads::GameThread, [RunCommand]()
+        FIetaMCPStatusWindow::Show(CommandType);
+        FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([RunCommand](float)
         {
-            FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([RunCommand](float)
-            {
-                RunCommand();
-                return false;
-            }));
-        });
-    }
-    else
-    {
-        AsyncTask(ENamedThreads::GameThread, RunCommand);
-    }
+            RunCommand();
+            return false;
+        }));
+    });
     
     return Future.Get();
 }

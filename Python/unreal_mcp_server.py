@@ -276,6 +276,7 @@ from tools.umg_tools import register_umg_tools
 from tools.python_tools import register_python_tools
 from tools.pcg_tools import register_pcg_tools
 from tools.texture_generation import register_texture_generation_tools
+from tools.ieta_tools import register_ieta_tools
 
 # Register tools
 register_editor_tools(mcp)
@@ -286,6 +287,7 @@ register_umg_tools(mcp)
 register_python_tools(mcp)
 register_pcg_tools(mcp)
 register_texture_generation_tools(mcp)
+register_ieta_tools(mcp)
 
 @mcp.prompt()
 def info():

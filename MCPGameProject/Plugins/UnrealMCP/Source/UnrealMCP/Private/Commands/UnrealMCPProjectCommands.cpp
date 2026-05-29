@@ -117,10 +117,10 @@ TSharedPtr<FJsonObject> FUnrealMCPProjectCommands::HandleExecutePython(const TSh
     TArray<TSharedPtr<FJsonValue>> Logs;
     for (const FPythonLogOutputEntry& Entry : PythonCommand.LogOutput)
     {
-        TSharedPtr<FJsonObject> LogObj = MakeShared<FJsonObject>();
-        LogObj->SetStringField(TEXT("type"), LexToString(Entry.Type));
-        LogObj->SetStringField(TEXT("output"), Entry.Output);
-        Logs.Add(MakeShared<FJsonValueObject>(LogObj));
+        TSharedPtr<FJsonObject> LogEntryJson = MakeShared<FJsonObject>();
+        LogEntryJson->SetStringField(TEXT("type"), LexToString(Entry.Type));
+        LogEntryJson->SetStringField(TEXT("output"), Entry.Output);
+        Logs.Add(MakeShared<FJsonValueObject>(LogEntryJson));
     }
     ResultObj->SetArrayField(TEXT("logs"), Logs);
 
