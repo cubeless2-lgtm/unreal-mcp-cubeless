@@ -19,7 +19,7 @@ def register_ieta_tools(mcp: FastMCP):
     @mcp.tool()
     def show_ieta_connection_status(
         ctx: Context,
-        text: str = "Unreal MCP connected.",
+        text: str = "흥, Unreal MCP 연결은 확인했어.",
         command: str = "이에타",
         progress: float = 1.0,
     ) -> Dict[str, Any]:
