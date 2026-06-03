@@ -284,6 +284,50 @@ def register_blueprint_tools(mcp: FastMCP):
             return {"success": False, "message": error_msg}
 
     @mcp.tool()
+    def compile_and_save_blueprint(
+        ctx: Context,
+        blueprint_name: str,
+        save: bool = True
+    ) -> Dict[str, Any]:
+        """
+        Compile a Blueprint and optionally save the loaded asset.
+
+        Args:
+            blueprint_name: Name or path of the target Blueprint
+            save: Whether to save the Blueprint after compiling
+
+        Returns:
+            Response indicating compile and save status
+        """
+        from unreal_mcp_server import get_unreal_connection
+
+        try:
+            unreal = get_unreal_connection()
+            if not unreal:
+                logger.error("Failed to connect to Unreal Engine")
+                return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+            params = {
+                "blueprint_name": blueprint_name,
+                "save": save
+            }
+
+            logger.info(f"Compiling and saving blueprint: {blueprint_name}")
+            response = unreal.send_command("compile_and_save_blueprint", params)
+
+            if not response:
+                logger.error("No response from Unreal Engine")
+                return {"success": False, "message": "No response from Unreal Engine"}
+
+            logger.info(f"Compile and save blueprint response: {response}")
+            return response
+
+        except Exception as e:
+            error_msg = f"Error compiling and saving blueprint: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
     def set_blueprint_property(
         ctx: Context,
         blueprint_name: str,
@@ -417,4 +461,4 @@ def register_blueprint_tools(mcp: FastMCP):
             logger.error(error_msg)
             return {"success": False, "message": error_msg}
     
-    logger.info("Blueprint tools registered successfully") 
+    logger.info("Blueprint tools registered successfully")

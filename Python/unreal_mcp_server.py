@@ -275,6 +275,7 @@ from tools.project_tools import register_project_tools
 from tools.umg_tools import register_umg_tools
 from tools.python_tools import register_python_tools
 from tools.pcg_tools import register_pcg_tools
+from tools.material_tools import register_material_tools
 from tools.texture_generation import register_texture_generation_tools
 from tools.ieta_tools import register_ieta_tools
 
@@ -286,6 +287,7 @@ register_project_tools(mcp)
 register_umg_tools(mcp)  
 register_python_tools(mcp)
 register_pcg_tools(mcp)
+register_material_tools(mcp)
 register_texture_generation_tools(mcp)
 register_ieta_tools(mcp)
 
@@ -344,6 +346,19 @@ def info():
     
     ## Project Tools
     - `create_input_mapping(action_name, key, input_type)` - Create input mappings
+
+    ## Material Graph Management
+    - `resolve_material_graph(material_path, graph_type="auto")` - Resolve a Material or Material Function
+    - `list_material_nodes(material_path, graph_type="auto")` - List material expression nodes, pins, links, and root material property connections
+    - `analyze_material_graph(material_path, graph_type="auto")` - Read-only Material/Function/Instance analysis with semantics, function/reroute metadata, cost hints, and usage hints
+    - `add_material_node(material_path, expression_class)` - Add a MaterialExpression node
+    - `add_custom_material_node(material_path, code, output_type="CMOT_Float3", inputs=[])` - Add a validated MaterialExpressionCustom node for Custom HLSL islands
+    - `set_material_node_property(material_path, node_id, property_name, value)` - Set an expression property using node_key/node_id from list/analyze output
+    - `connect_material_nodes(material_path, from_node_id, to_node_id, to_input, from_output="")` - Connect expression nodes using node_key/node_id values
+    - `connect_material_property(material_path, from_node_id, property, from_output="")` - Connect an expression to BaseColor/Roughness/Normal/etc.
+    - `delete_material_node(material_path, node_id)` - Delete an expression node using node_key/node_id
+    - `layout_material_nodes(material_path)` - Layout expression nodes
+    - `compile_and_save_material(material_path)` - Recompile/update and save a Material or Material Function
 
     ## AI Texture Generation
     - `get_static_mesh_uv_layout(mesh_path, uv_channel, output_path)` - Export a Static Mesh UV wireframe PNG

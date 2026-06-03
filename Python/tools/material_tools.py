@@ -1,0 +1,393 @@
+"""
+Material graph tools for Unreal MCP.
+
+These tools route to editor-only UnrealMCP C++ commands so material expression
+graphs can be enumerated and edited without relying on protected Unreal Python
+properties such as UMaterial.Expressions.
+"""
+
+import logging
+from typing import Any, Dict, List
+
+from mcp.server.fastmcp import Context, FastMCP
+
+logger = logging.getLogger("UnrealMCP")
+
+
+def register_material_tools(mcp: FastMCP):
+    """Register Material and Material Function graph tools with the MCP server."""
+
+    def send_material_command(command_name: str, params: Dict[str, Any]) -> Dict[str, Any]:
+        from unreal_mcp_server import get_unreal_connection
+
+        unreal = get_unreal_connection()
+        if not unreal:
+            logger.error("Failed to connect to Unreal Engine")
+            return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+        response = unreal.send_command(command_name, params)
+        if not response:
+            logger.error("No response from Unreal Engine")
+            return {"success": False, "message": "No response from Unreal Engine"}
+
+        return response
+
+    @mcp.tool()
+    def resolve_material_graph(
+        ctx: Context,
+        material_path: str,
+        graph_type: str = "auto",
+    ) -> Dict[str, Any]:
+        """
+        Resolve a Material or Material Function by short name, package path, or object path.
+
+        Args:
+            material_path: Material or Material Function name/path
+            graph_type: auto, material, or function
+        """
+        try:
+            return send_material_command(
+                "resolve_material_graph",
+                {"material_path": material_path, "graph_type": graph_type},
+            )
+        except Exception as e:
+            error_msg = f"Error resolving material graph: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def list_material_nodes(
+        ctx: Context,
+        material_path: str,
+        graph_type: str = "auto",
+        node_type: str = "",
+        desc_contains: str = "",
+        include_pins: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        List nodes, inputs, outputs, links, and material property connections in a material graph.
+
+        Args:
+            material_path: Material or Material Function name/path
+            graph_type: auto, material, or function
+            node_type: Optional expression class/name substring filter
+            desc_contains: Optional node description substring filter
+            include_pins: Include input/output metadata and links
+        """
+        try:
+            params = {
+                "material_path": material_path,
+                "graph_type": graph_type,
+                "node_type": node_type,
+                "desc_contains": desc_contains,
+                "include_pins": include_pins,
+            }
+            return send_material_command("list_material_nodes", params)
+        except Exception as e:
+            error_msg = f"Error listing material nodes: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def analyze_material_graph(
+        ctx: Context,
+        material_path: str,
+        graph_type: str = "auto",
+        include_nodes: bool = False,
+        include_usage: bool = True,
+        max_referencers: int = 25,
+    ) -> Dict[str, Any]:
+        """
+        Analyze a Material, Material Function, or Material Instance without editing assets.
+
+        Args:
+            material_path: Material, Material Function, or Material Instance name/path
+            graph_type: auto, material, or function. Material Instances are accepted in auto/material mode.
+            include_nodes: Include full node/pin data in addition to summaries
+            include_usage: Include Asset Registry package referencer hints
+            max_referencers: Maximum referencer packages to include when include_usage is true
+        """
+        try:
+            params = {
+                "material_path": material_path,
+                "graph_type": graph_type,
+                "include_nodes": include_nodes,
+                "include_usage": include_usage,
+                "max_referencers": max_referencers,
+            }
+            return send_material_command("analyze_material_graph", params)
+        except Exception as e:
+            error_msg = f"Error analyzing material graph: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def add_material_node(
+        ctx: Context,
+        material_path: str,
+        expression_class: str,
+        graph_type: str = "auto",
+        node_position=None,
+        selected_asset: str = "",
+        properties: Dict[str, Any] | None = None,
+    ) -> Dict[str, Any]:
+        """
+        Add a MaterialExpression node to a Material or Material Function graph.
+
+        Args:
+            material_path: Material or Material Function name/path
+            expression_class: Material expression class, e.g. TextureSample, Multiply, Constant3Vector
+            graph_type: auto, material, or function
+            node_position: Optional [X, Y] editor position
+            selected_asset: Optional asset path used by expression creation helpers
+            properties: Optional property map to set after creation, e.g. {"Texture": "/Game/T.T"}
+        """
+        try:
+            if node_position is None:
+                node_position = [0, 0]
+            if properties is None:
+                properties = {}
+            params = {
+                "material_path": material_path,
+                "expression_class": expression_class,
+                "graph_type": graph_type,
+                "node_position": node_position,
+                "selected_asset": selected_asset,
+                "properties": properties,
+            }
+            return send_material_command("add_material_node", params)
+        except Exception as e:
+            error_msg = f"Error adding material node: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def add_custom_material_node(
+        ctx: Context,
+        material_path: str,
+        code: str,
+        output_type: str = "CMOT_Float3",
+        inputs: List[str] | None = None,
+        description: str = "",
+        graph_type: str = "auto",
+        node_position: List[int] | None = None,
+        additional_defines: List[Dict[str, Any]] | None = None,
+        include_file_paths: List[str] | None = None,
+    ) -> Dict[str, Any]:
+        """
+        Add a MaterialExpressionCustom node with validated HLSL inputs and output type.
+
+        Args:
+            material_path: Material or Material Function name/path
+            code: HLSL code for the Custom node
+            output_type: CMOT_Float1, CMOT_Float2, CMOT_Float3, CMOT_Float4, CMOT_MaterialAttributes, or supported aliases
+            inputs: Custom input pin names; each name must be a valid HLSL identifier
+            description: Custom node description/caption
+            graph_type: auto, material, or function
+            node_position: Optional [X, Y] editor position
+            additional_defines: Optional [{"name": "DEFINE_NAME", "value": "1"}] entries
+            include_file_paths: Optional Custom node include file paths
+        """
+        try:
+            if inputs is None:
+                inputs = []
+            if node_position is None:
+                node_position = [0, 0]
+            if additional_defines is None:
+                additional_defines = []
+            if include_file_paths is None:
+                include_file_paths = []
+            params = {
+                "material_path": material_path,
+                "code": code,
+                "output_type": output_type,
+                "inputs": inputs,
+                "description": description,
+                "graph_type": graph_type,
+                "node_position": node_position,
+                "additional_defines": additional_defines,
+                "include_file_paths": include_file_paths,
+            }
+            return send_material_command("add_custom_material_node", params)
+        except Exception as e:
+            error_msg = f"Error adding custom material node: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def set_material_node_property(
+        ctx: Context,
+        material_path: str,
+        node_id: str,
+        property_name: str,
+        value: Any,
+        graph_type: str = "auto",
+    ) -> Dict[str, Any]:
+        """
+        Set an editor property on a material graph node.
+
+        Args:
+            material_path: Material or Material Function name/path
+            node_id: node_key from list/analyze output. guid:, name:, path:, legacy GUID, object name, and object path are also accepted.
+            property_name: Property name on the expression object
+            value: New property value. Object properties should use asset path strings.
+            graph_type: auto, material, or function
+        """
+        try:
+            params = {
+                "material_path": material_path,
+                "node_id": node_id,
+                "property_name": property_name,
+                "value": value,
+                "graph_type": graph_type,
+            }
+            return send_material_command("set_material_node_property", params)
+        except Exception as e:
+            error_msg = f"Error setting material node property: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def connect_material_nodes(
+        ctx: Context,
+        material_path: str,
+        from_node_id: str,
+        to_node_id: str,
+        to_input: str,
+        from_output: str = "",
+        graph_type: str = "auto",
+    ) -> Dict[str, Any]:
+        """
+        Connect one material expression output to another expression input.
+
+        Args:
+            material_path: Material or Material Function name/path
+            from_node_id: Source node_key from list/analyze output
+            to_node_id: Target node_key from list/analyze output
+            to_input: Target input pin name
+            from_output: Source output pin name. Empty string means first output.
+            graph_type: auto, material, or function
+        """
+        try:
+            params = {
+                "material_path": material_path,
+                "from_node_id": from_node_id,
+                "from_output": from_output,
+                "to_node_id": to_node_id,
+                "to_input": to_input,
+                "graph_type": graph_type,
+            }
+            return send_material_command("connect_material_nodes", params)
+        except Exception as e:
+            error_msg = f"Error connecting material nodes: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def connect_material_property(
+        ctx: Context,
+        material_path: str,
+        from_node_id: str,
+        property: str,
+        from_output: str = "",
+    ) -> Dict[str, Any]:
+        """
+        Connect a material expression output to a root Material property.
+
+        Args:
+            material_path: Material name/path. Material Functions are not supported here.
+            from_node_id: Source node_key from list/analyze output
+            property: Material property, e.g. BaseColor, Roughness, Normal, or MP_BaseColor
+            from_output: Source output pin name. Empty string means first output.
+        """
+        try:
+            params = {
+                "material_path": material_path,
+                "from_node_id": from_node_id,
+                "from_output": from_output,
+                "property": property,
+            }
+            return send_material_command("connect_material_property", params)
+        except Exception as e:
+            error_msg = f"Error connecting material property: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def delete_material_node(
+        ctx: Context,
+        material_path: str,
+        node_id: str,
+        graph_type: str = "auto",
+    ) -> Dict[str, Any]:
+        """
+        Delete a material expression node and disconnect its links.
+
+        Args:
+            material_path: Material or Material Function name/path
+            node_id: node_key from list/analyze output. guid:, name:, path:, legacy GUID, object name, and object path are also accepted.
+            graph_type: auto, material, or function
+        """
+        try:
+            params = {
+                "material_path": material_path,
+                "node_id": node_id,
+                "graph_type": graph_type,
+            }
+            return send_material_command("delete_material_node", params)
+        except Exception as e:
+            error_msg = f"Error deleting material node: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def layout_material_nodes(
+        ctx: Context,
+        material_path: str,
+        graph_type: str = "auto",
+    ) -> Dict[str, Any]:
+        """
+        Layout material expression nodes in the editor graph.
+
+        Args:
+            material_path: Material or Material Function name/path
+            graph_type: auto, material, or function
+        """
+        try:
+            return send_material_command(
+                "layout_material_nodes",
+                {"material_path": material_path, "graph_type": graph_type},
+            )
+        except Exception as e:
+            error_msg = f"Error laying out material nodes: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def compile_and_save_material(
+        ctx: Context,
+        material_path: str,
+        graph_type: str = "auto",
+        save: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Recompile/update a Material or Material Function and optionally save it.
+
+        Args:
+            material_path: Material or Material Function name/path
+            graph_type: auto, material, or function
+            save: Whether to save the loaded asset after compiling
+        """
+        try:
+            params = {
+                "material_path": material_path,
+                "graph_type": graph_type,
+                "save": save,
+            }
+            return send_material_command("compile_and_save_material", params)
+        except Exception as e:
+            error_msg = f"Error compiling/saving material: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    logger.info("Material tools registered successfully")

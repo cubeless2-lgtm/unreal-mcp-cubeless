@@ -66,6 +66,21 @@ with open(RESULT_PATH, "w", encoding="utf-8") as result_file:
 def register_pcg_tools(mcp: FastMCP):
     """Register PCG-focused automation tools."""
 
+    def send_pcg_command(command_name: str, params: Dict[str, Any]) -> Dict[str, Any]:
+        from unreal_mcp_server import get_unreal_connection
+
+        unreal = get_unreal_connection()
+        if not unreal:
+            logger.error("Failed to connect to Unreal Engine")
+            return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+        response = unreal.send_command(command_name, params)
+        if not response:
+            logger.error("No response from Unreal Engine")
+            return {"success": False, "message": "No response from Unreal Engine"}
+
+        return response
+
     @mcp.tool()
     def list_pcg_assets(ctx: Context, root_path: str = "/Game") -> Dict[str, Any]:
         """
@@ -265,5 +280,180 @@ for asset_data in assets:
 RESULT = {"success": True, "count": len(saved), "saved": saved, "errors": errors}
 """
         return _run_unreal_python_json(code)
+
+    @mcp.tool()
+    def resolve_pcg_graph(ctx: Context, graph_path: str) -> Dict[str, Any]:
+        """
+        Resolve a PCG graph by short name, package path, or object path.
+
+        Args:
+            graph_path: PCG graph name or path
+        """
+        try:
+            return send_pcg_command("resolve_pcg_graph", {"graph_path": graph_path})
+        except Exception as e:
+            error_msg = f"Error resolving PCG graph: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def list_pcg_graph_nodes(
+        ctx: Context,
+        graph_path: str,
+        node_type: str = "",
+        title_contains: str = "",
+        include_pins: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        List nodes, pins, and edges in a PCG graph.
+
+        Args:
+            graph_path: PCG graph name or path
+            node_type: Optional settings class/name substring filter
+            title_contains: Optional title substring filter
+            include_pins: Include pin and edge metadata
+        """
+        try:
+            params = {
+                "graph_path": graph_path,
+                "node_type": node_type,
+                "title_contains": title_contains,
+                "include_pins": include_pins,
+            }
+            return send_pcg_command("list_pcg_graph_nodes", params)
+        except Exception as e:
+            error_msg = f"Error listing PCG graph nodes: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def add_pcg_node(
+        ctx: Context,
+        graph_path: str,
+        settings_class: str,
+        node_position=None,
+        node_title: str = "",
+        settings: Dict[str, Any] | None = None,
+    ) -> Dict[str, Any]:
+        """
+        Add a node to a PCG graph using a UPCGSettings class.
+
+        Args:
+            graph_path: PCG graph name or path
+            settings_class: UPCGSettings class name or class path
+            node_position: Optional [X, Y] editor position
+            node_title: Optional authored node title
+            settings: Optional settings property map
+        """
+        try:
+            if node_position is None:
+                node_position = [0, 0]
+            if settings is None:
+                settings = {}
+            params = {
+                "graph_path": graph_path,
+                "settings_class": settings_class,
+                "node_position": node_position,
+                "node_title": node_title,
+                "settings": settings,
+            }
+            return send_pcg_command("add_pcg_node", params)
+        except Exception as e:
+            error_msg = f"Error adding PCG node: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def connect_pcg_nodes(
+        ctx: Context,
+        graph_path: str,
+        from_node_id: str,
+        from_pin: str,
+        to_node_id: str,
+        to_pin: str,
+    ) -> Dict[str, Any]:
+        """
+        Connect two PCG graph nodes by pin label.
+
+        Args:
+            graph_path: PCG graph name or path
+            from_node_id: Source node id/name/path
+            from_pin: Source output pin label
+            to_node_id: Target node id/name/path
+            to_pin: Target input pin label
+        """
+        try:
+            params = {
+                "graph_path": graph_path,
+                "from_node_id": from_node_id,
+                "from_pin": from_pin,
+                "to_node_id": to_node_id,
+                "to_pin": to_pin,
+            }
+            return send_pcg_command("connect_pcg_nodes", params)
+        except Exception as e:
+            error_msg = f"Error connecting PCG nodes: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def set_pcg_node_setting(
+        ctx: Context,
+        graph_path: str,
+        node_id: str,
+        property_name: str,
+        value: Any,
+    ) -> Dict[str, Any]:
+        """
+        Set a property on a PCG node settings object.
+
+        Args:
+            graph_path: PCG graph name or path
+            node_id: Node id/name/path
+            property_name: Settings property name
+            value: New property value
+        """
+        try:
+            params = {
+                "graph_path": graph_path,
+                "node_id": node_id,
+                "property_name": property_name,
+                "value": value,
+            }
+            return send_pcg_command("set_pcg_node_setting", params)
+        except Exception as e:
+            error_msg = f"Error setting PCG node setting: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def compile_or_notify_pcg_graph(ctx: Context, graph_path: str) -> Dict[str, Any]:
+        """
+        Notify a PCG graph of structural changes and request recompilation.
+
+        Args:
+            graph_path: PCG graph name or path
+        """
+        try:
+            return send_pcg_command("compile_or_notify_pcg_graph", {"graph_path": graph_path})
+        except Exception as e:
+            error_msg = f"Error notifying PCG graph: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def save_pcg_graph(ctx: Context, graph_path: str) -> Dict[str, Any]:
+        """
+        Save a loaded PCG graph asset.
+
+        Args:
+            graph_path: PCG graph name or path
+        """
+        try:
+            return send_pcg_command("save_pcg_graph", {"graph_path": graph_path})
+        except Exception as e:
+            error_msg = f"Error saving PCG graph: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
 
     logger.info("PCG tools registered successfully")
