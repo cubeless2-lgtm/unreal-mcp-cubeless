@@ -330,16 +330,25 @@ def info():
     - `set_static_mesh_properties(blueprint_name, component_name, static_mesh)` - Configure meshes
     - `set_physics_properties(blueprint_name, component_name)` - Configure physics
     - `compile_blueprint(blueprint_name)` - Compile Blueprint changes
+    - `compile_and_validate_blueprint(blueprint_name, save=False, refresh_nodes=True)` - Compile and return validation status
     - `set_blueprint_property(blueprint_name, property_name, property_value)` - Set properties
     - `set_pawn_properties(blueprint_name)` - Configure Pawn settings
     - `spawn_blueprint_actor(blueprint_name, actor_name)` - Spawn Blueprint actors
     
     ## Blueprint Node Management
+    - `list_blueprint_graphs(blueprint_name, graph_type="")` - List Blueprint graphs with graph_id metadata
+    - `resolve_blueprint_graph(blueprint_name, graph_name="", graph_id="", graph_type="", create_if_missing=False)` - Resolve or create a Blueprint graph
     - `add_blueprint_event_node(blueprint_name, event_type)` - Add event nodes
     - `add_blueprint_input_action_node(blueprint_name, action_name)` - Add input nodes
     - `add_blueprint_function_node(blueprint_name, target, function_name)` - Add function nodes
+    - `add_blueprint_branch_node(blueprint_name)` - Add Branch control-flow node
+    - `add_blueprint_sequence_node(blueprint_name, output_count=2)` - Add Sequence control-flow node
+    - `add_blueprint_return_node(blueprint_name, graph_type="function")` - Add or resolve function Return node
+    - `add_blueprint_dynamic_cast_node(blueprint_name, target_class)` - Add Dynamic Cast node
     - `connect_blueprint_nodes(blueprint_name, source_node_id, source_pin, target_node_id, target_pin)` - Connect nodes
-    - `add_blueprint_variable(blueprint_name, variable_name, variable_type)` - Add variables
+    - `add_blueprint_variable(blueprint_name, variable_name, variable_type, default_value=None)` - Add member variables with defaults/metadata
+    - `add_blueprint_function_parameter(blueprint_name, parameter_name, parameter_type, direction="input")` - Add function input/output pins
+    - `add_blueprint_local_variable(blueprint_name, variable_name, variable_type)` - Add function-scoped local variables
     - `add_blueprint_get_self_component_reference(blueprint_name, component_name)` - Add component refs
     - `add_blueprint_self_reference(blueprint_name)` - Add self references
     - `find_blueprint_nodes(blueprint_name, node_type, event_type)` - Find nodes

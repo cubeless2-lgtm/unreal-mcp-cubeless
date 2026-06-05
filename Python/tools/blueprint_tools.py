@@ -18,9 +18,17 @@ def register_blueprint_tools(mcp: FastMCP):
     def create_blueprint(
         ctx: Context,
         name: str,
-        parent_class: str
+        parent_class: str,
+        package_path: str = ""
     ) -> Dict[str, Any]:
-        """Create a new Blueprint class."""
+        """
+        Create a new Blueprint class.
+
+        Args:
+            name: Name for the new Blueprint asset
+            parent_class: Parent class for the Blueprint
+            package_path: Optional package directory under /Game
+        """
         # Import inside function to avoid circular imports
         from unreal_mcp_server import get_unreal_connection
         
@@ -30,10 +38,14 @@ def register_blueprint_tools(mcp: FastMCP):
                 logger.error("Failed to connect to Unreal Engine")
                 return {"success": False, "message": "Failed to connect to Unreal Engine"}
                 
-            response = unreal.send_command("create_blueprint", {
+            params = {
                 "name": name,
                 "parent_class": parent_class
-            })
+            }
+            if package_path:
+                params["package_path"] = package_path
+
+            response = unreal.send_command("create_blueprint", params)
             
             if not response:
                 logger.error("No response from Unreal Engine")
@@ -324,6 +336,53 @@ def register_blueprint_tools(mcp: FastMCP):
 
         except Exception as e:
             error_msg = f"Error compiling and saving blueprint: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def compile_and_validate_blueprint(
+        ctx: Context,
+        blueprint_name: str,
+        save: bool = False,
+        refresh_nodes: bool = True
+    ) -> Dict[str, Any]:
+        """
+        Compile a Blueprint and return structured validation status.
+
+        Args:
+            blueprint_name: Name or path of the target Blueprint
+            save: Whether to save the Blueprint after a successful compile
+            refresh_nodes: Whether to refresh Blueprint nodes before compile
+
+        Returns:
+            Response containing compiled, validation_pass, status, counts, and diagnostics
+        """
+        from unreal_mcp_server import get_unreal_connection
+
+        try:
+            unreal = get_unreal_connection()
+            if not unreal:
+                logger.error("Failed to connect to Unreal Engine")
+                return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+            params = {
+                "blueprint_name": blueprint_name,
+                "save": save,
+                "refresh_nodes": refresh_nodes
+            }
+
+            logger.info(f"Compiling and validating blueprint: {blueprint_name}")
+            response = unreal.send_command("compile_and_validate_blueprint", params)
+
+            if not response:
+                logger.error("No response from Unreal Engine")
+                return {"success": False, "message": "No response from Unreal Engine"}
+
+            logger.info(f"Compile and validate blueprint response: {response}")
+            return response
+
+        except Exception as e:
+            error_msg = f"Error compiling and validating blueprint: {e}"
             logger.error(error_msg)
             return {"success": False, "message": error_msg}
 

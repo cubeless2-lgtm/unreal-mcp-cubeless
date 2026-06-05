@@ -15,6 +15,7 @@ Create a new Blueprint class.
 **Parameters:**
 - `name` (string) - The name for the new Blueprint class
 - `parent_class` (string) - The parent class for the Blueprint
+- `package_path` (string, optional) - Long package directory under `/Game`, defaults to `/Game/Blueprints/`; object paths and non-string values are rejected
 
 **Returns:**
 - Information about the created Blueprint including success status and message
@@ -25,7 +26,8 @@ Create a new Blueprint class.
   "command": "create_blueprint",
   "params": {
     "name": "MyActor",
-    "parent_class": "Actor"
+    "parent_class": "Actor",
+    "package_path": "/Game/Blueprints"
   }
 }
 ```
@@ -162,6 +164,39 @@ Compile a Blueprint.
   "command": "compile_blueprint",
   "params": {
     "blueprint_name": "MyActor"
+  }
+}
+```
+
+### compile_and_validate_blueprint
+
+Compile a Blueprint and return structured validation status for MCP authoring pipelines.
+
+**Parameters:**
+- `blueprint_name` (string) - The name or path of the Blueprint to compile
+- `save` (boolean, optional) - Save after a successful compile, defaults to false
+- `refresh_nodes` (boolean, optional) - Refresh nodes before compile, defaults to true
+
+**Returns:**
+- `compiled` (boolean) - Whether the Blueprint compiled without an error status
+- `validation_pass` (boolean) - Whether the validation gate passed
+- `status` (string) - Blueprint status, such as `up_to_date`, `up_to_date_with_warnings`, or `error`
+- `compile_error_count` (integer) - Number of compiler errors, with a status fallback when no compiler log errors are available
+- `compile_warning_count` (integer) - Number of compiler warnings
+- `compile_errors` (array) - Legacy string summaries for compiler errors
+- `compile_warnings` (array) - String summaries for compiler warnings
+- `diagnostics` (array) - Structured compiler diagnostics with `severity`, `message`, and optional graph/node/pin context fields
+- `diagnostic_count` (integer) - Number of structured error/warning diagnostics returned
+- `saved` (boolean) - Whether the asset was saved
+
+**Example:**
+```json
+{
+  "command": "compile_and_validate_blueprint",
+  "params": {
+    "blueprint_name": "MyActor",
+    "save": true,
+    "refresh_nodes": true
   }
 }
 ```

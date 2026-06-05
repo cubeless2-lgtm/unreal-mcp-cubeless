@@ -21,6 +21,7 @@ def register_python_tools(mcp: FastMCP):
         ctx: Context,
         code: str,
         mode: str = "ExecuteFile",
+        defer_to_ticker: bool = False,
     ) -> Dict[str, Any]:
         """
         Execute Python inside the running Unreal Editor.
@@ -28,6 +29,7 @@ def register_python_tools(mcp: FastMCP):
         Args:
             code: Python code to execute in Unreal.
             mode: Python execution mode. ExecuteFile supports multiline TA scripts.
+            defer_to_ticker: Run through Unreal ticker instead of directly on the game thread.
 
         Returns:
             Response from Unreal, including Python logs and command_result.
@@ -39,7 +41,10 @@ def register_python_tools(mcp: FastMCP):
             if not unreal:
                 return {"success": False, "message": "Failed to connect to Unreal Engine"}
 
-            response = unreal.send_command("execute_python", {"code": code, "mode": mode})
+            response = unreal.send_command(
+                "execute_python",
+                {"code": code, "mode": mode, "defer_to_ticker": defer_to_ticker},
+            )
             return response or {"success": False, "message": "No response from Unreal Engine"}
         except Exception as exc:
             logger.exception("Error executing Unreal Python")
