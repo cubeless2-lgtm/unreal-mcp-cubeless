@@ -29,11 +29,12 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_63_v5"
+        assert report["verdict"]["release_boundary_version"] == "section_64_v6"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
         assert report["verdict"]["section_63_executor_review_status"] == "passed"
+        assert report["verdict"]["section_64_canary_command_allowlist_status"] == "passed"
         assert report["verdict"]["mvp_decision_status"] == "temporary_mvp_ready_durable_not_enabled"
         assert report["verdict"]["temporary_blueprint_authoring_mvp_ready"] is True
         assert report["verdict"]["durable_blueprint_authoring_mvp_ready"] is False
@@ -131,6 +132,19 @@ def main() -> int:
         assert executor_review_row["actual"]["save_delete_rename_allowed_count"] == 0
         assert executor_review_row["actual"]["canary_execution_allowed_count"] == 0
         assert executor_review_row["actual"]["failing_check_count"] == 0
+        command_allowlist_row = find_row(report, "durable_canary_command_allowlist_contract")
+        assert command_allowlist_row["status"] == "passed"
+        assert command_allowlist_row["actual"]["durable_requested_canary_command_allowlist_count"] == 1
+        assert command_allowlist_row["actual"]["allowed_read_only_command_count"] == 1
+        assert command_allowlist_row["actual"]["forbidden_command_count"] == 7
+        assert command_allowlist_row["actual"]["executor_gate_matches_allowlist_count"] == 1
+        assert command_allowlist_row["actual"]["authoring_commands_allowed_count"] == 0
+        assert command_allowlist_row["actual"]["save_commands_allowed_count"] == 0
+        assert command_allowlist_row["actual"]["delete_commands_allowed_count"] == 0
+        assert command_allowlist_row["actual"]["rename_commands_allowed_count"] == 0
+        assert command_allowlist_row["actual"]["cleanup_commands_allowed_count"] == 0
+        assert command_allowlist_row["actual"]["canary_execution_allowed_count"] == 0
+        assert command_allowlist_row["actual"]["durable_executor_may_open_from_allowlist_count"] == 0
         canary_recovery_row = find_row(report, "durable_canary_recovery_matrix")
         assert canary_recovery_row["status"] == "passed"
         assert canary_recovery_row["actual"]["durable_requested_canary_recovery_count"] == 1

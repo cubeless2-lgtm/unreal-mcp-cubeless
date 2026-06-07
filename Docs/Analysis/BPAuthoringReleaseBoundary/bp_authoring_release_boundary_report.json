@@ -1,7 +1,7 @@
 {
-  "schema": "section_63_bp_authoring_release_boundary_v5",
+  "schema": "section_64_bp_authoring_release_boundary_v6",
   "analysis_kind": "bp_authoring_release_boundary",
-  "generated_at": "2026-06-07T08:36:07.755363+00:00",
+  "generated_at": "2026-06-07T08:38:31.197263+00:00",
   "repo_root": "D:\\Git\\unreal-mcp-cubeless",
   "project_root": "D:\\Git\\CubelessStylized",
   "report_inputs": {
@@ -527,6 +527,44 @@
       ]
     },
     {
+      "id": "durable_canary_command_allowlist_contract",
+      "label": "Section 64 durable canary command allowlist contract",
+      "status": "passed",
+      "blocking": true,
+      "expected": {
+        "summary_status": "passed",
+        "durable_requested_canary_command_allowlist_count": 1,
+        "allowed_read_only_command_count": 1,
+        "forbidden_command_count": 7,
+        "executor_gate_matches_allowlist_count": 1,
+        "authoring_commands_allowed_count": 0,
+        "save_commands_allowed_count": 0,
+        "delete_commands_allowed_count": 0,
+        "rename_commands_allowed_count": 0,
+        "cleanup_commands_allowed_count": 0,
+        "canary_execution_allowed_count": 0,
+        "durable_executor_may_open_from_allowlist_count": 0
+      },
+      "actual": {
+        "summary_status": "passed",
+        "durable_requested_canary_command_allowlist_count": 1,
+        "allowed_read_only_command_count": 1,
+        "forbidden_command_count": 7,
+        "executor_gate_matches_allowlist_count": 1,
+        "authoring_commands_allowed_count": 0,
+        "save_commands_allowed_count": 0,
+        "delete_commands_allowed_count": 0,
+        "rename_commands_allowed_count": 0,
+        "cleanup_commands_allowed_count": 0,
+        "canary_execution_allowed_count": 0,
+        "durable_executor_may_open_from_allowlist_count": 0
+      },
+      "notes": [
+        "The canary allowlist contains only the read-only asset-exists command.",
+        "Save, delete, rename, cleanup, authoring, and canary execution remain forbidden."
+      ]
+    },
+    {
       "id": "durable_canary_recovery_matrix",
       "label": "Section 58 durable canary recovery matrix",
       "status": "passed",
@@ -785,7 +823,7 @@
   ],
   "verdict": {
     "status": "passed",
-    "release_boundary_version": "section_63_v5",
+    "release_boundary_version": "section_64_v6",
     "mvp_decision_status": "temporary_mvp_ready_durable_not_enabled",
     "temporary_blueprint_authoring_mvp_ready": true,
     "durable_blueprint_authoring_mvp_ready": false,
@@ -798,7 +836,8 @@
     "section_61_bridge_refresh_status": "passed",
     "section_62_live_evidence_refresh_status": "passed",
     "section_63_executor_review_status": "passed",
-    "current_authoring_ceiling": "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_and_section_63_executor_review_contract",
+    "section_64_canary_command_allowlist_status": "passed",
+    "current_authoring_ceiling": "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_and_section_64_canary_command_allowlist_contract",
     "cxx_changes_required": false
   },
   "next_reinforcement_candidates": [
