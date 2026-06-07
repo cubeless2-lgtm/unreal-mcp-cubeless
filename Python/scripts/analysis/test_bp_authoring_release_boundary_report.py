@@ -29,6 +29,8 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
+        assert report["verdict"]["release_boundary_version"] == "section_59_v2"
+        assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["ready_for_main_push"] is True
         assert report["verdict"]["durable_authoring_enabled"] is False
         assert find_row(report, "job_contract_default_request_set")["status"] == "passed"
@@ -91,6 +93,11 @@ def main() -> int:
         assert canary_recovery_row["actual"]["cleanup_command_allowed_count"] == 0
         assert canary_recovery_row["actual"]["delete_command_allowed_count"] == 0
         assert canary_recovery_row["actual"]["live_cleanup_command_count"] == 0
+        consolidation_row = find_row(report, "section_51_58_release_boundary_v2_consolidation")
+        assert consolidation_row["status"] == "passed"
+        assert consolidation_row["actual"]["durable_authoring_enabled"] is False
+        assert consolidation_row["actual"]["section_51_58_blocking_contracts_ready"] is True
+        assert consolidation_row["actual"]["durable_canary_recovery_cleanup_allowed_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False

@@ -1059,6 +1059,14 @@ The matrix gives a future durable canary executor a checklist for failure
 handling, but it is not a cleanup permission. Cleanup and delete still need a
 later explicit release gate.
 
+## Section 59 Release Boundary V2
+
+Section 59 is owned by `bp_authoring_release_boundary_report.py`, not by live
+Blueprint execution. The v2 report consolidates Section 51-58 contract status
+and records that durable authoring remains disabled. Job manifests continue to
+carry the Section 51-58 contracts, but Section 59 does not add any authoring,
+save, delete, cleanup, or canary execution command.
+
 ## Live Smoke Rule
 
 The planner-driven live smoke must execute the manifest, not the raw user

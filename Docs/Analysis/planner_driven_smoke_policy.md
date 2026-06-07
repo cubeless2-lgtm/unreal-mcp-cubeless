@@ -101,4 +101,6 @@ job manifest until dedicated reinforcement exists.
   `save_command_allowed=false`, and `authoring_command_allowed=false` mean the
   smoke runner must not run durable cleanup, delete, save, or authoring
   commands.
+- Section 59 release boundary v2 may be reported, but it is reporting-only and
+  must not add any live smoke command.
 - Section 11 does not require C++ changes.

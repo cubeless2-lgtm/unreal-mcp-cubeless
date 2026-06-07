@@ -43,6 +43,8 @@ Blueprint authoring manifest and live UnrealMCP commands.
     save, delete, or cleanup commands.
 17. Section 58 recovery matrix coverage must prove recovery scenarios are
     defined while cleanup, delete, save, and authoring commands remain disabled.
+18. Section 59 release boundary v2 coverage must consolidate Section 51-58 as
+    blocking-safe while still reporting durable authoring disabled.
 
 ## Execution Boundary
 
@@ -112,6 +114,8 @@ temporary manifests. It must block:
 - Offline tests must prove the Section 58 recovery matrix count: 1 ready
   recovery matrix, 6 recovery scenarios, 0 cleanup/delete/save/authoring
   allowance, and 0 live cleanup/delete/save/authoring command counts.
+- Offline tests must prove the Section 59 release boundary v2 row reports
+  Section 51-58 blocking contracts ready and durable authoring still disabled.
 - The planner-driven live smoke must report the executor version and executor
   executable count.
 - The planner-driven live smoke may perform only the read-only durable

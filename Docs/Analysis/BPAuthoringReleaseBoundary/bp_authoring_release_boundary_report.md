@@ -1,12 +1,12 @@
 # BP Authoring Release Boundary
 
-- Generated UTC: `2026-06-07T08:00:18.534904+00:00`
-- Schema: `section_49_50_bp_authoring_release_boundary_v1`
+- Generated UTC: `2026-06-07T08:03:01.627685+00:00`
+- Schema: `section_59_bp_authoring_release_boundary_v2`
 - Status: `passed`
 - Ready for main push: `True`
 - Durable authoring enabled: `False`
 - Durable release status: `not_enabled_read_only_preflight_only`
-- Current authoring ceiling: `planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_and_section_58_canary_recovery_matrix`
+- Current authoring ceiling: `planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_and_section_59_release_boundary_v2`
 
 ## Regression Matrix
 
@@ -22,6 +22,7 @@
 - `passed` `durable_canary_approval_gate_contract` blocking=`True` - Section 56 durable canary approval gate
 - `passed` `durable_canary_live_preflight_contract` blocking=`True` - Section 57 durable canary live preflight
 - `passed` `durable_canary_recovery_matrix` blocking=`True` - Section 58 durable canary recovery matrix
+- `passed` `section_51_58_release_boundary_v2_consolidation` blocking=`True` - Section 59 release boundary v2 consolidation
 - `passed` `planner_driven_live_smoke_report` blocking=`True` - Planner-driven live smoke report
 - `passed` `planner_live_cleanup_and_log_boundary` blocking=`True` - Planner live cleanup and log boundary
 - `passed` `durable_read_only_live_preflight` blocking=`True` - Durable read-only live preflight boundary
@@ -38,7 +39,7 @@ This boundary permits temporary planner-safe manifest execution only. Section 51
 
 ## Next Reinforcement Candidates
 
-- release boundary v2 consolidation after Section 58 recovery matrix
+- MVP decision contract after Section 59 release boundary v2
 - component default/type readback expansion for broader Blueprint classes
 - function call diagnostics and graph layout repair suggestions
 - UMG/CommonUI authoring classifier and non-executable manifest coverage

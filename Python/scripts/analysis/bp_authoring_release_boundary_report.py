@@ -19,7 +19,7 @@ import bp_authoring_job_contract as job_contract
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_49_50_bp_authoring_release_boundary_v1"
+REPORT_SCHEMA = "section_59_bp_authoring_release_boundary_v2"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -559,6 +559,60 @@ def build_durable_canary_recovery_row(
     )
 
 
+def build_section_51_58_consolidation_row(
+    contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
+) -> Dict[str, Any]:
+    durable_gate_summary = executor_summary.get("durable_gate_summary", {})
+    expected = {
+        "durable_authoring_enabled": False,
+        "durable_enable_satisfied_count": 0,
+        "durable_executor_may_open_count": 0,
+        "durable_save_allowed_count": 0,
+        "durable_canary_executor_may_open_count": 0,
+        "durable_canary_live_execution_allowed_count": 0,
+        "durable_canary_recovery_cleanup_allowed_count": 0,
+        "durable_gate_status": "passed",
+        "section_51_58_blocking_contracts_ready": True,
+    }
+    actual = {
+        "durable_authoring_enabled": False,
+        "durable_enable_satisfied_count": contract_summary.get("durable_enable_contract_satisfied_count"),
+        "durable_executor_may_open_count": contract_summary.get("durable_enable_executor_may_open_count"),
+        "durable_save_allowed_count": contract_summary.get("durable_save_allowed_count"),
+        "durable_canary_executor_may_open_count": contract_summary.get("durable_canary_executor_may_open_count"),
+        "durable_canary_live_execution_allowed_count": contract_summary.get(
+            "durable_canary_approval_live_execution_allowed_count"
+        ),
+        "durable_canary_recovery_cleanup_allowed_count": contract_summary.get(
+            "durable_canary_recovery_cleanup_command_allowed_count"
+        ),
+        "durable_gate_status": durable_gate_summary.get("status"),
+        "section_51_58_blocking_contracts_ready": all(
+            contract_summary.get(key, {}).get("status") == "passed"
+            for key in (
+                "durable_enable_contract_summary",
+                "durable_dry_run_plan_summary",
+                "durable_save_simulation_summary",
+                "durable_canary_prep_summary",
+                "durable_canary_approval_summary",
+                "durable_canary_live_preflight_summary",
+                "durable_canary_recovery_summary",
+            )
+        ),
+    }
+    return row(
+        "section_51_58_release_boundary_v2_consolidation",
+        "Section 59 release boundary v2 consolidation",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "Section 51-58 contracts are present and blocking-safe.",
+            "Durable authoring remains disabled; only read-only preflight evidence is allowed.",
+        ),
+    )
+
+
 def build_planner_live_rows(planner_report_path: Path, planner_report: Optional[Dict[str, Any]]) -> List[Dict[str, Any]]:
     if planner_report is None:
         return [missing_row("planner_driven_live_smoke_report", "Planner-driven live smoke report", planner_report_path)]
@@ -763,6 +817,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         build_durable_canary_approval_row(contract_summary, executor_summary),
         build_durable_canary_live_preflight_row(contract_summary, executor_summary),
         build_durable_canary_recovery_row(contract_summary, executor_summary),
+        build_section_51_58_consolidation_row(contract_summary, executor_summary),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -783,18 +838,20 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
+            "release_boundary_version": "section_59_v2",
             "failed_blocking_count": len(failed_blocking),
             "failed_blocking_ids": [item["id"] for item in failed_blocking],
             "ready_for_main_push": not failed_blocking,
             "durable_authoring_enabled": False,
             "durable_authoring_release_status": "not_enabled_read_only_preflight_only",
+            "section_51_58_contract_status": "passed" if not failed_blocking else "failed",
             "current_authoring_ceiling": (
-                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_and_section_58_canary_recovery_matrix"
+                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_and_section_59_release_boundary_v2"
             ),
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
-            "release boundary v2 consolidation after Section 58 recovery matrix",
+            "MVP decision contract after Section 59 release boundary v2",
             "component default/type readback expansion for broader Blueprint classes",
             "function call diagnostics and graph layout repair suggestions",
             "UMG/CommonUI authoring classifier and non-executable manifest coverage",

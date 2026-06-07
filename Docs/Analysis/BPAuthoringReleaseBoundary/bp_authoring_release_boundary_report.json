@@ -1,7 +1,7 @@
 {
-  "schema": "section_49_50_bp_authoring_release_boundary_v1",
+  "schema": "section_59_bp_authoring_release_boundary_v2",
   "analysis_kind": "bp_authoring_release_boundary",
-  "generated_at": "2026-06-07T08:00:18.534904+00:00",
+  "generated_at": "2026-06-07T08:03:01.627685+00:00",
   "repo_root": "D:\\Git\\unreal-mcp-cubeless",
   "project_root": "D:\\Git\\CubelessStylized",
   "report_inputs": {
@@ -443,6 +443,38 @@
       ]
     },
     {
+      "id": "section_51_58_release_boundary_v2_consolidation",
+      "label": "Section 59 release boundary v2 consolidation",
+      "status": "passed",
+      "blocking": true,
+      "expected": {
+        "durable_authoring_enabled": false,
+        "durable_enable_satisfied_count": 0,
+        "durable_executor_may_open_count": 0,
+        "durable_save_allowed_count": 0,
+        "durable_canary_executor_may_open_count": 0,
+        "durable_canary_live_execution_allowed_count": 0,
+        "durable_canary_recovery_cleanup_allowed_count": 0,
+        "durable_gate_status": "passed",
+        "section_51_58_blocking_contracts_ready": true
+      },
+      "actual": {
+        "durable_authoring_enabled": false,
+        "durable_enable_satisfied_count": 0,
+        "durable_executor_may_open_count": 0,
+        "durable_save_allowed_count": 0,
+        "durable_canary_executor_may_open_count": 0,
+        "durable_canary_live_execution_allowed_count": 0,
+        "durable_canary_recovery_cleanup_allowed_count": 0,
+        "durable_gate_status": "passed",
+        "section_51_58_blocking_contracts_ready": true
+      },
+      "notes": [
+        "Section 51-58 contracts are present and blocking-safe.",
+        "Durable authoring remains disabled; only read-only preflight evidence is allowed."
+      ]
+    },
+    {
       "id": "planner_driven_live_smoke_report",
       "label": "Planner-driven live smoke report",
       "status": "passed",
@@ -595,16 +627,18 @@
   ],
   "verdict": {
     "status": "passed",
+    "release_boundary_version": "section_59_v2",
     "failed_blocking_count": 0,
     "failed_blocking_ids": [],
     "ready_for_main_push": true,
     "durable_authoring_enabled": false,
     "durable_authoring_release_status": "not_enabled_read_only_preflight_only",
-    "current_authoring_ceiling": "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_and_section_58_canary_recovery_matrix",
+    "section_51_58_contract_status": "passed",
+    "current_authoring_ceiling": "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_and_section_59_release_boundary_v2",
     "cxx_changes_required": false
   },
   "next_reinforcement_candidates": [
-    "release boundary v2 consolidation after Section 58 recovery matrix",
+    "MVP decision contract after Section 59 release boundary v2",
     "component default/type readback expansion for broader Blueprint classes",
     "function call diagnostics and graph layout repair suggestions",
     "UMG/CommonUI authoring classifier and non-executable manifest coverage"

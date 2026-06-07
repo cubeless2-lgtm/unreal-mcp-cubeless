@@ -274,6 +274,24 @@ The matrix covers preflight asset absent, preflight asset present, creation
 failure before marker, creation failure after marker, compile/save blocked, and
 valid-marker cleanup review. It does not run cleanup or delete.
 
+## Section 59 - Release Boundary V2 Consolidation
+
+Section 59 raises the release boundary report schema to
+`section_59_bp_authoring_release_boundary_v2` and adds a consolidation row for
+Section 51-58. The consolidation row must prove:
+
+- durable authoring enabled: `false`
+- durable enable satisfied: `0`
+- durable executor may open: `0`
+- durable save allowed: `0`
+- durable canary executor may open: `0`
+- durable canary live execution allowed: `0`
+- durable canary recovery cleanup allowed: `0`
+- durable gate summary: `passed`
+- Section 51-58 blocking contracts ready: `true`
+
+This is a reporting boundary only. It does not enable durable authoring.
+
 ## Decision
 
 Section 46-48 improves durable safety visibility, Section 51 separates the
@@ -283,4 +301,5 @@ a no-command save validation simulator. Section 55 adds canary prep only.
 Section 56 adds scoped approval only. Section 57 adds read-only canary live
 preflight only. Section 58 adds recovery scenarios only. These sections do not
 enable durable Blueprint creation, saving, delete, rename, cleanup, or live
-canary execution.
+canary execution. Section 59 consolidates that boundary in the v2 release
+report.
