@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_117_v59"
+        assert report["verdict"]["release_boundary_version"] == "section_118_v60"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -112,6 +112,7 @@ def main() -> int:
         assert report["verdict"]["section_115_durable_executor_authoring_command_execution_status"] == "passed"
         assert report["verdict"]["section_116_durable_executor_authoring_command_execution_evidence_status"] == "passed"
         assert report["verdict"]["section_117_durable_executor_authoring_command_completion_decision_status"] == "passed"
+        assert report["verdict"]["section_118_durable_executor_authoring_command_completion_application_status"] == "passed"
         assert report["verdict"]["final_durable_release_ready"] is False
         assert report["verdict"]["main_push_requested"] is False
         assert report["verdict"]["mvp_decision_status"] == "temporary_mvp_ready_durable_not_enabled"
@@ -2133,6 +2134,55 @@ def main() -> int:
         assert executor_authoring_completion_decision_row["actual"]["cleanup_allowed_count"] == 0
         assert executor_authoring_completion_decision_row["actual"]["live_command_dispatched_count"] == 0
         assert executor_authoring_completion_decision_row["actual"]["live_command_executed_count"] == 0
+        executor_authoring_completion_application_row = find_row(
+            report, "durable_executor_authoring_command_completion_application_contract"
+        )
+        assert executor_authoring_completion_application_row["status"] == "passed"
+        assert (
+            executor_authoring_completion_application_row["actual"][
+                "durable_requested_executor_authoring_command_completion_application_count"
+            ]
+            == 1
+        )
+        assert executor_authoring_completion_application_row["actual"]["application_contract_defined_count"] == 1
+        assert executor_authoring_completion_application_row["actual"]["completion_decision_contract_ready_count"] == 1
+        assert executor_authoring_completion_application_row["actual"]["evidence_ready_for_completion_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["completion_decision_record_valid_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["application_inputs_satisfied_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["application_record_present_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["record_schema_matches_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["application_scope_matches_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["explicit_application_authorized_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["application_status_passed_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["no_save_delete_rename_acknowledged_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["explicit_durable_mvp_request_reconfirmed_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["application_record_valid_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["application_record_rejected_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["unsafe_application_record_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["missing_application_prerequisite_count"] == 10
+        assert executor_authoring_completion_application_row["actual"]["reported_allowed_evidence_command_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["reported_forbidden_evidence_command_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["durable_authoring_command_completion_allowed_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["durable_authoring_command_completed_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["durable_authoring_command_application_allowed_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["durable_authoring_command_application_applied_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["asset_write_allowed_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["asset_write_performed_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["package_dirty_marked_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["durable_authoring_command_dispatch_allowed_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["durable_authoring_command_dispatched_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["durable_authoring_command_execution_allowed_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["durable_authoring_command_executed_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["durable_authoring_enabled_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["durable_authoring_allowed_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["code_change_performed_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["executor_code_modified_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["unreal_asset_modified_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["live_bridge_probe_started_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["save_delete_rename_allowed_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["cleanup_allowed_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["live_command_dispatched_count"] == 0
+        assert executor_authoring_completion_application_row["actual"]["live_command_executed_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
