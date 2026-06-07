@@ -16,12 +16,13 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 import bp_authoring_job_contract as job_contract
+import bp_authoring_durable_executor_review_contract as executor_review
 import bp_authoring_durable_live_evidence_refresh_contract as live_evidence_refresh
 import bp_authoring_durable_mvp_decision_contract as mvp_decision
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_62_bp_authoring_release_boundary_v4"
+REPORT_SCHEMA = "section_63_bp_authoring_release_boundary_v5"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -683,6 +684,53 @@ def build_live_evidence_refresh_row(planner_report: Optional[Dict[str, Any]]) ->
     )
 
 
+def build_executor_review_row(executor_summary: Dict[str, Any]) -> Dict[str, Any]:
+    contract = executor_review.build_executor_review_contract(
+        requested=True,
+        executor_summary=executor_summary,
+    )
+    summary = executor_review.summarize_executor_review_contracts([contract])
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_executor_review_count": 1,
+        "review_check_count": len(executor_review.REVIEW_CHECK_IDS),
+        "disabled_executor_boundary_review_passed_count": 1,
+        "durable_live_implementation_approved_count": 0,
+        "durable_executor_may_open_after_review_count": 0,
+        "durable_authoring_allowed_count": 0,
+        "save_delete_rename_allowed_count": 0,
+        "canary_execution_allowed_count": 0,
+        "failing_check_count": 0,
+    }
+    actual = {
+        "summary_status": summary.get("status"),
+        "durable_requested_executor_review_count": summary.get("durable_requested_executor_review_count"),
+        "review_check_count": summary.get("review_check_count"),
+        "disabled_executor_boundary_review_passed_count": summary.get(
+            "disabled_executor_boundary_review_passed_count"
+        ),
+        "durable_live_implementation_approved_count": summary.get("durable_live_implementation_approved_count"),
+        "durable_executor_may_open_after_review_count": summary.get(
+            "durable_executor_may_open_after_review_count"
+        ),
+        "durable_authoring_allowed_count": summary.get("durable_authoring_allowed_count"),
+        "save_delete_rename_allowed_count": summary.get("save_delete_rename_allowed_count"),
+        "canary_execution_allowed_count": summary.get("canary_execution_allowed_count"),
+        "failing_check_count": summary.get("failing_check_count"),
+    }
+    return row(
+        "durable_executor_implementation_review_contract",
+        "Section 63 durable executor implementation review contract",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "The disabled durable executor boundary has been reviewed as closed.",
+            "This review does not approve live durable implementation, save, delete, rename, or canary execution.",
+        ),
+    )
+
+
 def build_section_51_58_consolidation_row(
     contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -954,7 +1002,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     lyra_report = read_json(lyra_report_path)
     preliminary_verdict = {
         "status": "passed",
-        "release_boundary_version": "section_62_v4",
+        "release_boundary_version": "section_63_v5",
         "durable_authoring_enabled": False,
     }
     decision_contract = mvp_decision.build_mvp_decision_contract(
@@ -977,6 +1025,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         build_durable_canary_live_preflight_row(contract_summary, executor_summary),
         build_durable_canary_bridge_refresh_row(contract_summary, executor_summary),
         build_live_evidence_refresh_row(planner_report),
+        build_executor_review_row(executor_summary),
         build_durable_canary_recovery_row(contract_summary, executor_summary),
         build_section_51_58_consolidation_row(contract_summary, executor_summary),
         build_mvp_decision_row(decision_contract),
@@ -1000,7 +1049,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
-            "release_boundary_version": "section_62_v4",
+            "release_boundary_version": "section_63_v5",
             "mvp_decision_status": decision_contract["decision_status"],
             "temporary_blueprint_authoring_mvp_ready": decision_contract[
                 "temporary_blueprint_authoring_mvp_ready"
@@ -1014,8 +1063,9 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "section_51_58_contract_status": "passed" if not failed_blocking else "failed",
             "section_61_bridge_refresh_status": "passed" if not failed_blocking else "failed",
             "section_62_live_evidence_refresh_status": "passed" if not failed_blocking else "failed",
+            "section_63_executor_review_status": "passed" if not failed_blocking else "failed",
             "current_authoring_ceiling": (
-                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_and_section_62_live_evidence_refresh_contract"
+                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_and_section_63_executor_review_contract"
             ),
             "cxx_changes_required": False,
         },
