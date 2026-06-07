@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_137_v79"
+        assert report["verdict"]["release_boundary_version"] == "section_138_v80"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -169,6 +169,12 @@ def main() -> int:
         assert (
             report["verdict"][
                 "section_137_durable_executor_authoring_final_no_save_release_after_readback_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_138_durable_executor_authoring_final_release_readiness_after_no_save_release_status"
             ]
             == "passed"
         )
@@ -3600,6 +3606,85 @@ def main() -> int:
         assert (
             executor_authoring_final_no_save_release_after_readback_row["actual"]
             == expected_final_no_save_release_after_readback_actual
+        )
+        executor_authoring_final_release_readiness_after_no_save_release_row = find_row(
+            report,
+            "durable_executor_authoring_final_release_readiness_after_no_save_release_contract",
+        )
+        assert (
+            executor_authoring_final_release_readiness_after_no_save_release_row["status"]
+            == "passed"
+        )
+        expected_final_release_readiness_after_no_save_release_actual = {
+            "summary_status": "passed",
+            "durable_requested_executor_authoring_final_release_readiness_after_no_save_release_count": 1,
+            "final_release_readiness_contract_defined_count": 1,
+            "final_no_save_release_contract_ready_count": 1,
+            "final_no_save_release_inputs_satisfied_count": 0,
+            "final_no_save_release_record_valid_count": 0,
+            "allowed_final_no_save_release_observed_count": 0,
+            "no_forbidden_final_no_save_releases_count": 0,
+            "final_release_readiness_inputs_satisfied_count": 0,
+            "final_release_readiness_record_present_count": 0,
+            "record_schema_matches_count": 0,
+            "readiness_scope_matches_count": 0,
+            "explicit_readiness_authorized_count": 0,
+            "readiness_status_passed_count": 0,
+            "no_save_delete_rename_acknowledged_count": 0,
+            "explicit_durable_mvp_request_reconfirmed_count": 0,
+            "allowed_final_release_readiness_observed_count": 0,
+            "no_forbidden_final_release_readiness_claims_count": 0,
+            "final_release_readiness_record_valid_count": 0,
+            "final_release_readiness_record_rejected_count": 0,
+            "unsafe_final_release_readiness_record_count": 0,
+            "missing_final_release_readiness_prerequisite_count": 14,
+            "reported_allowed_final_release_readiness_count": 0,
+            "reported_forbidden_final_release_readiness_count": 0,
+            "durable_authoring_final_release_readiness_started_count": 0,
+            "durable_authoring_final_release_ready_count": 0,
+            "durable_authoring_release_review_started_count": 0,
+            "durable_authoring_final_no_save_release_accepted_count": 0,
+            "durable_authoring_command_result_readback_accepted_count": 0,
+            "durable_authoring_command_completion_result_accepted_count": 0,
+            "durable_authoring_command_completed_count": 0,
+            "asset_write_performed_count": 0,
+            "package_dirty_marked_count": 0,
+            "durable_authoring_enabled_count": 0,
+            "durable_authoring_allowed_count": 0,
+            "code_change_performed_count": 0,
+            "executor_code_modified_count": 0,
+            "unreal_asset_modified_count": 0,
+            "live_bridge_probe_started_count": 0,
+            "save_delete_rename_allowed_count": 0,
+            "cleanup_allowed_count": 0,
+            "live_command_dispatched_count": 0,
+            "live_command_executed_count": 0,
+            "reported_final_release_readiness_gate_count": 0,
+            "reported_final_no_save_release_revalidated_count": 0,
+            "reported_durable_authoring_still_disabled_count": 0,
+            "reported_no_completion_readiness_count": 0,
+            "reported_no_write_readiness_count": 0,
+            "reported_no_save_readiness_count": 0,
+            "reported_no_code_change_readiness_count": 0,
+            "reported_no_live_command_readiness_count": 0,
+            "reported_final_no_save_release_count": 0,
+            "reported_command_result_readback_count": 0,
+            "reported_completion_result_acceptance_count": 0,
+            "reported_completion_count": 0,
+            "reported_asset_write_count": 0,
+            "reported_package_dirty_count": 0,
+            "reported_save_count": 0,
+            "reported_delete_rename_count": 0,
+            "reported_cleanup_count": 0,
+            "reported_durable_authoring_count": 0,
+            "reported_code_change_count": 0,
+            "reported_live_command_count": 0,
+        }
+        assert (
+            executor_authoring_final_release_readiness_after_no_save_release_row[
+                "actual"
+            ]
+            == expected_final_release_readiness_after_no_save_release_actual
         )
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
