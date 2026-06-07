@@ -47,6 +47,7 @@ import bp_authoring_durable_executor_authoring_command_contract as durable_execu
 import bp_authoring_durable_executor_authoring_command_dispatch_contract as durable_executor_authoring_command_dispatch
 import bp_authoring_durable_executor_authoring_command_execution_contract as durable_executor_authoring_command_execution
 import bp_authoring_durable_executor_authoring_command_execution_evidence_contract as durable_executor_authoring_command_execution_evidence
+import bp_authoring_durable_executor_authoring_command_result_readback_contract as durable_executor_authoring_command_result_readback
 import bp_authoring_durable_executor_authoring_enable_contract as durable_executor_authoring_enable
 import bp_authoring_durable_executor_open_contract as durable_executor_open
 import bp_authoring_durable_executor_release_promotion_barrier_contract as release_promotion_barrier
@@ -78,7 +79,7 @@ import bp_authoring_durable_save_gate_final_review_contract as save_gate_final_r
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_119_bp_authoring_release_boundary_v61"
+REPORT_SCHEMA = "section_120_bp_authoring_release_boundary_v62"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -6855,6 +6856,96 @@ def build_durable_executor_authoring_command_completion_result_row(
     )
 
 
+def build_durable_executor_authoring_command_result_readback_row(
+    contract_summary: Dict[str, Any],
+    executor_summary: Dict[str, Any],
+    project_root: Path,
+    planner_report: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    result_row = build_durable_executor_authoring_command_completion_result_row(
+        contract_summary,
+        executor_summary,
+        project_root,
+        planner_report,
+    )
+    result_summary = dict(result_row["actual"])
+    result_summary["status"] = result_summary.pop("summary_status")
+    contract = durable_executor_authoring_command_result_readback.build_durable_executor_authoring_command_result_readback_contract(
+        requested=True,
+        result_summary=result_summary,
+    )
+    summary = durable_executor_authoring_command_result_readback.summarize_durable_executor_authoring_command_result_readbacks(
+        [contract]
+    )
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_executor_authoring_command_result_readback_count": 1,
+        "readback_contract_defined_count": 1,
+        "result_contract_ready_count": 1,
+        "result_inputs_satisfied_count": 0,
+        "result_record_valid_count": 0,
+        "allowed_result_observed_count": 0,
+        "no_forbidden_results_count": 0,
+        "readback_inputs_satisfied_count": 0,
+        "readback_record_present_count": 0,
+        "record_schema_matches_count": 0,
+        "readback_scope_matches_count": 0,
+        "explicit_readback_authorized_count": 0,
+        "readback_status_passed_count": 0,
+        "no_save_delete_rename_acknowledged_count": 0,
+        "explicit_durable_mvp_request_reconfirmed_count": 0,
+        "allowed_readback_observed_count": 0,
+        "no_forbidden_readbacks_count": 0,
+        "readback_record_valid_count": 0,
+        "readback_record_rejected_count": 0,
+        "unsafe_readback_record_count": 0,
+        "missing_readback_prerequisite_count": 14,
+        "reported_allowed_readback_count": 0,
+        "reported_forbidden_readback_count": 0,
+        "durable_authoring_command_result_readback_accepted_count": 0,
+        "durable_authoring_command_completion_result_accepted_count": 0,
+        "durable_authoring_command_completed_count": 0,
+        "asset_write_performed_count": 0,
+        "package_dirty_marked_count": 0,
+        "durable_authoring_enabled_count": 0,
+        "durable_authoring_allowed_count": 0,
+        "code_change_performed_count": 0,
+        "executor_code_modified_count": 0,
+        "unreal_asset_modified_count": 0,
+        "live_bridge_probe_started_count": 0,
+        "save_delete_rename_allowed_count": 0,
+        "cleanup_allowed_count": 0,
+        "live_command_dispatched_count": 0,
+        "live_command_executed_count": 0,
+        "reported_no_completion_readback_count": 0,
+        "reported_no_write_readback_count": 0,
+        "reported_no_save_readback_count": 0,
+        "reported_completed_readback_count": 0,
+        "reported_asset_write_readback_count": 0,
+        "reported_package_dirty_readback_count": 0,
+        "reported_save_readback_count": 0,
+        "reported_delete_rename_readback_count": 0,
+        "reported_cleanup_readback_count": 0,
+        "reported_code_change_readback_count": 0,
+        "reported_live_command_readback_count": 0,
+    }
+    actual = {
+        key: summary.get(key) if key != "summary_status" else summary.get("status")
+        for key in expected
+    }
+    return row(
+        "durable_executor_authoring_command_result_readback_contract",
+        "Section 120 durable executor authoring command result readback contract",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "The durable executor authoring command result readback contract is defined, but no result record or readback record is present.",
+            "Readback acceptance, completion, asset writes, dirty marking, save, delete/rename, cleanup, code changes, and live command execution remain blocked.",
+        ),
+    )
+
+
 def build_section_51_58_consolidation_row(
     contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -7126,7 +7217,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     lyra_report = read_json(lyra_report_path)
     preliminary_verdict = {
         "status": "passed",
-        "release_boundary_version": "section_119_v61",
+        "release_boundary_version": "section_120_v62",
         "durable_authoring_enabled": False,
     }
     decision_contract = mvp_decision.build_mvp_decision_contract(
@@ -7443,6 +7534,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             project_root,
             planner_report,
         ),
+        build_durable_executor_authoring_command_result_readback_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        ),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -7463,7 +7560,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
-            "release_boundary_version": "section_119_v61",
+            "release_boundary_version": "section_120_v62",
             "mvp_decision_status": decision_contract["decision_status"],
             "temporary_blueprint_authoring_mvp_ready": decision_contract[
                 "temporary_blueprint_authoring_mvp_ready"
@@ -7628,15 +7725,18 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "section_119_durable_executor_authoring_command_completion_result_status": (
                 "passed" if not failed_blocking else "failed"
             ),
+            "section_120_durable_executor_authoring_command_result_readback_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
             "final_durable_release_ready": False,
             "main_push_requested": False,
             "current_authoring_ceiling": (
-                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_section_64_canary_command_allowlist_contract_section_65_canary_creation_boundary_contract_section_66_ownership_marker_proof_contract_section_67_rollback_cleanup_proof_contract_section_68_save_gate_final_review_contract_section_69_canary_rehearsal_readiness_contract_section_70_durable_release_decision_contract_section_71_bridge_recovery_readiness_contract_section_72_canary_read_only_retry_envelope_contract_section_73_canary_read_only_retry_result_admission_contract_section_74_canary_rehearsal_promotion_barrier_contract_section_75_canary_rehearsal_execution_release_contract_section_76_canary_live_runner_envelope_contract_section_77_canary_live_runner_start_contract_section_78_canary_live_command_dispatch_release_contract_section_79_canary_live_command_execution_release_contract_section_80_canary_live_command_execution_evidence_admission_contract_section_81_canary_release_promotion_decision_contract_section_82_canary_executor_activation_contract_section_83_canary_executor_open_contract_section_84_canary_authoring_enable_contract_section_85_canary_authoring_command_contract_section_86_canary_authoring_command_dispatch_contract_section_87_canary_authoring_command_execution_contract_section_88_canary_authoring_command_execution_evidence_contract_section_89_canary_authoring_command_completion_decision_contract_section_90_canary_authoring_command_completion_application_contract_section_91_canary_authoring_command_completion_result_contract_section_92_canary_authoring_command_result_readback_contract_section_93_canary_authoring_final_no_save_release_contract_section_94_canary_authoring_final_release_readiness_contract_section_95_durable_executor_implementation_review_contract_section_96_durable_executor_implementation_plan_contract_section_97_durable_executor_change_design_contract_section_98_durable_executor_code_change_approval_contract_section_99_durable_executor_code_patch_plan_contract_section_100_durable_executor_code_patch_review_contract_section_101_durable_executor_code_patch_application_contract_section_102_durable_executor_code_patch_execution_contract_section_103_durable_executor_code_patch_result_contract_section_104_durable_executor_code_patch_result_readback_contract_section_105_durable_executor_code_patch_final_no_save_release_contract_section_106_durable_executor_code_patch_final_release_readiness_contract_section_107_durable_executor_code_patch_release_review_contract_section_108_durable_executor_code_patch_release_decision_contract_section_109_durable_executor_release_promotion_barrier_contract_section_110_durable_executor_activation_readiness_contract_section_111_durable_executor_open_contract_section_112_durable_executor_authoring_enable_contract_section_113_durable_executor_authoring_command_contract_section_114_durable_executor_authoring_command_dispatch_contract_section_115_durable_executor_authoring_command_execution_contract_section_116_durable_executor_authoring_command_execution_evidence_contract_section_117_durable_executor_authoring_command_completion_decision_contract_section_118_durable_executor_authoring_command_completion_application_contract_and_section_119_durable_executor_authoring_command_completion_result_contract"
+                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_section_64_canary_command_allowlist_contract_section_65_canary_creation_boundary_contract_section_66_ownership_marker_proof_contract_section_67_rollback_cleanup_proof_contract_section_68_save_gate_final_review_contract_section_69_canary_rehearsal_readiness_contract_section_70_durable_release_decision_contract_section_71_bridge_recovery_readiness_contract_section_72_canary_read_only_retry_envelope_contract_section_73_canary_read_only_retry_result_admission_contract_section_74_canary_rehearsal_promotion_barrier_contract_section_75_canary_rehearsal_execution_release_contract_section_76_canary_live_runner_envelope_contract_section_77_canary_live_runner_start_contract_section_78_canary_live_command_dispatch_release_contract_section_79_canary_live_command_execution_release_contract_section_80_canary_live_command_execution_evidence_admission_contract_section_81_canary_release_promotion_decision_contract_section_82_canary_executor_activation_contract_section_83_canary_executor_open_contract_section_84_canary_authoring_enable_contract_section_85_canary_authoring_command_contract_section_86_canary_authoring_command_dispatch_contract_section_87_canary_authoring_command_execution_contract_section_88_canary_authoring_command_execution_evidence_contract_section_89_canary_authoring_command_completion_decision_contract_section_90_canary_authoring_command_completion_application_contract_section_91_canary_authoring_command_completion_result_contract_section_92_canary_authoring_command_result_readback_contract_section_93_canary_authoring_final_no_save_release_contract_section_94_canary_authoring_final_release_readiness_contract_section_95_durable_executor_implementation_review_contract_section_96_durable_executor_implementation_plan_contract_section_97_durable_executor_change_design_contract_section_98_durable_executor_code_change_approval_contract_section_99_durable_executor_code_patch_plan_contract_section_100_durable_executor_code_patch_review_contract_section_101_durable_executor_code_patch_application_contract_section_102_durable_executor_code_patch_execution_contract_section_103_durable_executor_code_patch_result_contract_section_104_durable_executor_code_patch_result_readback_contract_section_105_durable_executor_code_patch_final_no_save_release_contract_section_106_durable_executor_code_patch_final_release_readiness_contract_section_107_durable_executor_code_patch_release_review_contract_section_108_durable_executor_code_patch_release_decision_contract_section_109_durable_executor_release_promotion_barrier_contract_section_110_durable_executor_activation_readiness_contract_section_111_durable_executor_open_contract_section_112_durable_executor_authoring_enable_contract_section_113_durable_executor_authoring_command_contract_section_114_durable_executor_authoring_command_dispatch_contract_section_115_durable_executor_authoring_command_execution_contract_section_116_durable_executor_authoring_command_execution_evidence_contract_section_117_durable_executor_authoring_command_completion_decision_contract_section_118_durable_executor_authoring_command_completion_application_contract_section_119_durable_executor_authoring_command_completion_result_contract_and_section_120_durable_executor_authoring_command_result_readback_contract"
             ),
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
-            "durable authoring command result readback contract only after durable authoring command completion result record",
+            "durable authoring final no-save release contract only after durable authoring command result readback record",
             "component default/type readback expansion for broader Blueprint classes",
             "function call diagnostics and graph layout repair suggestions",
         ],
