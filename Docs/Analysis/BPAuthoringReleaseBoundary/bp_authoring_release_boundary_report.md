@@ -1,12 +1,12 @@
 # BP Authoring Release Boundary
 
-- Generated UTC: `2026-06-07T08:38:31.197263+00:00`
-- Schema: `section_64_bp_authoring_release_boundary_v6`
+- Generated UTC: `2026-06-07T08:41:05.492851+00:00`
+- Schema: `section_65_bp_authoring_release_boundary_v7`
 - Status: `passed`
 - Ready for main push: `True`
 - Durable authoring enabled: `False`
 - Durable release status: `not_enabled_read_only_preflight_only`
-- Current authoring ceiling: `planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_and_section_64_canary_command_allowlist_contract`
+- Current authoring ceiling: `planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_section_64_canary_command_allowlist_contract_and_section_65_canary_creation_boundary_contract`
 
 ## Regression Matrix
 
@@ -25,6 +25,7 @@
 - `passed` `durable_live_evidence_refresh_contract` blocking=`True` - Section 62 durable live evidence refresh contract
 - `passed` `durable_executor_implementation_review_contract` blocking=`True` - Section 63 durable executor implementation review contract
 - `passed` `durable_canary_command_allowlist_contract` blocking=`True` - Section 64 durable canary command allowlist contract
+- `passed` `durable_canary_creation_boundary_contract` blocking=`True` - Section 65 durable canary creation boundary contract
 - `passed` `durable_canary_recovery_matrix` blocking=`True` - Section 58 durable canary recovery matrix
 - `passed` `section_51_58_release_boundary_v2_consolidation` blocking=`True` - Section 59 release boundary v2 consolidation
 - `passed` `section_60_mvp_decision_contract` blocking=`True` - Section 60 MVP decision contract

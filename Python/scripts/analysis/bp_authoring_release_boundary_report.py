@@ -17,13 +17,14 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 import bp_authoring_job_contract as job_contract
 import bp_authoring_durable_canary_command_allowlist_contract as canary_command_allowlist
+import bp_authoring_durable_canary_creation_boundary_contract as canary_creation_boundary
 import bp_authoring_durable_executor_review_contract as executor_review
 import bp_authoring_durable_live_evidence_refresh_contract as live_evidence_refresh
 import bp_authoring_durable_mvp_decision_contract as mvp_decision
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_64_bp_authoring_release_boundary_v6"
+REPORT_SCHEMA = "section_65_bp_authoring_release_boundary_v7"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -783,6 +784,58 @@ def build_canary_command_allowlist_row(executor_summary: Dict[str, Any]) -> Dict
     )
 
 
+def build_canary_creation_boundary_row(
+    contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
+) -> Dict[str, Any]:
+    contract = canary_creation_boundary.build_canary_creation_boundary_contract(
+        requested=True,
+        contract_summary=contract_summary,
+        executor_summary=executor_summary,
+    )
+    summary = canary_creation_boundary.summarize_canary_creation_boundary_contracts([contract])
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_canary_creation_boundary_count": 1,
+        "canary_creation_boundary_defined_count": 1,
+        "create_blueprint_allowed_count": 0,
+        "save_command_allowed_count": 0,
+        "delete_command_allowed_count": 0,
+        "cleanup_command_allowed_count": 0,
+        "live_canary_creation_allowed_count": 0,
+        "durable_executor_may_open_for_creation_count": 0,
+        "live_creation_command_count": 0,
+        "live_save_or_delete_command_count": 0,
+    }
+    actual = {
+        "summary_status": summary.get("status"),
+        "durable_requested_canary_creation_boundary_count": summary.get(
+            "durable_requested_canary_creation_boundary_count"
+        ),
+        "canary_creation_boundary_defined_count": summary.get("canary_creation_boundary_defined_count"),
+        "create_blueprint_allowed_count": summary.get("create_blueprint_allowed_count"),
+        "save_command_allowed_count": summary.get("save_command_allowed_count"),
+        "delete_command_allowed_count": summary.get("delete_command_allowed_count"),
+        "cleanup_command_allowed_count": summary.get("cleanup_command_allowed_count"),
+        "live_canary_creation_allowed_count": summary.get("live_canary_creation_allowed_count"),
+        "durable_executor_may_open_for_creation_count": summary.get(
+            "durable_executor_may_open_for_creation_count"
+        ),
+        "live_creation_command_count": summary.get("live_creation_command_count"),
+        "live_save_or_delete_command_count": summary.get("live_save_or_delete_command_count"),
+    }
+    return row(
+        "durable_canary_creation_boundary_contract",
+        "Section 65 durable canary creation boundary contract",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "Canary prep and approval are present, but create_blueprint remains outside the live allowlist.",
+            "No canary creation, save, delete, cleanup, or executor opening is permitted.",
+        ),
+    )
+
+
 def build_section_51_58_consolidation_row(
     contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -1054,7 +1107,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     lyra_report = read_json(lyra_report_path)
     preliminary_verdict = {
         "status": "passed",
-        "release_boundary_version": "section_64_v6",
+        "release_boundary_version": "section_65_v7",
         "durable_authoring_enabled": False,
     }
     decision_contract = mvp_decision.build_mvp_decision_contract(
@@ -1079,6 +1132,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         build_live_evidence_refresh_row(planner_report),
         build_executor_review_row(executor_summary),
         build_canary_command_allowlist_row(executor_summary),
+        build_canary_creation_boundary_row(contract_summary, executor_summary),
         build_durable_canary_recovery_row(contract_summary, executor_summary),
         build_section_51_58_consolidation_row(contract_summary, executor_summary),
         build_mvp_decision_row(decision_contract),
@@ -1102,7 +1156,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
-            "release_boundary_version": "section_64_v6",
+            "release_boundary_version": "section_65_v7",
             "mvp_decision_status": decision_contract["decision_status"],
             "temporary_blueprint_authoring_mvp_ready": decision_contract[
                 "temporary_blueprint_authoring_mvp_ready"
@@ -1118,8 +1172,9 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "section_62_live_evidence_refresh_status": "passed" if not failed_blocking else "failed",
             "section_63_executor_review_status": "passed" if not failed_blocking else "failed",
             "section_64_canary_command_allowlist_status": "passed" if not failed_blocking else "failed",
+            "section_65_canary_creation_boundary_status": "passed" if not failed_blocking else "failed",
             "current_authoring_ceiling": (
-                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_and_section_64_canary_command_allowlist_contract"
+                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_section_64_canary_command_allowlist_contract_and_section_65_canary_creation_boundary_contract"
             ),
             "cxx_changes_required": False,
         },
