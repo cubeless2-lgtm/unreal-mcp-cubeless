@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_75_v17"
+        assert report["verdict"]["release_boundary_version"] == "section_76_v18"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -70,6 +70,7 @@ def main() -> int:
         assert report["verdict"]["section_73_canary_read_only_retry_result_admission_status"] == "passed"
         assert report["verdict"]["section_74_canary_rehearsal_promotion_barrier_status"] == "passed"
         assert report["verdict"]["section_75_canary_rehearsal_execution_release_status"] == "passed"
+        assert report["verdict"]["section_76_canary_live_runner_envelope_status"] == "passed"
         assert report["verdict"]["final_durable_release_ready"] is False
         assert report["verdict"]["main_push_requested"] is False
         assert report["verdict"]["mvp_decision_status"] == "temporary_mvp_ready_durable_not_enabled"
@@ -394,6 +395,39 @@ def main() -> int:
         assert execution_release_row["actual"]["live_save_command_count"] == 0
         assert execution_release_row["actual"]["live_delete_rename_command_count"] == 0
         assert execution_release_row["actual"]["live_cleanup_command_count"] == 0
+        runner_envelope_row = find_row(report, "durable_canary_live_runner_envelope_contract")
+        assert runner_envelope_row["status"] == "passed"
+        assert runner_envelope_row["actual"]["durable_requested_canary_live_runner_envelope_count"] == 1
+        assert runner_envelope_row["actual"]["live_runner_envelope_defined_count"] == 1
+        assert runner_envelope_row["actual"]["execution_release_contract_ready_count"] == 1
+        assert runner_envelope_row["actual"]["execution_release_valid_count"] == 0
+        assert runner_envelope_row["actual"]["live_runner_release_allowed_count"] == 0
+        assert runner_envelope_row["actual"]["runner_plan_present_count"] == 0
+        assert runner_envelope_row["actual"]["runner_plan_schema_matches_count"] == 0
+        assert runner_envelope_row["actual"]["planned_command_count"] == 0
+        assert runner_envelope_row["actual"]["forbidden_runner_command_count"] == 0
+        assert runner_envelope_row["actual"]["unknown_runner_command_count"] == 0
+        assert runner_envelope_row["actual"]["runner_plan_valid_count"] == 0
+        assert runner_envelope_row["actual"]["runner_plan_rejected_count"] == 0
+        assert runner_envelope_row["actual"]["missing_runner_prerequisite_count"] == 6
+        assert runner_envelope_row["actual"]["live_runner_may_start_count"] == 0
+        assert runner_envelope_row["actual"]["live_runner_started_count"] == 0
+        assert runner_envelope_row["actual"]["live_command_plan_emitted_count"] == 0
+        assert runner_envelope_row["actual"]["live_canary_rehearsal_performed_count"] == 0
+        assert runner_envelope_row["actual"]["canary_creation_allowed_count"] == 0
+        assert runner_envelope_row["actual"]["canary_save_allowed_count"] == 0
+        assert runner_envelope_row["actual"]["canary_cleanup_allowed_count"] == 0
+        assert runner_envelope_row["actual"]["durable_executor_may_open_after_runner_count"] == 0
+        assert runner_envelope_row["actual"]["durable_authoring_allowed_count"] == 0
+        assert runner_envelope_row["actual"]["save_delete_rename_allowed_count"] == 0
+        assert runner_envelope_row["actual"]["cleanup_allowed_count"] == 0
+        assert runner_envelope_row["actual"]["live_creation_command_count"] == 0
+        assert runner_envelope_row["actual"]["live_compile_command_count"] == 0
+        assert runner_envelope_row["actual"]["live_marker_write_command_count"] == 0
+        assert runner_envelope_row["actual"]["live_marker_readback_command_count"] == 0
+        assert runner_envelope_row["actual"]["live_save_command_count"] == 0
+        assert runner_envelope_row["actual"]["live_delete_rename_command_count"] == 0
+        assert runner_envelope_row["actual"]["live_cleanup_command_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
