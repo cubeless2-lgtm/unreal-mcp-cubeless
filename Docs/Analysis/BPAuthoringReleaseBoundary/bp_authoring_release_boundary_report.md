@@ -1,12 +1,12 @@
 # BP Authoring Release Boundary
 
-- Generated UTC: `2026-06-07T08:48:21.501925+00:00`
-- Schema: `section_68_bp_authoring_release_boundary_v10`
+- Generated UTC: `2026-06-07T08:51:14.912499+00:00`
+- Schema: `section_69_bp_authoring_release_boundary_v11`
 - Status: `passed`
 - Ready for main push: `True`
 - Durable authoring enabled: `False`
 - Durable release status: `not_enabled_read_only_preflight_only`
-- Current authoring ceiling: `planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_section_64_canary_command_allowlist_contract_section_65_canary_creation_boundary_contract_section_66_ownership_marker_proof_contract_section_67_rollback_cleanup_proof_contract_and_section_68_save_gate_final_review_contract`
+- Current authoring ceiling: `planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_section_64_canary_command_allowlist_contract_section_65_canary_creation_boundary_contract_section_66_ownership_marker_proof_contract_section_67_rollback_cleanup_proof_contract_section_68_save_gate_final_review_contract_and_section_69_canary_rehearsal_readiness_contract`
 
 ## Regression Matrix
 
@@ -29,6 +29,7 @@
 - `passed` `durable_ownership_marker_write_readback_proof_contract` blocking=`True` - Section 66 durable ownership marker write/readback proof contract
 - `passed` `durable_rollback_cleanup_proof_contract` blocking=`True` - Section 67 durable rollback cleanup proof contract
 - `passed` `durable_save_gate_final_enable_review_contract` blocking=`True` - Section 68 durable save gate final enable review contract
+- `passed` `durable_canary_rehearsal_readiness_contract` blocking=`True` - Section 69 durable live canary rehearsal readiness contract
 - `passed` `durable_canary_recovery_matrix` blocking=`True` - Section 58 durable canary recovery matrix
 - `passed` `section_51_58_release_boundary_v2_consolidation` blocking=`True` - Section 59 release boundary v2 consolidation
 - `passed` `section_60_mvp_decision_contract` blocking=`True` - Section 60 MVP decision contract

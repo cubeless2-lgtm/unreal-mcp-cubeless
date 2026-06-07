@@ -18,6 +18,7 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 import bp_authoring_job_contract as job_contract
 import bp_authoring_durable_canary_command_allowlist_contract as canary_command_allowlist
 import bp_authoring_durable_canary_creation_boundary_contract as canary_creation_boundary
+import bp_authoring_durable_canary_rehearsal_readiness_contract as canary_rehearsal_readiness
 import bp_authoring_durable_executor_review_contract as executor_review
 import bp_authoring_durable_live_evidence_refresh_contract as live_evidence_refresh
 import bp_authoring_durable_mvp_decision_contract as mvp_decision
@@ -27,7 +28,7 @@ import bp_authoring_durable_save_gate_final_review_contract as save_gate_final_r
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_68_bp_authoring_release_boundary_v10"
+REPORT_SCHEMA = "section_69_bp_authoring_release_boundary_v11"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -1008,6 +1009,87 @@ def build_save_gate_final_review_row(
     )
 
 
+def build_canary_rehearsal_readiness_row(
+    contract_summary: Dict[str, Any],
+    executor_summary: Dict[str, Any],
+    planner_report: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    live_contract = live_evidence_refresh.build_live_evidence_refresh_contract(
+        requested=True,
+        planner_report=planner_report,
+    )
+    marker_contract = ownership_marker_proof.build_ownership_marker_proof_contract(
+        requested=True,
+        contract_summary=contract_summary,
+    )
+    cleanup_contract = rollback_cleanup_proof.build_rollback_cleanup_proof_contract(
+        requested=True,
+        contract_summary=contract_summary,
+        marker_proof_contract=marker_contract,
+    )
+    save_contract = save_gate_final_review.build_save_gate_final_review_contract(
+        requested=True,
+        contract_summary=contract_summary,
+        executor_summary=executor_summary,
+    )
+    contract = canary_rehearsal_readiness.build_canary_rehearsal_readiness_contract(
+        requested=True,
+        bridge_refresh_summary=contract_summary.get("durable_canary_bridge_refresh_summary", {}),
+        live_evidence_summary=live_evidence_refresh.summarize_live_evidence_refresh_contracts([live_contract]),
+        marker_proof_summary=ownership_marker_proof.summarize_ownership_marker_proof_contracts([marker_contract]),
+        cleanup_proof_summary=rollback_cleanup_proof.summarize_rollback_cleanup_proof_contracts([cleanup_contract]),
+        save_review_summary=save_gate_final_review.summarize_save_gate_final_review_contracts([save_contract]),
+    )
+    summary = canary_rehearsal_readiness.summarize_canary_rehearsal_readiness_contracts([contract])
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_canary_rehearsal_readiness_count": 1,
+        "rehearsal_readiness_review_complete_count": 1,
+        "missing_rehearsal_prerequisite_count": 5,
+        "live_canary_rehearsal_ready_count": 0,
+        "live_canary_rehearsal_attempted_count": 0,
+        "canary_creation_attempted_count": 0,
+        "canary_save_attempted_count": 0,
+        "canary_cleanup_attempted_count": 0,
+        "durable_executor_may_open_for_rehearsal_count": 0,
+        "live_creation_command_count": 0,
+        "live_save_command_count": 0,
+        "live_cleanup_command_count": 0,
+    }
+    actual = {
+        "summary_status": summary.get("status"),
+        "durable_requested_canary_rehearsal_readiness_count": summary.get(
+            "durable_requested_canary_rehearsal_readiness_count"
+        ),
+        "rehearsal_readiness_review_complete_count": summary.get(
+            "rehearsal_readiness_review_complete_count"
+        ),
+        "missing_rehearsal_prerequisite_count": summary.get("missing_rehearsal_prerequisite_count"),
+        "live_canary_rehearsal_ready_count": summary.get("live_canary_rehearsal_ready_count"),
+        "live_canary_rehearsal_attempted_count": summary.get("live_canary_rehearsal_attempted_count"),
+        "canary_creation_attempted_count": summary.get("canary_creation_attempted_count"),
+        "canary_save_attempted_count": summary.get("canary_save_attempted_count"),
+        "canary_cleanup_attempted_count": summary.get("canary_cleanup_attempted_count"),
+        "durable_executor_may_open_for_rehearsal_count": summary.get(
+            "durable_executor_may_open_for_rehearsal_count"
+        ),
+        "live_creation_command_count": summary.get("live_creation_command_count"),
+        "live_save_command_count": summary.get("live_save_command_count"),
+        "live_cleanup_command_count": summary.get("live_cleanup_command_count"),
+    }
+    return row(
+        "durable_canary_rehearsal_readiness_contract",
+        "Section 69 durable live canary rehearsal readiness contract",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "Live canary rehearsal readiness has been reviewed and remains false.",
+            "No creation, save, cleanup, or durable executor command is attempted.",
+        ),
+    )
+
+
 def build_section_51_58_consolidation_row(
     contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -1279,7 +1361,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     lyra_report = read_json(lyra_report_path)
     preliminary_verdict = {
         "status": "passed",
-        "release_boundary_version": "section_68_v10",
+        "release_boundary_version": "section_69_v11",
         "durable_authoring_enabled": False,
     }
     decision_contract = mvp_decision.build_mvp_decision_contract(
@@ -1308,6 +1390,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         build_ownership_marker_proof_row(contract_summary),
         build_rollback_cleanup_proof_row(contract_summary),
         build_save_gate_final_review_row(contract_summary, executor_summary),
+        build_canary_rehearsal_readiness_row(contract_summary, executor_summary, planner_report),
         build_durable_canary_recovery_row(contract_summary, executor_summary),
         build_section_51_58_consolidation_row(contract_summary, executor_summary),
         build_mvp_decision_row(decision_contract),
@@ -1331,7 +1414,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
-            "release_boundary_version": "section_68_v10",
+            "release_boundary_version": "section_69_v11",
             "mvp_decision_status": decision_contract["decision_status"],
             "temporary_blueprint_authoring_mvp_ready": decision_contract[
                 "temporary_blueprint_authoring_mvp_ready"
@@ -1351,8 +1434,9 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "section_66_ownership_marker_proof_status": "passed" if not failed_blocking else "failed",
             "section_67_rollback_cleanup_proof_status": "passed" if not failed_blocking else "failed",
             "section_68_save_gate_final_review_status": "passed" if not failed_blocking else "failed",
+            "section_69_canary_rehearsal_readiness_status": "passed" if not failed_blocking else "failed",
             "current_authoring_ceiling": (
-                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_section_64_canary_command_allowlist_contract_section_65_canary_creation_boundary_contract_section_66_ownership_marker_proof_contract_section_67_rollback_cleanup_proof_contract_and_section_68_save_gate_final_review_contract"
+                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_section_64_canary_command_allowlist_contract_section_65_canary_creation_boundary_contract_section_66_ownership_marker_proof_contract_section_67_rollback_cleanup_proof_contract_section_68_save_gate_final_review_contract_and_section_69_canary_rehearsal_readiness_contract"
             ),
             "cxx_changes_required": False,
         },

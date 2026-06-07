@@ -1,7 +1,7 @@
 {
-  "schema": "section_68_bp_authoring_release_boundary_v10",
+  "schema": "section_69_bp_authoring_release_boundary_v11",
   "analysis_kind": "bp_authoring_release_boundary",
-  "generated_at": "2026-06-07T08:48:21.501925+00:00",
+  "generated_at": "2026-06-07T08:51:14.912499+00:00",
   "repo_root": "D:\\Git\\unreal-mcp-cubeless",
   "project_root": "D:\\Git\\CubelessStylized",
   "report_inputs": {
@@ -721,6 +721,46 @@
       ]
     },
     {
+      "id": "durable_canary_rehearsal_readiness_contract",
+      "label": "Section 69 durable live canary rehearsal readiness contract",
+      "status": "passed",
+      "blocking": true,
+      "expected": {
+        "summary_status": "passed",
+        "durable_requested_canary_rehearsal_readiness_count": 1,
+        "rehearsal_readiness_review_complete_count": 1,
+        "missing_rehearsal_prerequisite_count": 5,
+        "live_canary_rehearsal_ready_count": 0,
+        "live_canary_rehearsal_attempted_count": 0,
+        "canary_creation_attempted_count": 0,
+        "canary_save_attempted_count": 0,
+        "canary_cleanup_attempted_count": 0,
+        "durable_executor_may_open_for_rehearsal_count": 0,
+        "live_creation_command_count": 0,
+        "live_save_command_count": 0,
+        "live_cleanup_command_count": 0
+      },
+      "actual": {
+        "summary_status": "passed",
+        "durable_requested_canary_rehearsal_readiness_count": 1,
+        "rehearsal_readiness_review_complete_count": 1,
+        "missing_rehearsal_prerequisite_count": 5,
+        "live_canary_rehearsal_ready_count": 0,
+        "live_canary_rehearsal_attempted_count": 0,
+        "canary_creation_attempted_count": 0,
+        "canary_save_attempted_count": 0,
+        "canary_cleanup_attempted_count": 0,
+        "durable_executor_may_open_for_rehearsal_count": 0,
+        "live_creation_command_count": 0,
+        "live_save_command_count": 0,
+        "live_cleanup_command_count": 0
+      },
+      "notes": [
+        "Live canary rehearsal readiness has been reviewed and remains false.",
+        "No creation, save, cleanup, or durable executor command is attempted."
+      ]
+    },
+    {
       "id": "durable_canary_recovery_matrix",
       "label": "Section 58 durable canary recovery matrix",
       "status": "passed",
@@ -979,7 +1019,7 @@
   ],
   "verdict": {
     "status": "passed",
-    "release_boundary_version": "section_68_v10",
+    "release_boundary_version": "section_69_v11",
     "mvp_decision_status": "temporary_mvp_ready_durable_not_enabled",
     "temporary_blueprint_authoring_mvp_ready": true,
     "durable_blueprint_authoring_mvp_ready": false,
@@ -997,7 +1037,8 @@
     "section_66_ownership_marker_proof_status": "passed",
     "section_67_rollback_cleanup_proof_status": "passed",
     "section_68_save_gate_final_review_status": "passed",
-    "current_authoring_ceiling": "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_section_64_canary_command_allowlist_contract_section_65_canary_creation_boundary_contract_section_66_ownership_marker_proof_contract_section_67_rollback_cleanup_proof_contract_and_section_68_save_gate_final_review_contract",
+    "section_69_canary_rehearsal_readiness_status": "passed",
+    "current_authoring_ceiling": "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_section_64_canary_command_allowlist_contract_section_65_canary_creation_boundary_contract_section_66_ownership_marker_proof_contract_section_67_rollback_cleanup_proof_contract_section_68_save_gate_final_review_contract_and_section_69_canary_rehearsal_readiness_contract",
     "cxx_changes_required": false
   },
   "next_reinforcement_candidates": [
