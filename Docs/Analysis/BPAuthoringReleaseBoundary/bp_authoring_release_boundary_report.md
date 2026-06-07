@@ -1,12 +1,12 @@
 # BP Authoring Release Boundary
 
-- Generated UTC: `2026-06-07T08:51:14.912499+00:00`
-- Schema: `section_69_bp_authoring_release_boundary_v11`
+- Generated UTC: `2026-06-07T08:55:36.204167+00:00`
+- Schema: `section_70_bp_authoring_release_boundary_v12`
 - Status: `passed`
 - Ready for main push: `True`
 - Durable authoring enabled: `False`
-- Durable release status: `not_enabled_read_only_preflight_only`
-- Current authoring ceiling: `planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_section_64_canary_command_allowlist_contract_section_65_canary_creation_boundary_contract_section_66_ownership_marker_proof_contract_section_67_rollback_cleanup_proof_contract_section_68_save_gate_final_review_contract_and_section_69_canary_rehearsal_readiness_contract`
+- Durable release status: `section_70_not_enabled_contracts_only`
+- Current authoring ceiling: `planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_section_64_canary_command_allowlist_contract_section_65_canary_creation_boundary_contract_section_66_ownership_marker_proof_contract_section_67_rollback_cleanup_proof_contract_section_68_save_gate_final_review_contract_section_69_canary_rehearsal_readiness_contract_and_section_70_durable_release_decision_contract`
 
 ## Regression Matrix
 
@@ -33,6 +33,7 @@
 - `passed` `durable_canary_recovery_matrix` blocking=`True` - Section 58 durable canary recovery matrix
 - `passed` `section_51_58_release_boundary_v2_consolidation` blocking=`True` - Section 59 release boundary v2 consolidation
 - `passed` `section_60_mvp_decision_contract` blocking=`True` - Section 60 MVP decision contract
+- `passed` `section_70_durable_release_decision_contract` blocking=`True` - Section 70 durable Blueprint authoring release decision
 - `passed` `planner_driven_live_smoke_report` blocking=`True` - Planner-driven live smoke report
 - `passed` `planner_live_cleanup_and_log_boundary` blocking=`True` - Planner live cleanup and log boundary
 - `passed` `durable_read_only_live_preflight` blocking=`True` - Durable read-only live preflight boundary
@@ -45,7 +46,7 @@
 
 ## Decision
 
-This boundary permits temporary planner-safe manifest execution only. Section 51 records the durable authoring enable contract, but durable Blueprint creation, saving, delete, and rename remain disabled until a later explicit durable release.
+This boundary permits temporary planner-safe manifest execution only. Section 70 records the durable release decision: durable Blueprint creation, saving, delete, rename, cleanup, and live canary rehearsal remain disabled until a later explicit durable release.
 
 ## Next Reinforcement Candidates
 

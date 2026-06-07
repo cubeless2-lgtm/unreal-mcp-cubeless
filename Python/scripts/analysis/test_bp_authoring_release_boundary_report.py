@@ -29,7 +29,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_69_v11"
+        assert report["verdict"]["release_boundary_version"] == "section_70_v12"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -40,6 +40,9 @@ def main() -> int:
         assert report["verdict"]["section_67_rollback_cleanup_proof_status"] == "passed"
         assert report["verdict"]["section_68_save_gate_final_review_status"] == "passed"
         assert report["verdict"]["section_69_canary_rehearsal_readiness_status"] == "passed"
+        assert report["verdict"]["section_70_durable_release_decision_status"] == "passed"
+        assert report["verdict"]["final_durable_release_ready"] is False
+        assert report["verdict"]["main_push_requested"] is False
         assert report["verdict"]["mvp_decision_status"] == "temporary_mvp_ready_durable_not_enabled"
         assert report["verdict"]["temporary_blueprint_authoring_mvp_ready"] is True
         assert report["verdict"]["durable_blueprint_authoring_mvp_ready"] is False
@@ -236,6 +239,19 @@ def main() -> int:
         assert mvp_row["actual"]["temporary_blueprint_authoring_mvp_ready"] is True
         assert mvp_row["actual"]["durable_blueprint_authoring_mvp_ready"] is False
         assert mvp_row["actual"]["durable_authoring_enabled"] is False
+        release_decision_row = find_row(report, "section_70_durable_release_decision_contract")
+        assert release_decision_row["status"] == "passed"
+        assert release_decision_row["actual"]["durable_requested_release_decision_count"] == 1
+        assert release_decision_row["actual"]["temporary_blueprint_authoring_mvp_ready_count"] == 1
+        assert release_decision_row["actual"]["durable_blueprint_authoring_mvp_ready_count"] == 0
+        assert release_decision_row["actual"]["durable_authoring_enabled_count"] == 0
+        assert release_decision_row["actual"]["section_61_69_safety_contracts_passed_count"] == 1
+        assert release_decision_row["actual"]["durable_executor_enabled_count"] == 0
+        assert release_decision_row["actual"]["durable_executor_executable_count"] == 0
+        assert release_decision_row["actual"]["save_or_delete_commands_allowed_count"] == 0
+        assert release_decision_row["actual"]["allowed_live_authoring_command_count"] == 0
+        assert release_decision_row["actual"]["preflight_pass_count"] == 0
+        assert release_decision_row["actual"]["final_durable_release_ready_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False

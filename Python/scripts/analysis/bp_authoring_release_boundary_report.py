@@ -23,12 +23,13 @@ import bp_authoring_durable_executor_review_contract as executor_review
 import bp_authoring_durable_live_evidence_refresh_contract as live_evidence_refresh
 import bp_authoring_durable_mvp_decision_contract as mvp_decision
 import bp_authoring_durable_ownership_marker_proof_contract as ownership_marker_proof
+import bp_authoring_durable_release_decision_contract as durable_release_decision
 import bp_authoring_durable_rollback_cleanup_proof_contract as rollback_cleanup_proof
 import bp_authoring_durable_save_gate_final_review_contract as save_gate_final_review
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_69_bp_authoring_release_boundary_v11"
+REPORT_SCHEMA = "section_70_bp_authoring_release_boundary_v12"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -1090,6 +1091,65 @@ def build_canary_rehearsal_readiness_row(
     )
 
 
+def build_durable_release_decision_row(
+    decision_contract: Dict[str, Any],
+    executor_summary: Dict[str, Any],
+    safety_contract_statuses: Sequence[str],
+) -> Dict[str, Any]:
+    contract = durable_release_decision.build_durable_release_decision_contract(
+        requested=True,
+        mvp_decision_contract=decision_contract,
+        executor_summary=executor_summary,
+        safety_contract_statuses=safety_contract_statuses,
+    )
+    summary = durable_release_decision.summarize_durable_release_decisions([contract])
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_release_decision_count": 1,
+        "temporary_blueprint_authoring_mvp_ready_count": 1,
+        "durable_blueprint_authoring_mvp_ready_count": 0,
+        "durable_authoring_enabled_count": 0,
+        "section_61_69_safety_contracts_passed_count": 1,
+        "durable_executor_enabled_count": 0,
+        "durable_executor_executable_count": 0,
+        "save_or_delete_commands_allowed_count": 0,
+        "allowed_live_authoring_command_count": 0,
+        "preflight_pass_count": 0,
+        "final_durable_release_ready_count": 0,
+    }
+    actual = {
+        "summary_status": summary.get("status"),
+        "durable_requested_release_decision_count": summary.get("durable_requested_release_decision_count"),
+        "temporary_blueprint_authoring_mvp_ready_count": summary.get(
+            "temporary_blueprint_authoring_mvp_ready_count"
+        ),
+        "durable_blueprint_authoring_mvp_ready_count": summary.get(
+            "durable_blueprint_authoring_mvp_ready_count"
+        ),
+        "durable_authoring_enabled_count": summary.get("durable_authoring_enabled_count"),
+        "section_61_69_safety_contracts_passed_count": summary.get(
+            "section_61_69_safety_contracts_passed_count"
+        ),
+        "durable_executor_enabled_count": summary.get("durable_executor_enabled_count"),
+        "durable_executor_executable_count": summary.get("durable_executor_executable_count"),
+        "save_or_delete_commands_allowed_count": summary.get("save_or_delete_commands_allowed_count"),
+        "allowed_live_authoring_command_count": summary.get("allowed_live_authoring_command_count"),
+        "preflight_pass_count": summary.get("preflight_pass_count"),
+        "final_durable_release_ready_count": summary.get("final_durable_release_ready_count"),
+    }
+    return row(
+        "section_70_durable_release_decision_contract",
+        "Section 70 durable Blueprint authoring release decision",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "Section 61-69 safety contracts are report-safe, but they do not enable durable authoring.",
+            "Temporary Blueprint authoring remains the ready MVP; durable Blueprint authoring stays disabled.",
+        ),
+    )
+
+
 def build_section_51_58_consolidation_row(
     contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -1361,7 +1421,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     lyra_report = read_json(lyra_report_path)
     preliminary_verdict = {
         "status": "passed",
-        "release_boundary_version": "section_69_v11",
+        "release_boundary_version": "section_70_v12",
         "durable_authoring_enabled": False,
     }
     decision_contract = mvp_decision.build_mvp_decision_contract(
@@ -1369,6 +1429,18 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         executor_summary,
         preliminary_verdict,
     )
+    safety_rows = [
+        build_durable_canary_bridge_refresh_row(contract_summary, executor_summary),
+        build_live_evidence_refresh_row(planner_report),
+        build_executor_review_row(executor_summary),
+        build_canary_command_allowlist_row(executor_summary),
+        build_canary_creation_boundary_row(contract_summary, executor_summary),
+        build_ownership_marker_proof_row(contract_summary),
+        build_rollback_cleanup_proof_row(contract_summary),
+        build_save_gate_final_review_row(contract_summary, executor_summary),
+        build_canary_rehearsal_readiness_row(contract_summary, executor_summary, planner_report),
+    ]
+    safety_contract_statuses = [item["status"] for item in safety_rows]
 
     matrix = [
         build_contract_matrix_row(contract_summary),
@@ -1382,18 +1454,11 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         build_durable_canary_prep_row(contract_summary, executor_summary),
         build_durable_canary_approval_row(contract_summary, executor_summary),
         build_durable_canary_live_preflight_row(contract_summary, executor_summary),
-        build_durable_canary_bridge_refresh_row(contract_summary, executor_summary),
-        build_live_evidence_refresh_row(planner_report),
-        build_executor_review_row(executor_summary),
-        build_canary_command_allowlist_row(executor_summary),
-        build_canary_creation_boundary_row(contract_summary, executor_summary),
-        build_ownership_marker_proof_row(contract_summary),
-        build_rollback_cleanup_proof_row(contract_summary),
-        build_save_gate_final_review_row(contract_summary, executor_summary),
-        build_canary_rehearsal_readiness_row(contract_summary, executor_summary, planner_report),
+        *safety_rows,
         build_durable_canary_recovery_row(contract_summary, executor_summary),
         build_section_51_58_consolidation_row(contract_summary, executor_summary),
         build_mvp_decision_row(decision_contract),
+        build_durable_release_decision_row(decision_contract, executor_summary, safety_contract_statuses),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -1414,7 +1479,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
-            "release_boundary_version": "section_69_v11",
+            "release_boundary_version": "section_70_v12",
             "mvp_decision_status": decision_contract["decision_status"],
             "temporary_blueprint_authoring_mvp_ready": decision_contract[
                 "temporary_blueprint_authoring_mvp_ready"
@@ -1424,7 +1489,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "failed_blocking_ids": [item["id"] for item in failed_blocking],
             "ready_for_main_push": not failed_blocking,
             "durable_authoring_enabled": False,
-            "durable_authoring_release_status": "not_enabled_read_only_preflight_only",
+            "durable_authoring_release_status": "section_70_not_enabled_contracts_only",
             "section_51_58_contract_status": "passed" if not failed_blocking else "failed",
             "section_61_bridge_refresh_status": "passed" if not failed_blocking else "failed",
             "section_62_live_evidence_refresh_status": "passed" if not failed_blocking else "failed",
@@ -1435,8 +1500,11 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "section_67_rollback_cleanup_proof_status": "passed" if not failed_blocking else "failed",
             "section_68_save_gate_final_review_status": "passed" if not failed_blocking else "failed",
             "section_69_canary_rehearsal_readiness_status": "passed" if not failed_blocking else "failed",
+            "section_70_durable_release_decision_status": "passed" if not failed_blocking else "failed",
+            "final_durable_release_ready": False,
+            "main_push_requested": False,
             "current_authoring_ceiling": (
-                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_section_64_canary_command_allowlist_contract_section_65_canary_creation_boundary_contract_section_66_ownership_marker_proof_contract_section_67_rollback_cleanup_proof_contract_section_68_save_gate_final_review_contract_and_section_69_canary_rehearsal_readiness_contract"
+                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_section_64_canary_command_allowlist_contract_section_65_canary_creation_boundary_contract_section_66_ownership_marker_proof_contract_section_67_rollback_cleanup_proof_contract_section_68_save_gate_final_review_contract_section_69_canary_rehearsal_readiness_contract_and_section_70_durable_release_decision_contract"
             ),
             "cxx_changes_required": False,
         },
@@ -1477,7 +1545,7 @@ def render_markdown(report: Dict[str, Any]) -> str:
             "",
             "## Decision",
             "",
-            "This boundary permits temporary planner-safe manifest execution only. Section 51 records the durable authoring enable contract, but durable Blueprint creation, saving, delete, and rename remain disabled until a later explicit durable release.",
+            "This boundary permits temporary planner-safe manifest execution only. Section 70 records the durable release decision: durable Blueprint creation, saving, delete, rename, cleanup, and live canary rehearsal remain disabled until a later explicit durable release.",
             "",
             "## Next Reinforcement Candidates",
             "",
