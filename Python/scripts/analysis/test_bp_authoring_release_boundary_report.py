@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_105_v47"
+        assert report["verdict"]["release_boundary_version"] == "section_106_v48"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -100,6 +100,7 @@ def main() -> int:
         assert report["verdict"]["section_103_durable_executor_code_patch_result_status"] == "passed"
         assert report["verdict"]["section_104_durable_executor_code_patch_result_readback_status"] == "passed"
         assert report["verdict"]["section_105_durable_executor_code_patch_final_no_save_release_status"] == "passed"
+        assert report["verdict"]["section_106_durable_executor_code_patch_final_release_readiness_status"] == "passed"
         assert report["verdict"]["final_durable_release_ready"] is False
         assert report["verdict"]["main_push_requested"] is False
         assert report["verdict"]["mvp_decision_status"] == "temporary_mvp_ready_durable_not_enabled"
@@ -1559,6 +1560,48 @@ def main() -> int:
         assert patch_final_release_row["actual"]["cleanup_allowed_count"] == 0
         assert patch_final_release_row["actual"]["live_command_dispatched_count"] == 0
         assert patch_final_release_row["actual"]["live_command_executed_count"] == 0
+        patch_final_readiness_row = find_row(
+            report, "durable_executor_code_patch_final_release_readiness_contract"
+        )
+        assert patch_final_readiness_row["status"] == "passed"
+        assert patch_final_readiness_row["actual"]["durable_requested_executor_code_patch_final_release_readiness_count"] == 1
+        assert patch_final_readiness_row["actual"]["code_patch_final_release_readiness_contract_defined_count"] == 1
+        assert patch_final_readiness_row["actual"]["code_patch_final_no_save_release_contract_ready_count"] == 1
+        assert patch_final_readiness_row["actual"]["code_patch_final_no_save_release_inputs_satisfied_count"] == 0
+        assert patch_final_readiness_row["actual"]["code_patch_final_no_save_release_record_valid_count"] == 0
+        assert patch_final_readiness_row["actual"]["allowed_code_patch_final_no_save_release_observed_count"] == 0
+        assert patch_final_readiness_row["actual"]["no_forbidden_code_patch_final_no_save_release_claims_count"] == 0
+        assert patch_final_readiness_row["actual"]["code_patch_final_release_readiness_inputs_satisfied_count"] == 0
+        assert patch_final_readiness_row["actual"]["code_patch_final_release_readiness_record_present_count"] == 0
+        assert patch_final_readiness_row["actual"]["record_schema_matches_count"] == 0
+        assert patch_final_readiness_row["actual"]["code_patch_final_release_readiness_scope_matches_count"] == 0
+        assert patch_final_readiness_row["actual"]["explicit_code_patch_final_release_readiness_authorized_count"] == 0
+        assert patch_final_readiness_row["actual"]["readiness_status_passed_count"] == 0
+        assert patch_final_readiness_row["actual"]["no_save_delete_rename_acknowledged_count"] == 0
+        assert patch_final_readiness_row["actual"]["explicit_durable_mvp_request_reconfirmed_count"] == 0
+        assert patch_final_readiness_row["actual"]["allowed_code_patch_final_release_readiness_observed_count"] == 0
+        assert patch_final_readiness_row["actual"]["no_forbidden_code_patch_final_release_readiness_claims_count"] == 0
+        assert patch_final_readiness_row["actual"]["code_patch_final_release_readiness_record_valid_count"] == 0
+        assert patch_final_readiness_row["actual"]["code_patch_final_release_readiness_record_rejected_count"] == 0
+        assert patch_final_readiness_row["actual"]["unsafe_code_patch_final_release_readiness_record_count"] == 0
+        assert patch_final_readiness_row["actual"]["missing_code_patch_final_release_readiness_prerequisite_count"] == 14
+        assert patch_final_readiness_row["actual"]["reported_allowed_code_patch_final_release_readiness_count"] == 0
+        assert patch_final_readiness_row["actual"]["reported_forbidden_code_patch_final_release_readiness_count"] == 0
+        assert patch_final_readiness_row["actual"]["durable_executor_code_patch_final_release_readiness_started_count"] == 0
+        assert patch_final_readiness_row["actual"]["durable_executor_code_patch_final_release_ready_count"] == 0
+        assert patch_final_readiness_row["actual"]["durable_executor_code_patch_release_review_started_count"] == 0
+        assert patch_final_readiness_row["actual"]["code_change_performed_count"] == 0
+        assert patch_final_readiness_row["actual"]["executor_code_modified_count"] == 0
+        assert patch_final_readiness_row["actual"]["unreal_asset_modified_count"] == 0
+        assert patch_final_readiness_row["actual"]["live_bridge_probe_started_count"] == 0
+        assert patch_final_readiness_row["actual"]["durable_authoring_enabled_count"] == 0
+        assert patch_final_readiness_row["actual"]["durable_authoring_allowed_count"] == 0
+        assert patch_final_readiness_row["actual"]["asset_write_performed_count"] == 0
+        assert patch_final_readiness_row["actual"]["package_dirty_marked_count"] == 0
+        assert patch_final_readiness_row["actual"]["save_delete_rename_allowed_count"] == 0
+        assert patch_final_readiness_row["actual"]["cleanup_allowed_count"] == 0
+        assert patch_final_readiness_row["actual"]["live_command_dispatched_count"] == 0
+        assert patch_final_readiness_row["actual"]["live_command_executed_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
