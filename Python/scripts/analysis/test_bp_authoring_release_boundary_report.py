@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_148_v90"
+        assert report["verdict"]["release_boundary_version"] == "section_149_v91"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -235,6 +235,12 @@ def main() -> int:
         assert (
             report["verdict"][
                 "section_148_durable_executor_authoring_command_execution_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_149_durable_executor_authoring_command_completion_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_status"
             ]
             == "passed"
         )
@@ -4596,6 +4602,64 @@ def main() -> int:
                 "actual"
             ]
             == expected_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_actual
+        )
+        executor_authoring_completion_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_row = find_row(
+            report,
+            "durable_executor_authoring_command_completion_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_contract",
+        )
+        assert (
+            executor_authoring_completion_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_row[
+                "status"
+            ]
+            == "passed"
+        )
+        expected_completion_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_actual = {
+            "summary_status": "passed",
+            "durable_requested_executor_authoring_command_completion_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_count": 1,
+            "completion_decision_contract_defined_count": 1,
+            "evidence_contract_ready_count": 1,
+            "authoring_command_execution_evidence_admitted_count": 0,
+            "allowed_evidence_command_observed_count": 0,
+            "no_forbidden_evidence_commands_count": 0,
+            "evidence_ready_for_completion_count": 0,
+            "decision_record_present_count": 0,
+            "record_schema_matches_count": 0,
+            "completion_scope_matches_count": 0,
+            "explicit_completion_decision_authorized_count": 0,
+            "completion_decision_status_passed_count": 0,
+            "no_save_delete_rename_acknowledged_count": 0,
+            "explicit_durable_mvp_request_reconfirmed_count": 0,
+            "completion_decision_record_valid_count": 0,
+            "completion_decision_record_rejected_count": 0,
+            "unsafe_completion_decision_record_count": 0,
+            "missing_completion_prerequisite_count": 11,
+            "reported_allowed_evidence_command_count": 0,
+            "reported_forbidden_evidence_command_count": 0,
+            "durable_authoring_command_completion_allowed_count": 0,
+            "durable_authoring_command_completed_count": 0,
+            "durable_authoring_command_completion_application_started_count": 0,
+            "durable_authoring_command_dispatch_allowed_count": 0,
+            "durable_authoring_command_dispatched_count": 0,
+            "durable_authoring_command_execution_allowed_count": 0,
+            "durable_authoring_command_executed_count": 0,
+            "durable_authoring_enabled_count": 0,
+            "durable_authoring_allowed_count": 0,
+            "code_change_performed_count": 0,
+            "executor_code_modified_count": 0,
+            "unreal_asset_modified_count": 0,
+            "live_bridge_probe_started_count": 0,
+            "asset_write_performed_count": 0,
+            "package_dirty_marked_count": 0,
+            "save_delete_rename_allowed_count": 0,
+            "cleanup_allowed_count": 0,
+            "live_command_dispatched_count": 0,
+            "live_command_executed_count": 0,
+        }
+        assert (
+            executor_authoring_completion_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_row[
+                "actual"
+            ]
+            == expected_completion_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_actual
         )
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
