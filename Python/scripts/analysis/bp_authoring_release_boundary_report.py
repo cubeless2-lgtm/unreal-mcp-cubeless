@@ -18,6 +18,7 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 import bp_authoring_job_contract as job_contract
 import bp_authoring_durable_bridge_recovery_readiness_contract as bridge_recovery_readiness
 import bp_authoring_durable_canary_authoring_command_contract as authoring_command
+import bp_authoring_durable_canary_authoring_command_completion_decision_contract as authoring_completion_decision
 import bp_authoring_durable_canary_authoring_command_dispatch_contract as authoring_command_dispatch
 import bp_authoring_durable_canary_authoring_command_execution_contract as authoring_command_execution
 import bp_authoring_durable_canary_authoring_command_execution_evidence_contract as authoring_command_execution_evidence
@@ -47,7 +48,7 @@ import bp_authoring_durable_save_gate_final_review_contract as save_gate_final_r
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_88_bp_authoring_release_boundary_v30"
+REPORT_SCHEMA = "section_89_bp_authoring_release_boundary_v31"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -3268,6 +3269,142 @@ def build_canary_authoring_command_execution_evidence_row(
     )
 
 
+def build_canary_authoring_command_completion_decision_row(
+    contract_summary: Dict[str, Any],
+    executor_summary: Dict[str, Any],
+    project_root: Path,
+    planner_report: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    evidence_row = build_canary_authoring_command_execution_evidence_row(
+        contract_summary,
+        executor_summary,
+        project_root,
+        planner_report,
+    )
+    evidence_summary = dict(evidence_row["actual"])
+    evidence_summary["status"] = evidence_summary.pop("summary_status")
+    contract = authoring_completion_decision.build_canary_durable_authoring_command_completion_decision_contract(
+        requested=True,
+        evidence_summary=evidence_summary,
+    )
+    summary = authoring_completion_decision.summarize_canary_durable_authoring_command_completion_decisions(
+        [contract]
+    )
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_canary_authoring_command_completion_decision_count": 1,
+        "completion_decision_contract_defined_count": 1,
+        "evidence_contract_ready_count": 1,
+        "authoring_command_execution_evidence_admitted_count": 0,
+        "allowed_evidence_command_observed_count": 0,
+        "no_forbidden_evidence_commands_count": 0,
+        "evidence_ready_for_completion_count": 0,
+        "decision_record_present_count": 0,
+        "record_schema_matches_count": 0,
+        "completion_scope_matches_count": 0,
+        "explicit_completion_authorized_count": 0,
+        "no_save_delete_rename_acknowledged_count": 0,
+        "completion_decision_record_valid_count": 0,
+        "completion_decision_record_rejected_count": 0,
+        "unsafe_completion_decision_record_count": 0,
+        "missing_completion_prerequisite_count": 9,
+        "reported_allowed_evidence_command_count": 0,
+        "reported_forbidden_evidence_command_count": 0,
+        "durable_authoring_command_completion_allowed_count": 0,
+        "durable_authoring_command_completed_count": 0,
+        "durable_authoring_command_dispatch_allowed_count": 0,
+        "durable_authoring_command_dispatched_count": 0,
+        "durable_authoring_command_execution_allowed_count": 0,
+        "durable_authoring_command_executed_count": 0,
+        "durable_promotion_allowed_count": 0,
+        "durable_authoring_enabled_count": 0,
+        "durable_authoring_allowed_count": 0,
+        "save_delete_rename_allowed_count": 0,
+        "cleanup_allowed_count": 0,
+        "live_command_dispatch_allowed_count": 0,
+        "live_command_plan_emitted_count": 0,
+        "live_command_execution_allowed_count": 0,
+        "live_command_executed_count": 0,
+    }
+    actual = {
+        "summary_status": summary.get("status"),
+        "durable_requested_canary_authoring_command_completion_decision_count": summary.get(
+            "durable_requested_canary_authoring_command_completion_decision_count"
+        ),
+        "completion_decision_contract_defined_count": summary.get(
+            "completion_decision_contract_defined_count"
+        ),
+        "evidence_contract_ready_count": summary.get("evidence_contract_ready_count"),
+        "authoring_command_execution_evidence_admitted_count": summary.get(
+            "authoring_command_execution_evidence_admitted_count"
+        ),
+        "allowed_evidence_command_observed_count": summary.get(
+            "allowed_evidence_command_observed_count"
+        ),
+        "no_forbidden_evidence_commands_count": summary.get("no_forbidden_evidence_commands_count"),
+        "evidence_ready_for_completion_count": summary.get("evidence_ready_for_completion_count"),
+        "decision_record_present_count": summary.get("decision_record_present_count"),
+        "record_schema_matches_count": summary.get("record_schema_matches_count"),
+        "completion_scope_matches_count": summary.get("completion_scope_matches_count"),
+        "explicit_completion_authorized_count": summary.get("explicit_completion_authorized_count"),
+        "no_save_delete_rename_acknowledged_count": summary.get(
+            "no_save_delete_rename_acknowledged_count"
+        ),
+        "completion_decision_record_valid_count": summary.get(
+            "completion_decision_record_valid_count"
+        ),
+        "completion_decision_record_rejected_count": summary.get(
+            "completion_decision_record_rejected_count"
+        ),
+        "unsafe_completion_decision_record_count": summary.get(
+            "unsafe_completion_decision_record_count"
+        ),
+        "missing_completion_prerequisite_count": summary.get(
+            "missing_completion_prerequisite_count"
+        ),
+        "reported_allowed_evidence_command_count": summary.get("reported_allowed_evidence_command_count"),
+        "reported_forbidden_evidence_command_count": summary.get("reported_forbidden_evidence_command_count"),
+        "durable_authoring_command_completion_allowed_count": summary.get(
+            "durable_authoring_command_completion_allowed_count"
+        ),
+        "durable_authoring_command_completed_count": summary.get(
+            "durable_authoring_command_completed_count"
+        ),
+        "durable_authoring_command_dispatch_allowed_count": summary.get(
+            "durable_authoring_command_dispatch_allowed_count"
+        ),
+        "durable_authoring_command_dispatched_count": summary.get(
+            "durable_authoring_command_dispatched_count"
+        ),
+        "durable_authoring_command_execution_allowed_count": summary.get(
+            "durable_authoring_command_execution_allowed_count"
+        ),
+        "durable_authoring_command_executed_count": summary.get(
+            "durable_authoring_command_executed_count"
+        ),
+        "durable_promotion_allowed_count": summary.get("durable_promotion_allowed_count"),
+        "durable_authoring_enabled_count": summary.get("durable_authoring_enabled_count"),
+        "durable_authoring_allowed_count": summary.get("durable_authoring_allowed_count"),
+        "save_delete_rename_allowed_count": summary.get("save_delete_rename_allowed_count"),
+        "cleanup_allowed_count": summary.get("cleanup_allowed_count"),
+        "live_command_dispatch_allowed_count": summary.get("live_command_dispatch_allowed_count"),
+        "live_command_plan_emitted_count": summary.get("live_command_plan_emitted_count"),
+        "live_command_execution_allowed_count": summary.get("live_command_execution_allowed_count"),
+        "live_command_executed_count": summary.get("live_command_executed_count"),
+    }
+    return row(
+        "durable_canary_authoring_command_completion_decision_contract",
+        "Section 89 durable canary authoring command completion decision contract",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "The authoring command completion decision contract is defined, but no decision record is present.",
+            "A valid decision still cannot complete, save, delete, rename, or clean up without a separate application contract.",
+        ),
+    )
+
+
 def build_section_51_58_consolidation_row(
     contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -3539,7 +3676,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     lyra_report = read_json(lyra_report_path)
     preliminary_verdict = {
         "status": "passed",
-        "release_boundary_version": "section_88_v30",
+        "release_boundary_version": "section_89_v31",
         "durable_authoring_enabled": False,
     }
     decision_contract = mvp_decision.build_mvp_decision_contract(
@@ -3670,6 +3807,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             project_root,
             planner_report,
         ),
+        build_canary_authoring_command_completion_decision_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        ),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -3690,7 +3833,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
-            "release_boundary_version": "section_88_v30",
+            "release_boundary_version": "section_89_v31",
             "mvp_decision_status": decision_contract["decision_status"],
             "temporary_blueprint_authoring_mvp_ready": decision_contract[
                 "temporary_blueprint_authoring_mvp_ready"
@@ -3762,15 +3905,18 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "section_88_canary_authoring_command_execution_evidence_status": (
                 "passed" if not failed_blocking else "failed"
             ),
+            "section_89_canary_authoring_command_completion_decision_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
             "final_durable_release_ready": False,
             "main_push_requested": False,
             "current_authoring_ceiling": (
-                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_section_64_canary_command_allowlist_contract_section_65_canary_creation_boundary_contract_section_66_ownership_marker_proof_contract_section_67_rollback_cleanup_proof_contract_section_68_save_gate_final_review_contract_section_69_canary_rehearsal_readiness_contract_section_70_durable_release_decision_contract_section_71_bridge_recovery_readiness_contract_section_72_canary_read_only_retry_envelope_contract_section_73_canary_read_only_retry_result_admission_contract_section_74_canary_rehearsal_promotion_barrier_contract_section_75_canary_rehearsal_execution_release_contract_section_76_canary_live_runner_envelope_contract_section_77_canary_live_runner_start_contract_section_78_canary_live_command_dispatch_release_contract_section_79_canary_live_command_execution_release_contract_section_80_canary_live_command_execution_evidence_admission_contract_section_81_canary_release_promotion_decision_contract_section_82_canary_executor_activation_contract_section_83_canary_executor_open_contract_section_84_canary_authoring_enable_contract_section_85_canary_authoring_command_contract_section_86_canary_authoring_command_dispatch_contract_section_87_canary_authoring_command_execution_contract_and_section_88_canary_authoring_command_execution_evidence_contract"
+                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_section_64_canary_command_allowlist_contract_section_65_canary_creation_boundary_contract_section_66_ownership_marker_proof_contract_section_67_rollback_cleanup_proof_contract_section_68_save_gate_final_review_contract_section_69_canary_rehearsal_readiness_contract_section_70_durable_release_decision_contract_section_71_bridge_recovery_readiness_contract_section_72_canary_read_only_retry_envelope_contract_section_73_canary_read_only_retry_result_admission_contract_section_74_canary_rehearsal_promotion_barrier_contract_section_75_canary_rehearsal_execution_release_contract_section_76_canary_live_runner_envelope_contract_section_77_canary_live_runner_start_contract_section_78_canary_live_command_dispatch_release_contract_section_79_canary_live_command_execution_release_contract_section_80_canary_live_command_execution_evidence_admission_contract_section_81_canary_release_promotion_decision_contract_section_82_canary_executor_activation_contract_section_83_canary_executor_open_contract_section_84_canary_authoring_enable_contract_section_85_canary_authoring_command_contract_section_86_canary_authoring_command_dispatch_contract_section_87_canary_authoring_command_execution_contract_section_88_canary_authoring_command_execution_evidence_contract_and_section_89_canary_authoring_command_completion_decision_contract"
             ),
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
-            "durable authoring command completion decision contract before any completion or save path",
+            "durable authoring command completion application contract before any completion/write path",
             "durable executor implementation review only after explicit durable MVP request",
             "component default/type readback expansion for broader Blueprint classes",
             "function call diagnostics and graph layout repair suggestions",
