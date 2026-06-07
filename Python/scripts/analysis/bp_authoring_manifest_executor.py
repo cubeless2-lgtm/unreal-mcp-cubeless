@@ -364,6 +364,7 @@ def build_durable_executor_gate(manifest: Dict[str, Any], command_plan: Sequence
     preflight = manifest.get("durable_preflight_contract", {})
     save_gate = manifest.get("durable_save_gate_contract", preflight.get("durable_save_gate_contract", {}))
     rollback = manifest.get("durable_rollback_policy_contract", preflight.get("durable_rollback_policy_contract", {}))
+    ownership = manifest.get("durable_ownership_marker_contract", preflight.get("durable_ownership_marker_contract", {}))
     enable_contract = manifest.get("durable_enable_contract", preflight.get("durable_enable_contract", {}))
     readiness = manifest.get(
         "durable_executor_readiness_contract",
@@ -389,6 +390,10 @@ def build_durable_executor_gate(manifest: Dict[str, Any], command_plan: Sequence
         or enable_contract.get("save_asset_allowed")
         or enable_contract.get("delete_asset_allowed")
         or enable_contract.get("rename_asset_allowed")
+        or ownership.get("delete_without_marker_allowed")
+        or ownership.get("delete_preexisting_asset_allowed")
+        or ownership.get("overwrite_preexisting_asset_allowed")
+        or ownership.get("rename_preexisting_asset_allowed")
         or any(item.get("save_requested") for item in command_plan)
         or any(item.get("command") in FORBIDDEN_LIVE_COMMANDS for item in command_plan)
     )
@@ -411,6 +416,7 @@ def build_durable_executor_gate(manifest: Dict[str, Any], command_plan: Sequence
             blocked_by.add("durable_read_only_preflight_not_allowed")
     required_before_execution = set(manifest.get("required_reinforcement", []))
     required_before_execution.update(preflight.get("required_reinforcement", []))
+    required_before_execution.update(ownership.get("required_reinforcement", []))
     required_before_execution.update(save_gate.get("required_reinforcement", []))
     required_before_execution.update(rollback.get("required_reinforcement", []))
     required_before_execution.update(enable_contract.get("required_reinforcement", []))
@@ -437,6 +443,9 @@ def build_durable_executor_gate(manifest: Dict[str, Any], command_plan: Sequence
         "durable_enable_contract_satisfied": bool(enable_contract.get("enable_contract_satisfied")),
         "durable_enable_executor_may_open": bool(enable_contract.get("durable_executor_may_open")),
         "durable_enable_failed_required_gate_ids": list(enable_contract.get("failed_required_gate_ids", [])),
+        "ownership_marker_policy_ready": bool(ownership.get("ownership_marker_policy_ready")),
+        "delete_without_ownership_marker_allowed": bool(ownership.get("delete_without_marker_allowed")),
+        "delete_preexisting_asset_allowed": bool(ownership.get("delete_preexisting_asset_allowed")),
         "durable_executor_enabled": executor_enabled,
         "durable_executor_can_execute": executor_can_execute,
         "durable_executor_command_count": len(skeleton_command_plan),
@@ -728,6 +737,11 @@ def summarize_executor_policies(manifests: Sequence[Dict[str, Any]], temp_packag
         "durable_enable_failed_required_gate_count": sum(
             len(gate["durable_enable_failed_required_gate_ids"]) for gate in durable_gates
         ),
+        "ownership_marker_policy_ready_count": sum(1 for gate in durable_gates if gate["ownership_marker_policy_ready"]),
+        "delete_without_ownership_marker_allowed_count": sum(
+            1 for gate in durable_gates if gate["delete_without_ownership_marker_allowed"]
+        ),
+        "delete_preexisting_asset_allowed_count": sum(1 for gate in durable_gates if gate["delete_preexisting_asset_allowed"]),
         "durable_executor_enabled_count": sum(1 for gate in durable_gates if gate["durable_executor_enabled"]),
         "durable_executor_executable_count": sum(1 for gate in durable_gates if gate["durable_executor_can_execute"]),
         "durable_executor_command_count": sum(gate["durable_executor_command_count"] for gate in durable_gates),
@@ -740,6 +754,8 @@ def summarize_executor_policies(manifests: Sequence[Dict[str, Any]], temp_packag
             durable_requested_count == sum(1 for gate in durable_gates if gate["read_only_live_preflight_allowed"])
             and sum(1 for gate in durable_gates if gate["durable_enable_contract_satisfied"]) == 0
             and sum(1 for gate in durable_gates if gate["durable_enable_executor_may_open"]) == 0
+            and sum(1 for gate in durable_gates if gate["delete_without_ownership_marker_allowed"]) == 0
+            and sum(1 for gate in durable_gates if gate["delete_preexisting_asset_allowed"]) == 0
             and sum(1 for gate in durable_gates if gate["durable_executor_enabled"]) == 0
             and sum(1 for gate in durable_gates if gate["durable_executor_can_execute"]) == 0
             and sum(gate["allowed_live_authoring_command_count"] for gate in durable_gates) == 0

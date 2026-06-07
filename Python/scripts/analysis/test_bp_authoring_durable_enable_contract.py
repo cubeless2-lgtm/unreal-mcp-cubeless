@@ -106,9 +106,9 @@ def main() -> int:
     assert integrated_gates[enable_contract.TARGET_PACKAGE_ALLOWLIST_GATE]["passed"] is True
     assert integrated_gates[enable_contract.OVERWRITE_RENAME_DECISION_GATE]["passed"] is True
     assert integrated_gates[enable_contract.ROLLBACK_READINESS_GATE]["passed"] is False
-    assert integrated_gates[enable_contract.EXECUTOR_CREATED_OWNERSHIP_MARKER_GATE]["passed"] is False
+    assert integrated_gates[enable_contract.EXECUTOR_CREATED_OWNERSHIP_MARKER_GATE]["passed"] is True
     assert "rollback_readiness" in manifest["durable_executor_skeleton_contract"]["disabled_by"]
-    assert "executor_created_ownership_marker" in manifest["durable_executor_skeleton_contract"]["disabled_by"]
+    assert "executor_created_ownership_marker" not in manifest["durable_executor_skeleton_contract"]["disabled_by"]
     assert manifest["durable_executor_skeleton_contract"]["command_plan"] == []
     assert manifest["durable_executor_skeleton_contract"]["allowed_live_command_count"] == 0
 

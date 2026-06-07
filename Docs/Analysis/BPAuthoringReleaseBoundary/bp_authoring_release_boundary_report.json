@@ -1,7 +1,7 @@
 {
   "schema": "section_49_50_bp_authoring_release_boundary_v1",
   "analysis_kind": "bp_authoring_release_boundary",
-  "generated_at": "2026-06-07T06:32:56.814729+00:00",
+  "generated_at": "2026-06-07T07:04:42.333571+00:00",
   "repo_root": "D:\\Git\\unreal-mcp-cubeless",
   "project_root": "D:\\Git\\CubelessStylized",
   "report_inputs": {
@@ -153,7 +153,7 @@
         "target_package_allowlist_passed_count": 1,
         "overwrite_rename_decision_passed_count": 0,
         "rollback_readiness_passed_count": 0,
-        "ownership_marker_passed_count": 0,
+        "ownership_marker_passed_count": 1,
         "executor_gate_may_open_count": 0
       },
       "actual": {
@@ -166,12 +166,40 @@
         "target_package_allowlist_passed_count": 1,
         "overwrite_rename_decision_passed_count": 0,
         "rollback_readiness_passed_count": 0,
-        "ownership_marker_passed_count": 0,
+        "ownership_marker_passed_count": 1,
         "executor_gate_may_open_count": 0
       },
       "notes": [
         "Section 51 separates target allowlist, overwrite/rename, rollback readiness, and ownership marker gates.",
         "It does not enable durable save/delete/rename/live authoring."
+      ]
+    },
+    {
+      "id": "durable_ownership_marker_contract",
+      "label": "Section 52 durable rollback ownership marker contract",
+      "status": "passed",
+      "blocking": true,
+      "expected": {
+        "durable_ownership_marker_request_count": 1,
+        "durable_ownership_marker_policy_ready_count": 1,
+        "durable_ownership_delete_without_marker_allowed_count": 0,
+        "durable_ownership_delete_preexisting_asset_allowed_count": 0,
+        "executor_gate_ownership_marker_policy_ready_count": 1,
+        "executor_gate_delete_without_marker_allowed_count": 0,
+        "executor_gate_delete_preexisting_asset_allowed_count": 0
+      },
+      "actual": {
+        "durable_ownership_marker_request_count": 1,
+        "durable_ownership_marker_policy_ready_count": 1,
+        "durable_ownership_delete_without_marker_allowed_count": 0,
+        "durable_ownership_delete_preexisting_asset_allowed_count": 0,
+        "executor_gate_ownership_marker_policy_ready_count": 1,
+        "executor_gate_delete_without_marker_allowed_count": 0,
+        "executor_gate_delete_preexisting_asset_allowed_count": 0
+      },
+      "notes": [
+        "Rollback/delete is authorized only for executor-created assets with a matching ownership marker.",
+        "Section 52 still does not execute delete or durable save commands."
       ]
     },
     {
@@ -296,11 +324,11 @@
     "ready_for_main_push": true,
     "durable_authoring_enabled": false,
     "durable_authoring_release_status": "not_enabled_read_only_preflight_only",
-    "current_authoring_ceiling": "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_and_section_51_enable_contract",
+    "current_authoring_ceiling": "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_and_section_52_ownership_marker",
     "cxx_changes_required": false
   },
   "next_reinforcement_candidates": [
-    "durable executor dry-run plan after Section 51 enable gates are satisfied offline",
+    "durable executor dry-run plan after Section 51 enable gates and Section 52 ownership markers are satisfied offline",
     "component default/type readback expansion for broader Blueprint classes",
     "function call diagnostics and graph layout repair suggestions",
     "UMG/CommonUI authoring classifier and non-executable manifest coverage"

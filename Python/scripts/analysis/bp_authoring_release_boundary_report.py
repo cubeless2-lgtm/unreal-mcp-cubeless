@@ -177,7 +177,7 @@ def build_durable_enable_contract_row(contract_summary: Dict[str, Any], executor
         "target_package_allowlist_passed_count": 1,
         "overwrite_rename_decision_passed_count": 0,
         "rollback_readiness_passed_count": 0,
-        "ownership_marker_passed_count": 0,
+        "ownership_marker_passed_count": 1,
         "executor_gate_may_open_count": 0,
     }
     actual = {
@@ -202,6 +202,49 @@ def build_durable_enable_contract_row(contract_summary: Dict[str, Any], executor
         notes=(
             "Section 51 separates target allowlist, overwrite/rename, rollback readiness, and ownership marker gates.",
             "It does not enable durable save/delete/rename/live authoring.",
+        ),
+    )
+
+
+def build_durable_ownership_marker_row(contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]) -> Dict[str, Any]:
+    durable_gate_summary = executor_summary.get("durable_gate_summary", {})
+    expected = {
+        "durable_ownership_marker_request_count": 1,
+        "durable_ownership_marker_policy_ready_count": 1,
+        "durable_ownership_delete_without_marker_allowed_count": 0,
+        "durable_ownership_delete_preexisting_asset_allowed_count": 0,
+        "executor_gate_ownership_marker_policy_ready_count": 1,
+        "executor_gate_delete_without_marker_allowed_count": 0,
+        "executor_gate_delete_preexisting_asset_allowed_count": 0,
+    }
+    actual = {
+        "durable_ownership_marker_request_count": contract_summary.get("durable_ownership_marker_request_count"),
+        "durable_ownership_marker_policy_ready_count": contract_summary.get(
+            "durable_ownership_marker_policy_ready_count"
+        ),
+        "durable_ownership_delete_without_marker_allowed_count": contract_summary.get(
+            "durable_ownership_delete_without_marker_allowed_count"
+        ),
+        "durable_ownership_delete_preexisting_asset_allowed_count": contract_summary.get(
+            "durable_ownership_delete_preexisting_asset_allowed_count"
+        ),
+        "executor_gate_ownership_marker_policy_ready_count": durable_gate_summary.get("ownership_marker_policy_ready_count"),
+        "executor_gate_delete_without_marker_allowed_count": durable_gate_summary.get(
+            "delete_without_ownership_marker_allowed_count"
+        ),
+        "executor_gate_delete_preexisting_asset_allowed_count": durable_gate_summary.get(
+            "delete_preexisting_asset_allowed_count"
+        ),
+    }
+    return row(
+        "durable_ownership_marker_contract",
+        "Section 52 durable rollback ownership marker contract",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "Rollback/delete is authorized only for executor-created assets with a matching ownership marker.",
+            "Section 52 still does not execute delete or durable save commands.",
         ),
     )
 
@@ -374,6 +417,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         build_capability_matrix_row(executor_summary),
         build_durable_gate_matrix_row(executor_summary),
         build_durable_enable_contract_row(contract_summary, executor_summary),
+        build_durable_ownership_marker_row(contract_summary, executor_summary),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -400,12 +444,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "durable_authoring_enabled": False,
             "durable_authoring_release_status": "not_enabled_read_only_preflight_only",
             "current_authoring_ceiling": (
-                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_and_section_51_enable_contract"
+                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_and_section_52_ownership_marker"
             ),
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
-            "durable executor dry-run plan after Section 51 enable gates are satisfied offline",
+            "durable executor dry-run plan after Section 51 enable gates and Section 52 ownership markers are satisfied offline",
             "component default/type readback expansion for broader Blueprint classes",
             "function call diagnostics and graph layout repair suggestions",
             "UMG/CommonUI authoring classifier and non-executable manifest coverage",

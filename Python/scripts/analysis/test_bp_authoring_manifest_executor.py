@@ -46,7 +46,10 @@ def main() -> int:
         "read_only_live_preflight_allowed_count": 1,
         "durable_enable_contract_satisfied_count": 0,
         "durable_enable_executor_may_open_count": 0,
-        "durable_enable_failed_required_gate_count": 3,
+        "durable_enable_failed_required_gate_count": 2,
+        "ownership_marker_policy_ready_count": 1,
+        "delete_without_ownership_marker_allowed_count": 0,
+        "delete_preexisting_asset_allowed_count": 0,
         "durable_executor_enabled_count": 0,
         "durable_executor_executable_count": 0,
         "durable_executor_command_count": 0,
@@ -101,8 +104,10 @@ def main() -> int:
     assert durable_gate["durable_enable_failed_required_gate_ids"] == [
         "overwrite_rename_decision",
         "rollback_readiness",
-        "executor_created_ownership_marker",
     ]
+    assert durable_gate["ownership_marker_policy_ready"] is True
+    assert durable_gate["delete_without_ownership_marker_allowed"] is False
+    assert durable_gate["delete_preexisting_asset_allowed"] is False
     assert durable_gate["durable_executor_enabled"] is False
     assert durable_gate["durable_executor_can_execute"] is False
     assert durable_gate["save_allowed"] is False

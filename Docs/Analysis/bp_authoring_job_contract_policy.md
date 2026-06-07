@@ -190,6 +190,12 @@ readiness, and executor-created ownership marker gates. The contract reports
 `enable_contract_satisfied=false`, `durable_executor_may_open=false`, and keeps
 `save=true`, `save_asset`, `delete_asset`, and `rename_asset` forbidden.
 
+Section 52 adds a durable ownership marker contract. Durable requests now define
+the marker a future executor must record before rollback/delete can be
+considered. The marker policy may be ready while rollback remains disabled:
+`delete_without_marker_allowed=false`, `delete_preexisting_asset_allowed=false`,
+and `rollback_policy_ready=false`.
+
 ## Section 13 Executable Templates
 
 The current executable manifest templates cover:
@@ -853,6 +859,29 @@ closed. Even a future offline contract with every Section 51 gate satisfied
 would still need a later explicit durable release before live durable authoring
 could run.
 
+## Section 52 Durable Ownership Marker Contract
+
+Durable preflight now embeds `durable_ownership_marker_contract`, also exposed
+at the manifest top level and inside `authoring_executor_contract`.
+
+The ownership marker boundary is:
+
+- marker schema: `section_52_durable_ownership_marker_contract_v1`
+- marker namespace: `unreal_mcp_durable_authoring`
+- marker key: `mcp_executor_created_asset_marker`
+- required marker fields include executor id, durable plan id, run id, target
+  asset path, created asset path, and preflight asset-exists state
+- ownership marker policy ready: `true` for a durable request with a target path
+- delete without marker allowed: `false`
+- delete preexisting asset allowed: `false`
+- overwrite/rename preexisting asset allowed: `false`
+
+The companion rollback delete authorization contract denies delete if the
+marker is missing, malformed, points at another target, or if the preflight
+asset-exists result was `true`. A valid marker can authorize a future rollback
+decision at report level, but it still reports `delete_allowed_now=false` until
+a later durable executor release explicitly enables live delete.
+
 ## Live Smoke Rule
 
 The planner-driven live smoke must execute the manifest, not the raw user
@@ -874,11 +903,12 @@ A planner-safe request with a non-allowlisted parent class must also remain
 dry-run until the parent class receives Section 31 reinforcement.
 
 A planner-safe request that asks for a saved or durable asset must also remain
-dry-run until Section 51 durable enable gates and a later durable executor
-release are both proven. A read-only asset-exists result, parsed
-overwrite/rename decision, draft save gate, readiness checklist entry, or
-disabled durable executor skeleton alone must not enable durable save, delete,
-rename, overwrite, or replacement behavior.
+dry-run until Section 51 durable enable gates, Section 52 ownership marker
+policy, and a later durable executor release are all proven. A read-only
+asset-exists result, parsed overwrite/rename decision, draft save gate,
+readiness checklist entry, disabled durable executor skeleton, or ownership
+marker contract alone must not enable durable save, delete, rename, overwrite,
+or replacement behavior.
 
 ## Validation
 

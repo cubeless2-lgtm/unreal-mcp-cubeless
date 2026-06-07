@@ -26,6 +26,8 @@ Blueprint authoring manifest and live UnrealMCP commands.
 10. Section 51 durable enable coverage must prove target allowlist,
     overwrite/rename decision, rollback readiness, and ownership marker gates
     stay separated and do not open durable executor execution.
+11. Section 52 ownership marker coverage must prove delete without marker and
+    preexisting asset delete/overwrite/rename remain forbidden.
 
 ## Execution Boundary
 
@@ -43,6 +45,8 @@ temporary manifests. It must block:
 - any durable gate that unexpectedly enables saved asset authoring, save,
   delete, rename, overwrite, or replacement behavior
 - any Section 51 enable contract that reports `durable_executor_may_open=true`
+- any ownership marker contract that allows delete without marker or delete of
+  a preexisting asset
 
 ## Validation
 
@@ -56,6 +60,9 @@ temporary manifests. It must block:
   may-open manifests, 0 forbidden command allowance, and independent gate counts
   for target allowlist, overwrite/rename, rollback readiness, and ownership
   marker.
+- Offline tests must prove the Section 52 ownership marker count: 1 durable
+  marker request, 1 marker policy ready request, 0 delete-without-marker
+  allowance, and 0 preexisting asset delete allowance.
 - The planner-driven live smoke must report the executor version and executor
   executable count.
 - The planner-driven live smoke may perform only the read-only durable

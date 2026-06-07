@@ -1,7 +1,7 @@
 # BP Authoring Job Contract
 
-- Generated UTC: `2026-06-07T06:32:56.701511+00:00`
-- Manifest version: `section_51_bp_authoring_job_contract_v29`
+- Generated UTC: `2026-06-07T07:04:42.226210+00:00`
+- Manifest version: `section_52_bp_authoring_job_contract_v30`
 - Temp package path: `/Game/_MCP_Temp/PlannerDrivenSmoke`
 - Manifests: `19`
 - Executable manifests: `12`
@@ -30,15 +30,19 @@
 - Durable executor skeleton enabled: `0`
 - Durable executor skeleton executable: `0`
 - Durable executor skeleton command count: `0`
+- Durable ownership marker requests: `1`
+- Durable ownership marker policy ready: `1`
+- Durable delete without marker allowed: `0`
+- Durable delete preexisting asset allowed: `0`
 - Durable enable contract requests: `1`
 - Durable enable contract satisfied: `0`
 - Durable enable executor may open: `0`
 - Durable enable forbidden command allowed: `0`
-- Durable enable failed required gates: `3`
+- Durable enable failed required gates: `2`
 - Durable enable target allowlist passed: `1`
 - Durable enable overwrite/rename passed: `0`
 - Durable enable rollback readiness passed: `0`
-- Durable enable ownership marker passed: `0`
+- Durable enable ownership marker passed: `1`
 
 ## Status Counts
 
@@ -64,6 +68,8 @@
 - Durable preflight pass: `False`
 - Durable overwrite/rename decision: `not_required`
 - Durable save gate allowed: `False`
+- Durable ownership marker ready: `False`
+- Durable ownership delete without marker: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -146,6 +152,8 @@ Structural validation plan:
 - Durable preflight pass: `False`
 - Durable overwrite/rename decision: `not_required`
 - Durable save gate allowed: `False`
+- Durable ownership marker ready: `False`
+- Durable ownership delete without marker: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -240,6 +248,8 @@ Structural validation plan:
 - Durable preflight pass: `False`
 - Durable overwrite/rename decision: `not_required`
 - Durable save gate allowed: `False`
+- Durable ownership marker ready: `False`
+- Durable ownership delete without marker: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -325,6 +335,8 @@ Structural validation plan:
 - Durable preflight pass: `False`
 - Durable overwrite/rename decision: `not_required`
 - Durable save gate allowed: `False`
+- Durable ownership marker ready: `False`
+- Durable ownership delete without marker: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -407,6 +419,8 @@ Structural validation plan:
 - Durable preflight pass: `False`
 - Durable overwrite/rename decision: `not_required`
 - Durable save gate allowed: `False`
+- Durable ownership marker ready: `False`
+- Durable ownership delete without marker: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -479,6 +493,8 @@ Blocked/review reasons:
 - Durable preflight pass: `False`
 - Durable overwrite/rename decision: `not_required`
 - Durable save gate allowed: `False`
+- Durable ownership marker ready: `False`
+- Durable ownership delete without marker: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -551,11 +567,13 @@ Blocked/review reasons:
 - Durable preflight pass: `False`
 - Durable overwrite/rename decision: `missing`
 - Durable save gate allowed: `False`
+- Durable ownership marker ready: `True`
+- Durable ownership delete without marker: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
 - Durable enable executor may open: `False`
-- Durable enable failed gates: `overwrite_rename_decision, rollback_readiness, executor_created_ownership_marker`
+- Durable enable failed gates: `overwrite_rename_decision, rollback_readiness`
 - Durable executor skeleton enabled: `False`
 - Durable executor skeleton executable: `False`
 
@@ -623,6 +641,8 @@ Blocked/review reasons:
 - Durable preflight pass: `False`
 - Durable overwrite/rename decision: `not_required`
 - Durable save gate allowed: `False`
+- Durable ownership marker ready: `False`
+- Durable ownership delete without marker: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -703,6 +723,8 @@ Structural validation plan:
 - Durable preflight pass: `False`
 - Durable overwrite/rename decision: `not_required`
 - Durable save gate allowed: `False`
+- Durable ownership marker ready: `False`
+- Durable ownership delete without marker: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -799,6 +821,8 @@ Structural validation plan:
 - Durable preflight pass: `False`
 - Durable overwrite/rename decision: `not_required`
 - Durable save gate allowed: `False`
+- Durable ownership marker ready: `False`
+- Durable ownership delete without marker: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -896,6 +920,8 @@ Structural validation plan:
 - Durable preflight pass: `False`
 - Durable overwrite/rename decision: `not_required`
 - Durable save gate allowed: `False`
+- Durable ownership marker ready: `False`
+- Durable ownership delete without marker: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1033,6 +1059,8 @@ Structural validation plan:
 - Durable preflight pass: `False`
 - Durable overwrite/rename decision: `not_required`
 - Durable save gate allowed: `False`
+- Durable ownership marker ready: `False`
+- Durable ownership delete without marker: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1109,6 +1137,8 @@ Structural validation plan:
 - Durable preflight pass: `False`
 - Durable overwrite/rename decision: `not_required`
 - Durable save gate allowed: `False`
+- Durable ownership marker ready: `False`
+- Durable ownership delete without marker: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1215,6 +1245,8 @@ Structural validation plan:
 - Durable preflight pass: `False`
 - Durable overwrite/rename decision: `not_required`
 - Durable save gate allowed: `False`
+- Durable ownership marker ready: `False`
+- Durable ownership delete without marker: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1369,6 +1401,8 @@ Structural validation plan:
 - Durable preflight pass: `False`
 - Durable overwrite/rename decision: `not_required`
 - Durable save gate allowed: `False`
+- Durable ownership marker ready: `False`
+- Durable ownership delete without marker: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1501,6 +1535,8 @@ Structural validation plan:
 - Durable preflight pass: `False`
 - Durable overwrite/rename decision: `not_required`
 - Durable save gate allowed: `False`
+- Durable ownership marker ready: `False`
+- Durable ownership delete without marker: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1573,6 +1609,8 @@ Blocked/review reasons:
 - Durable preflight pass: `False`
 - Durable overwrite/rename decision: `not_required`
 - Durable save gate allowed: `False`
+- Durable ownership marker ready: `False`
+- Durable ownership delete without marker: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1645,6 +1683,8 @@ Blocked/review reasons:
 - Durable preflight pass: `False`
 - Durable overwrite/rename decision: `not_required`
 - Durable save gate allowed: `False`
+- Durable ownership marker ready: `False`
+- Durable ownership delete without marker: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1718,6 +1758,8 @@ Blocked/review reasons:
 - Durable preflight pass: `False`
 - Durable overwrite/rename decision: `not_required`
 - Durable save gate allowed: `False`
+- Durable ownership marker ready: `False`
+- Durable ownership delete without marker: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`

@@ -80,8 +80,31 @@ Even if all Section 51 gates are satisfied in a future offline contract, this
 section alone still reports `durable_executor_may_open=false`; a later explicit
 durable release must separately enable and verify live durable authoring.
 
+## Section 52 - Rollback Ownership Marker Contract
+
+Section 52 defines the ownership marker a future durable executor must record
+before rollback/delete can even be considered. The marker must bind the created
+asset to:
+
+- marker schema and namespace
+- executor id, durable plan id, and run id
+- target asset path and created asset path
+- proof that the preflight asset-exists result was `false`
+
+The release boundary must prove:
+
+- durable ownership marker requests: `1`
+- ownership marker policy ready: `1`
+- delete without marker allowed: `0`
+- delete preexisting asset allowed: `0`
+
+This section only authorizes a future rollback decision at contract level. It
+still reports `delete_allowed_now=false` and does not run live delete, save,
+rename, or overwrite commands.
+
 ## Decision
 
-Section 46-48 improves durable safety visibility, and Section 51 separates the
-future durable enable gates. These sections do not enable durable Blueprint
-creation, saving, delete, or rename.
+Section 46-48 improves durable safety visibility, Section 51 separates the
+future durable enable gates, and Section 52 defines the ownership marker needed
+for future rollback. These sections do not enable durable Blueprint creation,
+saving, delete, or rename.

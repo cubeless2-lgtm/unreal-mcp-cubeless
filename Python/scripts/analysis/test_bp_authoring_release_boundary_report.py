@@ -40,6 +40,12 @@ def main() -> int:
         assert enable_row["actual"]["enable_contract_satisfied_count"] == 0
         assert enable_row["actual"]["durable_executor_may_open_count"] == 0
         assert enable_row["actual"]["executor_gate_may_open_count"] == 0
+        assert enable_row["actual"]["ownership_marker_passed_count"] == 1
+        ownership_row = find_row(report, "durable_ownership_marker_contract")
+        assert ownership_row["status"] == "passed"
+        assert ownership_row["actual"]["durable_ownership_marker_policy_ready_count"] == 1
+        assert ownership_row["actual"]["durable_ownership_delete_without_marker_allowed_count"] == 0
+        assert ownership_row["actual"]["durable_ownership_delete_preexisting_asset_allowed_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         assert find_row(report, "durable_read_only_live_preflight")["status"] == "passed"
         assert find_row(report, "project_filesystem_side_effect_boundary")["status"] == "passed"

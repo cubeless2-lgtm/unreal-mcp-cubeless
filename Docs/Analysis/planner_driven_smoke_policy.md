@@ -68,4 +68,8 @@ job manifest until dedicated reinforcement exists.
 - Section 51 durable authoring enable contract may be reported, but
   `durable_executor_may_open=false` and the save/delete/rename forbidden-command
   flags mean the smoke runner must not run durable executor commands.
+- Section 52 durable ownership marker contract may be reported, but
+  `delete_without_marker_allowed=false`, `delete_preexisting_asset_allowed=false`,
+  and `delete_allowed_now=false` mean the smoke runner must not run durable
+  rollback/delete commands.
 - Section 11 does not require C++ changes.

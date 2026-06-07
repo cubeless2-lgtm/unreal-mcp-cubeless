@@ -21,11 +21,12 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 import bp_authoring_durable_enable_contract as durable_enable
+import bp_authoring_durable_ownership_contract as durable_ownership
 import bp_authoring_planner as planner
 import external_project_readiness_analyzer as base
 
 
-MANIFEST_VERSION = "section_51_bp_authoring_job_contract_v29"
+MANIFEST_VERSION = "section_52_bp_authoring_job_contract_v30"
 DEFAULT_TEMP_PACKAGE_PATH = "/Game/_MCP_Temp/PlannerDrivenSmoke"
 
 AUTHORING_COMMANDS = {
@@ -348,7 +349,11 @@ def build_overwrite_rename_decision_contract(
     }
 
 
-def build_durable_rollback_policy_contract(requested: bool, target_asset_path: str) -> Dict[str, Any]:
+def build_durable_rollback_policy_contract(
+    requested: bool,
+    target_asset_path: str,
+    ownership_marker_contract: Dict[str, Any],
+) -> Dict[str, Any]:
     return {
         "id": "durable_rollback_policy",
         "schema": "section_37_durable_rollback_policy_contract_v1",
@@ -363,13 +368,18 @@ def build_durable_rollback_policy_contract(requested: bool, target_asset_path: s
         "overwrite_existing_asset_allowed": False,
         "keep_failed_draft_allowed": False,
         "requires_executor_created_asset_marker": requested,
+        "ownership_marker_policy_ready": bool(ownership_marker_contract.get("ownership_marker_policy_ready")),
+        "ownership_marker_schema": ownership_marker_contract.get("schema", ""),
         "protects_preexisting_assets": True,
-        "allowed_delete_scope": "none until durable executor records created asset ownership",
+        "allowed_delete_scope": ownership_marker_contract.get(
+            "allowed_rollback_delete_scope",
+            "none until durable executor records created asset ownership",
+        ),
         "required_reinforcement": []
         if not requested
         else [
-            "define durable executor ownership markers for newly created assets",
             "define rollback behavior for create failure, compile failure, save failure, and cancellation",
+            "connect rollback delete authorization to the Section 52 ownership marker contract",
             "prove preexisting assets cannot be deleted or overwritten without explicit policy",
         ],
     }
@@ -506,6 +516,7 @@ def build_durable_executor_readiness_contract(
 def build_durable_executor_skeleton_contract(
     requested: bool,
     preflight_schema: str,
+    ownership_marker_contract: Dict[str, Any],
     save_gate_contract: Dict[str, Any],
     rollback_policy_contract: Dict[str, Any],
     readiness_contract: Dict[str, Any],
@@ -536,6 +547,7 @@ def build_durable_executor_skeleton_contract(
         "durable_executor_may_open": bool(enable_contract.get("durable_executor_may_open")),
         "input_contracts": [
             preflight_schema,
+            ownership_marker_contract["schema"],
             enable_contract["schema"],
             save_gate_contract["schema"],
             rollback_policy_contract["schema"],
@@ -543,6 +555,7 @@ def build_durable_executor_skeleton_contract(
         ],
         "required_manifest_inputs": [
             "durable_preflight_contract",
+            "durable_ownership_marker_contract",
             "durable_enable_contract",
             "durable_save_gate_contract",
             "durable_rollback_policy_contract",
@@ -588,7 +601,12 @@ def build_durable_preflight_contract(
     overwrite_decision_present = request_mentions_overwrite_decision(request_text) if requested else False
     rename_decision_present = request_mentions_rename_decision(request_text) if requested else False
     overwrite_rename_decision_contract = build_overwrite_rename_decision_contract(requested, request_text, target_asset_path)
-    rollback_policy_contract = build_durable_rollback_policy_contract(requested, target_asset_path)
+    ownership_marker_contract = durable_ownership.build_ownership_marker_contract(requested, target_asset_path)
+    rollback_policy_contract = build_durable_rollback_policy_contract(
+        requested,
+        target_asset_path,
+        ownership_marker_contract,
+    )
     asset_exists_check_required = requested and bool(target_asset_path)
     overwrite_decision_required = requested and bool(target_asset_path)
     save_gate_contract = build_durable_save_gate_contract(
@@ -612,11 +630,12 @@ def build_durable_preflight_contract(
         package_path_allowed=package_path_allowed,
         overwrite_rename_decision_contract=overwrite_rename_decision_contract,
         rollback_policy_contract=rollback_policy_contract,
-        ownership_marker_policy_ready=False,
+        ownership_marker_policy_ready=ownership_marker_contract["ownership_marker_policy_ready"],
     )
     executor_skeleton_contract = build_durable_executor_skeleton_contract(
         requested,
         "section_39_durable_preflight_contract_v1",
+        ownership_marker_contract,
         save_gate_contract,
         rollback_policy_contract,
         readiness_contract,
@@ -649,6 +668,7 @@ def build_durable_preflight_contract(
         "overwrite_decision_present": overwrite_decision_present,
         "rename_decision_present": rename_decision_present,
         "overwrite_rename_decision_contract": overwrite_rename_decision_contract,
+        "durable_ownership_marker_contract": ownership_marker_contract,
         "durable_enable_contract": enable_contract,
         "durable_save_gate_contract": save_gate_contract,
         "durable_rollback_policy_contract": rollback_policy_contract,
@@ -701,6 +721,7 @@ def build_durable_authoring_contract(
         "save_allowed": False,
         "temporary_smoke_may_save": False,
         "durable_preflight_contract": preflight_contract,
+        "durable_ownership_marker_contract": preflight_contract["durable_ownership_marker_contract"],
         "durable_enable_contract": preflight_contract["durable_enable_contract"],
         "overwrite_policy": "requires_explicit_review",
         "preflight_required": [
@@ -746,6 +767,9 @@ def build_authoring_executor_contract(
         },
         "durable_authoring": durable_authoring_contract,
         "durable_preflight": durable_authoring_contract["durable_preflight_contract"],
+        "durable_ownership_marker": durable_authoring_contract["durable_preflight_contract"][
+            "durable_ownership_marker_contract"
+        ],
         "durable_enable_contract": durable_authoring_contract["durable_preflight_contract"]["durable_enable_contract"],
         "durable_save_gate": durable_authoring_contract["durable_preflight_contract"]["durable_save_gate_contract"],
         "durable_rollback_policy": durable_authoring_contract["durable_preflight_contract"]["durable_rollback_policy_contract"],
@@ -3134,6 +3158,9 @@ def build_job_manifest(
         "parent_class_contract": parent_class_contract,
         "durable_authoring_contract": durable_authoring_contract,
         "durable_preflight_contract": durable_authoring_contract["durable_preflight_contract"],
+        "durable_ownership_marker_contract": durable_authoring_contract["durable_preflight_contract"][
+            "durable_ownership_marker_contract"
+        ],
         "durable_enable_contract": durable_authoring_contract["durable_preflight_contract"]["durable_enable_contract"],
         "durable_save_gate_contract": durable_authoring_contract["durable_preflight_contract"]["durable_save_gate_contract"],
         "durable_rollback_policy_contract": durable_authoring_contract["durable_preflight_contract"][
@@ -3314,6 +3341,24 @@ def summarize_manifests(manifests: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
             manifest.get("durable_executor_skeleton_contract", {}).get("allowed_live_command_count", 0)
             for manifest in manifests
         ),
+        "durable_ownership_marker_request_count": sum(
+            1 for manifest in manifests if manifest.get("durable_ownership_marker_contract", {}).get("requested")
+        ),
+        "durable_ownership_marker_policy_ready_count": sum(
+            1
+            for manifest in manifests
+            if manifest.get("durable_ownership_marker_contract", {}).get("ownership_marker_policy_ready")
+        ),
+        "durable_ownership_delete_without_marker_allowed_count": sum(
+            1
+            for manifest in manifests
+            if manifest.get("durable_ownership_marker_contract", {}).get("delete_without_marker_allowed")
+        ),
+        "durable_ownership_delete_preexisting_asset_allowed_count": sum(
+            1
+            for manifest in manifests
+            if manifest.get("durable_ownership_marker_contract", {}).get("delete_preexisting_asset_allowed")
+        ),
         "durable_enable_contract_summary": enable_summary,
         "durable_enable_contract_request_count": enable_summary["durable_requested_manifest_count"],
         "durable_enable_contract_satisfied_count": enable_summary["enable_contract_satisfied_count"],
@@ -3410,6 +3455,10 @@ def render_markdown(report: Dict[str, Any]) -> str:
         f"- Durable executor skeleton enabled: `{summary['durable_executor_skeleton_enabled_count']}`",
         f"- Durable executor skeleton executable: `{summary['durable_executor_skeleton_executable_count']}`",
         f"- Durable executor skeleton command count: `{summary['durable_executor_skeleton_command_count']}`",
+        f"- Durable ownership marker requests: `{summary['durable_ownership_marker_request_count']}`",
+        f"- Durable ownership marker policy ready: `{summary['durable_ownership_marker_policy_ready_count']}`",
+        f"- Durable delete without marker allowed: `{summary['durable_ownership_delete_without_marker_allowed_count']}`",
+        f"- Durable delete preexisting asset allowed: `{summary['durable_ownership_delete_preexisting_asset_allowed_count']}`",
         f"- Durable enable contract requests: `{summary['durable_enable_contract_request_count']}`",
         f"- Durable enable contract satisfied: `{summary['durable_enable_contract_satisfied_count']}`",
         f"- Durable enable executor may open: `{summary['durable_enable_executor_may_open_count']}`",
@@ -3445,6 +3494,8 @@ def render_markdown(report: Dict[str, Any]) -> str:
                 f"- Durable preflight pass: `{manifest['durable_preflight_contract']['preflight_pass']}`",
                 f"- Durable overwrite/rename decision: `{manifest['durable_preflight_contract']['overwrite_rename_decision_contract']['decision']}`",
                 f"- Durable save gate allowed: `{manifest['durable_save_gate_contract']['save_allowed']}`",
+                f"- Durable ownership marker ready: `{manifest['durable_ownership_marker_contract']['ownership_marker_policy_ready']}`",
+                f"- Durable ownership delete without marker: `{manifest['durable_ownership_marker_contract']['delete_without_marker_allowed']}`",
                 f"- Durable rollback ready: `{manifest['durable_rollback_policy_contract']['rollback_policy_ready']}`",
                 f"- Durable executor ready: `{manifest['durable_executor_readiness_contract']['durable_executor_ready']}`",
                 f"- Durable enable satisfied: `{manifest['durable_enable_contract']['enable_contract_satisfied']}`",

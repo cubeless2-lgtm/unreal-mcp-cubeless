@@ -58,16 +58,20 @@ def main() -> int:
         assert report["authoring_job_contract"]["durable_executor_skeleton_enabled_count"] == 0
         assert report["authoring_job_contract"]["durable_executor_skeleton_executable_count"] == 0
         assert report["authoring_job_contract"]["durable_executor_skeleton_command_count"] == 0
+        assert report["authoring_job_contract"]["durable_ownership_marker_request_count"] == 1
+        assert report["authoring_job_contract"]["durable_ownership_marker_policy_ready_count"] == 1
+        assert report["authoring_job_contract"]["durable_ownership_delete_without_marker_allowed_count"] == 0
+        assert report["authoring_job_contract"]["durable_ownership_delete_preexisting_asset_allowed_count"] == 0
         assert report["authoring_job_contract"]["durable_enable_contract_request_count"] == 1
         assert report["authoring_job_contract"]["durable_enable_contract_satisfied_count"] == 0
         assert report["authoring_job_contract"]["durable_enable_executor_may_open_count"] == 0
         assert report["authoring_job_contract"]["durable_enable_authoring_allowed_count"] == 0
         assert report["authoring_job_contract"]["durable_enable_forbidden_command_allowed_count"] == 0
-        assert report["authoring_job_contract"]["durable_enable_failed_required_gate_count"] == 3
+        assert report["authoring_job_contract"]["durable_enable_failed_required_gate_count"] == 2
         assert report["authoring_job_contract"]["durable_enable_target_package_allowlist_passed_count"] == 1
         assert report["authoring_job_contract"]["durable_enable_overwrite_rename_decision_passed_count"] == 0
         assert report["authoring_job_contract"]["durable_enable_rollback_readiness_passed_count"] == 0
-        assert report["authoring_job_contract"]["durable_enable_ownership_marker_passed_count"] == 0
+        assert report["authoring_job_contract"]["durable_enable_ownership_marker_passed_count"] == 1
         assert report["manifest_executor"]["executor_version"] == smoke.manifest_executor.EXECUTOR_VERSION
         assert report["manifest_executor"]["executable_by_executor_count"] == 12
         assert report["manifest_executor"]["blocked_by_executor_count"] == 7
@@ -82,7 +86,10 @@ def main() -> int:
         assert report["manifest_executor"]["durable_gate_summary"]["read_only_live_preflight_allowed_count"] == 1
         assert report["manifest_executor"]["durable_gate_summary"]["durable_enable_contract_satisfied_count"] == 0
         assert report["manifest_executor"]["durable_gate_summary"]["durable_enable_executor_may_open_count"] == 0
-        assert report["manifest_executor"]["durable_gate_summary"]["durable_enable_failed_required_gate_count"] == 3
+        assert report["manifest_executor"]["durable_gate_summary"]["durable_enable_failed_required_gate_count"] == 2
+        assert report["manifest_executor"]["durable_gate_summary"]["ownership_marker_policy_ready_count"] == 1
+        assert report["manifest_executor"]["durable_gate_summary"]["delete_without_ownership_marker_allowed_count"] == 0
+        assert report["manifest_executor"]["durable_gate_summary"]["delete_preexisting_asset_allowed_count"] == 0
         assert report["manifest_executor"]["durable_gate_summary"]["durable_executor_enabled_count"] == 0
         assert report["manifest_executor"]["durable_gate_summary"]["durable_executor_executable_count"] == 0
         assert report["manifest_executor"]["durable_gate_summary"]["allowed_live_authoring_command_count"] == 0
@@ -149,8 +156,10 @@ def main() -> int:
         assert durable_save["durable_preflight_contract"]["durable_enable_contract"]["failed_required_gate_ids"] == [
             "overwrite_rename_decision",
             "rollback_readiness",
-            "executor_created_ownership_marker",
         ]
+        assert durable_save["durable_preflight_contract"]["durable_ownership_marker_contract"][
+            "ownership_marker_policy_ready"
+        ] is True
         assert durable_save["durable_preflight_contract"]["durable_save_gate_contract"]["save_allowed"] is False
         assert "rollback_policy_not_ready" in durable_save["durable_preflight_contract"]["durable_save_gate_contract"]["blocked_by"]
         assert durable_save["durable_preflight_contract"]["durable_executor_readiness_contract"]["durable_executor_ready"] is False
