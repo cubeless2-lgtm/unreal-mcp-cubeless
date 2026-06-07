@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 import bp_authoring_durable_canary_contract as durable_canary
+import bp_authoring_durable_canary_approval_contract as durable_canary_approval
 import bp_authoring_durable_enable_contract as durable_enable
 import bp_authoring_durable_dry_run_plan as durable_dry_run
 import bp_authoring_durable_ownership_contract as durable_ownership
@@ -29,7 +30,7 @@ import bp_authoring_planner as planner
 import external_project_readiness_analyzer as base
 
 
-MANIFEST_VERSION = "section_55_bp_authoring_job_contract_v33"
+MANIFEST_VERSION = "section_56_bp_authoring_job_contract_v34"
 DEFAULT_TEMP_PACKAGE_PATH = "/Game/_MCP_Temp/PlannerDrivenSmoke"
 
 AUTHORING_COMMANDS = {
@@ -682,9 +683,16 @@ def build_durable_preflight_contract(
         ownership_marker_contract=ownership_marker_contract,
         save_simulation_contract=save_validation_simulation_contract,
     )
+    canary_approval_gate_contract = durable_canary_approval.build_canary_approval_gate_contract(
+        requested=requested,
+        canary_prep_contract=canary_prep_contract,
+        approval_record=durable_canary_approval.build_scoped_canary_approval_record(canary_prep_contract),
+    )
     if requested:
         executor_skeleton_contract["input_contracts"].append(canary_prep_contract["schema"])
+        executor_skeleton_contract["input_contracts"].append(canary_approval_gate_contract["schema"])
         executor_skeleton_contract["required_manifest_inputs"].append("durable_canary_prep_contract")
+        executor_skeleton_contract["required_manifest_inputs"].append("durable_canary_approval_gate_contract")
     save_gate_passed = False
     preflight_pass = (
         requested
@@ -717,6 +725,7 @@ def build_durable_preflight_contract(
         "durable_dry_run_plan_contract": dry_run_plan_contract,
         "durable_save_validation_simulation_contract": save_validation_simulation_contract,
         "durable_canary_prep_contract": canary_prep_contract,
+        "durable_canary_approval_gate_contract": canary_approval_gate_contract,
         "durable_save_gate_contract": save_gate_contract,
         "durable_rollback_policy_contract": rollback_policy_contract,
         "durable_executor_readiness_contract": readiness_contract,
@@ -773,6 +782,7 @@ def build_durable_authoring_contract(
         "durable_dry_run_plan_contract": preflight_contract["durable_dry_run_plan_contract"],
         "durable_save_validation_simulation_contract": preflight_contract["durable_save_validation_simulation_contract"],
         "durable_canary_prep_contract": preflight_contract["durable_canary_prep_contract"],
+        "durable_canary_approval_gate_contract": preflight_contract["durable_canary_approval_gate_contract"],
         "overwrite_policy": "requires_explicit_review",
         "preflight_required": [
             "asset_exists_check",
@@ -828,6 +838,9 @@ def build_authoring_executor_contract(
             "durable_save_validation_simulation_contract"
         ],
         "durable_canary_prep": durable_authoring_contract["durable_preflight_contract"]["durable_canary_prep_contract"],
+        "durable_canary_approval_gate": durable_authoring_contract["durable_preflight_contract"][
+            "durable_canary_approval_gate_contract"
+        ],
         "durable_save_gate": durable_authoring_contract["durable_preflight_contract"]["durable_save_gate_contract"],
         "durable_rollback_policy": durable_authoring_contract["durable_preflight_contract"]["durable_rollback_policy_contract"],
         "durable_executor_readiness": durable_authoring_contract["durable_preflight_contract"][
@@ -3228,6 +3241,9 @@ def build_job_manifest(
         "durable_canary_prep_contract": durable_authoring_contract["durable_preflight_contract"][
             "durable_canary_prep_contract"
         ],
+        "durable_canary_approval_gate_contract": durable_authoring_contract["durable_preflight_contract"][
+            "durable_canary_approval_gate_contract"
+        ],
         "durable_save_gate_contract": durable_authoring_contract["durable_preflight_contract"]["durable_save_gate_contract"],
         "durable_rollback_policy_contract": durable_authoring_contract["durable_preflight_contract"][
             "durable_rollback_policy_contract"
@@ -3335,6 +3351,9 @@ def summarize_manifests(manifests: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
     )
     canary_prep_summary = durable_canary.summarize_canary_prep_contracts(
         [manifest.get("durable_canary_prep_contract", {}) for manifest in manifests]
+    )
+    canary_approval_summary = durable_canary_approval.summarize_canary_approval_gate_contracts(
+        [manifest.get("durable_canary_approval_gate_contract", {}) for manifest in manifests]
     )
     return {
         "manifest_count": len(manifests),
@@ -3463,6 +3482,26 @@ def summarize_manifests(manifests: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
         "durable_canary_save_true_allowed_count": canary_prep_summary["save_true_allowed_count"],
         "durable_canary_save_asset_allowed_count": canary_prep_summary["save_asset_allowed_count"],
         "durable_canary_delete_asset_allowed_count": canary_prep_summary["delete_asset_allowed_count"],
+        "durable_canary_approval_summary": canary_approval_summary,
+        "durable_canary_approval_request_count": canary_approval_summary[
+            "durable_requested_canary_approval_count"
+        ],
+        "durable_canary_approval_record_present_count": canary_approval_summary["approval_record_present_count"],
+        "durable_canary_approval_gate_passed_count": canary_approval_summary["canary_approval_gate_passed_count"],
+        "durable_canary_approval_scoped_to_canary_package_count": canary_approval_summary[
+            "approval_scoped_to_canary_package_count"
+        ],
+        "durable_canary_executor_may_open_count": canary_approval_summary["canary_executor_may_open_count"],
+        "durable_canary_approval_live_execution_allowed_count": canary_approval_summary[
+            "canary_live_execution_allowed_count"
+        ],
+        "durable_canary_approval_general_blueprints_package_allowed_count": canary_approval_summary[
+            "general_blueprints_package_allowed_count"
+        ],
+        "durable_canary_approval_save_true_allowed_count": canary_approval_summary["save_true_allowed_count"],
+        "durable_canary_approval_save_asset_allowed_count": canary_approval_summary["save_asset_allowed_count"],
+        "durable_canary_approval_delete_asset_allowed_count": canary_approval_summary["delete_asset_allowed_count"],
+        "durable_canary_approval_live_command_count": canary_approval_summary["live_command_count"],
         "durable_enable_contract_summary": enable_summary,
         "durable_enable_contract_request_count": enable_summary["durable_requested_manifest_count"],
         "durable_enable_contract_satisfied_count": enable_summary["enable_contract_satisfied_count"],
@@ -3578,6 +3617,9 @@ def render_markdown(report: Dict[str, Any]) -> str:
         f"- Durable canary prep ready: `{summary['durable_canary_prep_ready_count']}`",
         f"- Durable canary live execution allowed: `{summary['durable_canary_live_execution_allowed_count']}`",
         f"- Durable canary general Blueprints package allowed: `{summary['durable_canary_general_blueprints_package_allowed_count']}`",
+        f"- Durable canary approval gates passed: `{summary['durable_canary_approval_gate_passed_count']}`",
+        f"- Durable canary executor may open: `{summary['durable_canary_executor_may_open_count']}`",
+        f"- Durable canary approval live execution allowed: `{summary['durable_canary_approval_live_execution_allowed_count']}`",
         f"- Durable enable contract requests: `{summary['durable_enable_contract_request_count']}`",
         f"- Durable enable contract satisfied: `{summary['durable_enable_contract_satisfied_count']}`",
         f"- Durable enable executor may open: `{summary['durable_enable_executor_may_open_count']}`",
@@ -3621,6 +3663,8 @@ def render_markdown(report: Dict[str, Any]) -> str:
                 f"- Durable save simulation save=true allowed: `{manifest['durable_save_validation_simulation_contract']['save_true_allowed']}`",
                 f"- Durable canary prep ready: `{manifest['durable_canary_prep_contract']['canary_prep_ready']}`",
                 f"- Durable canary live allowed: `{manifest['durable_canary_prep_contract']['canary_live_execution_allowed']}`",
+                f"- Durable canary approval passed: `{manifest['durable_canary_approval_gate_contract']['canary_approval_gate_passed']}`",
+                f"- Durable canary approval live allowed: `{manifest['durable_canary_approval_gate_contract']['canary_live_execution_allowed']}`",
                 f"- Durable rollback ready: `{manifest['durable_rollback_policy_contract']['rollback_policy_ready']}`",
                 f"- Durable executor ready: `{manifest['durable_executor_readiness_contract']['durable_executor_ready']}`",
                 f"- Durable enable satisfied: `{manifest['durable_enable_contract']['enable_contract_satisfied']}`",

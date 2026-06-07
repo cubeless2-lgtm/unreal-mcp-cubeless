@@ -372,6 +372,10 @@ def build_durable_executor_gate(manifest: Dict[str, Any], command_plan: Sequence
         preflight.get("durable_save_validation_simulation_contract", {}),
     )
     canary_prep = manifest.get("durable_canary_prep_contract", preflight.get("durable_canary_prep_contract", {}))
+    canary_approval = manifest.get(
+        "durable_canary_approval_gate_contract",
+        preflight.get("durable_canary_approval_gate_contract", {}),
+    )
     readiness = manifest.get(
         "durable_executor_readiness_contract",
         preflight.get("durable_executor_readiness_contract", {}),
@@ -413,6 +417,13 @@ def build_durable_executor_gate(manifest: Dict[str, Any], command_plan: Sequence
         or canary_prep.get("save_true_allowed")
         or canary_prep.get("save_asset_allowed")
         or canary_prep.get("delete_asset_allowed")
+        or canary_approval.get("canary_executor_may_open")
+        or canary_approval.get("canary_live_execution_allowed")
+        or canary_approval.get("general_blueprints_package_allowed")
+        or canary_approval.get("save_true_allowed")
+        or canary_approval.get("save_asset_allowed")
+        or canary_approval.get("delete_asset_allowed")
+        or canary_approval.get("live_command_count", 0) > 0
         or any(item.get("save_requested") for item in command_plan)
         or any(item.get("command") in FORBIDDEN_LIVE_COMMANDS for item in command_plan)
     )
@@ -439,6 +450,7 @@ def build_durable_executor_gate(manifest: Dict[str, Any], command_plan: Sequence
     required_before_execution.update(dry_run_plan.get("required_reinforcement", []))
     required_before_execution.update(save_simulation.get("required_reinforcement", []))
     required_before_execution.update(canary_prep.get("required_reinforcement", []))
+    required_before_execution.update(canary_approval.get("required_reinforcement", []))
     required_before_execution.update(save_gate.get("required_reinforcement", []))
     required_before_execution.update(rollback.get("required_reinforcement", []))
     required_before_execution.update(enable_contract.get("required_reinforcement", []))
@@ -483,6 +495,20 @@ def build_durable_executor_gate(manifest: Dict[str, Any], command_plan: Sequence
         "canary_save_true_allowed": bool(canary_prep.get("save_true_allowed")),
         "canary_save_asset_allowed": bool(canary_prep.get("save_asset_allowed")),
         "canary_delete_asset_allowed": bool(canary_prep.get("delete_asset_allowed")),
+        "canary_approval_record_present": bool(canary_approval.get("approval_record_present")),
+        "canary_approval_gate_passed": bool(canary_approval.get("canary_approval_gate_passed")),
+        "canary_approval_scoped_to_canary_package": bool(
+            canary_approval.get("approval_scoped_to_canary_package")
+        ),
+        "canary_approval_executor_may_open": bool(canary_approval.get("canary_executor_may_open")),
+        "canary_approval_live_execution_allowed": bool(canary_approval.get("canary_live_execution_allowed")),
+        "canary_approval_general_blueprints_package_allowed": bool(
+            canary_approval.get("general_blueprints_package_allowed")
+        ),
+        "canary_approval_save_true_allowed": bool(canary_approval.get("save_true_allowed")),
+        "canary_approval_save_asset_allowed": bool(canary_approval.get("save_asset_allowed")),
+        "canary_approval_delete_asset_allowed": bool(canary_approval.get("delete_asset_allowed")),
+        "canary_approval_live_command_count": int(canary_approval.get("live_command_count", 0)),
         "durable_executor_enabled": executor_enabled,
         "durable_executor_can_execute": executor_can_execute,
         "durable_executor_command_count": len(skeleton_command_plan),
@@ -549,6 +575,13 @@ def build_executor_policy(manifest: Dict[str, Any], temp_package_path: str) -> D
         or durable_gate["canary_save_true_allowed"]
         or durable_gate["canary_save_asset_allowed"]
         or durable_gate["canary_delete_asset_allowed"]
+        or durable_gate["canary_approval_executor_may_open"]
+        or durable_gate["canary_approval_live_execution_allowed"]
+        or durable_gate["canary_approval_general_blueprints_package_allowed"]
+        or durable_gate["canary_approval_save_true_allowed"]
+        or durable_gate["canary_approval_save_asset_allowed"]
+        or durable_gate["canary_approval_delete_asset_allowed"]
+        or durable_gate["canary_approval_live_command_count"] > 0
         or durable_gate["contract_save_allowed"]
         or durable_gate["save_or_delete_commands_allowed"]
         or durable_gate["allowed_live_authoring_command_count"]
@@ -814,6 +847,34 @@ def summarize_executor_policies(manifests: Sequence[Dict[str, Any]], temp_packag
         "canary_save_true_allowed_count": sum(1 for gate in durable_gates if gate["canary_save_true_allowed"]),
         "canary_save_asset_allowed_count": sum(1 for gate in durable_gates if gate["canary_save_asset_allowed"]),
         "canary_delete_asset_allowed_count": sum(1 for gate in durable_gates if gate["canary_delete_asset_allowed"]),
+        "canary_approval_record_present_count": sum(
+            1 for gate in durable_gates if gate["canary_approval_record_present"]
+        ),
+        "canary_approval_gate_passed_count": sum(1 for gate in durable_gates if gate["canary_approval_gate_passed"]),
+        "canary_approval_scoped_to_canary_package_count": sum(
+            1 for gate in durable_gates if gate["canary_approval_scoped_to_canary_package"]
+        ),
+        "canary_approval_executor_may_open_count": sum(
+            1 for gate in durable_gates if gate["canary_approval_executor_may_open"]
+        ),
+        "canary_approval_live_execution_allowed_count": sum(
+            1 for gate in durable_gates if gate["canary_approval_live_execution_allowed"]
+        ),
+        "canary_approval_general_blueprints_package_allowed_count": sum(
+            1 for gate in durable_gates if gate["canary_approval_general_blueprints_package_allowed"]
+        ),
+        "canary_approval_save_true_allowed_count": sum(
+            1 for gate in durable_gates if gate["canary_approval_save_true_allowed"]
+        ),
+        "canary_approval_save_asset_allowed_count": sum(
+            1 for gate in durable_gates if gate["canary_approval_save_asset_allowed"]
+        ),
+        "canary_approval_delete_asset_allowed_count": sum(
+            1 for gate in durable_gates if gate["canary_approval_delete_asset_allowed"]
+        ),
+        "canary_approval_live_command_count": sum(
+            gate["canary_approval_live_command_count"] for gate in durable_gates
+        ),
         "durable_executor_enabled_count": sum(1 for gate in durable_gates if gate["durable_executor_enabled"]),
         "durable_executor_executable_count": sum(1 for gate in durable_gates if gate["durable_executor_can_execute"]),
         "durable_executor_command_count": sum(gate["durable_executor_command_count"] for gate in durable_gates),
@@ -838,6 +899,13 @@ def summarize_executor_policies(manifests: Sequence[Dict[str, Any]], temp_packag
             and sum(1 for gate in durable_gates if gate["canary_save_true_allowed"]) == 0
             and sum(1 for gate in durable_gates if gate["canary_save_asset_allowed"]) == 0
             and sum(1 for gate in durable_gates if gate["canary_delete_asset_allowed"]) == 0
+            and sum(1 for gate in durable_gates if gate["canary_approval_executor_may_open"]) == 0
+            and sum(1 for gate in durable_gates if gate["canary_approval_live_execution_allowed"]) == 0
+            and sum(1 for gate in durable_gates if gate["canary_approval_general_blueprints_package_allowed"]) == 0
+            and sum(1 for gate in durable_gates if gate["canary_approval_save_true_allowed"]) == 0
+            and sum(1 for gate in durable_gates if gate["canary_approval_save_asset_allowed"]) == 0
+            and sum(1 for gate in durable_gates if gate["canary_approval_delete_asset_allowed"]) == 0
+            and sum(gate["canary_approval_live_command_count"] for gate in durable_gates) == 0
             and sum(1 for gate in durable_gates if gate["durable_executor_enabled"]) == 0
             and sum(1 for gate in durable_gates if gate["durable_executor_can_execute"]) == 0
             and sum(gate["allowed_live_authoring_command_count"] for gate in durable_gates) == 0

@@ -383,6 +383,70 @@ def build_durable_canary_prep_row(contract_summary: Dict[str, Any], executor_sum
     )
 
 
+def build_durable_canary_approval_row(
+    contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
+) -> Dict[str, Any]:
+    approval_summary = contract_summary.get("durable_canary_approval_summary", {})
+    durable_gate_summary = executor_summary.get("durable_gate_summary", {})
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_canary_approval_count": 1,
+        "approval_record_present_count": 1,
+        "canary_approval_gate_passed_count": 1,
+        "approval_scoped_to_canary_package_count": 1,
+        "canary_executor_may_open_count": 0,
+        "canary_live_execution_allowed_count": 0,
+        "general_blueprints_package_allowed_count": 0,
+        "save_true_allowed_count": 0,
+        "save_asset_allowed_count": 0,
+        "delete_asset_allowed_count": 0,
+        "live_command_count": 0,
+        "executor_gate_canary_approval_gate_passed_count": 1,
+        "executor_gate_canary_executor_may_open_count": 0,
+        "executor_gate_canary_live_allowed_count": 0,
+    }
+    actual = {
+        "summary_status": approval_summary.get("status"),
+        "durable_requested_canary_approval_count": approval_summary.get(
+            "durable_requested_canary_approval_count"
+        ),
+        "approval_record_present_count": approval_summary.get("approval_record_present_count"),
+        "canary_approval_gate_passed_count": approval_summary.get("canary_approval_gate_passed_count"),
+        "approval_scoped_to_canary_package_count": approval_summary.get(
+            "approval_scoped_to_canary_package_count"
+        ),
+        "canary_executor_may_open_count": approval_summary.get("canary_executor_may_open_count"),
+        "canary_live_execution_allowed_count": approval_summary.get("canary_live_execution_allowed_count"),
+        "general_blueprints_package_allowed_count": approval_summary.get(
+            "general_blueprints_package_allowed_count"
+        ),
+        "save_true_allowed_count": approval_summary.get("save_true_allowed_count"),
+        "save_asset_allowed_count": approval_summary.get("save_asset_allowed_count"),
+        "delete_asset_allowed_count": approval_summary.get("delete_asset_allowed_count"),
+        "live_command_count": approval_summary.get("live_command_count"),
+        "executor_gate_canary_approval_gate_passed_count": durable_gate_summary.get(
+            "canary_approval_gate_passed_count"
+        ),
+        "executor_gate_canary_executor_may_open_count": durable_gate_summary.get(
+            "canary_approval_executor_may_open_count"
+        ),
+        "executor_gate_canary_live_allowed_count": durable_gate_summary.get(
+            "canary_approval_live_execution_allowed_count"
+        ),
+    }
+    return row(
+        "durable_canary_approval_gate_contract",
+        "Section 56 durable canary approval gate",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "Canary approval must be explicit and scoped to /Game/_MCP_Temp/DurableCanary.",
+            "Approval gate still does not open live durable canary execution.",
+        ),
+    )
+
+
 def build_planner_live_rows(planner_report_path: Path, planner_report: Optional[Dict[str, Any]]) -> List[Dict[str, Any]]:
     if planner_report is None:
         return [missing_row("planner_driven_live_smoke_report", "Planner-driven live smoke report", planner_report_path)]
@@ -555,6 +619,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         build_durable_dry_run_plan_row(contract_summary, executor_summary),
         build_durable_save_simulator_row(contract_summary, executor_summary),
         build_durable_canary_prep_row(contract_summary, executor_summary),
+        build_durable_canary_approval_row(contract_summary, executor_summary),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -581,12 +646,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "durable_authoring_enabled": False,
             "durable_authoring_release_status": "not_enabled_read_only_preflight_only",
             "current_authoring_ceiling": (
-                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_and_section_55_canary_prep"
+                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_and_section_56_canary_approval_gate"
             ),
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
-            "explicit durable canary approval gate after Section 55 prep remains non-executable",
+            "live durable canary preflight boundary after Section 56 approval remains non-saving",
             "component default/type readback expansion for broader Blueprint classes",
             "function call diagnostics and graph layout repair suggestions",
             "UMG/CommonUI authoring classifier and non-executable manifest coverage",

@@ -1,7 +1,7 @@
 {
   "schema": "section_49_50_bp_authoring_release_boundary_v1",
   "analysis_kind": "bp_authoring_release_boundary",
-  "generated_at": "2026-06-07T07:30:25.795174+00:00",
+  "generated_at": "2026-06-07T07:37:18.532252+00:00",
   "repo_root": "D:\\Git\\unreal-mcp-cubeless",
   "project_root": "D:\\Git\\CubelessStylized",
   "report_inputs": {
@@ -315,6 +315,50 @@
       ]
     },
     {
+      "id": "durable_canary_approval_gate_contract",
+      "label": "Section 56 durable canary approval gate",
+      "status": "passed",
+      "blocking": true,
+      "expected": {
+        "summary_status": "passed",
+        "durable_requested_canary_approval_count": 1,
+        "approval_record_present_count": 1,
+        "canary_approval_gate_passed_count": 1,
+        "approval_scoped_to_canary_package_count": 1,
+        "canary_executor_may_open_count": 0,
+        "canary_live_execution_allowed_count": 0,
+        "general_blueprints_package_allowed_count": 0,
+        "save_true_allowed_count": 0,
+        "save_asset_allowed_count": 0,
+        "delete_asset_allowed_count": 0,
+        "live_command_count": 0,
+        "executor_gate_canary_approval_gate_passed_count": 1,
+        "executor_gate_canary_executor_may_open_count": 0,
+        "executor_gate_canary_live_allowed_count": 0
+      },
+      "actual": {
+        "summary_status": "passed",
+        "durable_requested_canary_approval_count": 1,
+        "approval_record_present_count": 1,
+        "canary_approval_gate_passed_count": 1,
+        "approval_scoped_to_canary_package_count": 1,
+        "canary_executor_may_open_count": 0,
+        "canary_live_execution_allowed_count": 0,
+        "general_blueprints_package_allowed_count": 0,
+        "save_true_allowed_count": 0,
+        "save_asset_allowed_count": 0,
+        "delete_asset_allowed_count": 0,
+        "live_command_count": 0,
+        "executor_gate_canary_approval_gate_passed_count": 1,
+        "executor_gate_canary_executor_may_open_count": 0,
+        "executor_gate_canary_live_allowed_count": 0
+      },
+      "notes": [
+        "Canary approval must be explicit and scoped to /Game/_MCP_Temp/DurableCanary.",
+        "Approval gate still does not open live durable canary execution."
+      ]
+    },
+    {
       "id": "planner_driven_live_smoke_report",
       "label": "Planner-driven live smoke report",
       "status": "passed",
@@ -436,11 +480,11 @@
     "ready_for_main_push": true,
     "durable_authoring_enabled": false,
     "durable_authoring_release_status": "not_enabled_read_only_preflight_only",
-    "current_authoring_ceiling": "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_and_section_55_canary_prep",
+    "current_authoring_ceiling": "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_and_section_56_canary_approval_gate",
     "cxx_changes_required": false
   },
   "next_reinforcement_candidates": [
-    "explicit durable canary approval gate after Section 55 prep remains non-executable",
+    "live durable canary preflight boundary after Section 56 approval remains non-saving",
     "component default/type readback expansion for broader Blueprint classes",
     "function call diagnostics and graph layout repair suggestions",
     "UMG/CommonUI authoring classifier and non-executable manifest coverage"

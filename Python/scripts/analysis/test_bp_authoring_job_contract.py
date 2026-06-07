@@ -128,6 +128,17 @@ def main() -> int:
         assert report["summary"]["durable_canary_save_true_allowed_count"] == 0
         assert report["summary"]["durable_canary_save_asset_allowed_count"] == 0
         assert report["summary"]["durable_canary_delete_asset_allowed_count"] == 0
+        assert report["summary"]["durable_canary_approval_request_count"] == 1
+        assert report["summary"]["durable_canary_approval_record_present_count"] == 1
+        assert report["summary"]["durable_canary_approval_gate_passed_count"] == 1
+        assert report["summary"]["durable_canary_approval_scoped_to_canary_package_count"] == 1
+        assert report["summary"]["durable_canary_executor_may_open_count"] == 0
+        assert report["summary"]["durable_canary_approval_live_execution_allowed_count"] == 0
+        assert report["summary"]["durable_canary_approval_general_blueprints_package_allowed_count"] == 0
+        assert report["summary"]["durable_canary_approval_save_true_allowed_count"] == 0
+        assert report["summary"]["durable_canary_approval_save_asset_allowed_count"] == 0
+        assert report["summary"]["durable_canary_approval_delete_asset_allowed_count"] == 0
+        assert report["summary"]["durable_canary_approval_live_command_count"] == 0
         assert report["summary"]["durable_enable_contract_request_count"] == 1
         assert report["summary"]["durable_enable_contract_satisfied_count"] == 0
         assert report["summary"]["durable_enable_executor_may_open_count"] == 0
@@ -185,6 +196,11 @@ def main() -> int:
         assert safe_actor["durable_canary_prep_contract"]["requested"] is False
         assert safe_actor["durable_canary_prep_contract"]["canary_prep_ready"] is False
         assert safe_actor["durable_canary_prep_contract"]["canary_live_execution_allowed"] is False
+        assert safe_actor["durable_canary_approval_gate_contract"]["schema"] == "section_56_durable_canary_approval_gate_v1"
+        assert safe_actor["durable_canary_approval_gate_contract"]["requested"] is False
+        assert safe_actor["durable_canary_approval_gate_contract"]["approval_record_present"] is False
+        assert safe_actor["durable_canary_approval_gate_contract"]["canary_approval_gate_passed"] is False
+        assert safe_actor["durable_canary_approval_gate_contract"]["canary_live_execution_allowed"] is False
         assert safe_actor["durable_executor_readiness_contract"]["schema"] == "section_38_durable_executor_readiness_contract_v1"
         assert safe_actor["durable_executor_readiness_contract"]["requested"] is False
         assert safe_actor["durable_executor_readiness_contract"]["durable_executor_ready"] is False
@@ -380,6 +396,13 @@ def main() -> int:
         )
         assert durable_save["durable_canary_prep_contract"] == preflight_contract["durable_canary_prep_contract"]
         assert durable_save["durable_canary_prep_contract"] == durable_save["authoring_executor_contract"]["durable_canary_prep"]
+        assert durable_save["durable_canary_approval_gate_contract"] == preflight_contract[
+            "durable_canary_approval_gate_contract"
+        ]
+        assert (
+            durable_save["durable_canary_approval_gate_contract"]
+            == durable_save["authoring_executor_contract"]["durable_canary_approval_gate"]
+        )
         assert rollback_policy_contract == preflight_contract["durable_rollback_policy_contract"]
         assert readiness_contract == preflight_contract["durable_executor_readiness_contract"]
         assert skeleton_contract == preflight_contract["durable_executor_skeleton_contract"]
@@ -469,6 +492,21 @@ def main() -> int:
         assert canary_prep["delete_asset_allowed"] is False
         assert canary_prep["cleanup_requires_ownership_marker"] is True
         assert "section_55_prep_only_no_live_canary" in canary_prep["blocked_by"]
+        canary_approval = durable_save["durable_canary_approval_gate_contract"]
+        assert canary_approval["schema"] == "section_56_durable_canary_approval_gate_v1"
+        assert canary_approval["requested"] is True
+        assert canary_approval["canary_prep_ready"] is True
+        assert canary_approval["approval_record_present"] is True
+        assert canary_approval["approval_scoped_to_canary_package"] is True
+        assert canary_approval["canary_approval_gate_passed"] is True
+        assert canary_approval["canary_executor_may_open"] is False
+        assert canary_approval["canary_live_execution_allowed"] is False
+        assert canary_approval["general_blueprints_package_allowed"] is False
+        assert canary_approval["save_true_allowed"] is False
+        assert canary_approval["save_asset_allowed"] is False
+        assert canary_approval["delete_asset_allowed"] is False
+        assert canary_approval["live_command_count"] == 0
+        assert "section_56_approval_gate_does_not_enable_live_canary" in canary_approval["blocked_by"]
         assert rollback_policy_contract["schema"] == "section_37_durable_rollback_policy_contract_v1"
         assert rollback_policy_contract["requested"] is True
         assert rollback_policy_contract["policy_mode"] == "draft_only"
@@ -512,6 +550,7 @@ def main() -> int:
         assert "section_52_durable_ownership_marker_contract_v1" in skeleton_contract["input_contracts"]
         assert "section_51_durable_authoring_enable_contract_v1" in skeleton_contract["input_contracts"]
         assert "section_55_durable_canary_prep_contract_v1" in skeleton_contract["input_contracts"]
+        assert "section_56_durable_canary_approval_gate_v1" in skeleton_contract["input_contracts"]
         assert "section_37_durable_save_gate_contract_v1" in skeleton_contract["input_contracts"]
         assert "section_38_durable_executor_readiness_contract_v1" in skeleton_contract["input_contracts"]
         assert "durable_executor_skeleton_disabled" in skeleton_contract["disabled_by"]

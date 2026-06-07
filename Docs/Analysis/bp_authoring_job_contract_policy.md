@@ -1,6 +1,6 @@
 # BP Authoring Job Contract Policy
 
-This policy defines the Section 12 through Section 55 contract between a
+This policy defines the Section 12 through Section 56 contract between a
 planner verdict and live Blueprint authoring execution.
 
 ## Required Manifest Fields
@@ -32,6 +32,7 @@ Every user request must be converted into a structured manifest with:
 - durable preflight dry-run contract
 - durable authoring enable contract
 - durable canary preparation contract
+- durable canary approval gate contract
 - blocked or review reasons
 
 ## Execution Rule
@@ -213,6 +214,13 @@ reserve a canary target under `/Game/_MCP_Temp/DurableCanary`, but the prep
 contract keeps `canary_live_execution_allowed=false`,
 `general_blueprints_package_allowed=false`, `save_true_allowed=false`,
 `save_asset_allowed=false`, and `delete_asset_allowed=false`.
+
+Section 56 adds a durable canary approval gate. Durable requests may now carry
+an explicit approval record scoped to the Section 55 canary asset, but the gate
+keeps `canary_executor_may_open=false`,
+`canary_live_execution_allowed=false`, `save_true_allowed=false`,
+`save_asset_allowed=false`, `delete_asset_allowed=false`, and
+`live_command_count=0`.
 
 ## Section 13 Executable Templates
 
@@ -965,6 +973,32 @@ The contract defines a future canary target and cleanup boundary, not a live
 durable operation. Section 55 must keep the disabled durable executor closed
 and must not create, save, delete, rename, overwrite, or replace any asset.
 
+## Section 56 Durable Canary Approval Gate
+
+Durable preflight now embeds `durable_canary_approval_gate_contract`, also
+exposed at the manifest top level and inside `authoring_executor_contract`.
+
+The approval gate boundary is:
+
+- approval record schema: `section_56_durable_canary_approval_record_v1`
+- approval gate schema: `section_56_durable_canary_approval_gate_v1`
+- approved operation: `canary_preflight_only`
+- approval scope id: `durable_canary_prep`
+- approval record present: `true`
+- approval scoped to canary package: `true`
+- canary approval gate passed: `true`
+- canary executor may open: `false`
+- canary live execution allowed: `false`
+- general Blueprints package allowed: `false`
+- save true allowed: `false`
+- save asset allowed: `false`
+- delete asset allowed: `false`
+- live command count: `0`
+
+A missing, malformed, or differently scoped approval record must keep the gate
+failed. A passing Section 56 gate still does not authorize live execution; it
+only makes the future canary approval dependency explicit.
+
 ## Live Smoke Rule
 
 The planner-driven live smoke must execute the manifest, not the raw user
@@ -988,12 +1022,13 @@ dry-run until the parent class receives Section 31 reinforcement.
 A planner-safe request that asks for a saved or durable asset must also remain
 dry-run until Section 51 durable enable gates, Section 52 ownership marker
 policy, Section 53 dry-run plan, Section 54 save simulator, Section 55 canary
-prep, and a later durable executor release are all proven. A read-only
+prep, Section 56 canary approval gate, and a later durable executor release are
+all proven. A read-only
 asset-exists result, parsed overwrite/rename decision, draft save gate,
 readiness checklist entry, disabled durable executor skeleton, or ownership
-marker/dry-run/save-simulation/canary-prep contract alone must not enable
-durable save, delete, rename, overwrite, replacement behavior, or live canary
-execution.
+marker/dry-run/save-simulation/canary-prep/canary-approval contract alone must
+not enable durable save, delete, rename, overwrite, replacement behavior, or
+live canary execution.
 
 ## Validation
 

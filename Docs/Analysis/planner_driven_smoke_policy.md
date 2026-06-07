@@ -85,4 +85,9 @@ job manifest until dedicated reinforcement exists.
   `general_blueprints_package_allowed=false`, `save_true_allowed=false`,
   `save_asset_allowed=false`, and `delete_asset_allowed=false` mean the smoke
   runner must not run durable canary, save, or cleanup commands.
+- Section 56 durable canary approval gate may be reported, but
+  `canary_executor_may_open=false`, `canary_live_execution_allowed=false`,
+  `save_true_allowed=false`, `save_asset_allowed=false`,
+  `delete_asset_allowed=false`, and `live_command_count=0` mean the smoke runner
+  must not run durable canary, save, or cleanup commands.
 - Section 11 does not require C++ changes.

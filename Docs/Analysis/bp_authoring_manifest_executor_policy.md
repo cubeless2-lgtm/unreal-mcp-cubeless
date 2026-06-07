@@ -35,6 +35,9 @@ Blueprint authoring manifest and live UnrealMCP commands.
 14. Section 55 canary prep coverage must prove the canary target is limited to
     `/Game/_MCP_Temp/DurableCanary` and still allows no live canary, save, or
     delete commands.
+15. Section 56 canary approval coverage must prove approval is explicit and
+    scoped while still allowing no executor-open, live canary, save, or delete
+    commands.
 
 ## Execution Boundary
 
@@ -60,6 +63,9 @@ temporary manifests. It must block:
   or live command execution
 - any Section 55 canary prep contract that allows live canary execution,
   general `/Game/Blueprints` output, `save=true`, `save_asset`, or `delete_asset`
+- any Section 56 canary approval gate that allows executor open, live canary
+  execution, general `/Game/Blueprints` output, `save=true`, `save_asset`,
+  `delete_asset`, or any live command
 
 ## Validation
 
@@ -86,6 +92,10 @@ temporary manifests. It must block:
   ready contract, 0 live canary allowance, 0 general Blueprints package
   allowance, 0 save=true allowance, 0 save_asset allowance, and 0 delete_asset
   allowance.
+- Offline tests must prove the Section 56 canary approval count: 1 approval
+  record, 1 approval gate pass, 1 canary package scope match, 0 executor-open
+  allowance, 0 live canary allowance, 0 save/delete allowance, and 0 live
+  commands.
 - The planner-driven live smoke must report the executor version and executor
   executable count.
 - The planner-driven live smoke may perform only the read-only durable

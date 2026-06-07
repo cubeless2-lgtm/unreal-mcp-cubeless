@@ -1,7 +1,7 @@
 # BP Authoring Job Contract
 
-- Generated UTC: `2026-06-07T07:30:25.607671+00:00`
-- Manifest version: `section_55_bp_authoring_job_contract_v33`
+- Generated UTC: `2026-06-07T07:37:18.356091+00:00`
+- Manifest version: `section_56_bp_authoring_job_contract_v34`
 - Temp package path: `/Game/_MCP_Temp/PlannerDrivenSmoke`
 - Manifests: `19`
 - Executable manifests: `12`
@@ -49,6 +49,9 @@
 - Durable canary prep ready: `1`
 - Durable canary live execution allowed: `0`
 - Durable canary general Blueprints package allowed: `0`
+- Durable canary approval gates passed: `1`
+- Durable canary executor may open: `0`
+- Durable canary approval live execution allowed: `0`
 - Durable enable contract requests: `1`
 - Durable enable contract satisfied: `0`
 - Durable enable executor may open: `0`
@@ -91,6 +94,8 @@
 - Durable save simulation save=true allowed: `False`
 - Durable canary prep ready: `False`
 - Durable canary live allowed: `False`
+- Durable canary approval passed: `False`
+- Durable canary approval live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -181,6 +186,8 @@ Structural validation plan:
 - Durable save simulation save=true allowed: `False`
 - Durable canary prep ready: `False`
 - Durable canary live allowed: `False`
+- Durable canary approval passed: `False`
+- Durable canary approval live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -283,6 +290,8 @@ Structural validation plan:
 - Durable save simulation save=true allowed: `False`
 - Durable canary prep ready: `False`
 - Durable canary live allowed: `False`
+- Durable canary approval passed: `False`
+- Durable canary approval live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -376,6 +385,8 @@ Structural validation plan:
 - Durable save simulation save=true allowed: `False`
 - Durable canary prep ready: `False`
 - Durable canary live allowed: `False`
+- Durable canary approval passed: `False`
+- Durable canary approval live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -466,6 +477,8 @@ Structural validation plan:
 - Durable save simulation save=true allowed: `False`
 - Durable canary prep ready: `False`
 - Durable canary live allowed: `False`
+- Durable canary approval passed: `False`
+- Durable canary approval live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -546,6 +559,8 @@ Blocked/review reasons:
 - Durable save simulation save=true allowed: `False`
 - Durable canary prep ready: `False`
 - Durable canary live allowed: `False`
+- Durable canary approval passed: `False`
+- Durable canary approval live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -626,6 +641,8 @@ Blocked/review reasons:
 - Durable save simulation save=true allowed: `False`
 - Durable canary prep ready: `True`
 - Durable canary live allowed: `False`
+- Durable canary approval passed: `True`
+- Durable canary approval live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -706,6 +723,8 @@ Blocked/review reasons:
 - Durable save simulation save=true allowed: `False`
 - Durable canary prep ready: `False`
 - Durable canary live allowed: `False`
+- Durable canary approval passed: `False`
+- Durable canary approval live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -794,6 +813,8 @@ Structural validation plan:
 - Durable save simulation save=true allowed: `False`
 - Durable canary prep ready: `False`
 - Durable canary live allowed: `False`
+- Durable canary approval passed: `False`
+- Durable canary approval live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -898,6 +919,8 @@ Structural validation plan:
 - Durable save simulation save=true allowed: `False`
 - Durable canary prep ready: `False`
 - Durable canary live allowed: `False`
+- Durable canary approval passed: `False`
+- Durable canary approval live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1003,6 +1026,8 @@ Structural validation plan:
 - Durable save simulation save=true allowed: `False`
 - Durable canary prep ready: `False`
 - Durable canary live allowed: `False`
+- Durable canary approval passed: `False`
+- Durable canary approval live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1148,6 +1173,8 @@ Structural validation plan:
 - Durable save simulation save=true allowed: `False`
 - Durable canary prep ready: `False`
 - Durable canary live allowed: `False`
+- Durable canary approval passed: `False`
+- Durable canary approval live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1232,6 +1259,8 @@ Structural validation plan:
 - Durable save simulation save=true allowed: `False`
 - Durable canary prep ready: `False`
 - Durable canary live allowed: `False`
+- Durable canary approval passed: `False`
+- Durable canary approval live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1346,6 +1375,8 @@ Structural validation plan:
 - Durable save simulation save=true allowed: `False`
 - Durable canary prep ready: `False`
 - Durable canary live allowed: `False`
+- Durable canary approval passed: `False`
+- Durable canary approval live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1508,6 +1539,8 @@ Structural validation plan:
 - Durable save simulation save=true allowed: `False`
 - Durable canary prep ready: `False`
 - Durable canary live allowed: `False`
+- Durable canary approval passed: `False`
+- Durable canary approval live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1648,6 +1681,8 @@ Structural validation plan:
 - Durable save simulation save=true allowed: `False`
 - Durable canary prep ready: `False`
 - Durable canary live allowed: `False`
+- Durable canary approval passed: `False`
+- Durable canary approval live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1728,6 +1763,8 @@ Blocked/review reasons:
 - Durable save simulation save=true allowed: `False`
 - Durable canary prep ready: `False`
 - Durable canary live allowed: `False`
+- Durable canary approval passed: `False`
+- Durable canary approval live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1808,6 +1845,8 @@ Blocked/review reasons:
 - Durable save simulation save=true allowed: `False`
 - Durable canary prep ready: `False`
 - Durable canary live allowed: `False`
+- Durable canary approval passed: `False`
+- Durable canary approval live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1889,6 +1928,8 @@ Blocked/review reasons:
 - Durable save simulation save=true allowed: `False`
 - Durable canary prep ready: `False`
 - Durable canary live allowed: `False`
+- Durable canary approval passed: `False`
+- Durable canary approval live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`

@@ -65,6 +65,16 @@ def main() -> int:
         "canary_save_true_allowed_count": 0,
         "canary_save_asset_allowed_count": 0,
         "canary_delete_asset_allowed_count": 0,
+        "canary_approval_record_present_count": 1,
+        "canary_approval_gate_passed_count": 1,
+        "canary_approval_scoped_to_canary_package_count": 1,
+        "canary_approval_executor_may_open_count": 0,
+        "canary_approval_live_execution_allowed_count": 0,
+        "canary_approval_general_blueprints_package_allowed_count": 0,
+        "canary_approval_save_true_allowed_count": 0,
+        "canary_approval_save_asset_allowed_count": 0,
+        "canary_approval_delete_asset_allowed_count": 0,
+        "canary_approval_live_command_count": 0,
         "durable_executor_enabled_count": 0,
         "durable_executor_executable_count": 0,
         "durable_executor_command_count": 0,
@@ -138,6 +148,16 @@ def main() -> int:
     assert durable_gate["canary_save_true_allowed"] is False
     assert durable_gate["canary_save_asset_allowed"] is False
     assert durable_gate["canary_delete_asset_allowed"] is False
+    assert durable_gate["canary_approval_record_present"] is True
+    assert durable_gate["canary_approval_gate_passed"] is True
+    assert durable_gate["canary_approval_scoped_to_canary_package"] is True
+    assert durable_gate["canary_approval_executor_may_open"] is False
+    assert durable_gate["canary_approval_live_execution_allowed"] is False
+    assert durable_gate["canary_approval_general_blueprints_package_allowed"] is False
+    assert durable_gate["canary_approval_save_true_allowed"] is False
+    assert durable_gate["canary_approval_save_asset_allowed"] is False
+    assert durable_gate["canary_approval_delete_asset_allowed"] is False
+    assert durable_gate["canary_approval_live_command_count"] == 0
     assert durable_gate["durable_executor_enabled"] is False
     assert durable_gate["durable_executor_can_execute"] is False
     assert durable_gate["save_allowed"] is False

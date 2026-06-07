@@ -184,11 +184,47 @@ The release boundary must prove:
 The prep contract is useful only as a target and cleanup definition. It must
 not produce a live command plan or open durable save/delete behavior.
 
+## Section 56 - Durable Canary Approval Gate
+
+Section 56 adds an explicit approval gate for the canary target prepared in
+Section 55. The approval record must be scoped to the canary package and canary
+asset path. It does not authorize live canary execution.
+
+The approval gate boundary is:
+
+- approval record schema: `section_56_durable_canary_approval_record_v1`
+- approval gate schema: `section_56_durable_canary_approval_gate_v1`
+- approved operation: `canary_preflight_only`
+- approval scope: `durable_canary_prep`
+- approval package: `/Game/_MCP_Temp/DurableCanary`
+- canary approval gate passed: `true`
+- canary executor may open: `false`
+- live canary execution allowed: `false`
+- general `/Game/Blueprints` package allowed: `false`
+- `save=true`, `save_asset`, and `delete_asset` allowed: `false`
+- live command count: `0`
+
+The release boundary must prove:
+
+- durable canary approval requests: `1`
+- approval record present: `1`
+- approval gate passed: `1`
+- approval scoped to canary package: `1`
+- canary executor may open: `0`
+- live canary execution allowed: `0`
+- general Blueprints package allowed: `0`
+- `save=true`, `save_asset`, and `delete_asset` allowed: `0`
+- live command count: `0`
+
+If the approval record is missing or points outside the canary target, the gate
+must fail. If it passes, it still only permits a later section to consider a
+read-only canary preflight; it does not create a command plan.
+
 ## Decision
 
 Section 46-48 improves durable safety visibility, Section 51 separates the
 future durable enable gates, and Section 52 defines the ownership marker needed
 for future rollback. Section 53 adds a no-command dry-run plan. Section 54 adds
-a no-command save validation simulator. Section 55 adds canary prep only. These
-sections do not enable durable Blueprint creation, saving, delete, rename, or
-live canary execution.
+a no-command save validation simulator. Section 55 adds canary prep only.
+Section 56 adds scoped approval only. These sections do not enable durable
+Blueprint creation, saving, delete, rename, or live canary execution.

@@ -68,6 +68,14 @@ def main() -> int:
         assert canary_row["actual"]["save_true_allowed_count"] == 0
         assert canary_row["actual"]["save_asset_allowed_count"] == 0
         assert canary_row["actual"]["delete_asset_allowed_count"] == 0
+        canary_approval_row = find_row(report, "durable_canary_approval_gate_contract")
+        assert canary_approval_row["status"] == "passed"
+        assert canary_approval_row["actual"]["durable_requested_canary_approval_count"] == 1
+        assert canary_approval_row["actual"]["approval_record_present_count"] == 1
+        assert canary_approval_row["actual"]["canary_approval_gate_passed_count"] == 1
+        assert canary_approval_row["actual"]["canary_executor_may_open_count"] == 0
+        assert canary_approval_row["actual"]["canary_live_execution_allowed_count"] == 0
+        assert canary_approval_row["actual"]["live_command_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         assert find_row(report, "durable_read_only_live_preflight")["status"] == "passed"
         assert find_row(report, "project_filesystem_side_effect_boundary")["status"] == "passed"
