@@ -29,7 +29,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_67_v9"
+        assert report["verdict"]["release_boundary_version"] == "section_68_v10"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -38,6 +38,7 @@ def main() -> int:
         assert report["verdict"]["section_65_canary_creation_boundary_status"] == "passed"
         assert report["verdict"]["section_66_ownership_marker_proof_status"] == "passed"
         assert report["verdict"]["section_67_rollback_cleanup_proof_status"] == "passed"
+        assert report["verdict"]["section_68_save_gate_final_review_status"] == "passed"
         assert report["verdict"]["mvp_decision_status"] == "temporary_mvp_ready_durable_not_enabled"
         assert report["verdict"]["temporary_blueprint_authoring_mvp_ready"] is True
         assert report["verdict"]["durable_blueprint_authoring_mvp_ready"] is False
@@ -188,6 +189,20 @@ def main() -> int:
         assert cleanup_proof_row["actual"]["durable_executor_may_open_after_cleanup_proof_count"] == 0
         assert cleanup_proof_row["actual"]["live_cleanup_command_count"] == 0
         assert cleanup_proof_row["actual"]["live_delete_command_count"] == 0
+        save_review_row = find_row(report, "durable_save_gate_final_enable_review_contract")
+        assert save_review_row["status"] == "passed"
+        assert save_review_row["actual"]["durable_requested_save_gate_final_review_count"] == 1
+        assert save_review_row["actual"]["save_gate_final_review_complete_count"] == 1
+        assert save_review_row["actual"]["missing_enable_prerequisite_count"] == 4
+        assert save_review_row["actual"]["durable_save_enable_ready_count"] == 0
+        assert save_review_row["actual"]["save_true_allowed_count"] == 0
+        assert save_review_row["actual"]["save_asset_allowed_count"] == 0
+        assert save_review_row["actual"]["compile_save_allowed_count"] == 0
+        assert save_review_row["actual"]["delete_asset_allowed_count"] == 0
+        assert save_review_row["actual"]["rename_asset_allowed_count"] == 0
+        assert save_review_row["actual"]["durable_executor_may_open_after_save_review_count"] == 0
+        assert save_review_row["actual"]["live_save_command_count"] == 0
+        assert save_review_row["actual"]["live_delete_or_rename_command_count"] == 0
         canary_recovery_row = find_row(report, "durable_canary_recovery_matrix")
         assert canary_recovery_row["status"] == "passed"
         assert canary_recovery_row["actual"]["durable_requested_canary_recovery_count"] == 1
