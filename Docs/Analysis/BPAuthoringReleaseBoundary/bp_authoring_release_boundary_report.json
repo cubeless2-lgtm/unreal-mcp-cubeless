@@ -1,7 +1,7 @@
 {
-  "schema": "section_61_bp_authoring_release_boundary_v3",
+  "schema": "section_62_bp_authoring_release_boundary_v4",
   "analysis_kind": "bp_authoring_release_boundary",
-  "generated_at": "2026-06-07T08:29:51.646719+00:00",
+  "generated_at": "2026-06-07T08:33:21.665947+00:00",
   "repo_root": "D:\\Git\\unreal-mcp-cubeless",
   "project_root": "D:\\Git\\CubelessStylized",
   "report_inputs": {
@@ -455,6 +455,44 @@
       ]
     },
     {
+      "id": "durable_live_evidence_refresh_contract",
+      "label": "Section 62 durable live evidence refresh contract",
+      "status": "passed",
+      "blocking": true,
+      "expected": {
+        "summary_status": "passed",
+        "durable_requested_live_evidence_refresh_count": 1,
+        "planner_live_report_present_count": 1,
+        "canary_live_evidence_present_count": 0,
+        "live_evidence_refresh_required_count": 1,
+        "read_only_result_refreshed_count": 0,
+        "live_evidence_refresh_satisfied_count": 0,
+        "unsafe_live_attempt_count": 0,
+        "durable_executor_may_open_after_report_refresh_count": 0,
+        "durable_authoring_allowed_count": 0,
+        "save_or_delete_allowed_count": 0,
+        "cleanup_allowed_count": 0
+      },
+      "actual": {
+        "summary_status": "passed",
+        "durable_requested_live_evidence_refresh_count": 1,
+        "planner_live_report_present_count": 1,
+        "canary_live_evidence_present_count": 0,
+        "live_evidence_refresh_required_count": 1,
+        "read_only_result_refreshed_count": 0,
+        "live_evidence_refresh_satisfied_count": 0,
+        "unsafe_live_attempt_count": 0,
+        "durable_executor_may_open_after_report_refresh_count": 0,
+        "durable_authoring_allowed_count": 0,
+        "save_or_delete_allowed_count": 0,
+        "cleanup_allowed_count": 0
+      },
+      "notes": [
+        "Stored live evidence must include a fresh Section 57 canary read-only preflight before future canary execution.",
+        "The current release boundary treats missing canary evidence as refresh-pending and executor-closed."
+      ]
+    },
+    {
       "id": "durable_canary_recovery_matrix",
       "label": "Section 58 durable canary recovery matrix",
       "status": "passed",
@@ -713,7 +751,7 @@
   ],
   "verdict": {
     "status": "passed",
-    "release_boundary_version": "section_61_v3",
+    "release_boundary_version": "section_62_v4",
     "mvp_decision_status": "temporary_mvp_ready_durable_not_enabled",
     "temporary_blueprint_authoring_mvp_ready": true,
     "durable_blueprint_authoring_mvp_ready": false,
@@ -724,7 +762,8 @@
     "durable_authoring_release_status": "not_enabled_read_only_preflight_only",
     "section_51_58_contract_status": "passed",
     "section_61_bridge_refresh_status": "passed",
-    "current_authoring_ceiling": "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_and_section_61_bridge_refresh_contract",
+    "section_62_live_evidence_refresh_status": "passed",
+    "current_authoring_ceiling": "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_and_section_62_live_evidence_refresh_contract",
     "cxx_changes_required": false
   },
   "next_reinforcement_candidates": [
