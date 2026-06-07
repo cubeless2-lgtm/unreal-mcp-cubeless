@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_71_v13"
+        assert report["verdict"]["release_boundary_version"] == "section_72_v14"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -66,6 +66,7 @@ def main() -> int:
         assert report["verdict"]["section_69_canary_rehearsal_readiness_status"] == "passed"
         assert report["verdict"]["section_70_durable_release_decision_status"] == "passed"
         assert report["verdict"]["section_71_bridge_recovery_readiness_status"] == "passed"
+        assert report["verdict"]["section_72_canary_read_only_retry_envelope_status"] == "passed"
         assert report["verdict"]["final_durable_release_ready"] is False
         assert report["verdict"]["main_push_requested"] is False
         assert report["verdict"]["mvp_decision_status"] == "temporary_mvp_ready_durable_not_enabled"
@@ -290,6 +291,24 @@ def main() -> int:
         assert bridge_recovery_row["actual"]["save_delete_rename_allowed_count"] == 0
         assert bridge_recovery_row["actual"]["live_authoring_command_count"] == 0
         assert bridge_recovery_row["actual"]["live_save_or_delete_command_count"] == 0
+        retry_envelope_row = find_row(report, "durable_canary_read_only_retry_envelope_contract")
+        assert retry_envelope_row["status"] == "passed"
+        assert retry_envelope_row["actual"]["durable_requested_canary_read_only_retry_envelope_count"] == 1
+        assert retry_envelope_row["actual"]["read_only_retry_envelope_defined_count"] == 1
+        assert retry_envelope_row["actual"]["read_only_command_count"] == 1
+        assert retry_envelope_row["actual"]["missing_retry_prerequisite_count"] == 2
+        assert retry_envelope_row["actual"]["read_only_retry_prerequisites_satisfied_count"] == 0
+        assert retry_envelope_row["actual"]["live_read_only_retry_allowed_count"] == 0
+        assert retry_envelope_row["actual"]["live_read_only_retry_performed_count"] == 0
+        assert retry_envelope_row["actual"]["live_read_only_result_recorded_count"] == 0
+        assert retry_envelope_row["actual"]["canary_execution_allowed_after_retry_count"] == 0
+        assert retry_envelope_row["actual"]["durable_executor_may_open_after_retry_count"] == 0
+        assert retry_envelope_row["actual"]["authoring_command_allowed_count"] == 0
+        assert retry_envelope_row["actual"]["save_or_delete_allowed_count"] == 0
+        assert retry_envelope_row["actual"]["cleanup_allowed_count"] == 0
+        assert retry_envelope_row["actual"]["live_authoring_command_count"] == 0
+        assert retry_envelope_row["actual"]["live_save_or_delete_command_count"] == 0
+        assert retry_envelope_row["actual"]["live_cleanup_command_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False

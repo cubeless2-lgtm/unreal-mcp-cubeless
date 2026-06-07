@@ -19,6 +19,7 @@ import bp_authoring_job_contract as job_contract
 import bp_authoring_durable_bridge_recovery_readiness_contract as bridge_recovery_readiness
 import bp_authoring_durable_canary_command_allowlist_contract as canary_command_allowlist
 import bp_authoring_durable_canary_creation_boundary_contract as canary_creation_boundary
+import bp_authoring_durable_canary_read_only_retry_envelope_contract as canary_read_only_retry
 import bp_authoring_durable_canary_rehearsal_readiness_contract as canary_rehearsal_readiness
 import bp_authoring_durable_executor_review_contract as executor_review
 import bp_authoring_durable_live_evidence_refresh_contract as live_evidence_refresh
@@ -30,7 +31,7 @@ import bp_authoring_durable_save_gate_final_review_contract as save_gate_final_r
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_71_bp_authoring_release_boundary_v13"
+REPORT_SCHEMA = "section_72_bp_authoring_release_boundary_v14"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -1205,6 +1206,85 @@ def build_bridge_recovery_readiness_row(project_root: Path) -> Dict[str, Any]:
     )
 
 
+def build_canary_read_only_retry_envelope_row(
+    contract_summary: Dict[str, Any],
+    executor_summary: Dict[str, Any],
+    project_root: Path,
+) -> Dict[str, Any]:
+    recovery_contract = bridge_recovery_readiness.build_bridge_recovery_readiness_contract(
+        requested=True,
+        recovery_inputs=bridge_recovery_readiness.collect_bridge_recovery_inputs(project_root),
+    )
+    allowlist_contract = canary_command_allowlist.build_canary_command_allowlist_contract(
+        requested=True,
+        executor_summary=executor_summary,
+    )
+    contract = canary_read_only_retry.build_canary_read_only_retry_envelope_contract(
+        requested=True,
+        bridge_recovery_summary=bridge_recovery_readiness.summarize_bridge_recovery_readiness_contracts(
+            [recovery_contract]
+        ),
+        canary_live_preflight_summary=contract_summary.get("durable_canary_live_preflight_summary", {}),
+        command_allowlist_summary=canary_command_allowlist.summarize_canary_command_allowlist_contracts(
+            [allowlist_contract]
+        ),
+    )
+    summary = canary_read_only_retry.summarize_canary_read_only_retry_envelopes([contract])
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_canary_read_only_retry_envelope_count": 1,
+        "read_only_retry_envelope_defined_count": 1,
+        "read_only_command_count": 1,
+        "missing_retry_prerequisite_count": 2,
+        "read_only_retry_prerequisites_satisfied_count": 0,
+        "live_read_only_retry_allowed_count": 0,
+        "live_read_only_retry_performed_count": 0,
+        "live_read_only_result_recorded_count": 0,
+        "canary_execution_allowed_after_retry_count": 0,
+        "durable_executor_may_open_after_retry_count": 0,
+        "authoring_command_allowed_count": 0,
+        "save_or_delete_allowed_count": 0,
+        "cleanup_allowed_count": 0,
+        "live_authoring_command_count": 0,
+        "live_save_or_delete_command_count": 0,
+        "live_cleanup_command_count": 0,
+    }
+    actual = {
+        "summary_status": summary.get("status"),
+        "durable_requested_canary_read_only_retry_envelope_count": summary.get(
+            "durable_requested_canary_read_only_retry_envelope_count"
+        ),
+        "read_only_retry_envelope_defined_count": summary.get("read_only_retry_envelope_defined_count"),
+        "read_only_command_count": summary.get("read_only_command_count"),
+        "missing_retry_prerequisite_count": summary.get("missing_retry_prerequisite_count"),
+        "read_only_retry_prerequisites_satisfied_count": summary.get(
+            "read_only_retry_prerequisites_satisfied_count"
+        ),
+        "live_read_only_retry_allowed_count": summary.get("live_read_only_retry_allowed_count"),
+        "live_read_only_retry_performed_count": summary.get("live_read_only_retry_performed_count"),
+        "live_read_only_result_recorded_count": summary.get("live_read_only_result_recorded_count"),
+        "canary_execution_allowed_after_retry_count": summary.get("canary_execution_allowed_after_retry_count"),
+        "durable_executor_may_open_after_retry_count": summary.get("durable_executor_may_open_after_retry_count"),
+        "authoring_command_allowed_count": summary.get("authoring_command_allowed_count"),
+        "save_or_delete_allowed_count": summary.get("save_or_delete_allowed_count"),
+        "cleanup_allowed_count": summary.get("cleanup_allowed_count"),
+        "live_authoring_command_count": summary.get("live_authoring_command_count"),
+        "live_save_or_delete_command_count": summary.get("live_save_or_delete_command_count"),
+        "live_cleanup_command_count": summary.get("live_cleanup_command_count"),
+    }
+    return row(
+        "durable_canary_read_only_retry_envelope_contract",
+        "Section 72 durable canary read-only retry envelope contract",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "The retry envelope is defined, but live retry is not allowed or performed by offline release review.",
+            "Bridge reachability and explicit live retry invocation remain separate prerequisites.",
+        ),
+    )
+
+
 def build_section_51_58_consolidation_row(
     contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -1476,7 +1556,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     lyra_report = read_json(lyra_report_path)
     preliminary_verdict = {
         "status": "passed",
-        "release_boundary_version": "section_71_v13",
+        "release_boundary_version": "section_72_v14",
         "durable_authoring_enabled": False,
     }
     decision_contract = mvp_decision.build_mvp_decision_contract(
@@ -1515,6 +1595,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         build_mvp_decision_row(decision_contract),
         build_durable_release_decision_row(decision_contract, executor_summary, safety_contract_statuses),
         build_bridge_recovery_readiness_row(project_root),
+        build_canary_read_only_retry_envelope_row(contract_summary, executor_summary, project_root),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -1535,7 +1616,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
-            "release_boundary_version": "section_71_v13",
+            "release_boundary_version": "section_72_v14",
             "mvp_decision_status": decision_contract["decision_status"],
             "temporary_blueprint_authoring_mvp_ready": decision_contract[
                 "temporary_blueprint_authoring_mvp_ready"
@@ -1558,10 +1639,11 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "section_69_canary_rehearsal_readiness_status": "passed" if not failed_blocking else "failed",
             "section_70_durable_release_decision_status": "passed" if not failed_blocking else "failed",
             "section_71_bridge_recovery_readiness_status": "passed" if not failed_blocking else "failed",
+            "section_72_canary_read_only_retry_envelope_status": "passed" if not failed_blocking else "failed",
             "final_durable_release_ready": False,
             "main_push_requested": False,
             "current_authoring_ceiling": (
-                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_section_64_canary_command_allowlist_contract_section_65_canary_creation_boundary_contract_section_66_ownership_marker_proof_contract_section_67_rollback_cleanup_proof_contract_section_68_save_gate_final_review_contract_section_69_canary_rehearsal_readiness_contract_section_70_durable_release_decision_contract_and_section_71_bridge_recovery_readiness_contract"
+                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_section_64_canary_command_allowlist_contract_section_65_canary_creation_boundary_contract_section_66_ownership_marker_proof_contract_section_67_rollback_cleanup_proof_contract_section_68_save_gate_final_review_contract_section_69_canary_rehearsal_readiness_contract_section_70_durable_release_decision_contract_section_71_bridge_recovery_readiness_contract_and_section_72_canary_read_only_retry_envelope_contract"
             ),
             "cxx_changes_required": False,
         },
