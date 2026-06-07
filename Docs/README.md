@@ -5,4 +5,5 @@ Welcome to the documentation for the Unreal Engine Model Context Protocol (MCP) 
 ## Contents
 
 - [Tools](Tools/README.md) - All the tools that are available.
+- [Analysis](Analysis/README.md) - External project intake and readiness reports.
 

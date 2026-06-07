@@ -1,0 +1,3232 @@
+{
+  "generated_at": "2026-06-07T04:12:34.578663+00:00",
+  "analysis_kind": "external_unreal_project_bp_authoring_readiness",
+  "read_only_project_root": "D:\\Git\\LyraStarterGame",
+  "requested_project_root": "",
+  "output_dir": "D:\\Git\\unreal-mcp-cubeless\\Docs\\Analysis\\Lyra",
+  "project_descriptor": {
+    "path": "Lyra.uproject",
+    "engine_association": "5.7",
+    "modules": [
+      {
+        "Name": "LyraGame",
+        "Type": "Runtime",
+        "LoadingPhase": "Default",
+        "AdditionalDependencies": [
+          "DeveloperSettings",
+          "Engine"
+        ]
+      },
+      {
+        "Name": "LyraEditor",
+        "Type": "Editor",
+        "LoadingPhase": "Default"
+      }
+    ],
+    "plugins": [
+      {
+        "Name": "ActorPalette",
+        "Enabled": true
+      },
+      {
+        "Name": "AESGCMHandlerComponent",
+        "Enabled": true
+      },
+      {
+        "Name": "DTLSHandlerComponent",
+        "Enabled": true
+      },
+      {
+        "Name": "GameplayAbilities",
+        "Enabled": true
+      },
+      {
+        "Name": "Gauntlet",
+        "Enabled": true
+      },
+      {
+        "Name": "CommonLoadingScreen",
+        "Enabled": true
+      },
+      {
+        "Name": "CommonConversation",
+        "Enabled": true
+      },
+      {
+        "Name": "GameFeatures",
+        "Enabled": true
+      },
+      {
+        "Name": "ModularGameplay",
+        "Enabled": true
+      },
+      {
+        "Name": "ModularGameplayActors",
+        "Enabled": true
+      },
+      {
+        "Name": "EnhancedInput",
+        "Enabled": true
+      },
+      {
+        "Name": "WinDualShock",
+        "Enabled": true,
+        "SupportedTargetPlatforms": [
+          "Win64"
+        ]
+      },
+      {
+        "Name": "Volumetrics",
+        "Enabled": true
+      },
+      {
+        "Name": "DataRegistry",
+        "Enabled": true
+      },
+      {
+        "Name": "ReplicationGraph",
+        "Enabled": true
+      },
+      {
+        "Name": "SignificanceManager",
+        "Enabled": true
+      },
+      {
+        "Name": "Niagara",
+        "Enabled": true
+      },
+      {
+        "Name": "Water",
+        "Enabled": true
+      },
+      {
+        "Name": "CommonUI",
+        "Enabled": true
+      },
+      {
+        "Name": "ControlFlows",
+        "Enabled": true
+      },
+      {
+        "Name": "GameSettings",
+        "Enabled": true
+      },
+      {
+        "Name": "CommonUser",
+        "Enabled": true
+      },
+      {
+        "Name": "CommonGame",
+        "Enabled": true
+      },
+      {
+        "Name": "GameSubtitles",
+        "Enabled": true
+      },
+      {
+        "Name": "PocketWorlds",
+        "Enabled": true
+      },
+      {
+        "Name": "UIExtension",
+        "Enabled": true
+      },
+      {
+        "Name": "AsyncMixin",
+        "Enabled": true
+      },
+      {
+        "Name": "Metasound",
+        "Enabled": true
+      },
+      {
+        "Name": "MagicLeap",
+        "Enabled": false
+      },
+      {
+        "Name": "MagicLeapMedia",
+        "Enabled": false
+      },
+      {
+        "Name": "MagicLeapPassableWorld",
+        "Enabled": false
+      },
+      {
+        "Name": "OpenXREyeTracker",
+        "Enabled": false
+      },
+      {
+        "Name": "OpenXRHandTracking",
+        "Enabled": false
+      },
+      {
+        "Name": "OpenXRHMD",
+        "Enabled": false
+      },
+      {
+        "Name": "SteamVR",
+        "Enabled": false
+      },
+      {
+        "Name": "GearVR",
+        "Enabled": false
+      },
+      {
+        "Name": "MLSDK",
+        "Enabled": false
+      },
+      {
+        "Name": "OnlineFramework",
+        "Enabled": true
+      },
+      {
+        "Name": "PlayFabParty",
+        "Enabled": true,
+        "PlatformAllowList": [
+          "XB1",
+          "XSX",
+          "WinGDK"
+        ],
+        "SupportedTargetPlatforms": [
+          "XB1",
+          "XSX",
+          "WinGDK"
+        ]
+      },
+      {
+        "Name": "OnlineServicesNull",
+        "Enabled": true
+      },
+      {
+        "Name": "OnlineServicesOSSAdapter",
+        "Enabled": true
+      },
+      {
+        "Name": "OnlineSubsystemSteam",
+        "Enabled": true
+      },
+      {
+        "Name": "SocketSubsystemSteamIP",
+        "Enabled": true
+      },
+      {
+        "Name": "GameplayMessageRouter",
+        "Enabled": true
+      },
+      {
+        "Name": "SteamSockets",
+        "Enabled": true
+      },
+      {
+        "Name": "AssetReferenceRestrictions",
+        "Enabled": true
+      },
+      {
+        "Name": "ModelingToolsEditorMode",
+        "Enabled": true
+      },
+      {
+        "Name": "GeometryScripting",
+        "Enabled": true
+      },
+      {
+        "Name": "AnimationLocomotionLibrary",
+        "Enabled": true
+      },
+      {
+        "Name": "AudioModulation",
+        "Enabled": true
+      },
+      {
+        "Name": "AudioGameplayVolume",
+        "Enabled": true
+      },
+      {
+        "Name": "AudioGameplay",
+        "Enabled": true
+      },
+      {
+        "Name": "SoundUtilities",
+        "Enabled": true
+      },
+      {
+        "Name": "AnimationWarping",
+        "Enabled": true
+      },
+      {
+        "Name": "MovieRenderPipeline",
+        "Enabled": true,
+        "TargetAllowList": [
+          "Editor"
+        ]
+      },
+      {
+        "Name": "MoviePipelineMaskRenderPass",
+        "Enabled": true,
+        "TargetAllowList": [
+          "Editor"
+        ]
+      },
+      {
+        "Name": "AssetSearch",
+        "Enabled": true
+      },
+      {
+        "Name": "GameplayInsights",
+        "Enabled": true
+      },
+      {
+        "Name": "ResonanceAudio",
+        "Enabled": false
+      },
+      {
+        "Name": "RuntimePhysXCooking",
+        "Enabled": false
+      },
+      {
+        "Name": "Spatialization",
+        "Enabled": true
+      },
+      {
+        "Name": "ShooterCore",
+        "Enabled": true
+      },
+      {
+        "Name": "ShooterMaps",
+        "Enabled": true
+      },
+      {
+        "Name": "TopDownArena",
+        "Enabled": true
+      },
+      {
+        "Name": "FunctionalTestingEditor",
+        "Enabled": true
+      },
+      {
+        "Name": "ShooterExplorer",
+        "Enabled": true
+      },
+      {
+        "Name": "ShooterTests",
+        "Enabled": true
+      },
+      {
+        "Name": "GameplayInteractions",
+        "Enabled": true
+      },
+      {
+        "Name": "SmartObjects",
+        "Enabled": true
+      },
+      {
+        "Name": "ContextualAnimation",
+        "Enabled": true
+      },
+      {
+        "Name": "GameplayBehaviorSmartObjects",
+        "Enabled": true
+      },
+      {
+        "Name": "GameplayStateTree",
+        "Enabled": true
+      },
+      {
+        "Name": "GameplayBehaviors",
+        "Enabled": true
+      },
+      {
+        "Name": "RuntimeTests",
+        "Enabled": true
+      },
+      {
+        "Name": "AutomatedPerfTesting",
+        "Enabled": true
+      },
+      {
+        "Name": "Reflex",
+        "Enabled": true
+      }
+    ],
+    "enabled_plugin_names": [
+      "AESGCMHandlerComponent",
+      "ActorPalette",
+      "AnimationLocomotionLibrary",
+      "AnimationWarping",
+      "AssetReferenceRestrictions",
+      "AssetSearch",
+      "AsyncMixin",
+      "AudioGameplay",
+      "AudioGameplayVolume",
+      "AudioModulation",
+      "AutomatedPerfTesting",
+      "CommonConversation",
+      "CommonGame",
+      "CommonLoadingScreen",
+      "CommonUI",
+      "CommonUser",
+      "ContextualAnimation",
+      "ControlFlows",
+      "DTLSHandlerComponent",
+      "DataRegistry",
+      "EnhancedInput",
+      "FunctionalTestingEditor",
+      "GameFeatures",
+      "GameSettings",
+      "GameSubtitles",
+      "GameplayAbilities",
+      "GameplayBehaviorSmartObjects",
+      "GameplayBehaviors",
+      "GameplayInsights",
+      "GameplayInteractions",
+      "GameplayMessageRouter",
+      "GameplayStateTree",
+      "Gauntlet",
+      "GeometryScripting",
+      "Metasound",
+      "ModelingToolsEditorMode",
+      "ModularGameplay",
+      "ModularGameplayActors",
+      "MoviePipelineMaskRenderPass",
+      "MovieRenderPipeline",
+      "Niagara",
+      "OnlineFramework",
+      "OnlineServicesNull",
+      "OnlineServicesOSSAdapter",
+      "OnlineSubsystemSteam",
+      "PlayFabParty",
+      "PocketWorlds",
+      "Reflex",
+      "ReplicationGraph",
+      "RuntimeTests",
+      "ShooterCore",
+      "ShooterExplorer",
+      "ShooterMaps",
+      "ShooterTests",
+      "SignificanceManager",
+      "SmartObjects",
+      "SocketSubsystemSteamIP",
+      "SoundUtilities",
+      "Spatialization",
+      "SteamSockets",
+      "TopDownArena",
+      "UIExtension",
+      "Volumetrics",
+      "Water",
+      "WinDualShock"
+    ]
+  },
+  "source_scan": {
+    "file_count": 734,
+    "config_file_count": 68,
+    "suffix_counts": {
+      ".cpp": 348,
+      ".cs": 37,
+      ".h": 349,
+      ".ini": 50,
+      ".uplugin": 17,
+      ".uproject": 1
+    },
+    "module_file_counts": {
+      "LyraGame": 448,
+      "GameSettings/GameSettings": 60,
+      "CommonGame/CommonGame": 30,
+      "LyraEditor": 26,
+      "ModularGameplayActors/ModularGameplayActors": 16,
+      "CommonUser/CommonUser": 13,
+      "PocketWorlds/PocketWorlds": 12,
+      "GameSubtitles/GameSubtitles": 11,
+      "CommonLoadingScreen/CommonLoadingScreen": 9,
+      "UIExtension/UIExtension": 8,
+      "GameplayMessageRouter/GameplayMessageRuntime": 7,
+      "CommonLoadingScreen/CommonStartupLoadingScreen": 6,
+      "LyraExtTool/LyraExtTool": 5,
+      "AsyncMixin/AsyncMixin": 4,
+      "GameplayMessageRouter/GameplayMessageNodes": 4,
+      "LyraClient.Target.cs": 1,
+      "LyraEditor.Target.cs": 1,
+      "LyraGame.Target.cs": 1,
+      "LyraGameEOS.Target.cs": 1,
+      "LyraGameSteam.Target.cs": 1,
+      "LyraGameSteamEOS.Target.cs": 1,
+      "LyraServer.Target.cs": 1,
+      "LyraServerEOS.Target.cs": 1,
+      "LyraServerSteam.Target.cs": 1,
+      "LyraServerSteamEOS.Target.cs": 1
+    },
+    "readiness_by_file": {
+      "blocked_native": 182,
+      "supported_partial": 155,
+      "partial_blocked": 224,
+      "partial": 85,
+      "supported_inventory": 23
+    },
+    "risk_by_file": {
+      "critical": 182,
+      "medium": 223,
+      "high": 224,
+      "low": 40
+    },
+    "pattern_hits": {
+      "reflected_api": {
+        "count": 2195,
+        "file_count": 311,
+        "top_files": [
+          {
+            "path": "Source/LyraGame/Settings/LyraSettingsLocal.h",
+            "count": 76
+          },
+          {
+            "path": "Source/LyraGame/Settings/LyraSettingsShared.h",
+            "count": 71
+          },
+          {
+            "path": "Plugins/GameFeatures/ShooterCore/Source/ShooterCoreRuntime/Public/Input/AimAssistInputModifier.h",
+            "count": 56
+          },
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Public/CommonUserSubsystem.h",
+            "count": 51
+          },
+          {
+            "path": "Source/LyraGame/UI/IndicatorSystem/IndicatorDescriptor.h",
+            "count": 50
+          },
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Public/CommonSessionSubsystem.h",
+            "count": 47
+          },
+          {
+            "path": "Plugins/CommonGame/Source/Public/CommonPlayerInputKey.h",
+            "count": 37
+          },
+          {
+            "path": "Source/LyraGame/UI/Basic/MaterialProgressBar.h",
+            "count": 34
+          }
+        ],
+        "examples": [
+          "Plugins/CommonGame/Source/Public/Actions/AsyncAction_CreateWidgetAsync.h",
+          "Plugins/CommonGame/Source/Public/Actions/AsyncAction_PushContentToLayerForPlayer.h",
+          "Plugins/CommonGame/Source/Public/Actions/AsyncAction_ShowConfirmation.h",
+          "Plugins/CommonGame/Source/Public/CommonGameInstance.h",
+          "Plugins/CommonGame/Source/Public/CommonLocalPlayer.h",
+          "Plugins/CommonGame/Source/Public/CommonPlayerController.h",
+          "Plugins/CommonGame/Source/Public/CommonPlayerInputKey.h",
+          "Plugins/CommonGame/Source/Public/CommonUIExtensions.h"
+        ]
+      },
+      "blueprint_exposed_api": {
+        "count": 1096,
+        "file_count": 206,
+        "top_files": [
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Public/CommonUserSubsystem.h",
+            "count": 57
+          },
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Public/CommonSessionSubsystem.h",
+            "count": 37
+          },
+          {
+            "path": "Source/LyraGame/UI/IndicatorSystem/IndicatorDescriptor.h",
+            "count": 33
+          },
+          {
+            "path": "Source/LyraGame/AbilitySystem/Abilities/LyraGameplayAbility.h",
+            "count": 24
+          },
+          {
+            "path": "Source/LyraGame/Feedback/ContextEffects/AnimNotify_LyraContextEffects.h",
+            "count": 24
+          },
+          {
+            "path": "Plugins/GameSettings/Source/Public/Widgets/GameSettingListEntry.h",
+            "count": 22
+          },
+          {
+            "path": "Source/LyraGame/UI/Common/LyraTabListWidgetBase.h",
+            "count": 22
+          },
+          {
+            "path": "Plugins/UIExtension/Source/Public/UIExtensionSystem.h",
+            "count": 21
+          }
+        ],
+        "examples": [
+          "Plugins/CommonGame/Source/Public/Actions/AsyncAction_CreateWidgetAsync.h",
+          "Plugins/CommonGame/Source/Public/Actions/AsyncAction_PushContentToLayerForPlayer.h",
+          "Plugins/CommonGame/Source/Public/Actions/AsyncAction_ShowConfirmation.h",
+          "Plugins/CommonGame/Source/Public/CommonPlayerInputKey.h",
+          "Plugins/CommonGame/Source/Public/CommonUIExtensions.h",
+          "Plugins/CommonGame/Source/Public/GameUIPolicy.h",
+          "Plugins/CommonGame/Source/Public/Messaging/CommonGameDialog.h",
+          "Plugins/CommonGame/Source/Public/Messaging/CommonMessagingSubsystem.h"
+        ]
+      },
+      "basic_actor_component_authoring": {
+        "count": 743,
+        "file_count": 180,
+        "top_files": [
+          {
+            "path": "Source/LyraGame/Character/LyraHeroComponent.cpp",
+            "count": 26
+          },
+          {
+            "path": "Source/LyraGame/System/LyraReplicationGraph.cpp",
+            "count": 19
+          },
+          {
+            "path": "Source/LyraGame/Weapons/LyraWeaponSpawner.cpp",
+            "count": 16
+          },
+          {
+            "path": "Source/LyraGame/Camera/LyraCameraMode_ThirdPerson.cpp",
+            "count": 15
+          },
+          {
+            "path": "Source/LyraGame/Character/LyraPawnExtensionComponent.cpp",
+            "count": 15
+          },
+          {
+            "path": "Source/LyraGame/Equipment/LyraEquipmentInstance.cpp",
+            "count": 15
+          },
+          {
+            "path": "Source/LyraGame/Player/LyraPlayerController.cpp",
+            "count": 14
+          },
+          {
+            "path": "Plugins/GameFeatures/ShooterCore/Source/ShooterCoreRuntime/Private/Input/AimAssistTargetManagerComponent.cpp",
+            "count": 13
+          }
+        ],
+        "examples": [
+          "Plugins/CommonGame/Source/Private/CommonLocalPlayer.cpp",
+          "Plugins/CommonGame/Source/Private/CommonPlayerController.cpp",
+          "Plugins/CommonGame/Source/Public/CommonLocalPlayer.h",
+          "Plugins/CommonGame/Source/Public/CommonPlayerController.h",
+          "Plugins/CommonLoadingScreen/Source/CommonLoadingScreen/Private/LoadingScreenManager.cpp",
+          "Plugins/CommonLoadingScreen/Source/CommonLoadingScreen/Public/LoadingScreenManager.h",
+          "Plugins/GameFeatures/ShooterCore/Source/ShooterCoreRuntime/Private/Input/AimAssistInputModifier.cpp",
+          "Plugins/GameFeatures/ShooterCore/Source/ShooterCoreRuntime/Private/Input/AimAssistTargetComponent.cpp"
+        ]
+      },
+      "control_flow_expression_authoring": {
+        "count": 5390,
+        "file_count": 437,
+        "top_files": [
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Private/CommonUserSubsystem.cpp",
+            "count": 323
+          },
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Private/CommonSessionSubsystem.cpp",
+            "count": 171
+          },
+          {
+            "path": "Source/LyraGame/Settings/LyraSettingsLocal.cpp",
+            "count": 148
+          },
+          {
+            "path": "Source/LyraGame/System/LyraReplicationGraph.cpp",
+            "count": 95
+          },
+          {
+            "path": "Source/LyraEditor/Commandlets/ContentValidationCommandlet.cpp",
+            "count": 82
+          },
+          {
+            "path": "Source/LyraEditor/Validation/EditorValidator.cpp",
+            "count": 82
+          },
+          {
+            "path": "Plugins/GameFeatures/ShooterCore/Source/ShooterCoreRuntime/Private/Input/AimAssistInputModifier.cpp",
+            "count": 71
+          },
+          {
+            "path": "Source/LyraGame/Weapons/LyraGameplayAbility_RangedWeapon.cpp",
+            "count": 68
+          }
+        ],
+        "examples": [
+          "Build/Scripts/Automation/LyraTest.ContentValidation.cs",
+          "Build/Scripts/Automation/LyraTest.TestConfig.cs",
+          "Build/Scripts/Automation/LyraTest.UpdateAuditCollections.cs",
+          "Build/Scripts/Deployment/LyraDeployment.EpicGameStore.cs",
+          "Plugins/AsyncMixin/Source/Private/AsyncMixin.cpp",
+          "Plugins/AsyncMixin/Source/Public/AsyncMixin.h",
+          "Plugins/CommonGame/Source/Private/Actions/AsyncAction_CreateWidgetAsync.cpp",
+          "Plugins/CommonGame/Source/Private/Actions/AsyncAction_PushContentToLayerForPlayer.cpp"
+        ]
+      },
+      "enhanced_input": {
+        "count": 58,
+        "file_count": 21,
+        "top_files": [
+          {
+            "path": "Source/LyraGame/Input/LyraInputComponent.h",
+            "count": 8
+          },
+          {
+            "path": "Source/LyraGame/Input/LyraInputConfig.h",
+            "count": 7
+          },
+          {
+            "path": "Source/LyraGame/Input/LyraInputConfig.cpp",
+            "count": 6
+          },
+          {
+            "path": "Source/LyraGame/GameFeatures/GameFeatureAction_AddInputContextMapping.cpp",
+            "count": 5
+          },
+          {
+            "path": "Plugins/GameFeatures/ShooterTests/Source/ShooterTestsRuntime/Private/Utilities/ShooterTestsActorTest.h",
+            "count": 4
+          },
+          {
+            "path": "Source/LyraGame/GameFeatures/GameFeatureAction_AddInputContextMapping.h",
+            "count": 4
+          },
+          {
+            "path": "Source/LyraGame/GameFeatures/GameFeatureAction_AddAbilities.h",
+            "count": 3
+          },
+          {
+            "path": "Source/LyraGame/GameFeatures/GameFeatureAction_AddInputBinding.h",
+            "count": 3
+          }
+        ],
+        "examples": [
+          "Config/DefaultInput.ini",
+          "Lyra.uproject",
+          "Plugins/GameFeatures/ShooterCore/ShooterCore.uplugin",
+          "Plugins/GameFeatures/ShooterCore/Source/ShooterCoreRuntime/Public/Input/AimAssistInputModifier.h",
+          "Plugins/GameFeatures/ShooterCore/Source/ShooterCoreRuntime/ShooterCoreRuntime.Build.cs",
+          "Plugins/GameFeatures/ShooterTests/ShooterTests.uplugin",
+          "Plugins/GameFeatures/ShooterTests/Source/ShooterTestsRuntime/Private/Utilities/ShooterTestsActorTest.h",
+          "Plugins/GameFeatures/ShooterTests/Source/ShooterTestsRuntime/ShooterTestsRuntime.Build.cs"
+        ]
+      },
+      "data_assets_and_registry": {
+        "count": 67,
+        "file_count": 37,
+        "top_files": [
+          {
+            "path": "Source/LyraGame/System/LyraAssetManager.h",
+            "count": 9
+          },
+          {
+            "path": "Source/LyraGame/GameModes/LyraExperienceManagerComponent.cpp",
+            "count": 8
+          },
+          {
+            "path": "Source/LyraGame/System/LyraAssetManager.cpp",
+            "count": 6
+          },
+          {
+            "path": "Source/LyraGame/GameModes/LyraGameMode.cpp",
+            "count": 5
+          },
+          {
+            "path": "Source/LyraGame/GameModes/LyraExperienceActionSet.h",
+            "count": 3
+          },
+          {
+            "path": "Source/LyraGame/GameModes/LyraExperienceDefinition.h",
+            "count": 3
+          },
+          {
+            "path": "Plugins/AsyncMixin/Source/Public/AsyncMixin.h",
+            "count": 2
+          },
+          {
+            "path": "Source/LyraGame/GameFeatures/GameFeatureAction_AddInputContextMapping.cpp",
+            "count": 2
+          }
+        ],
+        "examples": [
+          "Lyra.uproject",
+          "Plugins/AsyncMixin/Source/Private/AsyncMixin.cpp",
+          "Plugins/AsyncMixin/Source/Public/AsyncMixin.h",
+          "Plugins/CommonGame/Source/Private/Actions/AsyncAction_CreateWidgetAsync.cpp",
+          "Plugins/CommonGame/Source/Public/PrimaryGameLayout.h",
+          "Plugins/CommonUser/Source/CommonUser/Private/CommonSessionSubsystem.cpp",
+          "Plugins/GameFeatures/ShooterCore/Source/ShooterCoreRuntime/Public/Accolades/LyraAccoladeDefinition.h",
+          "Plugins/GameFeatures/ShooterCore/Source/ShooterCoreRuntime/ShooterCoreRuntime.Build.cs"
+        ]
+      },
+      "gameplay_tags": {
+        "count": 871,
+        "file_count": 180,
+        "top_files": [
+          {
+            "path": "Config/DefaultGameplayTags.ini",
+            "count": 104
+          },
+          {
+            "path": "Plugins/GameFeatures/ShooterCore/Config/Tags/ShooterCoreTags.ini",
+            "count": 63
+          },
+          {
+            "path": "Plugins/GameFeatures/ShooterExplorer/Config/Tags/ShooterExplorerTags.ini",
+            "count": 46
+          },
+          {
+            "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Public/GameFramework/GameplayMessageSubsystem.h",
+            "count": 19
+          },
+          {
+            "path": "Source/LyraGame/AbilitySystem/LyraAbilitySystemComponent.cpp",
+            "count": 17
+          },
+          {
+            "path": "Plugins/UIExtension/Source/Public/UIExtensionSystem.h",
+            "count": 16
+          },
+          {
+            "path": "Source/LyraGame/AbilitySystem/Abilities/LyraGameplayAbility.cpp",
+            "count": 14
+          },
+          {
+            "path": "Source/LyraGame/AbilitySystem/LyraAbilitySystemComponent.h",
+            "count": 14
+          }
+        ],
+        "examples": [
+          "Config/Custom/EOS/DefaultGame.ini",
+          "Config/Custom/Steam/DefaultGame.ini",
+          "Config/DefaultGame.ini",
+          "Config/DefaultGameplayTags.ini",
+          "Plugins/CommonGame/Source/CommonGame.Build.cs",
+          "Plugins/CommonGame/Source/Private/Actions/AsyncAction_PushContentToLayerForPlayer.cpp",
+          "Plugins/CommonGame/Source/Private/CommonGameInstance.cpp",
+          "Plugins/CommonGame/Source/Private/CommonUIExtensions.cpp"
+        ]
+      },
+      "gameplay_ability_system": {
+        "count": 430,
+        "file_count": 73,
+        "top_files": [
+          {
+            "path": "Source/LyraGame/AbilitySystem/LyraAbilitySystemComponent.cpp",
+            "count": 40
+          },
+          {
+            "path": "Source/LyraGame/AbilitySystem/Abilities/LyraGameplayAbility.h",
+            "count": 32
+          },
+          {
+            "path": "Config/DefaultGameplayTags.ini",
+            "count": 29
+          },
+          {
+            "path": "Source/LyraGame/AbilitySystem/Abilities/LyraGameplayAbility.cpp",
+            "count": 27
+          },
+          {
+            "path": "Source/LyraGame/AbilitySystem/LyraAbilitySystemComponent.h",
+            "count": 22
+          },
+          {
+            "path": "Source/LyraGame/Weapons/LyraGameplayAbility_RangedWeapon.cpp",
+            "count": 19
+          },
+          {
+            "path": "Source/LyraGame/Weapons/LyraGameplayAbility_RangedWeapon.h",
+            "count": 13
+          },
+          {
+            "path": "Source/LyraGame/AbilitySystem/LyraAbilitySet.cpp",
+            "count": 12
+          }
+        ],
+        "examples": [
+          "Config/DefaultEditor.ini",
+          "Config/DefaultEngine.ini",
+          "Config/DefaultGameplayTags.ini",
+          "Plugins/GameFeatures/ShooterCore/Config/Tags/ShooterCoreTags.ini",
+          "Plugins/GameFeatures/ShooterTests/Source/ShooterTestsRuntime/Private/ShooterTestsMapTests.cpp",
+          "Plugins/GameFeatures/ShooterTests/Source/ShooterTestsRuntime/Private/Utilities/ShooterTestsActorTest.h",
+          "Plugins/GameFeatures/ShooterTests/Source/ShooterTestsRuntime/Private/Utilities/ShooterTestsActorTestHelper.cpp",
+          "Plugins/GameFeatures/TopDownArena/Config/Tags/TopDownArenaTags.ini"
+        ]
+      },
+      "common_ui_umg": {
+        "count": 1080,
+        "file_count": 142,
+        "top_files": [
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Private/CommonUserSubsystem.cpp",
+            "count": 186
+          },
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Private/CommonSessionSubsystem.cpp",
+            "count": 132
+          },
+          {
+            "path": "Plugins/CommonGame/Source/Private/CommonGameInstance.cpp",
+            "count": 43
+          },
+          {
+            "path": "Plugins/CommonGame/Source/Private/CommonUIExtensions.cpp",
+            "count": 36
+          },
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Public/CommonSessionSubsystem.h",
+            "count": 32
+          },
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Public/CommonUserSubsystem.h",
+            "count": 31
+          },
+          {
+            "path": "Plugins/CommonGame/Source/Private/CommonPlayerInputKey.cpp",
+            "count": 25
+          },
+          {
+            "path": "Plugins/GameSettings/Source/Public/Widgets/GameSettingListEntry.h",
+            "count": 22
+          }
+        ],
+        "examples": [
+          "Config/Android/AndroidGame.ini",
+          "Config/DefaultEditor.ini",
+          "Config/DefaultGame.ini",
+          "Config/DefaultInput.ini",
+          "Config/IOS/IOSGame.ini",
+          "Config/Linux/LinuxGame.ini",
+          "Config/Mac/MacGame.ini",
+          "Config/Windows/WindowsGame.ini"
+        ]
+      },
+      "subsystems_lifecycle": {
+        "count": 142,
+        "file_count": 63,
+        "top_files": [
+          {
+            "path": "Source/LyraGame/Audio/LyraAudioMixEffectsSubsystem.cpp",
+            "count": 6
+          },
+          {
+            "path": "Plugins/CommonGame/Source/Private/GameUIManagerSubsystem.cpp",
+            "count": 5
+          },
+          {
+            "path": "Plugins/CommonGame/Source/Private/Messaging/CommonMessagingSubsystem.cpp",
+            "count": 5
+          },
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Private/CommonSessionSubsystem.cpp",
+            "count": 5
+          },
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Private/CommonUserSubsystem.cpp",
+            "count": 5
+          },
+          {
+            "path": "Plugins/PocketWorlds/Source/Private/PocketCaptureSubsystem.cpp",
+            "count": 5
+          },
+          {
+            "path": "Plugins/CommonGame/Source/Public/GameUIManagerSubsystem.h",
+            "count": 4
+          },
+          {
+            "path": "Plugins/CommonGame/Source/Public/Messaging/CommonMessagingSubsystem.h",
+            "count": 4
+          }
+        ],
+        "examples": [
+          "Plugins/CommonGame/Source/Private/GameUIManagerSubsystem.cpp",
+          "Plugins/CommonGame/Source/Private/Messaging/CommonMessagingSubsystem.cpp",
+          "Plugins/CommonGame/Source/Public/GameUIManagerSubsystem.h",
+          "Plugins/CommonGame/Source/Public/Messaging/CommonMessagingSubsystem.h",
+          "Plugins/CommonLoadingScreen/Source/CommonLoadingScreen/Private/LoadingScreenManager.cpp",
+          "Plugins/CommonLoadingScreen/Source/CommonLoadingScreen/Public/LoadingScreenManager.h",
+          "Plugins/CommonUser/Source/CommonUser/Private/CommonSessionSubsystem.cpp",
+          "Plugins/CommonUser/Source/CommonUser/Private/CommonUserBasicPresence.cpp"
+        ]
+      },
+      "delegates_async_latent": {
+        "count": 311,
+        "file_count": 104,
+        "top_files": [
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Public/CommonSessionSubsystem.h",
+            "count": 27
+          },
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Public/CommonUserSubsystem.h",
+            "count": 12
+          },
+          {
+            "path": "Source/LyraGame/Settings/Widgets/LyraSettingsListEntrySetting_KeyboardInput.cpp",
+            "count": 11
+          },
+          {
+            "path": "Plugins/GameSettings/Source/Private/Widgets/GameSettingListEntry.cpp",
+            "count": 10
+          },
+          {
+            "path": "Source/LyraGame/Character/LyraHealthComponent.h",
+            "count": 10
+          },
+          {
+            "path": "Plugins/CommonGame/Source/Private/CommonLocalPlayer.cpp",
+            "count": 9
+          },
+          {
+            "path": "Source/LyraGame/GameModes/LyraExperienceManagerComponent.cpp",
+            "count": 9
+          },
+          {
+            "path": "Source/LyraGame/Character/LyraPawnExtensionComponent.cpp",
+            "count": 7
+          }
+        ],
+        "examples": [
+          "Plugins/CommonGame/Source/Private/Actions/AsyncAction_CreateWidgetAsync.cpp",
+          "Plugins/CommonGame/Source/Private/Actions/AsyncAction_PushContentToLayerForPlayer.cpp",
+          "Plugins/CommonGame/Source/Private/Actions/AsyncAction_ShowConfirmation.cpp",
+          "Plugins/CommonGame/Source/Private/CommonGameInstance.cpp",
+          "Plugins/CommonGame/Source/Private/CommonLocalPlayer.cpp",
+          "Plugins/CommonGame/Source/Private/CommonPlayerInputKey.cpp",
+          "Plugins/CommonGame/Source/Private/PrimaryGameLayout.cpp",
+          "Plugins/CommonGame/Source/Public/Actions/AsyncAction_CreateWidgetAsync.h"
+        ]
+      },
+      "networking_replication": {
+        "count": 246,
+        "file_count": 62,
+        "top_files": [
+          {
+            "path": "Source/LyraGame/Player/LyraPlayerState.h",
+            "count": 13
+          },
+          {
+            "path": "Plugins/GameFeatures/TopDownArena/Source/TopDownArenaRuntime/Private/TopDownArenaAttributeSet.h",
+            "count": 12
+          },
+          {
+            "path": "Source/LyraGame/Character/LyraCharacter.cpp",
+            "count": 12
+          },
+          {
+            "path": "Source/LyraGame/Player/LyraPlayerState.cpp",
+            "count": 11
+          },
+          {
+            "path": "Plugins/GameFeatures/TopDownArena/Source/TopDownArenaRuntime/Private/TopDownArenaAttributeSet.cpp",
+            "count": 10
+          },
+          {
+            "path": "Source/LyraGame/Character/LyraCharacter.h",
+            "count": 10
+          },
+          {
+            "path": "Source/LyraGame/Equipment/LyraQuickBarComponent.cpp",
+            "count": 9
+          },
+          {
+            "path": "Source/LyraGame/Equipment/LyraQuickBarComponent.h",
+            "count": 7
+          }
+        ],
+        "examples": [
+          "Build/Scripts/Automation/LyraTest.ContentValidation.cs",
+          "Build/Scripts/Automation/LyraTest.UpdateAuditCollections.cs",
+          "Config/DefaultEditorPerProjectUserSettings.ini",
+          "Config/DefaultGame.ini",
+          "Lyra.uproject",
+          "Plugins/CommonGame/Source/Private/CommonPlayerController.cpp",
+          "Plugins/CommonGame/Source/Public/CommonPlayerController.h",
+          "Plugins/GameFeatures/ShooterCore/Source/ShooterCoreRuntime/Public/Input/AimAssistInputModifier.h"
+        ]
+      },
+      "game_features_modular_gameplay": {
+        "count": 214,
+        "file_count": 47,
+        "top_files": [
+          {
+            "path": "Config/DefaultEditor.ini",
+            "count": 24
+          },
+          {
+            "path": "Source/LyraGame/GameModes/LyraExperienceManagerComponent.cpp",
+            "count": 21
+          },
+          {
+            "path": "Source/LyraGame.Target.cs",
+            "count": 15
+          },
+          {
+            "path": "Source/LyraGame/GameFeatures/LyraGameFeaturePolicy.cpp",
+            "count": 11
+          },
+          {
+            "path": "Source/LyraGame/GameModes/LyraUserFacingExperienceDefinition.h",
+            "count": 11
+          },
+          {
+            "path": "Config/DefaultGame.ini",
+            "count": 8
+          },
+          {
+            "path": "Source/LyraGame/GameModes/LyraGameMode.cpp",
+            "count": 8
+          },
+          {
+            "path": "Source/LyraGame/GameFeatures/GameFeatureAction_AddAbilities.cpp",
+            "count": 7
+          }
+        ],
+        "examples": [
+          "Config/DefaultEditor.ini",
+          "Config/DefaultGame.ini",
+          "Config/Localization/Game_Gather.ini",
+          "Lyra.uproject",
+          "Plugins/GameFeatures/ShooterCore/ShooterCore.uplugin",
+          "Plugins/GameFeatures/ShooterCore/Source/ShooterCoreRuntime/ShooterCoreRuntime.Build.cs",
+          "Plugins/GameFeatures/ShooterTests/ShooterTests.uplugin",
+          "Plugins/GameFeatures/ShooterTests/Source/ShooterTestsRuntime/ShooterTestsRuntime.Build.cs"
+        ]
+      },
+      "slate_editor_cpp": {
+        "count": 367,
+        "file_count": 81,
+        "top_files": [
+          {
+            "path": "Plugins/CommonGame/Source/Private/CommonPlayerInputKey.cpp",
+            "count": 19
+          },
+          {
+            "path": "Source/LyraEditor/Private/GameEditorStyle.cpp",
+            "count": 19
+          },
+          {
+            "path": "Source/LyraEditor/Validation/EditorValidator.cpp",
+            "count": 18
+          },
+          {
+            "path": "Source/LyraGame/UI/IndicatorSystem/SActorCanvas.cpp",
+            "count": 16
+          },
+          {
+            "path": "Source/LyraGame/UI/Weapons/SHitMarkerConfirmationWidget.h",
+            "count": 15
+          },
+          {
+            "path": "Plugins/CommonLoadingScreen/Source/CommonLoadingScreen/Private/LoadingScreenManager.cpp",
+            "count": 14
+          },
+          {
+            "path": "Source/LyraEditor/Validation/EditorValidator_Load.cpp",
+            "count": 12
+          },
+          {
+            "path": "Source/LyraGame/UI/Weapons/SCircumferenceMarkerWidget.h",
+            "count": 12
+          }
+        ],
+        "examples": [
+          "Build/Scripts/Automation/LyraTest.ContentValidation.cs",
+          "Config/DefaultDeviceProfiles.ini",
+          "Plugins/CommonGame/Source/CommonGame.Build.cs",
+          "Plugins/CommonGame/Source/Private/CommonPlayerInputKey.cpp",
+          "Plugins/CommonGame/Source/Private/GameUIPolicy.cpp",
+          "Plugins/CommonGame/Source/Public/CommonPlayerInputKey.h",
+          "Plugins/CommonLoadingScreen/Source/CommonLoadingScreen/CommonLoadingScreen.Build.cs",
+          "Plugins/CommonLoadingScreen/Source/CommonLoadingScreen/Private/LoadingScreenManager.cpp"
+        ]
+      },
+      "custom_k2_native_extensions": {
+        "count": 18,
+        "file_count": 3,
+        "top_files": [
+          {
+            "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageNodes/Private/K2Node_AsyncAction_ListenForGameplayMessages.cpp",
+            "count": 9
+          },
+          {
+            "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageNodes/Public/K2Node_AsyncAction_ListenForGameplayMessages.h",
+            "count": 8
+          },
+          {
+            "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Public/GameFramework/AsyncAction_ListenForGameplayMessage.h",
+            "count": 1
+          }
+        ],
+        "examples": [
+          "Plugins/GameplayMessageRouter/Source/GameplayMessageNodes/Private/K2Node_AsyncAction_ListenForGameplayMessages.cpp",
+          "Plugins/GameplayMessageRouter/Source/GameplayMessageNodes/Public/K2Node_AsyncAction_ListenForGameplayMessages.h",
+          "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Public/GameFramework/AsyncAction_ListenForGameplayMessage.h"
+        ]
+      }
+    },
+    "top_risk_files": [
+      {
+        "path": "Source/LyraGame/Settings/LyraSettingsLocal.cpp",
+        "line_count": 1686,
+        "hits": {
+          "control_flow_expression_authoring": 148,
+          "gameplay_tags": 1,
+          "common_ui_umg": 4,
+          "delegates_async_latent": 1,
+          "slate_editor_cpp": 7
+        },
+        "readiness": "blocked_native",
+        "risk": "critical"
+      },
+      {
+        "path": "Source/LyraGame/System/LyraReplicationGraph.cpp",
+        "line_count": 997,
+        "hits": {
+          "basic_actor_component_authoring": 19,
+          "control_flow_expression_authoring": 95,
+          "delegates_async_latent": 3,
+          "networking_replication": 2
+        },
+        "readiness": "blocked_native",
+        "risk": "critical"
+      },
+      {
+        "path": "Source/LyraEditor/Validation/EditorValidator.cpp",
+        "line_count": 500,
+        "hits": {
+          "control_flow_expression_authoring": 82,
+          "slate_editor_cpp": 18
+        },
+        "readiness": "blocked_native",
+        "risk": "critical"
+      },
+      {
+        "path": "Source/LyraGame/GameModes/LyraExperienceManagerComponent.cpp",
+        "line_count": 468,
+        "hits": {
+          "control_flow_expression_authoring": 56,
+          "data_assets_and_registry": 8,
+          "delegates_async_latent": 9,
+          "networking_replication": 4,
+          "game_features_modular_gameplay": 21
+        },
+        "readiness": "blocked_native",
+        "risk": "critical"
+      },
+      {
+        "path": "Plugins/CommonGame/Source/Private/CommonPlayerInputKey.cpp",
+        "line_count": 532,
+        "hits": {
+          "control_flow_expression_authoring": 52,
+          "common_ui_umg": 25,
+          "delegates_async_latent": 1,
+          "slate_editor_cpp": 19
+        },
+        "readiness": "blocked_native",
+        "risk": "critical"
+      },
+      {
+        "path": "Plugins/CommonLoadingScreen/Source/CommonLoadingScreen/Private/LoadingScreenManager.cpp",
+        "line_count": 648,
+        "hits": {
+          "basic_actor_component_authoring": 5,
+          "control_flow_expression_authoring": 60,
+          "common_ui_umg": 10,
+          "subsystems_lifecycle": 3,
+          "delegates_async_latent": 2,
+          "slate_editor_cpp": 14
+        },
+        "readiness": "blocked_native",
+        "risk": "critical"
+      },
+      {
+        "path": "Source/LyraGame/UI/IndicatorSystem/IndicatorDescriptor.h",
+        "line_count": 244,
+        "hits": {
+          "reflected_api": 50,
+          "blueprint_exposed_api": 33,
+          "basic_actor_component_authoring": 3,
+          "common_ui_umg": 5,
+          "slate_editor_cpp": 3
+        },
+        "readiness": "blocked_native",
+        "risk": "critical"
+      },
+      {
+        "path": "Source/LyraGame/Character/LyraCharacter.cpp",
+        "line_count": 682,
+        "hits": {
+          "basic_actor_component_authoring": 13,
+          "control_flow_expression_authoring": 56,
+          "gameplay_tags": 7,
+          "gameplay_ability_system": 1,
+          "delegates_async_latent": 3,
+          "networking_replication": 12
+        },
+        "readiness": "blocked_native",
+        "risk": "critical"
+      },
+      {
+        "path": "Source/LyraGame/Player/LyraPlayerController.cpp",
+        "line_count": 626,
+        "hits": {
+          "basic_actor_component_authoring": 14,
+          "control_flow_expression_authoring": 66,
+          "gameplay_ability_system": 1,
+          "common_ui_umg": 2,
+          "delegates_async_latent": 3,
+          "networking_replication": 4
+        },
+        "readiness": "blocked_native",
+        "risk": "critical"
+      },
+      {
+        "path": "Source/LyraGame/GameModes/LyraGameMode.cpp",
+        "line_count": 523,
+        "hits": {
+          "basic_actor_component_authoring": 4,
+          "control_flow_expression_authoring": 63,
+          "data_assets_and_registry": 5,
+          "common_ui_umg": 8,
+          "delegates_async_latent": 1,
+          "game_features_modular_gameplay": 8
+        },
+        "readiness": "blocked_native",
+        "risk": "critical"
+      },
+      {
+        "path": "Source/LyraEditor/Commandlets/ContentValidationCommandlet.cpp",
+        "line_count": 430,
+        "hits": {
+          "control_flow_expression_authoring": 82,
+          "slate_editor_cpp": 6
+        },
+        "readiness": "blocked_native",
+        "risk": "critical"
+      },
+      {
+        "path": "Plugins/GameFeatures/ShooterCore/Source/ShooterCoreRuntime/Public/Input/AimAssistInputModifier.h",
+        "line_count": 408,
+        "hits": {
+          "reflected_api": 56,
+          "blueprint_exposed_api": 17,
+          "control_flow_expression_authoring": 7,
+          "enhanced_input": 2,
+          "gameplay_tags": 2,
+          "networking_replication": 1
+        },
+        "readiness": "blocked_native",
+        "risk": "critical"
+      },
+      {
+        "path": "Source/LyraGame/UI/IndicatorSystem/SActorCanvas.cpp",
+        "line_count": 726,
+        "hits": {
+          "control_flow_expression_authoring": 64,
+          "common_ui_umg": 4,
+          "slate_editor_cpp": 16
+        },
+        "readiness": "blocked_native",
+        "risk": "critical"
+      },
+      {
+        "path": "Plugins/CommonGame/Source/Public/CommonPlayerInputKey.h",
+        "line_count": 229,
+        "hits": {
+          "reflected_api": 37,
+          "blueprint_exposed_api": 20,
+          "common_ui_umg": 5,
+          "slate_editor_cpp": 10
+        },
+        "readiness": "blocked_native",
+        "risk": "critical"
+      },
+      {
+        "path": "Source/LyraGame/GameFeatures/GameFeatureAction_AddAbilities.cpp",
+        "line_count": 299,
+        "hits": {
+          "basic_actor_component_authoring": 6,
+          "control_flow_expression_authoring": 43,
+          "gameplay_ability_system": 11,
+          "game_features_modular_gameplay": 7
+        },
+        "readiness": "blocked_native",
+        "risk": "critical"
+      },
+      {
+        "path": "Source/LyraGame/Character/LyraPawnExtensionComponent.cpp",
+        "line_count": 313,
+        "hits": {
+          "basic_actor_component_authoring": 15,
+          "control_flow_expression_authoring": 33,
+          "gameplay_tags": 7,
+          "delegates_async_latent": 7,
+          "networking_replication": 4
+        },
+        "readiness": "blocked_native",
+        "risk": "critical"
+      },
+      {
+        "path": "Source/LyraGame/Cosmetics/LyraPawnComponent_CharacterParts.cpp",
+        "line_count": 358,
+        "hits": {
+          "basic_actor_component_authoring": 13,
+          "control_flow_expression_authoring": 41,
+          "gameplay_tags": 9,
+          "networking_replication": 3
+        },
+        "readiness": "blocked_native",
+        "risk": "critical"
+      },
+      {
+        "path": "Source/LyraGame/Character/LyraCharacter.h",
+        "line_count": 232,
+        "hits": {
+          "reflected_api": 27,
+          "blueprint_exposed_api": 7,
+          "basic_actor_component_authoring": 10,
+          "control_flow_expression_authoring": 1,
+          "gameplay_tags": 7,
+          "gameplay_ability_system": 2,
+          "networking_replication": 10
+        },
+        "readiness": "blocked_native",
+        "risk": "critical"
+      },
+      {
+        "path": "Source/LyraGame/GameFeatures/GameFeatureAction_AddInputContextMapping.cpp",
+        "line_count": 287,
+        "hits": {
+          "basic_actor_component_authoring": 1,
+          "control_flow_expression_authoring": 41,
+          "enhanced_input": 5,
+          "data_assets_and_registry": 2,
+          "delegates_async_latent": 3,
+          "game_features_modular_gameplay": 7
+        },
+        "readiness": "blocked_native",
+        "risk": "critical"
+      },
+      {
+        "path": "Source/LyraGame/UI/Common/LyraTabListWidgetBase.h",
+        "line_count": 133,
+        "hits": {
+          "reflected_api": 20,
+          "blueprint_exposed_api": 22,
+          "control_flow_expression_authoring": 3,
+          "common_ui_umg": 10,
+          "delegates_async_latent": 3,
+          "slate_editor_cpp": 1
+        },
+        "readiness": "blocked_native",
+        "risk": "critical"
+      },
+      {
+        "path": "Source/LyraGame/Character/LyraHealthComponent.h",
+        "line_count": 136,
+        "hits": {
+          "reflected_api": 18,
+          "blueprint_exposed_api": 15,
+          "basic_actor_component_authoring": 9,
+          "delegates_async_latent": 10,
+          "networking_replication": 4
+        },
+        "readiness": "blocked_native",
+        "risk": "critical"
+      },
+      {
+        "path": "Source/LyraGame/Equipment/LyraQuickBarComponent.h",
+        "line_count": 108,
+        "hits": {
+          "reflected_api": 22,
+          "blueprint_exposed_api": 20,
+          "basic_actor_component_authoring": 4,
+          "control_flow_expression_authoring": 3,
+          "networking_replication": 7
+        },
+        "readiness": "blocked_native",
+        "risk": "critical"
+      },
+      {
+        "path": "Source/LyraGame/Player/LyraPlayerState.h",
+        "line_count": 189,
+        "hits": {
+          "reflected_api": 24,
+          "blueprint_exposed_api": 9,
+          "basic_actor_component_authoring": 2,
+          "gameplay_tags": 6,
+          "gameplay_ability_system": 2,
+          "networking_replication": 13
+        },
+        "readiness": "blocked_native",
+        "risk": "critical"
+      },
+      {
+        "path": "Source/LyraGame/GameFeatures/GameFeatureAction_AddAbilities.h",
+        "line_count": 128,
+        "hits": {
+          "reflected_api": 13,
+          "blueprint_exposed_api": 6,
+          "basic_actor_component_authoring": 8,
+          "control_flow_expression_authoring": 10,
+          "enhanced_input": 3,
+          "gameplay_ability_system": 5,
+          "networking_replication": 4,
+          "game_features_modular_gameplay": 4
+        },
+        "readiness": "blocked_native",
+        "risk": "critical"
+      },
+      {
+        "path": "Source/LyraGame/Weapons/LyraWeaponSpawner.cpp",
+        "line_count": 259,
+        "hits": {
+          "basic_actor_component_authoring": 16,
+          "control_flow_expression_authoring": 29,
+          "gameplay_tags": 1,
+          "delegates_async_latent": 1,
+          "networking_replication": 4
+        },
+        "readiness": "blocked_native",
+        "risk": "critical"
+      }
+    ]
+  },
+  "content_scan": {
+    "content_root_exists": true,
+    "asset_counts": {
+      ".uasset": 2835,
+      ".umap": 3
+    },
+    "top_directories": {
+      "Audio": 947,
+      "Characters": 796,
+      "UI": 607,
+      "Effects": 257,
+      "Weapons": 107,
+      "Tools": 37,
+      "System": 16,
+      "GameplayEffects": 15,
+      "Input": 15,
+      "Feedback": 13,
+      "Environments": 10,
+      "GameplayCueNotifies": 8,
+      "ContextEffects": 3,
+      "PhysicsMaterials": 3,
+      "B_LyraGameInstance.uasset": 1,
+      "B_LyraGameMode.uasset": 1,
+      "DefaultGameData.uasset": 1,
+      "DefaultGame_Label.uasset": 1
+    },
+    "note": "Binary assets are counted by path only; asset internals require Unreal Asset Registry or editor-side analysis."
+  },
+  "mcp_capabilities": {
+    "mcp_root": "D:\\Git\\unreal-mcp-cubeless",
+    "plugin_root": "D:\\Git\\CubelessStylized\\Plugins\\UnrealMCP",
+    "python_tool_count": 118,
+    "python_tools": {
+      "blueprint_tools.py": [
+        "add_component_to_blueprint",
+        "compile_and_save_blueprint",
+        "compile_and_validate_blueprint",
+        "compile_blueprint",
+        "create_blueprint",
+        "get_component_property",
+        "list_blueprint_components",
+        "set_blueprint_property",
+        "set_component_property",
+        "set_pawn_properties",
+        "set_physics_properties",
+        "set_static_mesh_properties"
+      ],
+      "editor_tools.py": [
+        "delete_actor",
+        "find_actors_by_name",
+        "focus_viewport",
+        "get_actor_properties",
+        "get_actors_in_level",
+        "set_actor_property",
+        "set_actor_transform",
+        "spawn_actor",
+        "spawn_blueprint_actor"
+      ],
+      "ieta_tools.py": [
+        "show_ieta_connection_status"
+      ],
+      "material_tools.py": [
+        "add_custom_material_node",
+        "add_material_node",
+        "analyze_material_graph",
+        "compile_and_save_material",
+        "connect_material_nodes",
+        "connect_material_property",
+        "delete_material_node",
+        "layout_material_nodes",
+        "list_material_nodes",
+        "resolve_material_graph",
+        "send_material_command",
+        "set_material_node_property"
+      ],
+      "niagara_tools.py": [
+        "compile_and_save_niagara_system",
+        "duplicate_niagara_system_to_temp",
+        "get_prop",
+        "inspect_niagara_system",
+        "list_niagara_assets",
+        "list_niagara_components"
+      ],
+      "node_tools.py": [
+        "add_blueprint_array_function_node",
+        "add_blueprint_boolean_node",
+        "add_blueprint_branch_node",
+        "add_blueprint_break_struct_node",
+        "add_blueprint_call_function_node",
+        "add_blueprint_compare_node",
+        "add_blueprint_custom_event_node",
+        "add_blueprint_dynamic_cast_node",
+        "add_blueprint_enhanced_input_action_node",
+        "add_blueprint_enum_literal_node",
+        "add_blueprint_event_dispatcher",
+        "add_blueprint_event_dispatcher_assign_node",
+        "add_blueprint_event_dispatcher_bind_node",
+        "add_blueprint_event_dispatcher_call_node",
+        "add_blueprint_event_dispatcher_clear_node",
+        "add_blueprint_event_dispatcher_unbind_node",
+        "add_blueprint_event_node",
+        "add_blueprint_function_node",
+        "add_blueprint_function_parameter",
+        "add_blueprint_get_self_component_reference",
+        "add_blueprint_input_action_node",
+        "add_blueprint_input_axis_event_node",
+        "add_blueprint_is_valid_node",
+        "add_blueprint_literal_node",
+        "add_blueprint_local_variable",
+        "add_blueprint_loop_node",
+        "add_blueprint_make_array_node",
+        "add_blueprint_make_struct_node",
+        "add_blueprint_math_node",
+        "add_blueprint_return_node",
+        "add_blueprint_select_node",
+        "add_blueprint_self_reference",
+        "add_blueprint_sequence_node",
+        "add_blueprint_switch_enum_node",
+        "add_blueprint_switch_int_node",
+        "add_blueprint_variable",
+        "add_blueprint_variable_get_node",
+        "add_blueprint_variable_set_node",
+        "add_graph_selector",
+        "connect_blueprint_nodes",
+        "find_blueprint_nodes",
+        "list_blueprint_graphs",
+        "list_blueprint_nodes",
+        "resolve_blueprint",
+        "resolve_blueprint_graph",
+        "send_node_command",
+        "set_blueprint_pin_default"
+      ],
+      "pcg_tools.py": [
+        "add_pcg_node",
+        "compile_or_notify_pcg_graph",
+        "connect_pcg_nodes",
+        "list_pcg_assets",
+        "list_pcg_components",
+        "list_pcg_graph_nodes",
+        "refresh_pcg_components",
+        "resave_pcg_assets",
+        "resolve_pcg_graph",
+        "save_pcg_graph",
+        "send_pcg_command",
+        "set_pcg_debug_enabled",
+        "set_pcg_node_setting"
+      ],
+      "project_tools.py": [
+        "create_input_mapping",
+        "postprocess_content_folder_mcp",
+        "recreate_content_folder_mcp",
+        "repair_world_actor_instances_mcp"
+      ],
+      "python_tools.py": [
+        "execute_unreal_python"
+      ],
+      "texture_generation.py": [
+        "apply_material_to_mesh",
+        "create_material_instance_with_texture",
+        "generate_and_apply_ai_texture",
+        "generate_texture_for_mesh_uv",
+        "generate_texture_from_prompt",
+        "get_static_mesh_uv_layout",
+        "import_texture_to_unreal"
+      ],
+      "umg_tools.py": [
+        "add_button_to_widget",
+        "add_text_block_to_widget",
+        "add_widget_to_viewport",
+        "bind_widget_event",
+        "create_umg_widget_blueprint",
+        "set_text_block_binding"
+      ]
+    },
+    "plugin_command_count": 75,
+    "plugin_commands": [
+      "add_blueprint_array_function_node",
+      "add_blueprint_boolean_node",
+      "add_blueprint_branch_node",
+      "add_blueprint_break_struct_node",
+      "add_blueprint_call_function_node",
+      "add_blueprint_compare_node",
+      "add_blueprint_custom_event_node",
+      "add_blueprint_dynamic_cast_node",
+      "add_blueprint_enhanced_input_action_node",
+      "add_blueprint_enum_literal_node",
+      "add_blueprint_event_dispatcher",
+      "add_blueprint_event_dispatcher_assign_node",
+      "add_blueprint_event_dispatcher_bind_node",
+      "add_blueprint_event_dispatcher_call_node",
+      "add_blueprint_event_dispatcher_clear_node",
+      "add_blueprint_event_dispatcher_unbind_node",
+      "add_blueprint_event_node",
+      "add_blueprint_function_node",
+      "add_blueprint_function_parameter",
+      "add_blueprint_get_self_component_reference",
+      "add_blueprint_input_action_node",
+      "add_blueprint_input_axis_event_node",
+      "add_blueprint_is_valid_node",
+      "add_blueprint_literal_node",
+      "add_blueprint_local_variable",
+      "add_blueprint_loop_node",
+      "add_blueprint_make_array_node",
+      "add_blueprint_make_struct_node",
+      "add_blueprint_math_node",
+      "add_blueprint_return_node",
+      "add_blueprint_select_node",
+      "add_blueprint_self_reference",
+      "add_blueprint_sequence_node",
+      "add_blueprint_switch_enum_node",
+      "add_blueprint_switch_int_node",
+      "add_blueprint_variable",
+      "add_blueprint_variable_get_node",
+      "add_blueprint_variable_set_node",
+      "add_component_to_blueprint",
+      "analyze_blueprint_widget_fallbacks_mcp",
+      "compile_and_save_blueprint",
+      "compile_and_validate_blueprint",
+      "compile_blueprint",
+      "connect_blueprint_nodes",
+      "create_actor",
+      "create_blueprint",
+      "create_input_mapping",
+      "delete_actor",
+      "execute_python",
+      "find_actors_by_name",
+      "find_blueprint_nodes",
+      "focus_viewport",
+      "get_actor_properties",
+      "get_actors_in_level",
+      "get_component_property",
+      "list_blueprint_components",
+      "list_blueprint_graphs",
+      "list_blueprint_nodes",
+      "postprocess_content_folder_mcp",
+      "recreate_content_folder_mcp",
+      "repair_world_actor_instances_mcp",
+      "resolve_blueprint",
+      "resolve_blueprint_graph",
+      "run_content_validation_pipeline_mcp",
+      "set_actor_property",
+      "set_actor_transform",
+      "set_blueprint_pin_default",
+      "set_blueprint_property",
+      "set_component_property",
+      "set_pawn_properties",
+      "set_physics_properties",
+      "set_static_mesh_properties",
+      "spawn_actor",
+      "spawn_blueprint_actor",
+      "take_screenshot"
+    ]
+  },
+  "readiness": {
+    "overall": {
+      "minimum_stable_scope": "readiness_classification_only",
+      "bp_conversion_readiness": "partial_with_native_blockers",
+      "recommended_first_pass": [
+        "Inventory reflected C++ API and Blueprint-exposed surface.",
+        "Classify native-heavy systems before attempting any BP graph authoring.",
+        "Generate BP shells or graph glue only for low/medium risk classes with existing native parent types.",
+        "Keep GAS, replication, GameFeatures, Slate/editor modules, and custom K2 as native-blocked until dedicated support exists."
+      ]
+    },
+    "supported_categories": [
+      {
+        "key": "control_flow_expression_authoring",
+        "label": "Blueprint graph control flow and expressions",
+        "readiness": "supported_partial",
+        "risk": "medium",
+        "hit_count": 5390,
+        "file_count": 437,
+        "mapped_capabilities": [
+          "add_blueprint_branch_node",
+          "add_blueprint_switch_int_node",
+          "add_blueprint_switch_enum_node",
+          "add_blueprint_loop_node",
+          "add_blueprint_array_function_node",
+          "add_blueprint_make_array_node"
+        ],
+        "capability_groups": [],
+        "unconfirmed_capabilities": [],
+        "note": "MCP can author common graph constructs, but arbitrary C++ expression lowering remains heuristic.",
+        "top_files": [
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Private/CommonUserSubsystem.cpp",
+            "count": 323
+          },
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Private/CommonSessionSubsystem.cpp",
+            "count": 171
+          },
+          {
+            "path": "Source/LyraGame/Settings/LyraSettingsLocal.cpp",
+            "count": 148
+          },
+          {
+            "path": "Source/LyraGame/System/LyraReplicationGraph.cpp",
+            "count": 95
+          },
+          {
+            "path": "Source/LyraEditor/Commandlets/ContentValidationCommandlet.cpp",
+            "count": 82
+          },
+          {
+            "path": "Source/LyraEditor/Validation/EditorValidator.cpp",
+            "count": 82
+          },
+          {
+            "path": "Plugins/GameFeatures/ShooterCore/Source/ShooterCoreRuntime/Private/Input/AimAssistInputModifier.cpp",
+            "count": 71
+          },
+          {
+            "path": "Source/LyraGame/Weapons/LyraGameplayAbility_RangedWeapon.cpp",
+            "count": 68
+          }
+        ]
+      },
+      {
+        "key": "basic_actor_component_authoring",
+        "label": "Actor and component composition",
+        "readiness": "supported_partial",
+        "risk": "medium",
+        "hit_count": 743,
+        "file_count": 180,
+        "mapped_capabilities": [
+          "create_blueprint",
+          "add_component_to_blueprint",
+          "set_component_property",
+          "add_blueprint_event_node"
+        ],
+        "capability_groups": [],
+        "unconfirmed_capabilities": [],
+        "note": "Blueprint shells and component setup are feasible when behavior is simple and component classes already exist.",
+        "top_files": [
+          {
+            "path": "Source/LyraGame/Character/LyraHeroComponent.cpp",
+            "count": 26
+          },
+          {
+            "path": "Source/LyraGame/System/LyraReplicationGraph.cpp",
+            "count": 19
+          },
+          {
+            "path": "Source/LyraGame/Weapons/LyraWeaponSpawner.cpp",
+            "count": 16
+          },
+          {
+            "path": "Source/LyraGame/Camera/LyraCameraMode_ThirdPerson.cpp",
+            "count": 15
+          },
+          {
+            "path": "Source/LyraGame/Character/LyraPawnExtensionComponent.cpp",
+            "count": 15
+          },
+          {
+            "path": "Source/LyraGame/Equipment/LyraEquipmentInstance.cpp",
+            "count": 15
+          },
+          {
+            "path": "Source/LyraGame/Player/LyraPlayerController.cpp",
+            "count": 14
+          },
+          {
+            "path": "Plugins/GameFeatures/ShooterCore/Source/ShooterCoreRuntime/Private/Input/AimAssistTargetManagerComponent.cpp",
+            "count": 13
+          }
+        ]
+      },
+      {
+        "key": "enhanced_input",
+        "label": "Enhanced Input",
+        "readiness": "supported_partial",
+        "risk": "medium",
+        "hit_count": 58,
+        "file_count": 21,
+        "mapped_capabilities": [
+          "create_input_mapping",
+          "add_blueprint_enhanced_input_action_node",
+          "add_blueprint_input_action_node"
+        ],
+        "capability_groups": [],
+        "unconfirmed_capabilities": [],
+        "note": "Event node authoring exists; full asset/data migration and trigger/modifier semantics need separate handling.",
+        "top_files": [
+          {
+            "path": "Source/LyraGame/Input/LyraInputComponent.h",
+            "count": 8
+          },
+          {
+            "path": "Source/LyraGame/Input/LyraInputConfig.h",
+            "count": 7
+          },
+          {
+            "path": "Source/LyraGame/Input/LyraInputConfig.cpp",
+            "count": 6
+          },
+          {
+            "path": "Source/LyraGame/GameFeatures/GameFeatureAction_AddInputContextMapping.cpp",
+            "count": 5
+          },
+          {
+            "path": "Plugins/GameFeatures/ShooterTests/Source/ShooterTestsRuntime/Private/Utilities/ShooterTestsActorTest.h",
+            "count": 4
+          },
+          {
+            "path": "Source/LyraGame/GameFeatures/GameFeatureAction_AddInputContextMapping.h",
+            "count": 4
+          },
+          {
+            "path": "Source/LyraGame/GameFeatures/GameFeatureAction_AddAbilities.h",
+            "count": 3
+          },
+          {
+            "path": "Source/LyraGame/GameFeatures/GameFeatureAction_AddInputBinding.h",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "key": "blueprint_exposed_api",
+        "label": "Blueprint-exposed native API",
+        "readiness": "supported_partial",
+        "risk": "low",
+        "hit_count": 1096,
+        "file_count": 206,
+        "mapped_capabilities": [
+          "add_blueprint_call_function_node",
+          "set_blueprint_pin_default",
+          "connect_blueprint_nodes"
+        ],
+        "capability_groups": [],
+        "unconfirmed_capabilities": [],
+        "note": "Existing MCP tools can call exposed functions and author graph glue, but native implementations remain native.",
+        "top_files": [
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Public/CommonUserSubsystem.h",
+            "count": 57
+          },
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Public/CommonSessionSubsystem.h",
+            "count": 37
+          },
+          {
+            "path": "Source/LyraGame/UI/IndicatorSystem/IndicatorDescriptor.h",
+            "count": 33
+          },
+          {
+            "path": "Source/LyraGame/AbilitySystem/Abilities/LyraGameplayAbility.h",
+            "count": 24
+          },
+          {
+            "path": "Source/LyraGame/Feedback/ContextEffects/AnimNotify_LyraContextEffects.h",
+            "count": 24
+          },
+          {
+            "path": "Plugins/GameSettings/Source/Public/Widgets/GameSettingListEntry.h",
+            "count": 22
+          },
+          {
+            "path": "Source/LyraGame/UI/Common/LyraTabListWidgetBase.h",
+            "count": 22
+          },
+          {
+            "path": "Plugins/UIExtension/Source/Public/UIExtensionSystem.h",
+            "count": 21
+          }
+        ]
+      },
+      {
+        "key": "reflected_api",
+        "label": "Reflected Unreal API surface",
+        "readiness": "supported_inventory",
+        "risk": "low",
+        "hit_count": 2195,
+        "file_count": 311,
+        "mapped_capabilities": [
+          "create_blueprint",
+          "add_blueprint_variable",
+          "add_blueprint_function_parameter",
+          "compile_and_validate_blueprint"
+        ],
+        "capability_groups": [],
+        "unconfirmed_capabilities": [],
+        "note": "Reflection macros can be inventoried and partially mapped to Blueprint shells, variables, and callable nodes.",
+        "top_files": [
+          {
+            "path": "Source/LyraGame/Settings/LyraSettingsLocal.h",
+            "count": 76
+          },
+          {
+            "path": "Source/LyraGame/Settings/LyraSettingsShared.h",
+            "count": 71
+          },
+          {
+            "path": "Plugins/GameFeatures/ShooterCore/Source/ShooterCoreRuntime/Public/Input/AimAssistInputModifier.h",
+            "count": 56
+          },
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Public/CommonUserSubsystem.h",
+            "count": 51
+          },
+          {
+            "path": "Source/LyraGame/UI/IndicatorSystem/IndicatorDescriptor.h",
+            "count": 50
+          },
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Public/CommonSessionSubsystem.h",
+            "count": 47
+          },
+          {
+            "path": "Plugins/CommonGame/Source/Public/CommonPlayerInputKey.h",
+            "count": 37
+          },
+          {
+            "path": "Source/LyraGame/UI/Basic/MaterialProgressBar.h",
+            "count": 34
+          }
+        ]
+      }
+    ],
+    "partial_categories": [
+      {
+        "key": "common_ui_umg",
+        "label": "CommonUI and UMG",
+        "readiness": "partial_blocked",
+        "risk": "high",
+        "hit_count": 1080,
+        "file_count": 142,
+        "mapped_capabilities": [
+          "add_blueprint_event_node",
+          "add_blueprint_call_function_node"
+        ],
+        "capability_groups": [
+          "umg_tools"
+        ],
+        "unconfirmed_capabilities": [],
+        "note": "UMG wrappers help, but CommonUI activation/layer policy and widget trees need dedicated analyzer support.",
+        "top_files": [
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Private/CommonUserSubsystem.cpp",
+            "count": 186
+          },
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Private/CommonSessionSubsystem.cpp",
+            "count": 132
+          },
+          {
+            "path": "Plugins/CommonGame/Source/Private/CommonGameInstance.cpp",
+            "count": 43
+          },
+          {
+            "path": "Plugins/CommonGame/Source/Private/CommonUIExtensions.cpp",
+            "count": 36
+          },
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Public/CommonSessionSubsystem.h",
+            "count": 32
+          },
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Public/CommonUserSubsystem.h",
+            "count": 31
+          },
+          {
+            "path": "Plugins/CommonGame/Source/Private/CommonPlayerInputKey.cpp",
+            "count": 25
+          },
+          {
+            "path": "Plugins/GameSettings/Source/Public/Widgets/GameSettingListEntry.h",
+            "count": 22
+          }
+        ]
+      },
+      {
+        "key": "gameplay_ability_system",
+        "label": "Gameplay Ability System",
+        "readiness": "partial_blocked",
+        "risk": "high",
+        "hit_count": 430,
+        "file_count": 73,
+        "mapped_capabilities": [
+          "add_blueprint_call_function_node",
+          "add_blueprint_event_node",
+          "compile_and_validate_blueprint"
+        ],
+        "capability_groups": [],
+        "unconfirmed_capabilities": [],
+        "note": "Blueprint children and glue may be feasible, but core ASC, attributes, prediction, and ability tasks remain native-heavy.",
+        "top_files": [
+          {
+            "path": "Source/LyraGame/AbilitySystem/LyraAbilitySystemComponent.cpp",
+            "count": 40
+          },
+          {
+            "path": "Source/LyraGame/AbilitySystem/Abilities/LyraGameplayAbility.h",
+            "count": 32
+          },
+          {
+            "path": "Config/DefaultGameplayTags.ini",
+            "count": 29
+          },
+          {
+            "path": "Source/LyraGame/AbilitySystem/Abilities/LyraGameplayAbility.cpp",
+            "count": 27
+          },
+          {
+            "path": "Source/LyraGame/AbilitySystem/LyraAbilitySystemComponent.h",
+            "count": 22
+          },
+          {
+            "path": "Source/LyraGame/Weapons/LyraGameplayAbility_RangedWeapon.cpp",
+            "count": 19
+          },
+          {
+            "path": "Source/LyraGame/Weapons/LyraGameplayAbility_RangedWeapon.h",
+            "count": 13
+          },
+          {
+            "path": "Source/LyraGame/AbilitySystem/LyraAbilitySet.cpp",
+            "count": 12
+          }
+        ]
+      },
+      {
+        "key": "delegates_async_latent",
+        "label": "Delegates, async actions, and latent flow",
+        "readiness": "partial_blocked",
+        "risk": "high",
+        "hit_count": 311,
+        "file_count": 104,
+        "mapped_capabilities": [
+          "add_blueprint_call_function_node",
+          "connect_blueprint_nodes"
+        ],
+        "capability_groups": [],
+        "unconfirmed_capabilities": [],
+        "note": "Binding and callback topology are detectable, but robust delegate/event authoring needs more MCP graph primitives.",
+        "top_files": [
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Public/CommonSessionSubsystem.h",
+            "count": 27
+          },
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Public/CommonUserSubsystem.h",
+            "count": 12
+          },
+          {
+            "path": "Source/LyraGame/Settings/Widgets/LyraSettingsListEntrySetting_KeyboardInput.cpp",
+            "count": 11
+          },
+          {
+            "path": "Plugins/GameSettings/Source/Private/Widgets/GameSettingListEntry.cpp",
+            "count": 10
+          },
+          {
+            "path": "Source/LyraGame/Character/LyraHealthComponent.h",
+            "count": 10
+          },
+          {
+            "path": "Plugins/CommonGame/Source/Private/CommonLocalPlayer.cpp",
+            "count": 9
+          },
+          {
+            "path": "Source/LyraGame/GameModes/LyraExperienceManagerComponent.cpp",
+            "count": 9
+          },
+          {
+            "path": "Source/LyraGame/Character/LyraPawnExtensionComponent.cpp",
+            "count": 7
+          }
+        ]
+      },
+      {
+        "key": "subsystems_lifecycle",
+        "label": "Subsystem and lifecycle orchestration",
+        "readiness": "partial_blocked",
+        "risk": "high",
+        "hit_count": 142,
+        "file_count": 63,
+        "mapped_capabilities": [
+          "add_blueprint_call_function_node",
+          "add_blueprint_event_node"
+        ],
+        "capability_groups": [],
+        "unconfirmed_capabilities": [],
+        "note": "Lifecycle hooks can be called around, but authoritative subsystem behavior should remain native or get explicit support.",
+        "top_files": [
+          {
+            "path": "Source/LyraGame/Audio/LyraAudioMixEffectsSubsystem.cpp",
+            "count": 6
+          },
+          {
+            "path": "Plugins/CommonGame/Source/Private/GameUIManagerSubsystem.cpp",
+            "count": 5
+          },
+          {
+            "path": "Plugins/CommonGame/Source/Private/Messaging/CommonMessagingSubsystem.cpp",
+            "count": 5
+          },
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Private/CommonSessionSubsystem.cpp",
+            "count": 5
+          },
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Private/CommonUserSubsystem.cpp",
+            "count": 5
+          },
+          {
+            "path": "Plugins/PocketWorlds/Source/Private/PocketCaptureSubsystem.cpp",
+            "count": 5
+          },
+          {
+            "path": "Plugins/CommonGame/Source/Public/GameUIManagerSubsystem.h",
+            "count": 4
+          },
+          {
+            "path": "Plugins/CommonGame/Source/Public/Messaging/CommonMessagingSubsystem.h",
+            "count": 4
+          }
+        ]
+      },
+      {
+        "key": "gameplay_tags",
+        "label": "Gameplay Tags",
+        "readiness": "partial",
+        "risk": "medium",
+        "hit_count": 871,
+        "file_count": 180,
+        "mapped_capabilities": [
+          "add_blueprint_variable",
+          "add_blueprint_call_function_node",
+          "add_blueprint_enum_literal_node"
+        ],
+        "capability_groups": [],
+        "unconfirmed_capabilities": [],
+        "note": "Tags can be referenced through exposed APIs; tag table authoring and semantic migration are separate concerns.",
+        "top_files": [
+          {
+            "path": "Config/DefaultGameplayTags.ini",
+            "count": 104
+          },
+          {
+            "path": "Plugins/GameFeatures/ShooterCore/Config/Tags/ShooterCoreTags.ini",
+            "count": 63
+          },
+          {
+            "path": "Plugins/GameFeatures/ShooterExplorer/Config/Tags/ShooterExplorerTags.ini",
+            "count": 46
+          },
+          {
+            "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Public/GameFramework/GameplayMessageSubsystem.h",
+            "count": 19
+          },
+          {
+            "path": "Source/LyraGame/AbilitySystem/LyraAbilitySystemComponent.cpp",
+            "count": 17
+          },
+          {
+            "path": "Plugins/UIExtension/Source/Public/UIExtensionSystem.h",
+            "count": 16
+          },
+          {
+            "path": "Source/LyraGame/AbilitySystem/Abilities/LyraGameplayAbility.cpp",
+            "count": 14
+          },
+          {
+            "path": "Source/LyraGame/AbilitySystem/LyraAbilitySystemComponent.h",
+            "count": 14
+          }
+        ]
+      },
+      {
+        "key": "data_assets_and_registry",
+        "label": "Data assets and data registries",
+        "readiness": "partial",
+        "risk": "medium",
+        "hit_count": 67,
+        "file_count": 37,
+        "mapped_capabilities": [
+          "create_blueprint",
+          "set_blueprint_property",
+          "compile_and_validate_blueprint"
+        ],
+        "capability_groups": [],
+        "unconfirmed_capabilities": [],
+        "note": "Asset classes can be discovered; data asset creation/editing needs editor-side asset tooling beyond graph authoring.",
+        "top_files": [
+          {
+            "path": "Source/LyraGame/System/LyraAssetManager.h",
+            "count": 9
+          },
+          {
+            "path": "Source/LyraGame/GameModes/LyraExperienceManagerComponent.cpp",
+            "count": 8
+          },
+          {
+            "path": "Source/LyraGame/System/LyraAssetManager.cpp",
+            "count": 6
+          },
+          {
+            "path": "Source/LyraGame/GameModes/LyraGameMode.cpp",
+            "count": 5
+          },
+          {
+            "path": "Source/LyraGame/GameModes/LyraExperienceActionSet.h",
+            "count": 3
+          },
+          {
+            "path": "Source/LyraGame/GameModes/LyraExperienceDefinition.h",
+            "count": 3
+          },
+          {
+            "path": "Plugins/AsyncMixin/Source/Public/AsyncMixin.h",
+            "count": 2
+          },
+          {
+            "path": "Source/LyraGame/GameFeatures/GameFeatureAction_AddInputContextMapping.cpp",
+            "count": 2
+          }
+        ]
+      }
+    ],
+    "blocked_categories": [
+      {
+        "key": "slate_editor_cpp",
+        "label": "Slate and editor-only C++",
+        "readiness": "blocked_native",
+        "risk": "critical",
+        "hit_count": 367,
+        "file_count": 81,
+        "mapped_capabilities": [],
+        "capability_groups": [
+          "editor_tools"
+        ],
+        "unconfirmed_capabilities": [],
+        "note": "Editor modules and Slate widgets should be classified out of runtime BP conversion scope.",
+        "top_files": [
+          {
+            "path": "Plugins/CommonGame/Source/Private/CommonPlayerInputKey.cpp",
+            "count": 19
+          },
+          {
+            "path": "Source/LyraEditor/Private/GameEditorStyle.cpp",
+            "count": 19
+          },
+          {
+            "path": "Source/LyraEditor/Validation/EditorValidator.cpp",
+            "count": 18
+          },
+          {
+            "path": "Source/LyraGame/UI/IndicatorSystem/SActorCanvas.cpp",
+            "count": 16
+          },
+          {
+            "path": "Source/LyraGame/UI/Weapons/SHitMarkerConfirmationWidget.h",
+            "count": 15
+          },
+          {
+            "path": "Plugins/CommonLoadingScreen/Source/CommonLoadingScreen/Private/LoadingScreenManager.cpp",
+            "count": 14
+          },
+          {
+            "path": "Source/LyraEditor/Validation/EditorValidator_Load.cpp",
+            "count": 12
+          },
+          {
+            "path": "Source/LyraGame/UI/Weapons/SCircumferenceMarkerWidget.h",
+            "count": 12
+          }
+        ]
+      },
+      {
+        "key": "networking_replication",
+        "label": "Networking and replication",
+        "readiness": "blocked_native",
+        "risk": "critical",
+        "hit_count": 246,
+        "file_count": 62,
+        "mapped_capabilities": [
+          "compile_and_validate_blueprint"
+        ],
+        "capability_groups": [],
+        "unconfirmed_capabilities": [],
+        "note": "Replication policy, prediction, RPC authority, and replication graph behavior are not safe to auto-lower to BP.",
+        "top_files": [
+          {
+            "path": "Source/LyraGame/Player/LyraPlayerState.h",
+            "count": 13
+          },
+          {
+            "path": "Plugins/GameFeatures/TopDownArena/Source/TopDownArenaRuntime/Private/TopDownArenaAttributeSet.h",
+            "count": 12
+          },
+          {
+            "path": "Source/LyraGame/Character/LyraCharacter.cpp",
+            "count": 12
+          },
+          {
+            "path": "Source/LyraGame/Player/LyraPlayerState.cpp",
+            "count": 11
+          },
+          {
+            "path": "Plugins/GameFeatures/TopDownArena/Source/TopDownArenaRuntime/Private/TopDownArenaAttributeSet.cpp",
+            "count": 10
+          },
+          {
+            "path": "Source/LyraGame/Character/LyraCharacter.h",
+            "count": 10
+          },
+          {
+            "path": "Source/LyraGame/Equipment/LyraQuickBarComponent.cpp",
+            "count": 9
+          },
+          {
+            "path": "Source/LyraGame/Equipment/LyraQuickBarComponent.h",
+            "count": 7
+          }
+        ]
+      },
+      {
+        "key": "game_features_modular_gameplay",
+        "label": "Game Features and Modular Gameplay",
+        "readiness": "blocked_native",
+        "risk": "critical",
+        "hit_count": 214,
+        "file_count": 47,
+        "mapped_capabilities": [
+          "compile_and_validate_blueprint"
+        ],
+        "capability_groups": [
+          "project_tools"
+        ],
+        "unconfirmed_capabilities": [],
+        "note": "Plugin activation, experience loading, and component injection are project architecture concerns, not just BP graph authoring.",
+        "top_files": [
+          {
+            "path": "Config/DefaultEditor.ini",
+            "count": 24
+          },
+          {
+            "path": "Source/LyraGame/GameModes/LyraExperienceManagerComponent.cpp",
+            "count": 21
+          },
+          {
+            "path": "Source/LyraGame.Target.cs",
+            "count": 15
+          },
+          {
+            "path": "Source/LyraGame/GameFeatures/LyraGameFeaturePolicy.cpp",
+            "count": 11
+          },
+          {
+            "path": "Source/LyraGame/GameModes/LyraUserFacingExperienceDefinition.h",
+            "count": 11
+          },
+          {
+            "path": "Config/DefaultGame.ini",
+            "count": 8
+          },
+          {
+            "path": "Source/LyraGame/GameModes/LyraGameMode.cpp",
+            "count": 8
+          },
+          {
+            "path": "Source/LyraGame/GameFeatures/GameFeatureAction_AddAbilities.cpp",
+            "count": 7
+          }
+        ]
+      },
+      {
+        "key": "custom_k2_native_extensions",
+        "label": "Custom K2 and native graph extensions",
+        "readiness": "blocked_native",
+        "risk": "critical",
+        "hit_count": 18,
+        "file_count": 3,
+        "mapped_capabilities": [
+          "list_blueprint_nodes",
+          "compile_and_validate_blueprint"
+        ],
+        "capability_groups": [],
+        "unconfirmed_capabilities": [],
+        "note": "Custom K2 node behavior is native editor extension code and cannot be recreated by generic BP authoring alone.",
+        "top_files": [
+          {
+            "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageNodes/Private/K2Node_AsyncAction_ListenForGameplayMessages.cpp",
+            "count": 9
+          },
+          {
+            "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageNodes/Public/K2Node_AsyncAction_ListenForGameplayMessages.h",
+            "count": 8
+          },
+          {
+            "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Public/GameFramework/AsyncAction_ListenForGameplayMessage.h",
+            "count": 1
+          }
+        ]
+      }
+    ],
+    "all_findings": [
+      {
+        "key": "slate_editor_cpp",
+        "label": "Slate and editor-only C++",
+        "readiness": "blocked_native",
+        "risk": "critical",
+        "hit_count": 367,
+        "file_count": 81,
+        "mapped_capabilities": [],
+        "capability_groups": [
+          "editor_tools"
+        ],
+        "unconfirmed_capabilities": [],
+        "note": "Editor modules and Slate widgets should be classified out of runtime BP conversion scope.",
+        "top_files": [
+          {
+            "path": "Plugins/CommonGame/Source/Private/CommonPlayerInputKey.cpp",
+            "count": 19
+          },
+          {
+            "path": "Source/LyraEditor/Private/GameEditorStyle.cpp",
+            "count": 19
+          },
+          {
+            "path": "Source/LyraEditor/Validation/EditorValidator.cpp",
+            "count": 18
+          },
+          {
+            "path": "Source/LyraGame/UI/IndicatorSystem/SActorCanvas.cpp",
+            "count": 16
+          },
+          {
+            "path": "Source/LyraGame/UI/Weapons/SHitMarkerConfirmationWidget.h",
+            "count": 15
+          },
+          {
+            "path": "Plugins/CommonLoadingScreen/Source/CommonLoadingScreen/Private/LoadingScreenManager.cpp",
+            "count": 14
+          },
+          {
+            "path": "Source/LyraEditor/Validation/EditorValidator_Load.cpp",
+            "count": 12
+          },
+          {
+            "path": "Source/LyraGame/UI/Weapons/SCircumferenceMarkerWidget.h",
+            "count": 12
+          }
+        ]
+      },
+      {
+        "key": "networking_replication",
+        "label": "Networking and replication",
+        "readiness": "blocked_native",
+        "risk": "critical",
+        "hit_count": 246,
+        "file_count": 62,
+        "mapped_capabilities": [
+          "compile_and_validate_blueprint"
+        ],
+        "capability_groups": [],
+        "unconfirmed_capabilities": [],
+        "note": "Replication policy, prediction, RPC authority, and replication graph behavior are not safe to auto-lower to BP.",
+        "top_files": [
+          {
+            "path": "Source/LyraGame/Player/LyraPlayerState.h",
+            "count": 13
+          },
+          {
+            "path": "Plugins/GameFeatures/TopDownArena/Source/TopDownArenaRuntime/Private/TopDownArenaAttributeSet.h",
+            "count": 12
+          },
+          {
+            "path": "Source/LyraGame/Character/LyraCharacter.cpp",
+            "count": 12
+          },
+          {
+            "path": "Source/LyraGame/Player/LyraPlayerState.cpp",
+            "count": 11
+          },
+          {
+            "path": "Plugins/GameFeatures/TopDownArena/Source/TopDownArenaRuntime/Private/TopDownArenaAttributeSet.cpp",
+            "count": 10
+          },
+          {
+            "path": "Source/LyraGame/Character/LyraCharacter.h",
+            "count": 10
+          },
+          {
+            "path": "Source/LyraGame/Equipment/LyraQuickBarComponent.cpp",
+            "count": 9
+          },
+          {
+            "path": "Source/LyraGame/Equipment/LyraQuickBarComponent.h",
+            "count": 7
+          }
+        ]
+      },
+      {
+        "key": "game_features_modular_gameplay",
+        "label": "Game Features and Modular Gameplay",
+        "readiness": "blocked_native",
+        "risk": "critical",
+        "hit_count": 214,
+        "file_count": 47,
+        "mapped_capabilities": [
+          "compile_and_validate_blueprint"
+        ],
+        "capability_groups": [
+          "project_tools"
+        ],
+        "unconfirmed_capabilities": [],
+        "note": "Plugin activation, experience loading, and component injection are project architecture concerns, not just BP graph authoring.",
+        "top_files": [
+          {
+            "path": "Config/DefaultEditor.ini",
+            "count": 24
+          },
+          {
+            "path": "Source/LyraGame/GameModes/LyraExperienceManagerComponent.cpp",
+            "count": 21
+          },
+          {
+            "path": "Source/LyraGame.Target.cs",
+            "count": 15
+          },
+          {
+            "path": "Source/LyraGame/GameFeatures/LyraGameFeaturePolicy.cpp",
+            "count": 11
+          },
+          {
+            "path": "Source/LyraGame/GameModes/LyraUserFacingExperienceDefinition.h",
+            "count": 11
+          },
+          {
+            "path": "Config/DefaultGame.ini",
+            "count": 8
+          },
+          {
+            "path": "Source/LyraGame/GameModes/LyraGameMode.cpp",
+            "count": 8
+          },
+          {
+            "path": "Source/LyraGame/GameFeatures/GameFeatureAction_AddAbilities.cpp",
+            "count": 7
+          }
+        ]
+      },
+      {
+        "key": "custom_k2_native_extensions",
+        "label": "Custom K2 and native graph extensions",
+        "readiness": "blocked_native",
+        "risk": "critical",
+        "hit_count": 18,
+        "file_count": 3,
+        "mapped_capabilities": [
+          "list_blueprint_nodes",
+          "compile_and_validate_blueprint"
+        ],
+        "capability_groups": [],
+        "unconfirmed_capabilities": [],
+        "note": "Custom K2 node behavior is native editor extension code and cannot be recreated by generic BP authoring alone.",
+        "top_files": [
+          {
+            "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageNodes/Private/K2Node_AsyncAction_ListenForGameplayMessages.cpp",
+            "count": 9
+          },
+          {
+            "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageNodes/Public/K2Node_AsyncAction_ListenForGameplayMessages.h",
+            "count": 8
+          },
+          {
+            "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Public/GameFramework/AsyncAction_ListenForGameplayMessage.h",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "key": "common_ui_umg",
+        "label": "CommonUI and UMG",
+        "readiness": "partial_blocked",
+        "risk": "high",
+        "hit_count": 1080,
+        "file_count": 142,
+        "mapped_capabilities": [
+          "add_blueprint_event_node",
+          "add_blueprint_call_function_node"
+        ],
+        "capability_groups": [
+          "umg_tools"
+        ],
+        "unconfirmed_capabilities": [],
+        "note": "UMG wrappers help, but CommonUI activation/layer policy and widget trees need dedicated analyzer support.",
+        "top_files": [
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Private/CommonUserSubsystem.cpp",
+            "count": 186
+          },
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Private/CommonSessionSubsystem.cpp",
+            "count": 132
+          },
+          {
+            "path": "Plugins/CommonGame/Source/Private/CommonGameInstance.cpp",
+            "count": 43
+          },
+          {
+            "path": "Plugins/CommonGame/Source/Private/CommonUIExtensions.cpp",
+            "count": 36
+          },
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Public/CommonSessionSubsystem.h",
+            "count": 32
+          },
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Public/CommonUserSubsystem.h",
+            "count": 31
+          },
+          {
+            "path": "Plugins/CommonGame/Source/Private/CommonPlayerInputKey.cpp",
+            "count": 25
+          },
+          {
+            "path": "Plugins/GameSettings/Source/Public/Widgets/GameSettingListEntry.h",
+            "count": 22
+          }
+        ]
+      },
+      {
+        "key": "gameplay_ability_system",
+        "label": "Gameplay Ability System",
+        "readiness": "partial_blocked",
+        "risk": "high",
+        "hit_count": 430,
+        "file_count": 73,
+        "mapped_capabilities": [
+          "add_blueprint_call_function_node",
+          "add_blueprint_event_node",
+          "compile_and_validate_blueprint"
+        ],
+        "capability_groups": [],
+        "unconfirmed_capabilities": [],
+        "note": "Blueprint children and glue may be feasible, but core ASC, attributes, prediction, and ability tasks remain native-heavy.",
+        "top_files": [
+          {
+            "path": "Source/LyraGame/AbilitySystem/LyraAbilitySystemComponent.cpp",
+            "count": 40
+          },
+          {
+            "path": "Source/LyraGame/AbilitySystem/Abilities/LyraGameplayAbility.h",
+            "count": 32
+          },
+          {
+            "path": "Config/DefaultGameplayTags.ini",
+            "count": 29
+          },
+          {
+            "path": "Source/LyraGame/AbilitySystem/Abilities/LyraGameplayAbility.cpp",
+            "count": 27
+          },
+          {
+            "path": "Source/LyraGame/AbilitySystem/LyraAbilitySystemComponent.h",
+            "count": 22
+          },
+          {
+            "path": "Source/LyraGame/Weapons/LyraGameplayAbility_RangedWeapon.cpp",
+            "count": 19
+          },
+          {
+            "path": "Source/LyraGame/Weapons/LyraGameplayAbility_RangedWeapon.h",
+            "count": 13
+          },
+          {
+            "path": "Source/LyraGame/AbilitySystem/LyraAbilitySet.cpp",
+            "count": 12
+          }
+        ]
+      },
+      {
+        "key": "delegates_async_latent",
+        "label": "Delegates, async actions, and latent flow",
+        "readiness": "partial_blocked",
+        "risk": "high",
+        "hit_count": 311,
+        "file_count": 104,
+        "mapped_capabilities": [
+          "add_blueprint_call_function_node",
+          "connect_blueprint_nodes"
+        ],
+        "capability_groups": [],
+        "unconfirmed_capabilities": [],
+        "note": "Binding and callback topology are detectable, but robust delegate/event authoring needs more MCP graph primitives.",
+        "top_files": [
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Public/CommonSessionSubsystem.h",
+            "count": 27
+          },
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Public/CommonUserSubsystem.h",
+            "count": 12
+          },
+          {
+            "path": "Source/LyraGame/Settings/Widgets/LyraSettingsListEntrySetting_KeyboardInput.cpp",
+            "count": 11
+          },
+          {
+            "path": "Plugins/GameSettings/Source/Private/Widgets/GameSettingListEntry.cpp",
+            "count": 10
+          },
+          {
+            "path": "Source/LyraGame/Character/LyraHealthComponent.h",
+            "count": 10
+          },
+          {
+            "path": "Plugins/CommonGame/Source/Private/CommonLocalPlayer.cpp",
+            "count": 9
+          },
+          {
+            "path": "Source/LyraGame/GameModes/LyraExperienceManagerComponent.cpp",
+            "count": 9
+          },
+          {
+            "path": "Source/LyraGame/Character/LyraPawnExtensionComponent.cpp",
+            "count": 7
+          }
+        ]
+      },
+      {
+        "key": "subsystems_lifecycle",
+        "label": "Subsystem and lifecycle orchestration",
+        "readiness": "partial_blocked",
+        "risk": "high",
+        "hit_count": 142,
+        "file_count": 63,
+        "mapped_capabilities": [
+          "add_blueprint_call_function_node",
+          "add_blueprint_event_node"
+        ],
+        "capability_groups": [],
+        "unconfirmed_capabilities": [],
+        "note": "Lifecycle hooks can be called around, but authoritative subsystem behavior should remain native or get explicit support.",
+        "top_files": [
+          {
+            "path": "Source/LyraGame/Audio/LyraAudioMixEffectsSubsystem.cpp",
+            "count": 6
+          },
+          {
+            "path": "Plugins/CommonGame/Source/Private/GameUIManagerSubsystem.cpp",
+            "count": 5
+          },
+          {
+            "path": "Plugins/CommonGame/Source/Private/Messaging/CommonMessagingSubsystem.cpp",
+            "count": 5
+          },
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Private/CommonSessionSubsystem.cpp",
+            "count": 5
+          },
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Private/CommonUserSubsystem.cpp",
+            "count": 5
+          },
+          {
+            "path": "Plugins/PocketWorlds/Source/Private/PocketCaptureSubsystem.cpp",
+            "count": 5
+          },
+          {
+            "path": "Plugins/CommonGame/Source/Public/GameUIManagerSubsystem.h",
+            "count": 4
+          },
+          {
+            "path": "Plugins/CommonGame/Source/Public/Messaging/CommonMessagingSubsystem.h",
+            "count": 4
+          }
+        ]
+      },
+      {
+        "key": "gameplay_tags",
+        "label": "Gameplay Tags",
+        "readiness": "partial",
+        "risk": "medium",
+        "hit_count": 871,
+        "file_count": 180,
+        "mapped_capabilities": [
+          "add_blueprint_variable",
+          "add_blueprint_call_function_node",
+          "add_blueprint_enum_literal_node"
+        ],
+        "capability_groups": [],
+        "unconfirmed_capabilities": [],
+        "note": "Tags can be referenced through exposed APIs; tag table authoring and semantic migration are separate concerns.",
+        "top_files": [
+          {
+            "path": "Config/DefaultGameplayTags.ini",
+            "count": 104
+          },
+          {
+            "path": "Plugins/GameFeatures/ShooterCore/Config/Tags/ShooterCoreTags.ini",
+            "count": 63
+          },
+          {
+            "path": "Plugins/GameFeatures/ShooterExplorer/Config/Tags/ShooterExplorerTags.ini",
+            "count": 46
+          },
+          {
+            "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Public/GameFramework/GameplayMessageSubsystem.h",
+            "count": 19
+          },
+          {
+            "path": "Source/LyraGame/AbilitySystem/LyraAbilitySystemComponent.cpp",
+            "count": 17
+          },
+          {
+            "path": "Plugins/UIExtension/Source/Public/UIExtensionSystem.h",
+            "count": 16
+          },
+          {
+            "path": "Source/LyraGame/AbilitySystem/Abilities/LyraGameplayAbility.cpp",
+            "count": 14
+          },
+          {
+            "path": "Source/LyraGame/AbilitySystem/LyraAbilitySystemComponent.h",
+            "count": 14
+          }
+        ]
+      },
+      {
+        "key": "data_assets_and_registry",
+        "label": "Data assets and data registries",
+        "readiness": "partial",
+        "risk": "medium",
+        "hit_count": 67,
+        "file_count": 37,
+        "mapped_capabilities": [
+          "create_blueprint",
+          "set_blueprint_property",
+          "compile_and_validate_blueprint"
+        ],
+        "capability_groups": [],
+        "unconfirmed_capabilities": [],
+        "note": "Asset classes can be discovered; data asset creation/editing needs editor-side asset tooling beyond graph authoring.",
+        "top_files": [
+          {
+            "path": "Source/LyraGame/System/LyraAssetManager.h",
+            "count": 9
+          },
+          {
+            "path": "Source/LyraGame/GameModes/LyraExperienceManagerComponent.cpp",
+            "count": 8
+          },
+          {
+            "path": "Source/LyraGame/System/LyraAssetManager.cpp",
+            "count": 6
+          },
+          {
+            "path": "Source/LyraGame/GameModes/LyraGameMode.cpp",
+            "count": 5
+          },
+          {
+            "path": "Source/LyraGame/GameModes/LyraExperienceActionSet.h",
+            "count": 3
+          },
+          {
+            "path": "Source/LyraGame/GameModes/LyraExperienceDefinition.h",
+            "count": 3
+          },
+          {
+            "path": "Plugins/AsyncMixin/Source/Public/AsyncMixin.h",
+            "count": 2
+          },
+          {
+            "path": "Source/LyraGame/GameFeatures/GameFeatureAction_AddInputContextMapping.cpp",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "key": "control_flow_expression_authoring",
+        "label": "Blueprint graph control flow and expressions",
+        "readiness": "supported_partial",
+        "risk": "medium",
+        "hit_count": 5390,
+        "file_count": 437,
+        "mapped_capabilities": [
+          "add_blueprint_branch_node",
+          "add_blueprint_switch_int_node",
+          "add_blueprint_switch_enum_node",
+          "add_blueprint_loop_node",
+          "add_blueprint_array_function_node",
+          "add_blueprint_make_array_node"
+        ],
+        "capability_groups": [],
+        "unconfirmed_capabilities": [],
+        "note": "MCP can author common graph constructs, but arbitrary C++ expression lowering remains heuristic.",
+        "top_files": [
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Private/CommonUserSubsystem.cpp",
+            "count": 323
+          },
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Private/CommonSessionSubsystem.cpp",
+            "count": 171
+          },
+          {
+            "path": "Source/LyraGame/Settings/LyraSettingsLocal.cpp",
+            "count": 148
+          },
+          {
+            "path": "Source/LyraGame/System/LyraReplicationGraph.cpp",
+            "count": 95
+          },
+          {
+            "path": "Source/LyraEditor/Commandlets/ContentValidationCommandlet.cpp",
+            "count": 82
+          },
+          {
+            "path": "Source/LyraEditor/Validation/EditorValidator.cpp",
+            "count": 82
+          },
+          {
+            "path": "Plugins/GameFeatures/ShooterCore/Source/ShooterCoreRuntime/Private/Input/AimAssistInputModifier.cpp",
+            "count": 71
+          },
+          {
+            "path": "Source/LyraGame/Weapons/LyraGameplayAbility_RangedWeapon.cpp",
+            "count": 68
+          }
+        ]
+      },
+      {
+        "key": "basic_actor_component_authoring",
+        "label": "Actor and component composition",
+        "readiness": "supported_partial",
+        "risk": "medium",
+        "hit_count": 743,
+        "file_count": 180,
+        "mapped_capabilities": [
+          "create_blueprint",
+          "add_component_to_blueprint",
+          "set_component_property",
+          "add_blueprint_event_node"
+        ],
+        "capability_groups": [],
+        "unconfirmed_capabilities": [],
+        "note": "Blueprint shells and component setup are feasible when behavior is simple and component classes already exist.",
+        "top_files": [
+          {
+            "path": "Source/LyraGame/Character/LyraHeroComponent.cpp",
+            "count": 26
+          },
+          {
+            "path": "Source/LyraGame/System/LyraReplicationGraph.cpp",
+            "count": 19
+          },
+          {
+            "path": "Source/LyraGame/Weapons/LyraWeaponSpawner.cpp",
+            "count": 16
+          },
+          {
+            "path": "Source/LyraGame/Camera/LyraCameraMode_ThirdPerson.cpp",
+            "count": 15
+          },
+          {
+            "path": "Source/LyraGame/Character/LyraPawnExtensionComponent.cpp",
+            "count": 15
+          },
+          {
+            "path": "Source/LyraGame/Equipment/LyraEquipmentInstance.cpp",
+            "count": 15
+          },
+          {
+            "path": "Source/LyraGame/Player/LyraPlayerController.cpp",
+            "count": 14
+          },
+          {
+            "path": "Plugins/GameFeatures/ShooterCore/Source/ShooterCoreRuntime/Private/Input/AimAssistTargetManagerComponent.cpp",
+            "count": 13
+          }
+        ]
+      },
+      {
+        "key": "enhanced_input",
+        "label": "Enhanced Input",
+        "readiness": "supported_partial",
+        "risk": "medium",
+        "hit_count": 58,
+        "file_count": 21,
+        "mapped_capabilities": [
+          "create_input_mapping",
+          "add_blueprint_enhanced_input_action_node",
+          "add_blueprint_input_action_node"
+        ],
+        "capability_groups": [],
+        "unconfirmed_capabilities": [],
+        "note": "Event node authoring exists; full asset/data migration and trigger/modifier semantics need separate handling.",
+        "top_files": [
+          {
+            "path": "Source/LyraGame/Input/LyraInputComponent.h",
+            "count": 8
+          },
+          {
+            "path": "Source/LyraGame/Input/LyraInputConfig.h",
+            "count": 7
+          },
+          {
+            "path": "Source/LyraGame/Input/LyraInputConfig.cpp",
+            "count": 6
+          },
+          {
+            "path": "Source/LyraGame/GameFeatures/GameFeatureAction_AddInputContextMapping.cpp",
+            "count": 5
+          },
+          {
+            "path": "Plugins/GameFeatures/ShooterTests/Source/ShooterTestsRuntime/Private/Utilities/ShooterTestsActorTest.h",
+            "count": 4
+          },
+          {
+            "path": "Source/LyraGame/GameFeatures/GameFeatureAction_AddInputContextMapping.h",
+            "count": 4
+          },
+          {
+            "path": "Source/LyraGame/GameFeatures/GameFeatureAction_AddAbilities.h",
+            "count": 3
+          },
+          {
+            "path": "Source/LyraGame/GameFeatures/GameFeatureAction_AddInputBinding.h",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "key": "blueprint_exposed_api",
+        "label": "Blueprint-exposed native API",
+        "readiness": "supported_partial",
+        "risk": "low",
+        "hit_count": 1096,
+        "file_count": 206,
+        "mapped_capabilities": [
+          "add_blueprint_call_function_node",
+          "set_blueprint_pin_default",
+          "connect_blueprint_nodes"
+        ],
+        "capability_groups": [],
+        "unconfirmed_capabilities": [],
+        "note": "Existing MCP tools can call exposed functions and author graph glue, but native implementations remain native.",
+        "top_files": [
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Public/CommonUserSubsystem.h",
+            "count": 57
+          },
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Public/CommonSessionSubsystem.h",
+            "count": 37
+          },
+          {
+            "path": "Source/LyraGame/UI/IndicatorSystem/IndicatorDescriptor.h",
+            "count": 33
+          },
+          {
+            "path": "Source/LyraGame/AbilitySystem/Abilities/LyraGameplayAbility.h",
+            "count": 24
+          },
+          {
+            "path": "Source/LyraGame/Feedback/ContextEffects/AnimNotify_LyraContextEffects.h",
+            "count": 24
+          },
+          {
+            "path": "Plugins/GameSettings/Source/Public/Widgets/GameSettingListEntry.h",
+            "count": 22
+          },
+          {
+            "path": "Source/LyraGame/UI/Common/LyraTabListWidgetBase.h",
+            "count": 22
+          },
+          {
+            "path": "Plugins/UIExtension/Source/Public/UIExtensionSystem.h",
+            "count": 21
+          }
+        ]
+      },
+      {
+        "key": "reflected_api",
+        "label": "Reflected Unreal API surface",
+        "readiness": "supported_inventory",
+        "risk": "low",
+        "hit_count": 2195,
+        "file_count": 311,
+        "mapped_capabilities": [
+          "create_blueprint",
+          "add_blueprint_variable",
+          "add_blueprint_function_parameter",
+          "compile_and_validate_blueprint"
+        ],
+        "capability_groups": [],
+        "unconfirmed_capabilities": [],
+        "note": "Reflection macros can be inventoried and partially mapped to Blueprint shells, variables, and callable nodes.",
+        "top_files": [
+          {
+            "path": "Source/LyraGame/Settings/LyraSettingsLocal.h",
+            "count": 76
+          },
+          {
+            "path": "Source/LyraGame/Settings/LyraSettingsShared.h",
+            "count": 71
+          },
+          {
+            "path": "Plugins/GameFeatures/ShooterCore/Source/ShooterCoreRuntime/Public/Input/AimAssistInputModifier.h",
+            "count": 56
+          },
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Public/CommonUserSubsystem.h",
+            "count": 51
+          },
+          {
+            "path": "Source/LyraGame/UI/IndicatorSystem/IndicatorDescriptor.h",
+            "count": 50
+          },
+          {
+            "path": "Plugins/CommonUser/Source/CommonUser/Public/CommonSessionSubsystem.h",
+            "count": 47
+          },
+          {
+            "path": "Plugins/CommonGame/Source/Public/CommonPlayerInputKey.h",
+            "count": 37
+          },
+          {
+            "path": "Source/LyraGame/UI/Basic/MaterialProgressBar.h",
+            "count": 34
+          }
+        ]
+      }
+    ]
+  },
+  "read_only_policy": {
+    "project_mutation_allowed": false,
+    "asset_loading_performed": false,
+    "editor_required": false,
+    "writes_allowed_only_under_output_dir": true
+  }
+}

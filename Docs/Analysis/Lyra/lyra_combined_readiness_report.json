@@ -1,0 +1,3519 @@
+{
+  "generated_at": "2026-06-07T04:22:14.795007+00:00",
+  "analysis_kind": "combined_lyra_bp_authoring_readiness",
+  "output_dir": "D:\\Git\\unreal-mcp-cubeless\\Docs\\Analysis\\Lyra",
+  "inputs": {
+    "cpp_readiness_report": "D:\\Git\\unreal-mcp-cubeless\\Docs\\Analysis\\Lyra",
+    "asset_ancestry_report": "D:\\Git\\unreal-mcp-cubeless\\Docs\\Analysis\\Lyra",
+    "delegate_async_report": "D:\\Git\\unreal-mcp-cubeless\\Docs\\Analysis\\Lyra",
+    "project_root": "D:\\Git\\LyraStarterGame"
+  },
+  "verdict": {
+    "minimum_stable_scope": "readiness_classification_and_candidate_selection",
+    "current_authoring_ceiling": "temporary_smoke_only_bp_shells_allowlisted_actor_parent_component_hierarchy_property_graph_glue_validation_durable_read_only_asset_exists_preflight_overwrite_rename_decision_save_gate_rollback_draft_executor_readiness_checklist_and_disabled_executor_skeleton",
+    "not_ready_for": [
+      "whole-project C++ to Blueprint conversion",
+      "replication/RPC/ReplicationGraph lowering",
+      "Gameplay Ability System internals and ability-task flow",
+      "CommonUI widget tree and activation-policy authoring",
+      "Animation Blueprint graph/state-machine conversion",
+      "GameFeature activation and experience architecture recreation",
+      "custom K2/editor-only/Slate behavior recreation"
+    ],
+    "editor_open_required_now": false,
+    "editor_open_reason": "Static class ancestry extraction found high-confidence ParentClass/NativeParentClass tags for Blueprint-like assets."
+  },
+  "cpp_summary": {
+    "source_files": 734,
+    "config_files": 68,
+    "readiness_by_file": {
+      "blocked_native": 182,
+      "supported_partial": 155,
+      "partial_blocked": 224,
+      "partial": 85,
+      "supported_inventory": 23
+    },
+    "risk_by_file": {
+      "critical": 182,
+      "medium": 223,
+      "high": 224,
+      "low": 40
+    },
+    "supported_categories": {
+      "control_flow_expression_authoring": {
+        "label": "Blueprint graph control flow and expressions",
+        "hit_count": 5390,
+        "file_count": 437,
+        "risk": "medium",
+        "note": "MCP can author common graph constructs, but arbitrary C++ expression lowering remains heuristic."
+      },
+      "basic_actor_component_authoring": {
+        "label": "Actor and component composition",
+        "hit_count": 743,
+        "file_count": 180,
+        "risk": "medium",
+        "note": "Blueprint shells and component setup are feasible when behavior is simple and component classes already exist."
+      },
+      "enhanced_input": {
+        "label": "Enhanced Input",
+        "hit_count": 58,
+        "file_count": 21,
+        "risk": "medium",
+        "note": "Event node authoring exists; full asset/data migration and trigger/modifier semantics need separate handling."
+      },
+      "blueprint_exposed_api": {
+        "label": "Blueprint-exposed native API",
+        "hit_count": 1096,
+        "file_count": 206,
+        "risk": "low",
+        "note": "Existing MCP tools can call exposed functions and author graph glue, but native implementations remain native."
+      },
+      "reflected_api": {
+        "label": "Reflected Unreal API surface",
+        "hit_count": 2195,
+        "file_count": 311,
+        "risk": "low",
+        "note": "Reflection macros can be inventoried and partially mapped to Blueprint shells, variables, and callable nodes."
+      }
+    },
+    "partial_categories": {
+      "common_ui_umg": {
+        "label": "CommonUI and UMG",
+        "hit_count": 1080,
+        "file_count": 142,
+        "risk": "high",
+        "note": "UMG wrappers help, but CommonUI activation/layer policy and widget trees need dedicated analyzer support."
+      },
+      "gameplay_ability_system": {
+        "label": "Gameplay Ability System",
+        "hit_count": 430,
+        "file_count": 73,
+        "risk": "high",
+        "note": "Blueprint children and glue may be feasible, but core ASC, attributes, prediction, and ability tasks remain native-heavy."
+      },
+      "delegates_async_latent": {
+        "label": "Delegates, async actions, and latent flow",
+        "hit_count": 311,
+        "file_count": 104,
+        "risk": "high",
+        "note": "Binding and callback topology are detectable, but robust delegate/event authoring needs more MCP graph primitives."
+      },
+      "subsystems_lifecycle": {
+        "label": "Subsystem and lifecycle orchestration",
+        "hit_count": 142,
+        "file_count": 63,
+        "risk": "high",
+        "note": "Lifecycle hooks can be called around, but authoritative subsystem behavior should remain native or get explicit support."
+      },
+      "gameplay_tags": {
+        "label": "Gameplay Tags",
+        "hit_count": 871,
+        "file_count": 180,
+        "risk": "medium",
+        "note": "Tags can be referenced through exposed APIs; tag table authoring and semantic migration are separate concerns."
+      },
+      "data_assets_and_registry": {
+        "label": "Data assets and data registries",
+        "hit_count": 67,
+        "file_count": 37,
+        "risk": "medium",
+        "note": "Asset classes can be discovered; data asset creation/editing needs editor-side asset tooling beyond graph authoring."
+      }
+    },
+    "blocked_categories": {
+      "slate_editor_cpp": {
+        "label": "Slate and editor-only C++",
+        "hit_count": 367,
+        "file_count": 81,
+        "risk": "critical",
+        "note": "Editor modules and Slate widgets should be classified out of runtime BP conversion scope."
+      },
+      "networking_replication": {
+        "label": "Networking and replication",
+        "hit_count": 246,
+        "file_count": 62,
+        "risk": "critical",
+        "note": "Replication policy, prediction, RPC authority, and replication graph behavior are not safe to auto-lower to BP."
+      },
+      "game_features_modular_gameplay": {
+        "label": "Game Features and Modular Gameplay",
+        "hit_count": 214,
+        "file_count": 47,
+        "risk": "critical",
+        "note": "Plugin activation, experience loading, and component injection are project architecture concerns, not just BP graph authoring."
+      },
+      "custom_k2_native_extensions": {
+        "label": "Custom K2 and native graph extensions",
+        "hit_count": 18,
+        "file_count": 3,
+        "risk": "critical",
+        "note": "Custom K2 node behavior is native editor extension code and cannot be recreated by generic BP authoring alone."
+      }
+    }
+  },
+  "asset_summary": {
+    "asset_count": 8683,
+    "blueprint_like_asset_count": 521,
+    "supported_candidate_count": 93,
+    "blocked_or_partial_blocked_count": 255,
+    "supported_asset_categories": {
+      "actor_blueprint": 87,
+      "enhanced_input_asset": 32,
+      "component_blueprint": 4,
+      "blueprint_function_library": 2
+    },
+    "dedicated_support_asset_categories": {
+      "common_ui_umg": 171,
+      "unknown_blueprint": 84,
+      "gameplay_effect": 45,
+      "gameplay_ability": 37,
+      "animation_blueprint": 27,
+      "gameplay_cue": 24,
+      "framework_blueprint": 12,
+      "data_asset": 7,
+      "blueprint_interface": 3
+    },
+    "blocked_asset_categories": {
+      "game_feature_or_experience": 10,
+      "editor_utility_blueprint": 7
+    },
+    "top_parent_classes": {
+      "(none)": 8162,
+      "/Script/UMG.UserWidget": 55,
+      "/Script/GameplayAbilities.GameplayEffect": 42,
+      "/Script/Engine.Actor": 40,
+      "/Script/LyraGame.LyraGameplayAbility": 21,
+      "/Script/Engine.AnimInstance": 17,
+      "/Script/Engine.LevelScriptActor": 15,
+      "/Script/LyraGame.LyraActivatableWidget": 12,
+      "/Script/GeometryScriptingEditor.GeneratedDynamicMeshActor": 11,
+      "/Script/GameplayAbilities.GameplayCueNotify_Burst": 10,
+      "/Script/LyraGame.LyraExperienceDefinition": 10,
+      "/Script/CommonUI.CommonTextStyle": 10,
+      "/Script/LyraGame.LyraCharacter": 9,
+      "/Script/LyraGame.LyraButtonBase": 9,
+      "/Script/LyraGame.LyraTaggedWidget": 9,
+      "/Script/LyraGame.LyraReticleWidgetBase": 9,
+      "/Script/GameplayAbilities.GameplayCueNotify_BurstLatent": 7,
+      "/Script/CommonUI.CommonUserWidget": 7,
+      "/Script/LyraGame.LyraInventoryItemDefinition": 7,
+      "/Script/GameplayAbilities.GameplayCueNotify_Looping": 6,
+      "/Script/CommonInput.CommonInputBaseControllerData": 6,
+      "/Script/LyraGame.LyraGameplayAbility_FromEquipment": 6,
+      "/Script/LyraGame.LyraGameplayAbility_RangedWeapon": 6,
+      "/Script/ModularGameplay.GameStateComponent": 6,
+      "/Script/LyraGame.LyraGamePhaseAbility": 6,
+      "/Script/LyraGame.LyraEquipmentDefinition": 6,
+      "/Script/Engine.AnimNotify": 5,
+      "/Script/LyraGame.LyraHUDLayout": 5,
+      "/Script/LyraGame.LyraRangedWeaponInstance": 5,
+      "/Script/Engine.ActorComponent": 4
+    }
+  },
+  "delegate_async_summary": {
+    "status": "not_ready_for_generic_delegate_or_async_proxy_authoring",
+    "matched_files": 154,
+    "pattern_totals": {
+      "possible_delegate_unbinding": 60,
+      "native_delegate_declaration": 32,
+      "delegate_broadcast": 97,
+      "dynamic_binding": 23,
+      "native_binding": 98,
+      "engine_lifecycle_delegate": 43,
+      "delegate_unbinding": 54,
+      "dynamic_delegate_declaration": 34,
+      "async_action_class": 9,
+      "blueprint_internal_async_factory": 12,
+      "blueprint_assignable_delegate": 29,
+      "latent_function": 4,
+      "custom_k2_async_node": 28,
+      "ability_task": 15
+    },
+    "readiness_by_file": {
+      "inventory_only": 21,
+      "blocked_native": 83,
+      "partial_blocked": 50
+    },
+    "risk_by_file": {
+      "medium": 21,
+      "high": 68,
+      "critical": 65
+    },
+    "lifecycle_classifier": {
+      "site_count": 263,
+      "classification_counts": {
+        "explicit_cleanup_observed": 97,
+        "dynamic_delegate_requires_unbind_policy": 8,
+        "native_delegate_lifecycle_blocker": 83,
+        "engine_lifecycle_native_blocker": 53,
+        "bp_event_dispatcher_candidate_with_cleanup": 12,
+        "async_or_ability_task_candidate": 10
+      },
+      "conversion_bucket_counts": {
+        "inventory_cleanup": 97,
+        "requires_explicit_unbind_policy": 8,
+        "requires_wrapper_api": 76,
+        "native_required": 60,
+        "bp_event_dispatcher_candidate": 12,
+        "async_or_ability_task": 10
+      },
+      "risk_counts": {
+        "medium": 109,
+        "high": 8,
+        "critical": 146
+      },
+      "module_counts": {
+        "LyraGame": 155,
+        "GameSettings/GameSettings": 41,
+        "CommonUser/CommonUser": 22,
+        "CommonGame/CommonGame": 10,
+        "CommonLoadingScreen/CommonLoadingScreen": 8,
+        "LyraEditor": 8,
+        "GameFeatures": 4,
+        "GameSubtitles/GameSubtitles": 4,
+        "PocketWorlds/PocketWorlds": 4,
+        "UIExtension/UIExtension": 3,
+        "AsyncMixin/AsyncMixin": 2,
+        "CommonLoadingScreen/CommonStartupLoadingScreen": 1,
+        "GameplayMessageRouter/GameplayMessageRuntime": 1
+      },
+      "top_sites": [
+        {
+          "path": "Source/LyraGame/Weapons/LyraGameplayAbility_RangedWeapon.cpp",
+          "line": 470,
+          "module": "LyraGame",
+          "methods": [
+            "remove_handle"
+          ],
+          "text": "MyAbilityComponent->AbilityTargetDataSetDelegate(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey()).Remove(OnTargetDataReadyCallbackDelegateHandle);",
+          "context": "\n\t\t// When ability ends, consume target data and remove delegate\n\t\tMyAbilityComponent->AbilityTargetDataSetDelegate(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey()).Remove(OnTargetDataReadyCallbackDelegateHandle);\n\t\tMyAbilityComponent->ConsumeClientReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey());\n",
+          "has_cleanup_in_file": true,
+          "classification": "async_or_ability_task_candidate",
+          "conversion_bucket": "async_or_ability_task",
+          "risk": "critical",
+          "reason": "Gameplay Ability or prediction-related delegate context requires GAS-aware async policy.",
+          "required_before_bp": "Classify with AbilityTask/GAS policy before any BP graph conversion."
+        },
+        {
+          "path": "Source/LyraGame/Weapons/LyraGameplayAbility_RangedWeapon.cpp",
+          "line": 446,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "OnTargetDataReadyCallbackDelegateHandle = MyAbilityComponent->AbilityTargetDataSetDelegate(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey()).AddUObject(this, &ThisClass::OnTargetDataReadyCallback);",
+          "context": "\tcheck(MyAbilityComponent);\n\n\tOnTargetDataReadyCallbackDelegateHandle = MyAbilityComponent->AbilityTargetDataSetDelegate(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey()).AddUObject(this, &ThisClass::OnTargetDataReadyCallback);\n\n\t// Update the last firing time",
+          "has_cleanup_in_file": true,
+          "classification": "async_or_ability_task_candidate",
+          "conversion_bucket": "async_or_ability_task",
+          "risk": "critical",
+          "reason": "Gameplay Ability or prediction-related delegate context requires GAS-aware async policy.",
+          "required_before_bp": "Classify with AbilityTask/GAS policy before any BP graph conversion."
+        },
+        {
+          "path": "Source/LyraGame/UI/PerformanceStats/LyraPerfStatContainerBase.cpp",
+          "line": 24,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "ULyraSettingsLocal::Get()->OnPerfStatDisplayStateChanged().AddUObject(this, &ThisClass::UpdateVisibilityOfChildren);",
+          "context": "\tUpdateVisibilityOfChildren();\n\n\tULyraSettingsLocal::Get()->OnPerfStatDisplayStateChanged().AddUObject(this, &ThisClass::UpdateVisibilityOfChildren);\n}\n",
+          "has_cleanup_in_file": true,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        },
+        {
+          "path": "Source/LyraGame/UI/LyraHUDLayout.cpp",
+          "line": 47,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "DeviceMapper.GetOnInputDevicePairingChange().AddUObject(this, &ThisClass::HandleInputDevicePairingChanged);",
+          "context": "\t\tIPlatformInputDeviceMapper& DeviceMapper = IPlatformInputDeviceMapper::Get();\n\t\tDeviceMapper.GetOnInputDeviceConnectionChange().AddUObject(this, &ThisClass::HandleInputDeviceConnectionChanged);\n\t\tDeviceMapper.GetOnInputDevicePairingChange().AddUObject(this, &ThisClass::HandleInputDevicePairingChanged);\n\t}\n}",
+          "has_cleanup_in_file": true,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        },
+        {
+          "path": "Source/LyraGame/UI/LyraHUDLayout.cpp",
+          "line": 46,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "DeviceMapper.GetOnInputDeviceConnectionChange().AddUObject(this, &ThisClass::HandleInputDeviceConnectionChanged);",
+          "context": "\t\t// Bind to when input device connections change\n\t\tIPlatformInputDeviceMapper& DeviceMapper = IPlatformInputDeviceMapper::Get();\n\t\tDeviceMapper.GetOnInputDeviceConnectionChange().AddUObject(this, &ThisClass::HandleInputDeviceConnectionChanged);\n\t\tDeviceMapper.GetOnInputDevicePairingChange().AddUObject(this, &ThisClass::HandleInputDevicePairingChanged);\n\t}",
+          "has_cleanup_in_file": true,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        },
+        {
+          "path": "Source/LyraGame/UI/IndicatorSystem/SActorCanvas.cpp",
+          "line": 180,
+          "module": "LyraGame",
+          "methods": [
+            "add_sp"
+          ],
+          "text": "IndicatorComponent->OnIndicatorRemoved.AddSP(this, &SActorCanvas::OnIndicatorRemoved);",
+          "context": "\t\t\tIndicatorComponentPtr = IndicatorComponent;\n\t\t\tIndicatorComponent->OnIndicatorAdded.AddSP(this, &SActorCanvas::OnIndicatorAdded);\n\t\t\tIndicatorComponent->OnIndicatorRemoved.AddSP(this, &SActorCanvas::OnIndicatorRemoved);\n\t\t\tfor (UIndicatorDescriptor* Indicator : IndicatorComponent->GetIndicators())\n\t\t\t{",
+          "has_cleanup_in_file": true,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "native_required",
+          "risk": "critical",
+          "reason": "Raw, shared-pointer, lambda, and static delegate bindings do not map safely to ordinary BP events.",
+          "required_before_bp": "Keep native or create a reviewed wrapper API."
+        },
+        {
+          "path": "Source/LyraGame/UI/IndicatorSystem/SActorCanvas.cpp",
+          "line": 179,
+          "module": "LyraGame",
+          "methods": [
+            "add_sp"
+          ],
+          "text": "IndicatorComponent->OnIndicatorAdded.AddSP(this, &SActorCanvas::OnIndicatorAdded);",
+          "context": "\n\t\t\tIndicatorComponentPtr = IndicatorComponent;\n\t\t\tIndicatorComponent->OnIndicatorAdded.AddSP(this, &SActorCanvas::OnIndicatorAdded);\n\t\t\tIndicatorComponent->OnIndicatorRemoved.AddSP(this, &SActorCanvas::OnIndicatorRemoved);\n\t\t\tfor (UIndicatorDescriptor* Indicator : IndicatorComponent->GetIndicators())",
+          "has_cleanup_in_file": true,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "native_required",
+          "risk": "critical",
+          "reason": "Raw, shared-pointer, lambda, and static delegate bindings do not map safely to ordinary BP events.",
+          "required_before_bp": "Keep native or create a reviewed wrapper API."
+        },
+        {
+          "path": "Source/LyraGame/UI/Foundation/LyraControllerDisconnectedScreen.cpp",
+          "line": 61,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "Button_ChangeUser->OnClicked().AddUObject(this, &ThisClass::HandleChangeUserClicked);",
+          "context": "\t}\n\n\tButton_ChangeUser->OnClicked().AddUObject(this, &ThisClass::HandleChangeUserClicked);\n}\n",
+          "has_cleanup_in_file": false,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        },
+        {
+          "path": "Source/LyraGame/UI/Foundation/LyraConfirmationScreen.cpp",
+          "line": 53,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "Button->OnClicked().AddUObject(this, &ThisClass::CloseConfirmationWindow, Action.Result);",
+          "context": "\t\tULyraButtonBase* Button = EntryBox_Buttons->CreateEntry<ULyraButtonBase>();\n\t\tButton->SetTriggeringInputAction(ActionRow);\n\t\tButton->OnClicked().AddUObject(this, &ThisClass::CloseConfirmationWindow, Action.Result);\n\t\tButton->SetButtonText(Action.OptionalDisplayText);\n\t}",
+          "has_cleanup_in_file": true,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        },
+        {
+          "path": "Source/LyraGame/UI/Common/LyraBoundActionButton.cpp",
+          "line": 18,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "InputSubsystem->OnInputMethodChangedNative.AddUObject(this, &ThisClass::HandleInputMethodChanged);",
+          "context": "\tif (UCommonInputSubsystem* InputSubsystem = GetInputSubsystem())\n\t{\n\t\tInputSubsystem->OnInputMethodChangedNative.AddUObject(this, &ThisClass::HandleInputMethodChanged);\n\t\tHandleInputMethodChanged(InputSubsystem->GetCurrentInputType());\n\t}",
+          "has_cleanup_in_file": false,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        },
+        {
+          "path": "Source/LyraGame/Teams/LyraTeamCreationComponent.cpp",
+          "line": 84,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "GameMode->OnGameModePlayerInitialized.AddUObject(this, &ThisClass::OnPlayerInitialized);",
+          "context": "\tcheck(GameMode);\n\n\tGameMode->OnGameModePlayerInitialized.AddUObject(this, &ThisClass::OnPlayerInitialized);\n}\n",
+          "has_cleanup_in_file": false,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        },
+        {
+          "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.cpp",
+          "line": 95,
+          "module": "LyraGame",
+          "methods": [
+            "add_dynamic"
+          ],
+          "text": "TeamSubsystem->GetTeamDisplayAssetChangedDelegate(NewTeam).AddDynamic(this, &ThisClass::OnDisplayAssetChanged);",
+          "context": "\tif ((TeamSubsystem != nullptr) && bTeamChanged && (NewTeam != INDEX_NONE))\n\t{\n\t\tTeamSubsystem->GetTeamDisplayAssetChangedDelegate(NewTeam).AddDynamic(this, &ThisClass::OnDisplayAssetChanged);\n\t}\n}",
+          "has_cleanup_in_file": true,
+          "classification": "async_or_ability_task_candidate",
+          "conversion_bucket": "async_or_ability_task",
+          "risk": "critical",
+          "reason": "Async action or custom K2 async node context usually exposes callback exec topology.",
+          "required_before_bp": "Model async proxy callback exec pins before authoring."
+        },
+        {
+          "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.cpp",
+          "line": 85,
+          "module": "LyraGame",
+          "methods": [
+            "remove_all"
+          ],
+          "text": "TeamSubsystem->GetTeamDisplayAssetChangedDelegate(LastBroadcastTeamId).RemoveAll(this);",
+          "context": "\tif ((TeamSubsystem != nullptr) && bTeamChanged && (LastBroadcastTeamId != INDEX_NONE))\n\t{\n\t\tTeamSubsystem->GetTeamDisplayAssetChangedDelegate(LastBroadcastTeamId).RemoveAll(this);\n\t}\n",
+          "has_cleanup_in_file": true,
+          "classification": "async_or_ability_task_candidate",
+          "conversion_bucket": "async_or_ability_task",
+          "risk": "critical",
+          "reason": "Async action or custom K2 async node context usually exposes callback exec topology.",
+          "required_before_bp": "Model async proxy callback exec pins before authoring."
+        },
+        {
+          "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.cpp",
+          "line": 59,
+          "module": "LyraGame",
+          "methods": [
+            "add_dynamic"
+          ],
+          "text": "TeamInterface->GetTeamChangedDelegateChecked().AddDynamic(this, &ThisClass::OnWatchedAgentChangedTeam);",
+          "context": "\n\t\t\t// Listen for team changes in the future\n\t\t\tTeamInterface->GetTeamChangedDelegateChecked().AddDynamic(this, &ThisClass::OnWatchedAgentChangedTeam);\n\n\t\t\tbCouldSucceed = true;",
+          "has_cleanup_in_file": true,
+          "classification": "async_or_ability_task_candidate",
+          "conversion_bucket": "async_or_ability_task",
+          "risk": "critical",
+          "reason": "Async action or custom K2 async node context usually exposes callback exec topology.",
+          "required_before_bp": "Model async proxy callback exec pins before authoring."
+        },
+        {
+          "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.cpp",
+          "line": 40,
+          "module": "LyraGame",
+          "methods": [
+            "remove_all"
+          ],
+          "text": "TeamInterface->GetTeamChangedDelegateChecked().RemoveAll(this);",
+          "context": "\tif (ILyraTeamAgentInterface* TeamInterface = TeamInterfacePtr.Get())\n\t{\n\t\tTeamInterface->GetTeamChangedDelegateChecked().RemoveAll(this);\n\t}\n}",
+          "has_cleanup_in_file": true,
+          "classification": "async_or_ability_task_candidate",
+          "conversion_bucket": "async_or_ability_task",
+          "risk": "critical",
+          "reason": "Async action or custom K2 async node context usually exposes callback exec topology.",
+          "required_before_bp": "Model async proxy callback exec pins before authoring."
+        },
+        {
+          "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.cpp",
+          "line": 53,
+          "module": "LyraGame",
+          "methods": [
+            "add_dynamic"
+          ],
+          "text": "TeamInterface->GetTeamChangedDelegateChecked().AddDynamic(this, &ThisClass::OnWatchedAgentChangedTeam);",
+          "context": "\t\tCurrentTeamIndex = GenericTeamIdToInteger(TeamInterface->GetGenericTeamId());\n\n\t\tTeamInterface->GetTeamChangedDelegateChecked().AddDynamic(this, &ThisClass::OnWatchedAgentChangedTeam);\n\n\t\tbCouldSucceed = true;",
+          "has_cleanup_in_file": true,
+          "classification": "async_or_ability_task_candidate",
+          "conversion_bucket": "async_or_ability_task",
+          "risk": "critical",
+          "reason": "Async action or custom K2 async node context usually exposes callback exec topology.",
+          "required_before_bp": "Model async proxy callback exec pins before authoring."
+        },
+        {
+          "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.cpp",
+          "line": 40,
+          "module": "LyraGame",
+          "methods": [
+            "remove_all"
+          ],
+          "text": "TeamInterface->GetTeamChangedDelegateChecked().RemoveAll(this);",
+          "context": "\tif (ILyraTeamAgentInterface* TeamInterface = TeamInterfacePtr.Get())\n\t{\n\t\tTeamInterface->GetTeamChangedDelegateChecked().RemoveAll(this);\n\t}\n}",
+          "has_cleanup_in_file": true,
+          "classification": "async_or_ability_task_candidate",
+          "conversion_bucket": "async_or_ability_task",
+          "risk": "critical",
+          "reason": "Async action or custom K2 async node context usually exposes callback exec topology.",
+          "required_before_bp": "Model async proxy callback exec pins before authoring."
+        },
+        {
+          "path": "Source/LyraGame/System/LyraReplicationGraph.cpp",
+          "line": 577,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "RepGraphConnection->OnClientVisibleLevelNameRemove.AddUObject(AlwaysRelevantConnectionNode, &ULyraReplicationGraphNode_AlwaysRelevant_ForConnection::OnClientLevelVisibilityRemove);",
+          "context": "\t// This node needs to know when client levels go in and out of visibility\n\tRepGraphConnection->OnClientVisibleLevelNameAdd.AddUObject(AlwaysRelevantConnectionNode, &ULyraReplicationGraphNode_AlwaysRelevant_ForConnection::OnClientLevelVisibilityAdd);\n\tRepGraphConnection->OnClientVisibleLevelNameRemove.AddUObject(AlwaysRelevantConnectionNode, &ULyraReplicationGraphNode_AlwaysRelevant_ForConnection::OnClientLevelVisibilityRemove);\n\n\tAddConnectionGraphNode(AlwaysRelevantConnectionNode, RepGraphConnection);",
+          "has_cleanup_in_file": true,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        },
+        {
+          "path": "Source/LyraGame/System/LyraReplicationGraph.cpp",
+          "line": 576,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "RepGraphConnection->OnClientVisibleLevelNameAdd.AddUObject(AlwaysRelevantConnectionNode, &ULyraReplicationGraphNode_AlwaysRelevant_ForConnection::OnClientLevelVisibilityAdd);",
+          "context": "\n\t// This node needs to know when client levels go in and out of visibility\n\tRepGraphConnection->OnClientVisibleLevelNameAdd.AddUObject(AlwaysRelevantConnectionNode, &ULyraReplicationGraphNode_AlwaysRelevant_ForConnection::OnClientLevelVisibilityAdd);\n\tRepGraphConnection->OnClientVisibleLevelNameRemove.AddUObject(AlwaysRelevantConnectionNode, &ULyraReplicationGraphNode_AlwaysRelevant_ForConnection::OnClientLevelVisibilityRemove);\n",
+          "has_cleanup_in_file": true,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        },
+        {
+          "path": "Source/LyraGame/System/LyraReplicationGraph.cpp",
+          "line": 517,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "AGameplayDebuggerCategoryReplicator::NotifyDebuggerOwnerChange.AddUObject(this, &ThisClass::OnGameplayDebuggerOwnerChange);",
+          "context": "\n#if WITH_GAMEPLAY_DEBUGGER\n\tAGameplayDebuggerCategoryReplicator::NotifyDebuggerOwnerChange.AddUObject(this, &ThisClass::OnGameplayDebuggerOwnerChange);\n#endif\n",
+          "has_cleanup_in_file": true,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        },
+        {
+          "path": "Source/LyraGame/System/LyraGameInstance.h",
+          "line": 36,
+          "module": "LyraGame",
+          "methods": [
+            "engine_lifecycle"
+          ],
+          "text": "UE_API void OnPreClientTravelToSession(FString& URL);",
+          "context": "\tUE_API virtual void Shutdown() override;\n\n\tUE_API void OnPreClientTravelToSession(FString& URL);\n\n\t/** A hard-coded encryption key used to try out the encryption code. This is NOT SECURE, do not use this technique in production! */",
+          "has_cleanup_in_file": false,
+          "classification": "engine_lifecycle_native_blocker",
+          "conversion_bucket": "native_required",
+          "risk": "critical",
+          "reason": "Engine/editor/Slate lifecycle delegates depend on subsystem or module shutdown order.",
+          "required_before_bp": "Keep native or wrap with explicit subsystem lifecycle policy."
+        },
+        {
+          "path": "Source/LyraGame/System/LyraGameInstance.cpp",
+          "line": 313,
+          "module": "LyraGame",
+          "methods": [
+            "engine_lifecycle"
+          ],
+          "text": "void ULyraGameInstance::OnPreClientTravelToSession(FString& URL)",
+          "context": "}\n\nvoid ULyraGameInstance::OnPreClientTravelToSession(FString& URL)\n{\n\t// Add debug encryption token if desired.",
+          "has_cleanup_in_file": true,
+          "classification": "engine_lifecycle_native_blocker",
+          "conversion_bucket": "native_required",
+          "risk": "critical",
+          "reason": "Engine/editor/Slate lifecycle delegates depend on subsystem or module shutdown order.",
+          "required_before_bp": "Keep native or wrap with explicit subsystem lifecycle policy."
+        },
+        {
+          "path": "Source/LyraGame/System/LyraGameInstance.cpp",
+          "line": 121,
+          "module": "LyraGame",
+          "methods": [
+            "remove_all",
+            "engine_lifecycle"
+          ],
+          "text": "SessionSubsystem->OnPreClientTravelEvent.RemoveAll(this);",
+          "context": "\tif (UCommonSessionSubsystem* SessionSubsystem = GetSubsystem<UCommonSessionSubsystem>())\n\t{\n\t\tSessionSubsystem->OnPreClientTravelEvent.RemoveAll(this);\n\t}\n",
+          "has_cleanup_in_file": true,
+          "classification": "engine_lifecycle_native_blocker",
+          "conversion_bucket": "native_required",
+          "risk": "critical",
+          "reason": "Engine/editor/Slate lifecycle delegates depend on subsystem or module shutdown order.",
+          "required_before_bp": "Keep native or wrap with explicit subsystem lifecycle policy."
+        },
+        {
+          "path": "Source/LyraGame/System/LyraGameInstance.cpp",
+          "line": 113,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject",
+            "engine_lifecycle"
+          ],
+          "text": "SessionSubsystem->OnPreClientTravelEvent.AddUObject(this, &ULyraGameInstance::OnPreClientTravelToSession);",
+          "context": "\tif (UCommonSessionSubsystem* SessionSubsystem = GetSubsystem<UCommonSessionSubsystem>())\n\t{\n\t\tSessionSubsystem->OnPreClientTravelEvent.AddUObject(this, &ULyraGameInstance::OnPreClientTravelToSession);\n\t}\n}",
+          "has_cleanup_in_file": true,
+          "classification": "engine_lifecycle_native_blocker",
+          "conversion_bucket": "native_required",
+          "risk": "critical",
+          "reason": "Engine/editor/Slate lifecycle delegates depend on subsystem or module shutdown order.",
+          "required_before_bp": "Keep native or wrap with explicit subsystem lifecycle policy."
+        },
+        {
+          "path": "Source/LyraGame/System/LyraAssetManager.h",
+          "line": 79,
+          "module": "LyraGame",
+          "methods": [
+            "engine_lifecycle"
+          ],
+          "text": "UE_API virtual void PreBeginPIE(bool bStartSimulate) override;",
+          "context": "\tUE_API virtual void StartInitialLoading() override;\n#if WITH_EDITOR\n\tUE_API virtual void PreBeginPIE(bool bStartSimulate) override;\n#endif\n\t//~End of UAssetManager interface",
+          "has_cleanup_in_file": false,
+          "classification": "engine_lifecycle_native_blocker",
+          "conversion_bucket": "native_required",
+          "risk": "critical",
+          "reason": "Engine/editor/Slate lifecycle delegates depend on subsystem or module shutdown order.",
+          "required_before_bp": "Keep native or wrap with explicit subsystem lifecycle policy."
+        },
+        {
+          "path": "Source/LyraGame/System/LyraAssetManager.cpp",
+          "line": 267,
+          "module": "LyraGame",
+          "methods": [
+            "engine_lifecycle"
+          ],
+          "text": "SCOPE_LOG_TIME_IN_SECONDS(TEXT(\"PreBeginPIE asset preloading complete\"), nullptr);",
+          "context": "\n\t\t// Intentionally after GetGameData to avoid counting GameData time in this timer\n\t\tSCOPE_LOG_TIME_IN_SECONDS(TEXT(\"PreBeginPIE asset preloading complete\"), nullptr);\n\n\t\t// You could add preloading of anything else needed for the experience we'll be using here",
+          "has_cleanup_in_file": false,
+          "classification": "engine_lifecycle_native_blocker",
+          "conversion_bucket": "native_required",
+          "risk": "critical",
+          "reason": "Engine/editor/Slate lifecycle delegates depend on subsystem or module shutdown order.",
+          "required_before_bp": "Keep native or wrap with explicit subsystem lifecycle policy."
+        },
+        {
+          "path": "Source/LyraGame/System/LyraAssetManager.cpp",
+          "line": 256,
+          "module": "LyraGame",
+          "methods": [
+            "engine_lifecycle"
+          ],
+          "text": "Super::PreBeginPIE(bStartSimulate);",
+          "context": "void ULyraAssetManager::PreBeginPIE(bool bStartSimulate)\n{\n\tSuper::PreBeginPIE(bStartSimulate);\n\n\t{",
+          "has_cleanup_in_file": false,
+          "classification": "engine_lifecycle_native_blocker",
+          "conversion_bucket": "native_required",
+          "risk": "critical",
+          "reason": "Engine/editor/Slate lifecycle delegates depend on subsystem or module shutdown order.",
+          "required_before_bp": "Keep native or wrap with explicit subsystem lifecycle policy."
+        },
+        {
+          "path": "Source/LyraGame/System/LyraAssetManager.cpp",
+          "line": 254,
+          "module": "LyraGame",
+          "methods": [
+            "engine_lifecycle"
+          ],
+          "text": "void ULyraAssetManager::PreBeginPIE(bool bStartSimulate)",
+          "context": "\n#if WITH_EDITOR\nvoid ULyraAssetManager::PreBeginPIE(bool bStartSimulate)\n{\n\tSuper::PreBeginPIE(bStartSimulate);",
+          "has_cleanup_in_file": false,
+          "classification": "engine_lifecycle_native_blocker",
+          "conversion_bucket": "native_required",
+          "risk": "critical",
+          "reason": "Engine/editor/Slate lifecycle delegates depend on subsystem or module shutdown order.",
+          "required_before_bp": "Keep native or wrap with explicit subsystem lifecycle policy."
+        },
+        {
+          "path": "Source/LyraGame/Settings/Widgets/LyraSettingsListEntrySetting_KeyboardInput.cpp",
+          "line": 108,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "KeyAlreadyBoundWarning->OnKeySelectionCanceled.AddUObject(this, &ThisClass::HandleKeySelectionCanceled, KeyAlreadyBoundWarning);",
+          "context": "\t\t\tKeyAlreadyBoundWarning->OnKeySelected.AddUObject(this, &ThisClass::HandlePrimaryDuplicateKeySelected, KeyAlreadyBoundWarning);\n\t\t}\n\t\tKeyAlreadyBoundWarning->OnKeySelectionCanceled.AddUObject(this, &ThisClass::HandleKeySelectionCanceled, KeyAlreadyBoundWarning);\n\t}\n\telse",
+          "has_cleanup_in_file": true,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        },
+        {
+          "path": "Source/LyraGame/Settings/Widgets/LyraSettingsListEntrySetting_KeyboardInput.cpp",
+          "line": 106,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "KeyAlreadyBoundWarning->OnKeySelected.AddUObject(this, &ThisClass::HandlePrimaryDuplicateKeySelected, KeyAlreadyBoundWarning);",
+          "context": "\t\telse\n\t\t{\n\t\t\tKeyAlreadyBoundWarning->OnKeySelected.AddUObject(this, &ThisClass::HandlePrimaryDuplicateKeySelected, KeyAlreadyBoundWarning);\n\t\t}\n\t\tKeyAlreadyBoundWarning->OnKeySelectionCanceled.AddUObject(this, &ThisClass::HandleKeySelectionCanceled, KeyAlreadyBoundWarning);",
+          "has_cleanup_in_file": true,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        },
+        {
+          "path": "Source/LyraGame/Settings/Widgets/LyraSettingsListEntrySetting_KeyboardInput.cpp",
+          "line": 102,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "KeyAlreadyBoundWarning->OnKeySelected.AddUObject(this, &ThisClass::HandleSecondaryDuplicateKeySelected, KeyAlreadyBoundWarning);",
+          "context": "\t\tif (InKeyBindSlot == 1)\n\t\t{\n\t\t\tKeyAlreadyBoundWarning->OnKeySelected.AddUObject(this, &ThisClass::HandleSecondaryDuplicateKeySelected, KeyAlreadyBoundWarning);\n\t\t}\n\t\telse",
+          "has_cleanup_in_file": true,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        },
+        {
+          "path": "Source/LyraGame/Settings/Widgets/LyraSettingsListEntrySetting_KeyboardInput.cpp",
+          "line": 50,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "PressAnyKeyPanel->OnKeySelectionCanceled.AddUObject(this, &ThisClass::HandleKeySelectionCanceled, PressAnyKeyPanel);",
+          "context": "\t\tUCommonUIExtensions::PushContentToLayer_ForPlayer(GetOwningLocalPlayer(), PressAnyKeyLayer, PressAnyKeyPanelClass));\n\tPressAnyKeyPanel->OnKeySelected.AddUObject(this, &ThisClass::HandleSecondaryKeySelected, PressAnyKeyPanel);\n\tPressAnyKeyPanel->OnKeySelectionCanceled.AddUObject(this, &ThisClass::HandleKeySelectionCanceled, PressAnyKeyPanel);\n}\n",
+          "has_cleanup_in_file": true,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        },
+        {
+          "path": "Source/LyraGame/Settings/Widgets/LyraSettingsListEntrySetting_KeyboardInput.cpp",
+          "line": 49,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "PressAnyKeyPanel->OnKeySelected.AddUObject(this, &ThisClass::HandleSecondaryKeySelected, PressAnyKeyPanel);",
+          "context": "\tUGameSettingPressAnyKey* PressAnyKeyPanel = CastChecked<UGameSettingPressAnyKey>(\n\t\tUCommonUIExtensions::PushContentToLayer_ForPlayer(GetOwningLocalPlayer(), PressAnyKeyLayer, PressAnyKeyPanelClass));\n\tPressAnyKeyPanel->OnKeySelected.AddUObject(this, &ThisClass::HandleSecondaryKeySelected, PressAnyKeyPanel);\n\tPressAnyKeyPanel->OnKeySelectionCanceled.AddUObject(this, &ThisClass::HandleKeySelectionCanceled, PressAnyKeyPanel);\n}",
+          "has_cleanup_in_file": true,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        },
+        {
+          "path": "Source/LyraGame/Settings/Widgets/LyraSettingsListEntrySetting_KeyboardInput.cpp",
+          "line": 42,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "PressAnyKeyPanel->OnKeySelectionCanceled.AddUObject(this, &ThisClass::HandleKeySelectionCanceled, PressAnyKeyPanel);",
+          "context": "\t\tUCommonUIExtensions::PushContentToLayer_ForPlayer(GetOwningLocalPlayer(), PressAnyKeyLayer, PressAnyKeyPanelClass));\n\tPressAnyKeyPanel->OnKeySelected.AddUObject(this, &ThisClass::HandlePrimaryKeySelected, PressAnyKeyPanel);\n\tPressAnyKeyPanel->OnKeySelectionCanceled.AddUObject(this, &ThisClass::HandleKeySelectionCanceled, PressAnyKeyPanel);\n}\n",
+          "has_cleanup_in_file": true,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        },
+        {
+          "path": "Source/LyraGame/Settings/Widgets/LyraSettingsListEntrySetting_KeyboardInput.cpp",
+          "line": 41,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "PressAnyKeyPanel->OnKeySelected.AddUObject(this, &ThisClass::HandlePrimaryKeySelected, PressAnyKeyPanel);",
+          "context": "\tUGameSettingPressAnyKey* PressAnyKeyPanel = CastChecked<UGameSettingPressAnyKey>(\n\t\tUCommonUIExtensions::PushContentToLayer_ForPlayer(GetOwningLocalPlayer(), PressAnyKeyLayer, PressAnyKeyPanelClass));\n\tPressAnyKeyPanel->OnKeySelected.AddUObject(this, &ThisClass::HandlePrimaryKeySelected, PressAnyKeyPanel);\n\tPressAnyKeyPanel->OnKeySelectionCanceled.AddUObject(this, &ThisClass::HandleKeySelectionCanceled, PressAnyKeyPanel);\n}",
+          "has_cleanup_in_file": true,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        },
+        {
+          "path": "Source/LyraGame/Settings/Widgets/LyraSettingsListEntrySetting_KeyboardInput.cpp",
+          "line": 34,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "Button_ResetToDefault->OnClicked().AddUObject(this, &ThisClass::HandleResetToDefaultClicked);",
+          "context": "\tButton_SecondaryKey->OnClicked().AddUObject(this, &ThisClass::HandleSecondaryKeyClicked);\n\tButton_Clear->OnClicked().AddUObject(this, &ThisClass::HandleClearClicked);\n\tButton_ResetToDefault->OnClicked().AddUObject(this, &ThisClass::HandleResetToDefaultClicked);\n}\n",
+          "has_cleanup_in_file": true,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        },
+        {
+          "path": "Source/LyraGame/Settings/Widgets/LyraSettingsListEntrySetting_KeyboardInput.cpp",
+          "line": 33,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "Button_Clear->OnClicked().AddUObject(this, &ThisClass::HandleClearClicked);",
+          "context": "\tButton_PrimaryKey->OnClicked().AddUObject(this, &ThisClass::HandlePrimaryKeyClicked);\n\tButton_SecondaryKey->OnClicked().AddUObject(this, &ThisClass::HandleSecondaryKeyClicked);\n\tButton_Clear->OnClicked().AddUObject(this, &ThisClass::HandleClearClicked);\n\tButton_ResetToDefault->OnClicked().AddUObject(this, &ThisClass::HandleResetToDefaultClicked);\n}",
+          "has_cleanup_in_file": true,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        },
+        {
+          "path": "Source/LyraGame/Settings/Widgets/LyraSettingsListEntrySetting_KeyboardInput.cpp",
+          "line": 32,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "Button_SecondaryKey->OnClicked().AddUObject(this, &ThisClass::HandleSecondaryKeyClicked);",
+          "context": "\n\tButton_PrimaryKey->OnClicked().AddUObject(this, &ThisClass::HandlePrimaryKeyClicked);\n\tButton_SecondaryKey->OnClicked().AddUObject(this, &ThisClass::HandleSecondaryKeyClicked);\n\tButton_Clear->OnClicked().AddUObject(this, &ThisClass::HandleClearClicked);\n\tButton_ResetToDefault->OnClicked().AddUObject(this, &ThisClass::HandleResetToDefaultClicked);",
+          "has_cleanup_in_file": true,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        },
+        {
+          "path": "Source/LyraGame/Settings/Widgets/LyraSettingsListEntrySetting_KeyboardInput.cpp",
+          "line": 31,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "Button_PrimaryKey->OnClicked().AddUObject(this, &ThisClass::HandlePrimaryKeyClicked);",
+          "context": "\tSuper::NativeOnInitialized();\n\n\tButton_PrimaryKey->OnClicked().AddUObject(this, &ThisClass::HandlePrimaryKeyClicked);\n\tButton_SecondaryKey->OnClicked().AddUObject(this, &ThisClass::HandleSecondaryKeyClicked);\n\tButton_Clear->OnClicked().AddUObject(this, &ThisClass::HandleClearClicked);",
+          "has_cleanup_in_file": true,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        },
+        {
+          "path": "Source/LyraGame/Settings/Screens/LyraSafeZoneEditor.cpp",
+          "line": 48,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "Button_Back->OnClicked().AddUObject(this, &ULyraSafeZoneEditor::HandleBackClicked);",
+          "context": "\tif (bCanCancel)\n\t{\n\t\tButton_Back->OnClicked().AddUObject(this, &ULyraSafeZoneEditor::HandleBackClicked);\n\t}\n}",
+          "has_cleanup_in_file": false,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        },
+        {
+          "path": "Source/LyraGame/Settings/Screens/LyraSafeZoneEditor.cpp",
+          "line": 43,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "Button_Done->OnClicked().AddUObject(this, &ULyraSafeZoneEditor::HandleDoneClicked);",
+          "context": "\tSSafeZone::SetGlobalSafeZoneScale(ULyraSettingsLocal::Get()->GetSafeZone());\n\n\tButton_Done->OnClicked().AddUObject(this, &ULyraSafeZoneEditor::HandleDoneClicked);\n\n\tButton_Back->SetVisibility((bCanCancel)? ESlateVisibility::Visible : ESlateVisibility::Collapsed);",
+          "has_cleanup_in_file": false,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        },
+        {
+          "path": "Source/LyraGame/Settings/Screens/LyraBrightnessEditor.cpp",
+          "line": 48,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "Button_Back->OnClicked().AddUObject(this, &ThisClass::HandleBackClicked);",
+          "context": "\tif (bCanCancel)\n\t{\n\t\tButton_Back->OnClicked().AddUObject(this, &ThisClass::HandleBackClicked);\n\t}\n}",
+          "has_cleanup_in_file": false,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        },
+        {
+          "path": "Source/LyraGame/Settings/Screens/LyraBrightnessEditor.cpp",
+          "line": 43,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "Button_Done->OnClicked().AddUObject(this, &ThisClass::HandleDoneClicked);",
+          "context": "\tSSafeZone::SetGlobalSafeZoneScale(ULyraSettingsLocal::Get()->GetSafeZone());\n\n\tButton_Done->OnClicked().AddUObject(this, &ThisClass::HandleDoneClicked);\n\n\tButton_Back->SetVisibility((bCanCancel)? ESlateVisibility::Visible : ESlateVisibility::Collapsed);",
+          "has_cleanup_in_file": false,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        },
+        {
+          "path": "Source/LyraGame/Settings/LyraSettingsShared.cpp",
+          "line": 138,
+          "module": "LyraGame",
+          "methods": [
+            "engine_lifecycle"
+          ],
+          "text": "FSlateApplication::Get().GetRenderer()->SetColorVisionDeficiencyType(",
+          "context": "\t{\n\t\tColorBlindMode = InMode;\n\t\tFSlateApplication::Get().GetRenderer()->SetColorVisionDeficiencyType(\n\t\t\t(EColorVisionDeficiency)(int32)ColorBlindMode, (int32)ColorBlindStrength, true, false);\n\t}",
+          "has_cleanup_in_file": false,
+          "classification": "engine_lifecycle_native_blocker",
+          "conversion_bucket": "native_required",
+          "risk": "critical",
+          "reason": "Engine/editor/Slate lifecycle delegates depend on subsystem or module shutdown order.",
+          "required_before_bp": "Keep native or wrap with explicit subsystem lifecycle policy."
+        },
+        {
+          "path": "Source/LyraGame/Settings/LyraSettingsShared.cpp",
+          "line": 123,
+          "module": "LyraGame",
+          "methods": [
+            "engine_lifecycle"
+          ],
+          "text": "FSlateApplication::Get().GetRenderer()->SetColorVisionDeficiencyType(",
+          "context": "\t{\n\t\tColorBlindStrength = InColorBlindStrength;\n\t\tFSlateApplication::Get().GetRenderer()->SetColorVisionDeficiencyType(\n\t\t\t(EColorVisionDeficiency)(int32)ColorBlindMode, (int32)ColorBlindStrength, true, false);\n\t}",
+          "has_cleanup_in_file": false,
+          "classification": "engine_lifecycle_native_blocker",
+          "conversion_bucket": "native_required",
+          "risk": "critical",
+          "reason": "Engine/editor/Slate lifecycle delegates depend on subsystem or module shutdown order.",
+          "required_before_bp": "Keep native or wrap with explicit subsystem lifecycle policy."
+        },
+        {
+          "path": "Source/LyraGame/Settings/LyraSettingsShared.cpp",
+          "line": 39,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "FInternationalization::Get().OnCultureChanged().AddUObject(this, &ThisClass::OnCultureChanged);",
+          "context": "ULyraSettingsShared::ULyraSettingsShared()\n{\n\tFInternationalization::Get().OnCultureChanged().AddUObject(this, &ThisClass::OnCultureChanged);\n\n\tGamepadMoveStickDeadZone = LyraSettingsSharedCVars::DefaultGamepadLeftStickInnerDeadZone;",
+          "has_cleanup_in_file": false,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        },
+        {
+          "path": "Source/LyraGame/Settings/LyraSettingsLocal.cpp",
+          "line": 482,
+          "module": "LyraGame",
+          "methods": [
+            "engine_lifecycle"
+          ],
+          "text": "if (FSlateApplication::IsInitialized() && !FSlateApplication::Get().IsActive())",
+          "context": "\t\t}\n\n\t\tif (FSlateApplication::IsInitialized() && !FSlateApplication::Get().IsActive())\n\t\t{\n\t\t\tEffectiveFrameRateLimit = CombineFrameRateLimits(EffectiveFrameRateLimit, FrameRateLimit_WhenBackgrounded);",
+          "has_cleanup_in_file": true,
+          "classification": "engine_lifecycle_native_blocker",
+          "conversion_bucket": "native_required",
+          "risk": "critical",
+          "reason": "Engine/editor/Slate lifecycle delegates depend on subsystem or module shutdown order.",
+          "required_before_bp": "Keep native or wrap with explicit subsystem lifecycle policy."
+        },
+        {
+          "path": "Source/LyraGame/Settings/LyraSettingsLocal.cpp",
+          "line": 417,
+          "module": "LyraGame",
+          "methods": [
+            "remove_handle",
+            "engine_lifecycle"
+          ],
+          "text": "FSlateApplication::Get().OnApplicationActivationStateChanged().Remove(OnApplicationActivationStateChangedHandle);",
+          "context": "\tif (FSlateApplication::IsInitialized())\n\t{\n\t\tFSlateApplication::Get().OnApplicationActivationStateChanged().Remove(OnApplicationActivationStateChangedHandle);\n\t}\n",
+          "has_cleanup_in_file": true,
+          "classification": "engine_lifecycle_native_blocker",
+          "conversion_bucket": "native_required",
+          "risk": "critical",
+          "reason": "Engine/editor/Slate lifecycle delegates depend on subsystem or module shutdown order.",
+          "required_before_bp": "Keep native or wrap with explicit subsystem lifecycle policy."
+        },
+        {
+          "path": "Source/LyraGame/Settings/LyraSettingsLocal.cpp",
+          "line": 345,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject",
+            "engine_lifecycle"
+          ],
+          "text": "OnApplicationActivationStateChangedHandle = FSlateApplication::Get().OnApplicationActivationStateChanged().AddUObject(this, &ThisClass::OnAppActivationStateChanged);",
+          "context": "\tif (!HasAnyFlags(RF_ClassDefaultObject) && FSlateApplication::IsInitialized())\n\t{\n\t\tOnApplicationActivationStateChangedHandle = FSlateApplication::Get().OnApplicationActivationStateChanged().AddUObject(this, &ThisClass::OnAppActivationStateChanged);\n\t}\n",
+          "has_cleanup_in_file": true,
+          "classification": "engine_lifecycle_native_blocker",
+          "conversion_bucket": "native_required",
+          "risk": "critical",
+          "reason": "Engine/editor/Slate lifecycle delegates depend on subsystem or module shutdown order.",
+          "required_before_bp": "Keep native or wrap with explicit subsystem lifecycle policy."
+        },
+        {
+          "path": "Source/LyraGame/Settings/LyraGameSettingRegistry_Video.cpp",
+          "line": 236,
+          "module": "LyraGame",
+          "methods": [
+            "engine_lifecycle"
+          ],
+          "text": "FSlateApplication::Get().GetCachedDisplayMetrics(Metrics);",
+          "context": "\t\t\tSetting->AddEditCondition(MakeShared<FWhenCondition>([](const ULocalPlayer*, FGameSettingEditableState& InOutEditState) {\n\t\t\t\tFDisplayMetrics Metrics;\n\t\t\t\tFSlateApplication::Get().GetCachedDisplayMetrics(Metrics);\n\t\t\t\tif (Metrics.TitleSafePaddingSize.Size() == 0)\n\t\t\t\t{",
+          "has_cleanup_in_file": false,
+          "classification": "engine_lifecycle_native_blocker",
+          "conversion_bucket": "native_required",
+          "risk": "critical",
+          "reason": "Engine/editor/Slate lifecycle delegates depend on subsystem or module shutdown order.",
+          "required_before_bp": "Keep native or wrap with explicit subsystem lifecycle policy."
+        },
+        {
+          "path": "Source/LyraGame/Settings/LyraGameSettingRegistry_PerfStats.cpp",
+          "line": 72,
+          "module": "LyraGame",
+          "methods": [
+            "add_sp"
+          ],
+          "text": "SettingChangedDelegate = Settings->OnLatencyStatIndicatorSettingsChangedEvent().AddSP(this->AsShared(), &FGameSettingEditCondition_LatencyStatsCurrentlyEnabled::BroadcastEditConditionChanged);",
+          "context": "\t\t}\n\n\t\tSettingChangedDelegate = Settings->OnLatencyStatIndicatorSettingsChangedEvent().AddSP(this->AsShared(), &FGameSettingEditCondition_LatencyStatsCurrentlyEnabled::BroadcastEditConditionChanged);\n\t}\n",
+          "has_cleanup_in_file": true,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "native_required",
+          "risk": "critical",
+          "reason": "Raw, shared-pointer, lambda, and static delegate bindings do not map safely to ordinary BP events.",
+          "required_before_bp": "Keep native or create a reviewed wrapper API."
+        },
+        {
+          "path": "Source/LyraGame/Settings/CustomSettings/LyraSettingValueDiscrete_Resolution.cpp",
+          "line": 239,
+          "module": "LyraGame",
+          "methods": [
+            "engine_lifecycle"
+          ],
+          "text": "FSlateApplication::Get().GetInitialDisplayMetrics(DisplayMetrics);",
+          "context": "\t{\n\t\tFDisplayMetrics DisplayMetrics;\n\t\tFSlateApplication::Get().GetInitialDisplayMetrics(DisplayMetrics);\n\n\t\t// Default display aspect to required aspect in case this platform can't provide the information. Forces acceptance of this resolution.",
+          "has_cleanup_in_file": false,
+          "classification": "engine_lifecycle_native_blocker",
+          "conversion_bucket": "native_required",
+          "risk": "critical",
+          "reason": "Engine/editor/Slate lifecycle delegates depend on subsystem or module shutdown order.",
+          "required_before_bp": "Keep native or wrap with explicit subsystem lifecycle policy."
+        },
+        {
+          "path": "Source/LyraGame/Settings/CustomSettings/LyraSettingValueDiscrete_Resolution.cpp",
+          "line": 83,
+          "module": "LyraGame",
+          "methods": [
+            "engine_lifecycle"
+          ],
+          "text": "FSlateApplication::Get().GetInitialDisplayMetrics(InitialDisplayMetrics);",
+          "context": "\n\tFDisplayMetrics InitialDisplayMetrics;\n\tFSlateApplication::Get().GetInitialDisplayMetrics(InitialDisplayMetrics);\n\n\tFScreenResolutionArray ResArray;",
+          "has_cleanup_in_file": false,
+          "classification": "engine_lifecycle_native_blocker",
+          "conversion_bucket": "native_required",
+          "risk": "critical",
+          "reason": "Engine/editor/Slate lifecycle delegates depend on subsystem or module shutdown order.",
+          "required_before_bp": "Keep native or wrap with explicit subsystem lifecycle policy."
+        },
+        {
+          "path": "Source/LyraGame/Settings/CustomSettings/LyraSettingValueDiscreteDynamic_AudioOutputDevice.cpp",
+          "line": 23,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "AudioDeviceNotifSubsystem->DefaultRenderDeviceChangedNative.AddUObject(this, &ULyraSettingValueDiscreteDynamic_AudioOutputDevice::DefaultDeviceChanged);",
+          "context": "\t\tAudioDeviceNotifSubsystem->DeviceRemovedNative.AddUObject(this, &ULyraSettingValueDiscreteDynamic_AudioOutputDevice::DeviceAddedOrRemoved);\n\t\t//AudioDeviceNotifSubsystem->DeviceSwitchedNative.AddUObject(this, &ULyraSettingValueDiscreteDynamic_AudioOutputDevice::DeviceSwitched);\n\t\tAudioDeviceNotifSubsystem->DefaultRenderDeviceChangedNative.AddUObject(this, &ULyraSettingValueDiscreteDynamic_AudioOutputDevice::DefaultDeviceChanged);\n\t}\n",
+          "has_cleanup_in_file": true,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        },
+        {
+          "path": "Source/LyraGame/Settings/CustomSettings/LyraSettingValueDiscreteDynamic_AudioOutputDevice.cpp",
+          "line": 22,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "//AudioDeviceNotifSubsystem->DeviceSwitchedNative.AddUObject(this, &ULyraSettingValueDiscreteDynamic_AudioOutputDevice::DeviceSwitched);",
+          "context": "\t\tAudioDeviceNotifSubsystem->DeviceAddedNative.AddUObject(this, &ULyraSettingValueDiscreteDynamic_AudioOutputDevice::DeviceAddedOrRemoved);\n\t\tAudioDeviceNotifSubsystem->DeviceRemovedNative.AddUObject(this, &ULyraSettingValueDiscreteDynamic_AudioOutputDevice::DeviceAddedOrRemoved);\n\t\t//AudioDeviceNotifSubsystem->DeviceSwitchedNative.AddUObject(this, &ULyraSettingValueDiscreteDynamic_AudioOutputDevice::DeviceSwitched);\n\t\tAudioDeviceNotifSubsystem->DefaultRenderDeviceChangedNative.AddUObject(this, &ULyraSettingValueDiscreteDynamic_AudioOutputDevice::DefaultDeviceChanged);\n\t}",
+          "has_cleanup_in_file": true,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        },
+        {
+          "path": "Source/LyraGame/Settings/CustomSettings/LyraSettingValueDiscreteDynamic_AudioOutputDevice.cpp",
+          "line": 21,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "AudioDeviceNotifSubsystem->DeviceRemovedNative.AddUObject(this, &ULyraSettingValueDiscreteDynamic_AudioOutputDevice::DeviceAddedOrRemoved);",
+          "context": "\t{\n\t\tAudioDeviceNotifSubsystem->DeviceAddedNative.AddUObject(this, &ULyraSettingValueDiscreteDynamic_AudioOutputDevice::DeviceAddedOrRemoved);\n\t\tAudioDeviceNotifSubsystem->DeviceRemovedNative.AddUObject(this, &ULyraSettingValueDiscreteDynamic_AudioOutputDevice::DeviceAddedOrRemoved);\n\t\t//AudioDeviceNotifSubsystem->DeviceSwitchedNative.AddUObject(this, &ULyraSettingValueDiscreteDynamic_AudioOutputDevice::DeviceSwitched);\n\t\tAudioDeviceNotifSubsystem->DefaultRenderDeviceChangedNative.AddUObject(this, &ULyraSettingValueDiscreteDynamic_AudioOutputDevice::DefaultDeviceChanged);",
+          "has_cleanup_in_file": true,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        },
+        {
+          "path": "Source/LyraGame/Settings/CustomSettings/LyraSettingValueDiscreteDynamic_AudioOutputDevice.cpp",
+          "line": 20,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "AudioDeviceNotifSubsystem->DeviceAddedNative.AddUObject(this, &ULyraSettingValueDiscreteDynamic_AudioOutputDevice::DeviceAddedOrRemoved);",
+          "context": "\tif (UAudioDeviceNotificationSubsystem* AudioDeviceNotifSubsystem = UAudioDeviceNotificationSubsystem::Get())\n\t{\n\t\tAudioDeviceNotifSubsystem->DeviceAddedNative.AddUObject(this, &ULyraSettingValueDiscreteDynamic_AudioOutputDevice::DeviceAddedOrRemoved);\n\t\tAudioDeviceNotifSubsystem->DeviceRemovedNative.AddUObject(this, &ULyraSettingValueDiscreteDynamic_AudioOutputDevice::DeviceAddedOrRemoved);\n\t\t//AudioDeviceNotifSubsystem->DeviceSwitchedNative.AddUObject(this, &ULyraSettingValueDiscreteDynamic_AudioOutputDevice::DeviceSwitched);",
+          "has_cleanup_in_file": true,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        },
+        {
+          "path": "Source/LyraGame/Player/LyraPlayerSpawningManagerComponent.cpp",
+          "line": 30,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject",
+            "engine_lifecycle"
+          ],
+          "text": "FWorldDelegates::LevelAddedToWorld.AddUObject(this, &ThisClass::OnLevelAdded);",
+          "context": "\tSuper::InitializeComponent();\n\n\tFWorldDelegates::LevelAddedToWorld.AddUObject(this, &ThisClass::OnLevelAdded);\n\n\tUWorld* World = GetWorld();",
+          "has_cleanup_in_file": false,
+          "classification": "engine_lifecycle_native_blocker",
+          "conversion_bucket": "native_required",
+          "risk": "critical",
+          "reason": "Engine/editor/Slate lifecycle delegates depend on subsystem or module shutdown order.",
+          "required_before_bp": "Keep native or wrap with explicit subsystem lifecycle policy."
+        },
+        {
+          "path": "Source/LyraGame/Player/LyraPlayerController.cpp",
+          "line": 584,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "GameState->OnRecorderPlayerStateChangedEvent.AddUObject(this, &ThisClass::RecorderPlayerStateUpdated);",
+          "context": "\t\t\tif (!GameState->OnRecorderPlayerStateChangedEvent.IsBoundToObject(this))\n\t\t\t{\n\t\t\t\tGameState->OnRecorderPlayerStateChangedEvent.AddUObject(this, &ThisClass::RecorderPlayerStateUpdated);\n\t\t\t}\n\t\t\tif (APlayerState* RecorderState = GameState->GetRecorderPlayerState())",
+          "has_cleanup_in_file": true,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        },
+        {
+          "path": "Source/LyraGame/Player/LyraPlayerController.cpp",
+          "line": 312,
+          "module": "LyraGame",
+          "methods": [
+            "add_uobject"
+          ],
+          "text": "UserSettings->OnSettingChanged.AddUObject(this, &ThisClass::OnSettingsChanged);",
+          "context": "\t{\n\t\tULyraSettingsShared* UserSettings = LyraLocalPlayer->GetSharedSettings();\n\t\tUserSettings->OnSettingChanged.AddUObject(this, &ThisClass::OnSettingsChanged);\n\n\t\tOnSettingsChanged(UserSettings);",
+          "has_cleanup_in_file": true,
+          "classification": "native_delegate_lifecycle_blocker",
+          "conversion_bucket": "requires_wrapper_api",
+          "risk": "critical",
+          "reason": "AddUObject binding depends on UObject lifetime and explicit unbinding or owner teardown.",
+          "required_before_bp": "Require wrapper API or verified BP-equivalent dispatcher owner lifecycle."
+        }
+      ]
+    },
+    "async_proxy_inventory": {
+      "summary": {
+        "class_count": 13,
+        "kind_counts": {
+          "cancellable_async_action": 6,
+          "blueprint_async_action": 3,
+          "custom_k2_async_node": 1,
+          "ability_task": 3
+        },
+        "authoring_policy_counts": {
+          "callback_exec_model_required": 9,
+          "native_policy_required": 4
+        },
+        "module_counts": {
+          "LyraGame": 7,
+          "CommonGame/CommonGame": 3,
+          "CommonUser/CommonUser": 1,
+          "GameplayMessageRouter/GameplayMessageNodes": 1,
+          "GameplayMessageRouter/GameplayMessageRuntime": 1
+        },
+        "classes_with_callback_delegates": 10,
+        "classes_with_factory_functions": 11,
+        "classes_with_activate": 11,
+        "classes_with_broadcasts": 10,
+        "classes_with_cleanup_signals": 10,
+        "classes_requiring_callback_exec_model": 13,
+        "callback_delegate_count": 11,
+        "factory_function_count": 29,
+        "broadcast_count": 13
+      },
+      "classes": [
+        {
+          "class_name": "UAsyncAction_PushContentToLayerForPlayer",
+          "base_class": "UCancellableAsyncAction",
+          "kind": "cancellable_async_action",
+          "module": "CommonGame/CommonGame",
+          "declaration": {
+            "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_PushContentToLayerForPlayer.h",
+            "line": 25,
+            "text": "class UAsyncAction_PushContentToLayerForPlayer : public UCancellableAsyncAction"
+          },
+          "source_files": [
+            "Plugins/CommonGame/Source/Private/Actions/AsyncAction_PushContentToLayerForPlayer.cpp",
+            "Plugins/CommonGame/Source/Public/Actions/AsyncAction_PushContentToLayerForPlayer.h"
+          ],
+          "blueprint_assignable_callbacks": [
+            {
+              "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_PushContentToLayerForPlayer.h",
+              "line": 39,
+              "text": "UPROPERTY(BlueprintAssignable)",
+              "type": "FPushContentToLayerForPlayerAsyncDelegate",
+              "name": "BeforePush"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_PushContentToLayerForPlayer.h",
+              "line": 42,
+              "text": "UPROPERTY(BlueprintAssignable)",
+              "type": "FPushContentToLayerForPlayerAsyncDelegate",
+              "name": "AfterPush"
+            }
+          ],
+          "factory_functions": [
+            {
+              "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_PushContentToLayerForPlayer.h",
+              "line": 32,
+              "text": "UFUNCTION(BlueprintCallable, BlueprintCosmetic, meta=(WorldContext = \"WorldContextObject\", BlueprintInternalUseOnly=\"true\"))",
+              "name": "UPARAM",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_PushContentToLayerForPlayer.cpp",
+              "line": 17,
+              "text": "UAsyncAction_PushContentToLayerForPlayer* UAsyncAction_PushContentToLayerForPlayer::PushContentToLayerForPlayer(APlayerController* InOwningPlayer, TSoftClassPtr<UCommonActivatableWidget> InWidgetClass, FGameplayTag InLayerName, bool bSuspendInputUntilComplete)",
+              "name": "PushContentToLayerForPlayer",
+              "source": "definition"
+            }
+          ],
+          "activate_methods": [
+            {
+              "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_PushContentToLayerForPlayer.h",
+              "line": 35,
+              "text": "UE_API virtual void Activate() override;",
+              "name": "Activate",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_PushContentToLayerForPlayer.cpp",
+              "line": 51,
+              "text": "void UAsyncAction_PushContentToLayerForPlayer::Activate()",
+              "name": "Activate",
+              "source": "definition"
+            }
+          ],
+          "broadcasts": [
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_PushContentToLayerForPlayer.cpp",
+              "line": 62,
+              "text": "BeforePush.Broadcast(Widget);"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_PushContentToLayerForPlayer.cpp",
+              "line": 65,
+              "text": "AfterPush.Broadcast(Widget);"
+            }
+          ],
+          "cleanup_signals": [
+            {
+              "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_PushContentToLayerForPlayer.h",
+              "line": 30,
+              "text": "UE_API virtual void Cancel() override;",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_PushContentToLayerForPlayer.cpp",
+              "line": 40,
+              "text": "void UAsyncAction_PushContentToLayerForPlayer::Cancel()",
+              "name": "Cancel",
+              "source": "definition"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_PushContentToLayerForPlayer.cpp",
+              "line": 40,
+              "text": "void UAsyncAction_PushContentToLayerForPlayer::Cancel()"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_PushContentToLayerForPlayer.cpp",
+              "line": 42,
+              "text": "Super::Cancel();"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_PushContentToLayerForPlayer.cpp",
+              "line": 66,
+              "text": "SetReadyToDestroy();"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_PushContentToLayerForPlayer.cpp",
+              "line": 69,
+              "text": "SetReadyToDestroy();"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_PushContentToLayerForPlayer.cpp",
+              "line": 73,
+              "text": "SetReadyToDestroy();"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_PushContentToLayerForPlayer.cpp",
+              "line": 78,
+              "text": "SetReadyToDestroy();"
+            }
+          ],
+          "authoring_policy": "callback_exec_model_required",
+          "required_before_bp": "Implement async proxy callback exec pin modeling before authoring this as Blueprint graph topology."
+        },
+        {
+          "class_name": "UAsyncAction_ObserveTeam",
+          "base_class": "UCancellableAsyncAction",
+          "kind": "cancellable_async_action",
+          "module": "LyraGame",
+          "declaration": {
+            "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.h",
+            "line": 20,
+            "text": "class UAsyncAction_ObserveTeam : public UCancellableAsyncAction"
+          },
+          "source_files": [
+            "Source/LyraGame/Teams/AsyncAction_ObserveTeam.cpp",
+            "Source/LyraGame/Teams/AsyncAction_ObserveTeam.h"
+          ],
+          "blueprint_assignable_callbacks": [
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.h",
+              "line": 39,
+              "text": "UPROPERTY(BlueprintAssignable)",
+              "type": "FTeamObservedAsyncDelegate",
+              "name": "OnTeamChanged"
+            }
+          ],
+          "factory_functions": [
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.h",
+              "line": 29,
+              "text": "UFUNCTION(BlueprintCallable, meta=(BlueprintInternalUseOnly=\"true\", Keywords=\"Watch\"))",
+              "name": "ObserveTeam",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.cpp",
+              "line": 14,
+              "text": "UAsyncAction_ObserveTeam* UAsyncAction_ObserveTeam::ObserveTeam(UObject* TeamAgent)",
+              "name": "ObserveTeam",
+              "source": "definition"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.cpp",
+              "line": 19,
+              "text": "UAsyncAction_ObserveTeam* UAsyncAction_ObserveTeam::InternalObserveTeamChanges(TScriptInterface<ILyraTeamAgentInterface> TeamActor)",
+              "name": "InternalObserveTeamChanges",
+              "source": "definition"
+            }
+          ],
+          "activate_methods": [
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.h",
+              "line": 33,
+              "text": "virtual void Activate() override;",
+              "name": "Activate",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.cpp",
+              "line": 44,
+              "text": "void UAsyncAction_ObserveTeam::Activate()",
+              "name": "Activate",
+              "source": "definition"
+            }
+          ],
+          "broadcasts": [
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.cpp",
+              "line": 59,
+              "text": "OnTeamChanged.Broadcast(CurrentTeamIndex != INDEX_NONE, CurrentTeamIndex);"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.cpp",
+              "line": 70,
+              "text": "OnTeamChanged.Broadcast(NewTeam != INDEX_NONE, NewTeam);"
+            }
+          ],
+          "cleanup_signals": [
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.h",
+              "line": 34,
+              "text": "virtual void SetReadyToDestroy() override;",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.cpp",
+              "line": 33,
+              "text": "void UAsyncAction_ObserveTeam::SetReadyToDestroy()",
+              "name": "SetReadyToDestroy",
+              "source": "definition"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.cpp",
+              "line": 33,
+              "text": "void UAsyncAction_ObserveTeam::SetReadyToDestroy()"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.cpp",
+              "line": 35,
+              "text": "Super::SetReadyToDestroy();"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.cpp",
+              "line": 40,
+              "text": "TeamInterface->GetTeamChangedDelegateChecked().RemoveAll(this);"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.cpp",
+              "line": 64,
+              "text": "SetReadyToDestroy();"
+            }
+          ],
+          "authoring_policy": "callback_exec_model_required",
+          "required_before_bp": "Implement async proxy callback exec pin modeling before authoring this as Blueprint graph topology."
+        },
+        {
+          "class_name": "UAsyncAction_QueryReplays",
+          "base_class": "UBlueprintAsyncActionBase",
+          "kind": "blueprint_async_action",
+          "module": "LyraGame",
+          "declaration": {
+            "path": "Source/LyraGame/Replays/AsyncAction_QueryReplays.h",
+            "line": 23,
+            "text": "class UAsyncAction_QueryReplays : public UBlueprintAsyncActionBase"
+          },
+          "source_files": [
+            "Source/LyraGame/Replays/AsyncAction_QueryReplays.cpp",
+            "Source/LyraGame/Replays/AsyncAction_QueryReplays.h"
+          ],
+          "blueprint_assignable_callbacks": [
+            {
+              "path": "Source/LyraGame/Replays/AsyncAction_QueryReplays.h",
+              "line": 38,
+              "text": "UPROPERTY(BlueprintAssignable)",
+              "type": "FQueryReplayAsyncDelegate",
+              "name": "QueryComplete"
+            }
+          ],
+          "factory_functions": [
+            {
+              "path": "Source/LyraGame/Replays/AsyncAction_QueryReplays.h",
+              "line": 31,
+              "text": "UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = \"true\"))",
+              "name": "QueryReplays",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/Replays/AsyncAction_QueryReplays.cpp",
+              "line": 16,
+              "text": "UAsyncAction_QueryReplays* UAsyncAction_QueryReplays::QueryReplays(APlayerController* InPlayerController)",
+              "name": "QueryReplays",
+              "source": "definition"
+            }
+          ],
+          "activate_methods": [
+            {
+              "path": "Source/LyraGame/Replays/AsyncAction_QueryReplays.h",
+              "line": 34,
+              "text": "virtual void Activate() override;",
+              "name": "Activate",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/Replays/AsyncAction_QueryReplays.cpp",
+              "line": 29,
+              "text": "void UAsyncAction_QueryReplays::Activate()",
+              "name": "Activate",
+              "source": "definition"
+            }
+          ],
+          "broadcasts": [
+            {
+              "path": "Source/LyraGame/Replays/AsyncAction_QueryReplays.cpp",
+              "line": 42,
+              "text": "QueryComplete.Broadcast(ResultList);"
+            },
+            {
+              "path": "Source/LyraGame/Replays/AsyncAction_QueryReplays.cpp",
+              "line": 58,
+              "text": "QueryComplete.Broadcast(ResultList);"
+            }
+          ],
+          "cleanup_signals": [],
+          "authoring_policy": "callback_exec_model_required",
+          "required_before_bp": "Implement async proxy callback exec pin modeling before authoring this as Blueprint graph topology."
+        },
+        {
+          "class_name": "UAsyncAction_ShowConfirmation",
+          "base_class": "UBlueprintAsyncActionBase",
+          "kind": "blueprint_async_action",
+          "module": "CommonGame/CommonGame",
+          "declaration": {
+            "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_ShowConfirmation.h",
+            "line": 23,
+            "text": "class UAsyncAction_ShowConfirmation : public UBlueprintAsyncActionBase"
+          },
+          "source_files": [
+            "Plugins/CommonGame/Source/Private/Actions/AsyncAction_ShowConfirmation.cpp",
+            "Plugins/CommonGame/Source/Public/Actions/AsyncAction_ShowConfirmation.h"
+          ],
+          "blueprint_assignable_callbacks": [
+            {
+              "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_ShowConfirmation.h",
+              "line": 46,
+              "text": "UPROPERTY(BlueprintAssignable)",
+              "type": "FCommonMessagingResultMCDelegate",
+              "name": "OnResult"
+            }
+          ],
+          "factory_functions": [
+            {
+              "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_ShowConfirmation.h",
+              "line": 28,
+              "text": "UFUNCTION(BlueprintCallable, BlueprintCosmetic, meta = (BlueprintInternalUseOnly = \"true\", WorldContext = \"InWorldContextObject\"))",
+              "name": "ShowConfirmationYesNo",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_ShowConfirmation.h",
+              "line": 33,
+              "text": "UFUNCTION(BlueprintCallable, BlueprintCosmetic, meta = (BlueprintInternalUseOnly = \"true\", WorldContext = \"InWorldContextObject\"))",
+              "name": "ShowConfirmationOkCancel",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_ShowConfirmation.h",
+              "line": 38,
+              "text": "UFUNCTION(BlueprintCallable, BlueprintCosmetic, meta = (BlueprintInternalUseOnly = \"true\", WorldContext = \"InWorldContextObject\"))",
+              "name": "ShowConfirmationCustom",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_ShowConfirmation.cpp",
+              "line": 16,
+              "text": "UAsyncAction_ShowConfirmation* UAsyncAction_ShowConfirmation::ShowConfirmationYesNo(UObject* InWorldContextObject, FText Title, FText Message)",
+              "name": "ShowConfirmationYesNo",
+              "source": "definition"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_ShowConfirmation.cpp",
+              "line": 26,
+              "text": "UAsyncAction_ShowConfirmation* UAsyncAction_ShowConfirmation::ShowConfirmationOkCancel(UObject* InWorldContextObject, FText Title, FText Message)",
+              "name": "ShowConfirmationOkCancel",
+              "source": "definition"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_ShowConfirmation.cpp",
+              "line": 36,
+              "text": "UAsyncAction_ShowConfirmation* UAsyncAction_ShowConfirmation::ShowConfirmationCustom(UObject* InWorldContextObject, UCommonGameDialogDescriptor* Descriptor)",
+              "name": "ShowConfirmationCustom",
+              "source": "definition"
+            }
+          ],
+          "activate_methods": [
+            {
+              "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_ShowConfirmation.h",
+              "line": 43,
+              "text": "virtual void Activate() override;",
+              "name": "Activate",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_ShowConfirmation.cpp",
+              "line": 46,
+              "text": "void UAsyncAction_ShowConfirmation::Activate()",
+              "name": "Activate",
+              "source": "definition"
+            }
+          ],
+          "broadcasts": [
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_ShowConfirmation.cpp",
+              "line": 83,
+              "text": "OnResult.Broadcast(ConfirmationResult);"
+            }
+          ],
+          "cleanup_signals": [
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_ShowConfirmation.cpp",
+              "line": 85,
+              "text": "SetReadyToDestroy();"
+            }
+          ],
+          "authoring_policy": "callback_exec_model_required",
+          "required_before_bp": "Implement async proxy callback exec pin modeling before authoring this as Blueprint graph topology."
+        },
+        {
+          "class_name": "UAsyncAction_CommonUserInitialize",
+          "base_class": "UCancellableAsyncAction",
+          "kind": "cancellable_async_action",
+          "module": "CommonUser/CommonUser",
+          "declaration": {
+            "path": "Plugins/CommonUser/Source/CommonUser/Public/AsyncAction_CommonUserInitialize.h",
+            "line": 24,
+            "text": "class UAsyncAction_CommonUserInitialize : public UCancellableAsyncAction"
+          },
+          "source_files": [
+            "Plugins/CommonUser/Source/CommonUser/Private/AsyncAction_CommonUserInitialize.cpp",
+            "Plugins/CommonUser/Source/CommonUser/Public/AsyncAction_CommonUserInitialize.h"
+          ],
+          "blueprint_assignable_callbacks": [
+            {
+              "path": "Plugins/CommonUser/Source/CommonUser/Public/AsyncAction_CommonUserInitialize.h",
+              "line": 50,
+              "text": "UPROPERTY(BlueprintAssignable)",
+              "type": "FCommonUserOnInitializeCompleteMulticast",
+              "name": "OnInitializationComplete"
+            }
+          ],
+          "factory_functions": [
+            {
+              "path": "Plugins/CommonUser/Source/CommonUser/Public/AsyncAction_CommonUserInitialize.h",
+              "line": 37,
+              "text": "UFUNCTION(BlueprintCallable, Category = CommonUser, meta = (BlueprintInternalUseOnly = \"true\"))",
+              "name": "InitializeForLocalPlay",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/CommonUser/Source/CommonUser/Public/AsyncAction_CommonUserInitialize.h",
+              "line": 46,
+              "text": "UFUNCTION(BlueprintCallable, Category = CommonUser, meta = (BlueprintInternalUseOnly = \"true\"))",
+              "name": "LoginForOnlinePlay",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/CommonUser/Source/CommonUser/Private/AsyncAction_CommonUserInitialize.cpp",
+              "line": 10,
+              "text": "UAsyncAction_CommonUserInitialize* UAsyncAction_CommonUserInitialize::InitializeForLocalPlay(UCommonUserSubsystem* Target, int32 LocalPlayerIndex, FInputDeviceId PrimaryInputDevice, bool bCanUseGuestLogin)",
+              "name": "InitializeForLocalPlay",
+              "source": "definition"
+            },
+            {
+              "path": "Plugins/CommonUser/Source/CommonUser/Private/AsyncAction_CommonUserInitialize.cpp",
+              "line": 40,
+              "text": "UAsyncAction_CommonUserInitialize* UAsyncAction_CommonUserInitialize::LoginForOnlinePlay(UCommonUserSubsystem* Target, int32 LocalPlayerIndex)",
+              "name": "LoginForOnlinePlay",
+              "source": "definition"
+            }
+          ],
+          "activate_methods": [
+            {
+              "path": "Plugins/CommonUser/Source/CommonUser/Public/AsyncAction_CommonUserInitialize.h",
+              "line": 62,
+              "text": "UE_API virtual void Activate() override;",
+              "name": "Activate",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/CommonUser/Source/CommonUser/Private/AsyncAction_CommonUserInitialize.cpp",
+              "line": 82,
+              "text": "void UAsyncAction_CommonUserInitialize::Activate()",
+              "name": "Activate",
+              "source": "definition"
+            }
+          ],
+          "broadcasts": [
+            {
+              "path": "Plugins/CommonUser/Source/CommonUser/Private/AsyncAction_CommonUserInitialize.cpp",
+              "line": 76,
+              "text": "OnInitializationComplete.Broadcast(UserInfo, bSuccess, Error, RequestedPrivilege, OnlineContext);"
+            }
+          ],
+          "cleanup_signals": [
+            {
+              "path": "Plugins/CommonUser/Source/CommonUser/Private/AsyncAction_CommonUserInitialize.cpp",
+              "line": 34,
+              "text": "Action->SetReadyToDestroy();"
+            },
+            {
+              "path": "Plugins/CommonUser/Source/CommonUser/Private/AsyncAction_CommonUserInitialize.cpp",
+              "line": 56,
+              "text": "Action->SetReadyToDestroy();"
+            },
+            {
+              "path": "Plugins/CommonUser/Source/CommonUser/Private/AsyncAction_CommonUserInitialize.cpp",
+              "line": 79,
+              "text": "SetReadyToDestroy();"
+            },
+            {
+              "path": "Plugins/CommonUser/Source/CommonUser/Private/AsyncAction_CommonUserInitialize.cpp",
+              "line": 102,
+              "text": "SetReadyToDestroy();"
+            }
+          ],
+          "authoring_policy": "callback_exec_model_required",
+          "required_before_bp": "Implement async proxy callback exec pin modeling before authoring this as Blueprint graph topology."
+        },
+        {
+          "class_name": "UAsyncAction_ObserveTeamColors",
+          "base_class": "UCancellableAsyncAction",
+          "kind": "cancellable_async_action",
+          "module": "LyraGame",
+          "declaration": {
+            "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.h",
+            "line": 20,
+            "text": "class UAsyncAction_ObserveTeamColors : public UCancellableAsyncAction"
+          },
+          "source_files": [
+            "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.cpp",
+            "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.h"
+          ],
+          "blueprint_assignable_callbacks": [
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.h",
+              "line": 39,
+              "text": "UPROPERTY(BlueprintAssignable)",
+              "type": "FTeamColorObservedAsyncDelegate",
+              "name": "OnTeamChanged"
+            }
+          ],
+          "factory_functions": [
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.h",
+              "line": 29,
+              "text": "UFUNCTION(BlueprintCallable, meta=(BlueprintInternalUseOnly=\"true\", Keywords=\"Watch\"))",
+              "name": "ObserveTeamColors",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.cpp",
+              "line": 18,
+              "text": "UAsyncAction_ObserveTeamColors* UAsyncAction_ObserveTeamColors::ObserveTeamColors(UObject* TeamAgent)",
+              "name": "ObserveTeamColors",
+              "source": "definition"
+            }
+          ],
+          "activate_methods": [
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.h",
+              "line": 33,
+              "text": "virtual void Activate() override;",
+              "name": "Activate",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.cpp",
+              "line": 44,
+              "text": "void UAsyncAction_ObserveTeamColors::Activate()",
+              "name": "Activate",
+              "source": "definition"
+            }
+          ],
+          "broadcasts": [
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.cpp",
+              "line": 90,
+              "text": "OnTeamChanged.Broadcast(NewTeam != INDEX_NONE, NewTeam, DisplayAsset);"
+            }
+          ],
+          "cleanup_signals": [
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.h",
+              "line": 34,
+              "text": "virtual void SetReadyToDestroy() override;",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.cpp",
+              "line": 33,
+              "text": "void UAsyncAction_ObserveTeamColors::SetReadyToDestroy()",
+              "name": "SetReadyToDestroy",
+              "source": "definition"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.cpp",
+              "line": 33,
+              "text": "void UAsyncAction_ObserveTeamColors::SetReadyToDestroy()"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.cpp",
+              "line": 35,
+              "text": "Super::SetReadyToDestroy();"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.cpp",
+              "line": 40,
+              "text": "TeamInterface->GetTeamChangedDelegateChecked().RemoveAll(this);"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.cpp",
+              "line": 71,
+              "text": "SetReadyToDestroy();"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.cpp",
+              "line": 85,
+              "text": "TeamSubsystem->GetTeamDisplayAssetChangedDelegate(LastBroadcastTeamId).RemoveAll(this);"
+            }
+          ],
+          "authoring_policy": "callback_exec_model_required",
+          "required_before_bp": "Implement async proxy callback exec pin modeling before authoring this as Blueprint graph topology."
+        },
+        {
+          "class_name": "UAsyncAction_ListenForGameplayMessage",
+          "base_class": "UCancellableAsyncAction",
+          "kind": "cancellable_async_action",
+          "module": "GameplayMessageRouter/GameplayMessageRuntime",
+          "declaration": {
+            "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Public/GameFramework/AsyncAction_ListenForGameplayMessage.h",
+            "line": 25,
+            "text": "class UAsyncAction_ListenForGameplayMessage : public UCancellableAsyncAction"
+          },
+          "source_files": [
+            "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Private/GameFramework/AsyncAction_ListenForGameplayMessage.cpp",
+            "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Public/GameFramework/AsyncAction_ListenForGameplayMessage.h"
+          ],
+          "blueprint_assignable_callbacks": [
+            {
+              "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Public/GameFramework/AsyncAction_ListenForGameplayMessage.h",
+              "line": 57,
+              "text": "UPROPERTY(BlueprintAssignable)",
+              "type": "FAsyncGameplayMessageDelegate",
+              "name": "OnMessageReceived"
+            }
+          ],
+          "factory_functions": [
+            {
+              "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Public/GameFramework/AsyncAction_ListenForGameplayMessage.h",
+              "line": 37,
+              "text": "UFUNCTION(BlueprintCallable, Category = Messaging, meta = (WorldContext = \"WorldContextObject\", BlueprintInternalUseOnly = \"true\"))",
+              "name": "ListenForGameplayMessages",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Private/GameFramework/AsyncAction_ListenForGameplayMessage.cpp",
+              "line": 13,
+              "text": "UAsyncAction_ListenForGameplayMessage* UAsyncAction_ListenForGameplayMessage::ListenForGameplayMessages(UObject* WorldContextObject, FGameplayTag Channel, UScriptStruct* PayloadType, EGameplayMessageMatch MatchType)",
+              "name": "ListenForGameplayMessages",
+              "source": "definition"
+            }
+          ],
+          "activate_methods": [
+            {
+              "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Public/GameFramework/AsyncAction_ListenForGameplayMessage.h",
+              "line": 52,
+              "text": "UE_API virtual void Activate() override;",
+              "name": "Activate",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Private/GameFramework/AsyncAction_ListenForGameplayMessage.cpp",
+              "line": 31,
+              "text": "void UAsyncAction_ListenForGameplayMessage::Activate()",
+              "name": "Activate",
+              "source": "definition"
+            }
+          ],
+          "broadcasts": [
+            {
+              "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Private/GameFramework/AsyncAction_ListenForGameplayMessage.cpp",
+              "line": 97,
+              "text": "OnMessageReceived.Broadcast(this, Channel);"
+            }
+          ],
+          "cleanup_signals": [
+            {
+              "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Public/GameFramework/AsyncAction_ListenForGameplayMessage.h",
+              "line": 53,
+              "text": "UE_API virtual void SetReadyToDestroy() override;",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Private/GameFramework/AsyncAction_ListenForGameplayMessage.cpp",
+              "line": 55,
+              "text": "SetReadyToDestroy();"
+            },
+            {
+              "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Private/GameFramework/AsyncAction_ListenForGameplayMessage.cpp",
+              "line": 58,
+              "text": "void UAsyncAction_ListenForGameplayMessage::SetReadyToDestroy()",
+              "name": "SetReadyToDestroy",
+              "source": "definition"
+            },
+            {
+              "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Private/GameFramework/AsyncAction_ListenForGameplayMessage.cpp",
+              "line": 58,
+              "text": "void UAsyncAction_ListenForGameplayMessage::SetReadyToDestroy()"
+            },
+            {
+              "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Private/GameFramework/AsyncAction_ListenForGameplayMessage.cpp",
+              "line": 62,
+              "text": "Super::SetReadyToDestroy();"
+            },
+            {
+              "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Private/GameFramework/AsyncAction_ListenForGameplayMessage.cpp",
+              "line": 107,
+              "text": "SetReadyToDestroy();"
+            }
+          ],
+          "authoring_policy": "callback_exec_model_required",
+          "required_before_bp": "Implement async proxy callback exec pin modeling before authoring this as Blueprint graph topology."
+        },
+        {
+          "class_name": "UAsyncAction_ExperienceReady",
+          "base_class": "UBlueprintAsyncActionBase",
+          "kind": "blueprint_async_action",
+          "module": "LyraGame",
+          "declaration": {
+            "path": "Source/LyraGame/GameModes/AsyncAction_ExperienceReady.h",
+            "line": 21,
+            "text": "class UAsyncAction_ExperienceReady : public UBlueprintAsyncActionBase"
+          },
+          "source_files": [
+            "Source/LyraGame/GameModes/AsyncAction_ExperienceReady.cpp",
+            "Source/LyraGame/GameModes/AsyncAction_ExperienceReady.h"
+          ],
+          "blueprint_assignable_callbacks": [
+            {
+              "path": "Source/LyraGame/GameModes/AsyncAction_ExperienceReady.h",
+              "line": 35,
+              "text": "UPROPERTY(BlueprintAssignable)",
+              "type": "FExperienceReadyAsyncDelegate",
+              "name": "OnReady"
+            }
+          ],
+          "factory_functions": [
+            {
+              "path": "Source/LyraGame/GameModes/AsyncAction_ExperienceReady.h",
+              "line": 27,
+              "text": "UFUNCTION(BlueprintCallable, meta=(WorldContext = \"WorldContextObject\", BlueprintInternalUseOnly=\"true\"))",
+              "name": "WaitForExperienceReady",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/GameModes/AsyncAction_ExperienceReady.cpp",
+              "line": 17,
+              "text": "UAsyncAction_ExperienceReady* UAsyncAction_ExperienceReady::WaitForExperienceReady(UObject* InWorldContextObject)",
+              "name": "WaitForExperienceReady",
+              "source": "definition"
+            }
+          ],
+          "activate_methods": [
+            {
+              "path": "Source/LyraGame/GameModes/AsyncAction_ExperienceReady.h",
+              "line": 30,
+              "text": "virtual void Activate() override;",
+              "name": "Activate",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/GameModes/AsyncAction_ExperienceReady.cpp",
+              "line": 31,
+              "text": "void UAsyncAction_ExperienceReady::Activate()",
+              "name": "Activate",
+              "source": "definition"
+            }
+          ],
+          "broadcasts": [
+            {
+              "path": "Source/LyraGame/GameModes/AsyncAction_ExperienceReady.cpp",
+              "line": 91,
+              "text": "OnReady.Broadcast();"
+            }
+          ],
+          "cleanup_signals": [
+            {
+              "path": "Source/LyraGame/GameModes/AsyncAction_ExperienceReady.cpp",
+              "line": 47,
+              "text": "SetReadyToDestroy();"
+            },
+            {
+              "path": "Source/LyraGame/GameModes/AsyncAction_ExperienceReady.cpp",
+              "line": 55,
+              "text": "World->GameStateSetEvent.RemoveAll(this);"
+            },
+            {
+              "path": "Source/LyraGame/GameModes/AsyncAction_ExperienceReady.cpp",
+              "line": 93,
+              "text": "SetReadyToDestroy();"
+            }
+          ],
+          "authoring_policy": "callback_exec_model_required",
+          "required_before_bp": "Implement async proxy callback exec pin modeling before authoring this as Blueprint graph topology."
+        },
+        {
+          "class_name": "UAsyncAction_CreateWidgetAsync",
+          "base_class": "UCancellableAsyncAction",
+          "kind": "cancellable_async_action",
+          "module": "CommonGame/CommonGame",
+          "declaration": {
+            "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_CreateWidgetAsync.h",
+            "line": 25,
+            "text": "class UAsyncAction_CreateWidgetAsync : public UCancellableAsyncAction"
+          },
+          "source_files": [
+            "Plugins/CommonGame/Source/Private/Actions/AsyncAction_CreateWidgetAsync.cpp",
+            "Plugins/CommonGame/Source/Public/Actions/AsyncAction_CreateWidgetAsync.h"
+          ],
+          "blueprint_assignable_callbacks": [
+            {
+              "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_CreateWidgetAsync.h",
+              "line": 39,
+              "text": "UPROPERTY(BlueprintAssignable)",
+              "type": "FCreateWidgetAsyncDelegate",
+              "name": "OnComplete"
+            }
+          ],
+          "factory_functions": [
+            {
+              "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_CreateWidgetAsync.h",
+              "line": 32,
+              "text": "UFUNCTION(BlueprintCallable, BlueprintCosmetic, meta=(WorldContext = \"WorldContextObject\", BlueprintInternalUseOnly=\"true\"))",
+              "name": "CreateWidgetAsync",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_CreateWidgetAsync.cpp",
+              "line": 26,
+              "text": "UAsyncAction_CreateWidgetAsync* UAsyncAction_CreateWidgetAsync::CreateWidgetAsync(UObject* InWorldContextObject, TSoftClassPtr<UUserWidget> InUserWidgetSoftClass, APlayerController* InOwningPlayer, bool bSuspendInputUntilComplete)",
+              "name": "CreateWidgetAsync",
+              "source": "definition"
+            }
+          ],
+          "activate_methods": [
+            {
+              "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_CreateWidgetAsync.h",
+              "line": 35,
+              "text": "UE_API virtual void Activate() override;",
+              "name": "Activate",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_CreateWidgetAsync.cpp",
+              "line": 47,
+              "text": "void UAsyncAction_CreateWidgetAsync::Activate()",
+              "name": "Activate",
+              "source": "definition"
+            }
+          ],
+          "broadcasts": [
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_CreateWidgetAsync.cpp",
+              "line": 90,
+              "text": "OnComplete.Broadcast(UserWidget);"
+            }
+          ],
+          "cleanup_signals": [
+            {
+              "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_CreateWidgetAsync.h",
+              "line": 30,
+              "text": "UE_API virtual void Cancel() override;",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_CreateWidgetAsync.cpp",
+              "line": 67,
+              "text": "void UAsyncAction_CreateWidgetAsync::Cancel()",
+              "name": "Cancel",
+              "source": "definition"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_CreateWidgetAsync.cpp",
+              "line": 67,
+              "text": "void UAsyncAction_CreateWidgetAsync::Cancel()"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_CreateWidgetAsync.cpp",
+              "line": 69,
+              "text": "Super::Cancel();"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_CreateWidgetAsync.cpp",
+              "line": 95,
+              "text": "SetReadyToDestroy();"
+            }
+          ],
+          "authoring_policy": "callback_exec_model_required",
+          "required_before_bp": "Implement async proxy callback exec pin modeling before authoring this as Blueprint graph topology."
+        },
+        {
+          "class_name": "UAbilityTask_WaitForInteractableTargets",
+          "base_class": "UAbilityTask",
+          "kind": "ability_task",
+          "module": "LyraGame",
+          "declaration": {
+            "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets.h",
+            "line": 22,
+            "text": "class UAbilityTask_WaitForInteractableTargets : public UAbilityTask"
+          },
+          "source_files": [
+            "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets.cpp",
+            "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets.h"
+          ],
+          "blueprint_assignable_callbacks": [
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets.h",
+              "line": 27,
+              "text": "UPROPERTY(BlueprintAssignable)",
+              "type": "FInteractableObjectsChangedEvent",
+              "name": "InteractableObjectsChanged"
+            }
+          ],
+          "factory_functions": [],
+          "activate_methods": [],
+          "broadcasts": [
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets.cpp",
+              "line": 177,
+              "text": "InteractableObjectsChanged.Broadcast(CurrentOptions);"
+            }
+          ],
+          "cleanup_signals": [],
+          "authoring_policy": "native_policy_required",
+          "required_before_bp": "Keep native or implement a reviewed GAS/custom-K2 policy before any BP graph conversion."
+        },
+        {
+          "class_name": "UAbilityTask_WaitForInteractableTargets_SingleLineTrace",
+          "base_class": "UAbilityTask_WaitForInteractableTargets",
+          "kind": "ability_task",
+          "module": "LyraGame",
+          "declaration": {
+            "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets_SingleLineTrace.h",
+            "line": 16,
+            "text": "class UAbilityTask_WaitForInteractableTargets_SingleLineTrace : public UAbilityTask_WaitForInteractableTargets"
+          },
+          "source_files": [
+            "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets_SingleLineTrace.cpp",
+            "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets_SingleLineTrace.h"
+          ],
+          "blueprint_assignable_callbacks": [],
+          "factory_functions": [
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets_SingleLineTrace.h",
+              "line": 23,
+              "text": "UFUNCTION(BlueprintCallable, Category=\"Ability|Tasks\", meta = (HidePin = \"OwningAbility\", DefaultToSelf = \"OwningAbility\", BlueprintInternalUseOnly = \"TRUE\"))",
+              "name": "WaitForInteractableTargets_SingleLineTrace",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets_SingleLineTrace.cpp",
+              "line": 16,
+              "text": "UAbilityTask_WaitForInteractableTargets_SingleLineTrace* UAbilityTask_WaitForInteractableTargets_SingleLineTrace::WaitForInteractableTargets_SingleLineTrace(UGameplayAbility* OwningAbility, FInteractionQuery InteractionQuery, FCollisionProfileName TraceProfile, FGameplayAbilityTargetingLocationInfo StartLocation, float InteractionScanRange, float InteractionScanRate, bool bShowDebug)",
+              "name": "WaitForInteractableTargets_SingleLineTrace",
+              "source": "definition"
+            }
+          ],
+          "activate_methods": [
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets_SingleLineTrace.h",
+              "line": 20,
+              "text": "virtual void Activate() override;",
+              "name": "Activate",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets_SingleLineTrace.cpp",
+              "line": 29,
+              "text": "void UAbilityTask_WaitForInteractableTargets_SingleLineTrace::Activate()",
+              "name": "Activate",
+              "source": "definition"
+            }
+          ],
+          "broadcasts": [],
+          "cleanup_signals": [
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets_SingleLineTrace.h",
+              "line": 28,
+              "text": "virtual void OnDestroy(bool AbilityEnded) override;",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets_SingleLineTrace.cpp",
+              "line": 37,
+              "text": "void UAbilityTask_WaitForInteractableTargets_SingleLineTrace::OnDestroy(bool AbilityEnded)",
+              "name": "OnDestroy",
+              "source": "definition"
+            },
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets_SingleLineTrace.cpp",
+              "line": 37,
+              "text": "void UAbilityTask_WaitForInteractableTargets_SingleLineTrace::OnDestroy(bool AbilityEnded)"
+            },
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets_SingleLineTrace.cpp",
+              "line": 44,
+              "text": "Super::OnDestroy(AbilityEnded);"
+            }
+          ],
+          "authoring_policy": "native_policy_required",
+          "required_before_bp": "Keep native or implement a reviewed GAS/custom-K2 policy before any BP graph conversion."
+        },
+        {
+          "class_name": "UAbilityTask_GrantNearbyInteraction",
+          "base_class": "UAbilityTask",
+          "kind": "ability_task",
+          "module": "LyraGame",
+          "declaration": {
+            "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_GrantNearbyInteraction.h",
+            "line": 15,
+            "text": "class UAbilityTask_GrantNearbyInteraction : public UAbilityTask"
+          },
+          "source_files": [
+            "Source/LyraGame/Interaction/Tasks/AbilityTask_GrantNearbyInteraction.cpp",
+            "Source/LyraGame/Interaction/Tasks/AbilityTask_GrantNearbyInteraction.h"
+          ],
+          "blueprint_assignable_callbacks": [],
+          "factory_functions": [
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_GrantNearbyInteraction.h",
+              "line": 22,
+              "text": "UFUNCTION(BlueprintCallable, Category=\"Ability|Tasks\", meta = (HidePin = \"OwningAbility\", DefaultToSelf = \"OwningAbility\", BlueprintInternalUseOnly = \"TRUE\"))",
+              "name": "GrantAbilitiesForNearbyInteractors",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_GrantNearbyInteraction.cpp",
+              "line": 23,
+              "text": "UAbilityTask_GrantNearbyInteraction* UAbilityTask_GrantNearbyInteraction::GrantAbilitiesForNearbyInteractors(UGameplayAbility* OwningAbility, float InteractionScanRange, float InteractionScanRate)",
+              "name": "GrantAbilitiesForNearbyInteractors",
+              "source": "definition"
+            }
+          ],
+          "activate_methods": [
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_GrantNearbyInteraction.h",
+              "line": 19,
+              "text": "virtual void Activate() override;",
+              "name": "Activate",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_GrantNearbyInteraction.cpp",
+              "line": 31,
+              "text": "void UAbilityTask_GrantNearbyInteraction::Activate()",
+              "name": "Activate",
+              "source": "definition"
+            }
+          ],
+          "broadcasts": [],
+          "cleanup_signals": [
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_GrantNearbyInteraction.h",
+              "line": 27,
+              "text": "virtual void OnDestroy(bool AbilityEnded) override;",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_GrantNearbyInteraction.cpp",
+              "line": 39,
+              "text": "void UAbilityTask_GrantNearbyInteraction::OnDestroy(bool AbilityEnded)",
+              "name": "OnDestroy",
+              "source": "definition"
+            },
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_GrantNearbyInteraction.cpp",
+              "line": 39,
+              "text": "void UAbilityTask_GrantNearbyInteraction::OnDestroy(bool AbilityEnded)"
+            },
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_GrantNearbyInteraction.cpp",
+              "line": 46,
+              "text": "Super::OnDestroy(AbilityEnded);"
+            }
+          ],
+          "authoring_policy": "native_policy_required",
+          "required_before_bp": "Keep native or implement a reviewed GAS/custom-K2 policy before any BP graph conversion."
+        },
+        {
+          "class_name": "UK2Node_AsyncAction_ListenForGameplayMessages",
+          "base_class": "UK2Node_AsyncAction",
+          "kind": "custom_k2_async_node",
+          "module": "GameplayMessageRouter/GameplayMessageNodes",
+          "declaration": {
+            "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageNodes/Public/K2Node_AsyncAction_ListenForGameplayMessages.h",
+            "line": 22,
+            "text": "class UK2Node_AsyncAction_ListenForGameplayMessages : public UK2Node_AsyncAction"
+          },
+          "source_files": [
+            "Plugins/GameplayMessageRouter/Source/GameplayMessageNodes/Private/K2Node_AsyncAction_ListenForGameplayMessages.cpp",
+            "Plugins/GameplayMessageRouter/Source/GameplayMessageNodes/Public/K2Node_AsyncAction_ListenForGameplayMessages.h"
+          ],
+          "blueprint_assignable_callbacks": [],
+          "factory_functions": [],
+          "activate_methods": [],
+          "broadcasts": [],
+          "cleanup_signals": [],
+          "authoring_policy": "native_policy_required",
+          "required_before_bp": "Keep native or implement a reviewed GAS/custom-K2 policy before any BP graph conversion."
+        }
+      ],
+      "top_classes": [
+        {
+          "class_name": "UAsyncAction_PushContentToLayerForPlayer",
+          "base_class": "UCancellableAsyncAction",
+          "kind": "cancellable_async_action",
+          "module": "CommonGame/CommonGame",
+          "declaration": {
+            "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_PushContentToLayerForPlayer.h",
+            "line": 25,
+            "text": "class UAsyncAction_PushContentToLayerForPlayer : public UCancellableAsyncAction"
+          },
+          "source_files": [
+            "Plugins/CommonGame/Source/Private/Actions/AsyncAction_PushContentToLayerForPlayer.cpp",
+            "Plugins/CommonGame/Source/Public/Actions/AsyncAction_PushContentToLayerForPlayer.h"
+          ],
+          "blueprint_assignable_callbacks": [
+            {
+              "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_PushContentToLayerForPlayer.h",
+              "line": 39,
+              "text": "UPROPERTY(BlueprintAssignable)",
+              "type": "FPushContentToLayerForPlayerAsyncDelegate",
+              "name": "BeforePush"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_PushContentToLayerForPlayer.h",
+              "line": 42,
+              "text": "UPROPERTY(BlueprintAssignable)",
+              "type": "FPushContentToLayerForPlayerAsyncDelegate",
+              "name": "AfterPush"
+            }
+          ],
+          "factory_functions": [
+            {
+              "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_PushContentToLayerForPlayer.h",
+              "line": 32,
+              "text": "UFUNCTION(BlueprintCallable, BlueprintCosmetic, meta=(WorldContext = \"WorldContextObject\", BlueprintInternalUseOnly=\"true\"))",
+              "name": "UPARAM",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_PushContentToLayerForPlayer.cpp",
+              "line": 17,
+              "text": "UAsyncAction_PushContentToLayerForPlayer* UAsyncAction_PushContentToLayerForPlayer::PushContentToLayerForPlayer(APlayerController* InOwningPlayer, TSoftClassPtr<UCommonActivatableWidget> InWidgetClass, FGameplayTag InLayerName, bool bSuspendInputUntilComplete)",
+              "name": "PushContentToLayerForPlayer",
+              "source": "definition"
+            }
+          ],
+          "activate_methods": [
+            {
+              "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_PushContentToLayerForPlayer.h",
+              "line": 35,
+              "text": "UE_API virtual void Activate() override;",
+              "name": "Activate",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_PushContentToLayerForPlayer.cpp",
+              "line": 51,
+              "text": "void UAsyncAction_PushContentToLayerForPlayer::Activate()",
+              "name": "Activate",
+              "source": "definition"
+            }
+          ],
+          "broadcasts": [
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_PushContentToLayerForPlayer.cpp",
+              "line": 62,
+              "text": "BeforePush.Broadcast(Widget);"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_PushContentToLayerForPlayer.cpp",
+              "line": 65,
+              "text": "AfterPush.Broadcast(Widget);"
+            }
+          ],
+          "cleanup_signals": [
+            {
+              "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_PushContentToLayerForPlayer.h",
+              "line": 30,
+              "text": "UE_API virtual void Cancel() override;",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_PushContentToLayerForPlayer.cpp",
+              "line": 40,
+              "text": "void UAsyncAction_PushContentToLayerForPlayer::Cancel()",
+              "name": "Cancel",
+              "source": "definition"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_PushContentToLayerForPlayer.cpp",
+              "line": 40,
+              "text": "void UAsyncAction_PushContentToLayerForPlayer::Cancel()"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_PushContentToLayerForPlayer.cpp",
+              "line": 42,
+              "text": "Super::Cancel();"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_PushContentToLayerForPlayer.cpp",
+              "line": 66,
+              "text": "SetReadyToDestroy();"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_PushContentToLayerForPlayer.cpp",
+              "line": 69,
+              "text": "SetReadyToDestroy();"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_PushContentToLayerForPlayer.cpp",
+              "line": 73,
+              "text": "SetReadyToDestroy();"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_PushContentToLayerForPlayer.cpp",
+              "line": 78,
+              "text": "SetReadyToDestroy();"
+            }
+          ],
+          "authoring_policy": "callback_exec_model_required",
+          "required_before_bp": "Implement async proxy callback exec pin modeling before authoring this as Blueprint graph topology."
+        },
+        {
+          "class_name": "UAsyncAction_ObserveTeam",
+          "base_class": "UCancellableAsyncAction",
+          "kind": "cancellable_async_action",
+          "module": "LyraGame",
+          "declaration": {
+            "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.h",
+            "line": 20,
+            "text": "class UAsyncAction_ObserveTeam : public UCancellableAsyncAction"
+          },
+          "source_files": [
+            "Source/LyraGame/Teams/AsyncAction_ObserveTeam.cpp",
+            "Source/LyraGame/Teams/AsyncAction_ObserveTeam.h"
+          ],
+          "blueprint_assignable_callbacks": [
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.h",
+              "line": 39,
+              "text": "UPROPERTY(BlueprintAssignable)",
+              "type": "FTeamObservedAsyncDelegate",
+              "name": "OnTeamChanged"
+            }
+          ],
+          "factory_functions": [
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.h",
+              "line": 29,
+              "text": "UFUNCTION(BlueprintCallable, meta=(BlueprintInternalUseOnly=\"true\", Keywords=\"Watch\"))",
+              "name": "ObserveTeam",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.cpp",
+              "line": 14,
+              "text": "UAsyncAction_ObserveTeam* UAsyncAction_ObserveTeam::ObserveTeam(UObject* TeamAgent)",
+              "name": "ObserveTeam",
+              "source": "definition"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.cpp",
+              "line": 19,
+              "text": "UAsyncAction_ObserveTeam* UAsyncAction_ObserveTeam::InternalObserveTeamChanges(TScriptInterface<ILyraTeamAgentInterface> TeamActor)",
+              "name": "InternalObserveTeamChanges",
+              "source": "definition"
+            }
+          ],
+          "activate_methods": [
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.h",
+              "line": 33,
+              "text": "virtual void Activate() override;",
+              "name": "Activate",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.cpp",
+              "line": 44,
+              "text": "void UAsyncAction_ObserveTeam::Activate()",
+              "name": "Activate",
+              "source": "definition"
+            }
+          ],
+          "broadcasts": [
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.cpp",
+              "line": 59,
+              "text": "OnTeamChanged.Broadcast(CurrentTeamIndex != INDEX_NONE, CurrentTeamIndex);"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.cpp",
+              "line": 70,
+              "text": "OnTeamChanged.Broadcast(NewTeam != INDEX_NONE, NewTeam);"
+            }
+          ],
+          "cleanup_signals": [
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.h",
+              "line": 34,
+              "text": "virtual void SetReadyToDestroy() override;",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.cpp",
+              "line": 33,
+              "text": "void UAsyncAction_ObserveTeam::SetReadyToDestroy()",
+              "name": "SetReadyToDestroy",
+              "source": "definition"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.cpp",
+              "line": 33,
+              "text": "void UAsyncAction_ObserveTeam::SetReadyToDestroy()"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.cpp",
+              "line": 35,
+              "text": "Super::SetReadyToDestroy();"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.cpp",
+              "line": 40,
+              "text": "TeamInterface->GetTeamChangedDelegateChecked().RemoveAll(this);"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeam.cpp",
+              "line": 64,
+              "text": "SetReadyToDestroy();"
+            }
+          ],
+          "authoring_policy": "callback_exec_model_required",
+          "required_before_bp": "Implement async proxy callback exec pin modeling before authoring this as Blueprint graph topology."
+        },
+        {
+          "class_name": "UAsyncAction_QueryReplays",
+          "base_class": "UBlueprintAsyncActionBase",
+          "kind": "blueprint_async_action",
+          "module": "LyraGame",
+          "declaration": {
+            "path": "Source/LyraGame/Replays/AsyncAction_QueryReplays.h",
+            "line": 23,
+            "text": "class UAsyncAction_QueryReplays : public UBlueprintAsyncActionBase"
+          },
+          "source_files": [
+            "Source/LyraGame/Replays/AsyncAction_QueryReplays.cpp",
+            "Source/LyraGame/Replays/AsyncAction_QueryReplays.h"
+          ],
+          "blueprint_assignable_callbacks": [
+            {
+              "path": "Source/LyraGame/Replays/AsyncAction_QueryReplays.h",
+              "line": 38,
+              "text": "UPROPERTY(BlueprintAssignable)",
+              "type": "FQueryReplayAsyncDelegate",
+              "name": "QueryComplete"
+            }
+          ],
+          "factory_functions": [
+            {
+              "path": "Source/LyraGame/Replays/AsyncAction_QueryReplays.h",
+              "line": 31,
+              "text": "UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = \"true\"))",
+              "name": "QueryReplays",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/Replays/AsyncAction_QueryReplays.cpp",
+              "line": 16,
+              "text": "UAsyncAction_QueryReplays* UAsyncAction_QueryReplays::QueryReplays(APlayerController* InPlayerController)",
+              "name": "QueryReplays",
+              "source": "definition"
+            }
+          ],
+          "activate_methods": [
+            {
+              "path": "Source/LyraGame/Replays/AsyncAction_QueryReplays.h",
+              "line": 34,
+              "text": "virtual void Activate() override;",
+              "name": "Activate",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/Replays/AsyncAction_QueryReplays.cpp",
+              "line": 29,
+              "text": "void UAsyncAction_QueryReplays::Activate()",
+              "name": "Activate",
+              "source": "definition"
+            }
+          ],
+          "broadcasts": [
+            {
+              "path": "Source/LyraGame/Replays/AsyncAction_QueryReplays.cpp",
+              "line": 42,
+              "text": "QueryComplete.Broadcast(ResultList);"
+            },
+            {
+              "path": "Source/LyraGame/Replays/AsyncAction_QueryReplays.cpp",
+              "line": 58,
+              "text": "QueryComplete.Broadcast(ResultList);"
+            }
+          ],
+          "cleanup_signals": [],
+          "authoring_policy": "callback_exec_model_required",
+          "required_before_bp": "Implement async proxy callback exec pin modeling before authoring this as Blueprint graph topology."
+        },
+        {
+          "class_name": "UAsyncAction_ShowConfirmation",
+          "base_class": "UBlueprintAsyncActionBase",
+          "kind": "blueprint_async_action",
+          "module": "CommonGame/CommonGame",
+          "declaration": {
+            "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_ShowConfirmation.h",
+            "line": 23,
+            "text": "class UAsyncAction_ShowConfirmation : public UBlueprintAsyncActionBase"
+          },
+          "source_files": [
+            "Plugins/CommonGame/Source/Private/Actions/AsyncAction_ShowConfirmation.cpp",
+            "Plugins/CommonGame/Source/Public/Actions/AsyncAction_ShowConfirmation.h"
+          ],
+          "blueprint_assignable_callbacks": [
+            {
+              "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_ShowConfirmation.h",
+              "line": 46,
+              "text": "UPROPERTY(BlueprintAssignable)",
+              "type": "FCommonMessagingResultMCDelegate",
+              "name": "OnResult"
+            }
+          ],
+          "factory_functions": [
+            {
+              "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_ShowConfirmation.h",
+              "line": 28,
+              "text": "UFUNCTION(BlueprintCallable, BlueprintCosmetic, meta = (BlueprintInternalUseOnly = \"true\", WorldContext = \"InWorldContextObject\"))",
+              "name": "ShowConfirmationYesNo",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_ShowConfirmation.h",
+              "line": 33,
+              "text": "UFUNCTION(BlueprintCallable, BlueprintCosmetic, meta = (BlueprintInternalUseOnly = \"true\", WorldContext = \"InWorldContextObject\"))",
+              "name": "ShowConfirmationOkCancel",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_ShowConfirmation.h",
+              "line": 38,
+              "text": "UFUNCTION(BlueprintCallable, BlueprintCosmetic, meta = (BlueprintInternalUseOnly = \"true\", WorldContext = \"InWorldContextObject\"))",
+              "name": "ShowConfirmationCustom",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_ShowConfirmation.cpp",
+              "line": 16,
+              "text": "UAsyncAction_ShowConfirmation* UAsyncAction_ShowConfirmation::ShowConfirmationYesNo(UObject* InWorldContextObject, FText Title, FText Message)",
+              "name": "ShowConfirmationYesNo",
+              "source": "definition"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_ShowConfirmation.cpp",
+              "line": 26,
+              "text": "UAsyncAction_ShowConfirmation* UAsyncAction_ShowConfirmation::ShowConfirmationOkCancel(UObject* InWorldContextObject, FText Title, FText Message)",
+              "name": "ShowConfirmationOkCancel",
+              "source": "definition"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_ShowConfirmation.cpp",
+              "line": 36,
+              "text": "UAsyncAction_ShowConfirmation* UAsyncAction_ShowConfirmation::ShowConfirmationCustom(UObject* InWorldContextObject, UCommonGameDialogDescriptor* Descriptor)",
+              "name": "ShowConfirmationCustom",
+              "source": "definition"
+            }
+          ],
+          "activate_methods": [
+            {
+              "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_ShowConfirmation.h",
+              "line": 43,
+              "text": "virtual void Activate() override;",
+              "name": "Activate",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_ShowConfirmation.cpp",
+              "line": 46,
+              "text": "void UAsyncAction_ShowConfirmation::Activate()",
+              "name": "Activate",
+              "source": "definition"
+            }
+          ],
+          "broadcasts": [
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_ShowConfirmation.cpp",
+              "line": 83,
+              "text": "OnResult.Broadcast(ConfirmationResult);"
+            }
+          ],
+          "cleanup_signals": [
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_ShowConfirmation.cpp",
+              "line": 85,
+              "text": "SetReadyToDestroy();"
+            }
+          ],
+          "authoring_policy": "callback_exec_model_required",
+          "required_before_bp": "Implement async proxy callback exec pin modeling before authoring this as Blueprint graph topology."
+        },
+        {
+          "class_name": "UAsyncAction_CommonUserInitialize",
+          "base_class": "UCancellableAsyncAction",
+          "kind": "cancellable_async_action",
+          "module": "CommonUser/CommonUser",
+          "declaration": {
+            "path": "Plugins/CommonUser/Source/CommonUser/Public/AsyncAction_CommonUserInitialize.h",
+            "line": 24,
+            "text": "class UAsyncAction_CommonUserInitialize : public UCancellableAsyncAction"
+          },
+          "source_files": [
+            "Plugins/CommonUser/Source/CommonUser/Private/AsyncAction_CommonUserInitialize.cpp",
+            "Plugins/CommonUser/Source/CommonUser/Public/AsyncAction_CommonUserInitialize.h"
+          ],
+          "blueprint_assignable_callbacks": [
+            {
+              "path": "Plugins/CommonUser/Source/CommonUser/Public/AsyncAction_CommonUserInitialize.h",
+              "line": 50,
+              "text": "UPROPERTY(BlueprintAssignable)",
+              "type": "FCommonUserOnInitializeCompleteMulticast",
+              "name": "OnInitializationComplete"
+            }
+          ],
+          "factory_functions": [
+            {
+              "path": "Plugins/CommonUser/Source/CommonUser/Public/AsyncAction_CommonUserInitialize.h",
+              "line": 37,
+              "text": "UFUNCTION(BlueprintCallable, Category = CommonUser, meta = (BlueprintInternalUseOnly = \"true\"))",
+              "name": "InitializeForLocalPlay",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/CommonUser/Source/CommonUser/Public/AsyncAction_CommonUserInitialize.h",
+              "line": 46,
+              "text": "UFUNCTION(BlueprintCallable, Category = CommonUser, meta = (BlueprintInternalUseOnly = \"true\"))",
+              "name": "LoginForOnlinePlay",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/CommonUser/Source/CommonUser/Private/AsyncAction_CommonUserInitialize.cpp",
+              "line": 10,
+              "text": "UAsyncAction_CommonUserInitialize* UAsyncAction_CommonUserInitialize::InitializeForLocalPlay(UCommonUserSubsystem* Target, int32 LocalPlayerIndex, FInputDeviceId PrimaryInputDevice, bool bCanUseGuestLogin)",
+              "name": "InitializeForLocalPlay",
+              "source": "definition"
+            },
+            {
+              "path": "Plugins/CommonUser/Source/CommonUser/Private/AsyncAction_CommonUserInitialize.cpp",
+              "line": 40,
+              "text": "UAsyncAction_CommonUserInitialize* UAsyncAction_CommonUserInitialize::LoginForOnlinePlay(UCommonUserSubsystem* Target, int32 LocalPlayerIndex)",
+              "name": "LoginForOnlinePlay",
+              "source": "definition"
+            }
+          ],
+          "activate_methods": [
+            {
+              "path": "Plugins/CommonUser/Source/CommonUser/Public/AsyncAction_CommonUserInitialize.h",
+              "line": 62,
+              "text": "UE_API virtual void Activate() override;",
+              "name": "Activate",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/CommonUser/Source/CommonUser/Private/AsyncAction_CommonUserInitialize.cpp",
+              "line": 82,
+              "text": "void UAsyncAction_CommonUserInitialize::Activate()",
+              "name": "Activate",
+              "source": "definition"
+            }
+          ],
+          "broadcasts": [
+            {
+              "path": "Plugins/CommonUser/Source/CommonUser/Private/AsyncAction_CommonUserInitialize.cpp",
+              "line": 76,
+              "text": "OnInitializationComplete.Broadcast(UserInfo, bSuccess, Error, RequestedPrivilege, OnlineContext);"
+            }
+          ],
+          "cleanup_signals": [
+            {
+              "path": "Plugins/CommonUser/Source/CommonUser/Private/AsyncAction_CommonUserInitialize.cpp",
+              "line": 34,
+              "text": "Action->SetReadyToDestroy();"
+            },
+            {
+              "path": "Plugins/CommonUser/Source/CommonUser/Private/AsyncAction_CommonUserInitialize.cpp",
+              "line": 56,
+              "text": "Action->SetReadyToDestroy();"
+            },
+            {
+              "path": "Plugins/CommonUser/Source/CommonUser/Private/AsyncAction_CommonUserInitialize.cpp",
+              "line": 79,
+              "text": "SetReadyToDestroy();"
+            },
+            {
+              "path": "Plugins/CommonUser/Source/CommonUser/Private/AsyncAction_CommonUserInitialize.cpp",
+              "line": 102,
+              "text": "SetReadyToDestroy();"
+            }
+          ],
+          "authoring_policy": "callback_exec_model_required",
+          "required_before_bp": "Implement async proxy callback exec pin modeling before authoring this as Blueprint graph topology."
+        },
+        {
+          "class_name": "UAsyncAction_ObserveTeamColors",
+          "base_class": "UCancellableAsyncAction",
+          "kind": "cancellable_async_action",
+          "module": "LyraGame",
+          "declaration": {
+            "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.h",
+            "line": 20,
+            "text": "class UAsyncAction_ObserveTeamColors : public UCancellableAsyncAction"
+          },
+          "source_files": [
+            "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.cpp",
+            "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.h"
+          ],
+          "blueprint_assignable_callbacks": [
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.h",
+              "line": 39,
+              "text": "UPROPERTY(BlueprintAssignable)",
+              "type": "FTeamColorObservedAsyncDelegate",
+              "name": "OnTeamChanged"
+            }
+          ],
+          "factory_functions": [
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.h",
+              "line": 29,
+              "text": "UFUNCTION(BlueprintCallable, meta=(BlueprintInternalUseOnly=\"true\", Keywords=\"Watch\"))",
+              "name": "ObserveTeamColors",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.cpp",
+              "line": 18,
+              "text": "UAsyncAction_ObserveTeamColors* UAsyncAction_ObserveTeamColors::ObserveTeamColors(UObject* TeamAgent)",
+              "name": "ObserveTeamColors",
+              "source": "definition"
+            }
+          ],
+          "activate_methods": [
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.h",
+              "line": 33,
+              "text": "virtual void Activate() override;",
+              "name": "Activate",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.cpp",
+              "line": 44,
+              "text": "void UAsyncAction_ObserveTeamColors::Activate()",
+              "name": "Activate",
+              "source": "definition"
+            }
+          ],
+          "broadcasts": [
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.cpp",
+              "line": 90,
+              "text": "OnTeamChanged.Broadcast(NewTeam != INDEX_NONE, NewTeam, DisplayAsset);"
+            }
+          ],
+          "cleanup_signals": [
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.h",
+              "line": 34,
+              "text": "virtual void SetReadyToDestroy() override;",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.cpp",
+              "line": 33,
+              "text": "void UAsyncAction_ObserveTeamColors::SetReadyToDestroy()",
+              "name": "SetReadyToDestroy",
+              "source": "definition"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.cpp",
+              "line": 33,
+              "text": "void UAsyncAction_ObserveTeamColors::SetReadyToDestroy()"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.cpp",
+              "line": 35,
+              "text": "Super::SetReadyToDestroy();"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.cpp",
+              "line": 40,
+              "text": "TeamInterface->GetTeamChangedDelegateChecked().RemoveAll(this);"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.cpp",
+              "line": 71,
+              "text": "SetReadyToDestroy();"
+            },
+            {
+              "path": "Source/LyraGame/Teams/AsyncAction_ObserveTeamColors.cpp",
+              "line": 85,
+              "text": "TeamSubsystem->GetTeamDisplayAssetChangedDelegate(LastBroadcastTeamId).RemoveAll(this);"
+            }
+          ],
+          "authoring_policy": "callback_exec_model_required",
+          "required_before_bp": "Implement async proxy callback exec pin modeling before authoring this as Blueprint graph topology."
+        },
+        {
+          "class_name": "UAsyncAction_ListenForGameplayMessage",
+          "base_class": "UCancellableAsyncAction",
+          "kind": "cancellable_async_action",
+          "module": "GameplayMessageRouter/GameplayMessageRuntime",
+          "declaration": {
+            "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Public/GameFramework/AsyncAction_ListenForGameplayMessage.h",
+            "line": 25,
+            "text": "class UAsyncAction_ListenForGameplayMessage : public UCancellableAsyncAction"
+          },
+          "source_files": [
+            "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Private/GameFramework/AsyncAction_ListenForGameplayMessage.cpp",
+            "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Public/GameFramework/AsyncAction_ListenForGameplayMessage.h"
+          ],
+          "blueprint_assignable_callbacks": [
+            {
+              "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Public/GameFramework/AsyncAction_ListenForGameplayMessage.h",
+              "line": 57,
+              "text": "UPROPERTY(BlueprintAssignable)",
+              "type": "FAsyncGameplayMessageDelegate",
+              "name": "OnMessageReceived"
+            }
+          ],
+          "factory_functions": [
+            {
+              "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Public/GameFramework/AsyncAction_ListenForGameplayMessage.h",
+              "line": 37,
+              "text": "UFUNCTION(BlueprintCallable, Category = Messaging, meta = (WorldContext = \"WorldContextObject\", BlueprintInternalUseOnly = \"true\"))",
+              "name": "ListenForGameplayMessages",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Private/GameFramework/AsyncAction_ListenForGameplayMessage.cpp",
+              "line": 13,
+              "text": "UAsyncAction_ListenForGameplayMessage* UAsyncAction_ListenForGameplayMessage::ListenForGameplayMessages(UObject* WorldContextObject, FGameplayTag Channel, UScriptStruct* PayloadType, EGameplayMessageMatch MatchType)",
+              "name": "ListenForGameplayMessages",
+              "source": "definition"
+            }
+          ],
+          "activate_methods": [
+            {
+              "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Public/GameFramework/AsyncAction_ListenForGameplayMessage.h",
+              "line": 52,
+              "text": "UE_API virtual void Activate() override;",
+              "name": "Activate",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Private/GameFramework/AsyncAction_ListenForGameplayMessage.cpp",
+              "line": 31,
+              "text": "void UAsyncAction_ListenForGameplayMessage::Activate()",
+              "name": "Activate",
+              "source": "definition"
+            }
+          ],
+          "broadcasts": [
+            {
+              "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Private/GameFramework/AsyncAction_ListenForGameplayMessage.cpp",
+              "line": 97,
+              "text": "OnMessageReceived.Broadcast(this, Channel);"
+            }
+          ],
+          "cleanup_signals": [
+            {
+              "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Public/GameFramework/AsyncAction_ListenForGameplayMessage.h",
+              "line": 53,
+              "text": "UE_API virtual void SetReadyToDestroy() override;",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Private/GameFramework/AsyncAction_ListenForGameplayMessage.cpp",
+              "line": 55,
+              "text": "SetReadyToDestroy();"
+            },
+            {
+              "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Private/GameFramework/AsyncAction_ListenForGameplayMessage.cpp",
+              "line": 58,
+              "text": "void UAsyncAction_ListenForGameplayMessage::SetReadyToDestroy()",
+              "name": "SetReadyToDestroy",
+              "source": "definition"
+            },
+            {
+              "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Private/GameFramework/AsyncAction_ListenForGameplayMessage.cpp",
+              "line": 58,
+              "text": "void UAsyncAction_ListenForGameplayMessage::SetReadyToDestroy()"
+            },
+            {
+              "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Private/GameFramework/AsyncAction_ListenForGameplayMessage.cpp",
+              "line": 62,
+              "text": "Super::SetReadyToDestroy();"
+            },
+            {
+              "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageRuntime/Private/GameFramework/AsyncAction_ListenForGameplayMessage.cpp",
+              "line": 107,
+              "text": "SetReadyToDestroy();"
+            }
+          ],
+          "authoring_policy": "callback_exec_model_required",
+          "required_before_bp": "Implement async proxy callback exec pin modeling before authoring this as Blueprint graph topology."
+        },
+        {
+          "class_name": "UAsyncAction_ExperienceReady",
+          "base_class": "UBlueprintAsyncActionBase",
+          "kind": "blueprint_async_action",
+          "module": "LyraGame",
+          "declaration": {
+            "path": "Source/LyraGame/GameModes/AsyncAction_ExperienceReady.h",
+            "line": 21,
+            "text": "class UAsyncAction_ExperienceReady : public UBlueprintAsyncActionBase"
+          },
+          "source_files": [
+            "Source/LyraGame/GameModes/AsyncAction_ExperienceReady.cpp",
+            "Source/LyraGame/GameModes/AsyncAction_ExperienceReady.h"
+          ],
+          "blueprint_assignable_callbacks": [
+            {
+              "path": "Source/LyraGame/GameModes/AsyncAction_ExperienceReady.h",
+              "line": 35,
+              "text": "UPROPERTY(BlueprintAssignable)",
+              "type": "FExperienceReadyAsyncDelegate",
+              "name": "OnReady"
+            }
+          ],
+          "factory_functions": [
+            {
+              "path": "Source/LyraGame/GameModes/AsyncAction_ExperienceReady.h",
+              "line": 27,
+              "text": "UFUNCTION(BlueprintCallable, meta=(WorldContext = \"WorldContextObject\", BlueprintInternalUseOnly=\"true\"))",
+              "name": "WaitForExperienceReady",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/GameModes/AsyncAction_ExperienceReady.cpp",
+              "line": 17,
+              "text": "UAsyncAction_ExperienceReady* UAsyncAction_ExperienceReady::WaitForExperienceReady(UObject* InWorldContextObject)",
+              "name": "WaitForExperienceReady",
+              "source": "definition"
+            }
+          ],
+          "activate_methods": [
+            {
+              "path": "Source/LyraGame/GameModes/AsyncAction_ExperienceReady.h",
+              "line": 30,
+              "text": "virtual void Activate() override;",
+              "name": "Activate",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/GameModes/AsyncAction_ExperienceReady.cpp",
+              "line": 31,
+              "text": "void UAsyncAction_ExperienceReady::Activate()",
+              "name": "Activate",
+              "source": "definition"
+            }
+          ],
+          "broadcasts": [
+            {
+              "path": "Source/LyraGame/GameModes/AsyncAction_ExperienceReady.cpp",
+              "line": 91,
+              "text": "OnReady.Broadcast();"
+            }
+          ],
+          "cleanup_signals": [
+            {
+              "path": "Source/LyraGame/GameModes/AsyncAction_ExperienceReady.cpp",
+              "line": 47,
+              "text": "SetReadyToDestroy();"
+            },
+            {
+              "path": "Source/LyraGame/GameModes/AsyncAction_ExperienceReady.cpp",
+              "line": 55,
+              "text": "World->GameStateSetEvent.RemoveAll(this);"
+            },
+            {
+              "path": "Source/LyraGame/GameModes/AsyncAction_ExperienceReady.cpp",
+              "line": 93,
+              "text": "SetReadyToDestroy();"
+            }
+          ],
+          "authoring_policy": "callback_exec_model_required",
+          "required_before_bp": "Implement async proxy callback exec pin modeling before authoring this as Blueprint graph topology."
+        },
+        {
+          "class_name": "UAsyncAction_CreateWidgetAsync",
+          "base_class": "UCancellableAsyncAction",
+          "kind": "cancellable_async_action",
+          "module": "CommonGame/CommonGame",
+          "declaration": {
+            "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_CreateWidgetAsync.h",
+            "line": 25,
+            "text": "class UAsyncAction_CreateWidgetAsync : public UCancellableAsyncAction"
+          },
+          "source_files": [
+            "Plugins/CommonGame/Source/Private/Actions/AsyncAction_CreateWidgetAsync.cpp",
+            "Plugins/CommonGame/Source/Public/Actions/AsyncAction_CreateWidgetAsync.h"
+          ],
+          "blueprint_assignable_callbacks": [
+            {
+              "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_CreateWidgetAsync.h",
+              "line": 39,
+              "text": "UPROPERTY(BlueprintAssignable)",
+              "type": "FCreateWidgetAsyncDelegate",
+              "name": "OnComplete"
+            }
+          ],
+          "factory_functions": [
+            {
+              "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_CreateWidgetAsync.h",
+              "line": 32,
+              "text": "UFUNCTION(BlueprintCallable, BlueprintCosmetic, meta=(WorldContext = \"WorldContextObject\", BlueprintInternalUseOnly=\"true\"))",
+              "name": "CreateWidgetAsync",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_CreateWidgetAsync.cpp",
+              "line": 26,
+              "text": "UAsyncAction_CreateWidgetAsync* UAsyncAction_CreateWidgetAsync::CreateWidgetAsync(UObject* InWorldContextObject, TSoftClassPtr<UUserWidget> InUserWidgetSoftClass, APlayerController* InOwningPlayer, bool bSuspendInputUntilComplete)",
+              "name": "CreateWidgetAsync",
+              "source": "definition"
+            }
+          ],
+          "activate_methods": [
+            {
+              "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_CreateWidgetAsync.h",
+              "line": 35,
+              "text": "UE_API virtual void Activate() override;",
+              "name": "Activate",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_CreateWidgetAsync.cpp",
+              "line": 47,
+              "text": "void UAsyncAction_CreateWidgetAsync::Activate()",
+              "name": "Activate",
+              "source": "definition"
+            }
+          ],
+          "broadcasts": [
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_CreateWidgetAsync.cpp",
+              "line": 90,
+              "text": "OnComplete.Broadcast(UserWidget);"
+            }
+          ],
+          "cleanup_signals": [
+            {
+              "path": "Plugins/CommonGame/Source/Public/Actions/AsyncAction_CreateWidgetAsync.h",
+              "line": 30,
+              "text": "UE_API virtual void Cancel() override;",
+              "source": "declaration"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_CreateWidgetAsync.cpp",
+              "line": 67,
+              "text": "void UAsyncAction_CreateWidgetAsync::Cancel()",
+              "name": "Cancel",
+              "source": "definition"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_CreateWidgetAsync.cpp",
+              "line": 67,
+              "text": "void UAsyncAction_CreateWidgetAsync::Cancel()"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_CreateWidgetAsync.cpp",
+              "line": 69,
+              "text": "Super::Cancel();"
+            },
+            {
+              "path": "Plugins/CommonGame/Source/Private/Actions/AsyncAction_CreateWidgetAsync.cpp",
+              "line": 95,
+              "text": "SetReadyToDestroy();"
+            }
+          ],
+          "authoring_policy": "callback_exec_model_required",
+          "required_before_bp": "Implement async proxy callback exec pin modeling before authoring this as Blueprint graph topology."
+        },
+        {
+          "class_name": "UAbilityTask_WaitForInteractableTargets",
+          "base_class": "UAbilityTask",
+          "kind": "ability_task",
+          "module": "LyraGame",
+          "declaration": {
+            "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets.h",
+            "line": 22,
+            "text": "class UAbilityTask_WaitForInteractableTargets : public UAbilityTask"
+          },
+          "source_files": [
+            "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets.cpp",
+            "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets.h"
+          ],
+          "blueprint_assignable_callbacks": [
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets.h",
+              "line": 27,
+              "text": "UPROPERTY(BlueprintAssignable)",
+              "type": "FInteractableObjectsChangedEvent",
+              "name": "InteractableObjectsChanged"
+            }
+          ],
+          "factory_functions": [],
+          "activate_methods": [],
+          "broadcasts": [
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets.cpp",
+              "line": 177,
+              "text": "InteractableObjectsChanged.Broadcast(CurrentOptions);"
+            }
+          ],
+          "cleanup_signals": [],
+          "authoring_policy": "native_policy_required",
+          "required_before_bp": "Keep native or implement a reviewed GAS/custom-K2 policy before any BP graph conversion."
+        },
+        {
+          "class_name": "UAbilityTask_WaitForInteractableTargets_SingleLineTrace",
+          "base_class": "UAbilityTask_WaitForInteractableTargets",
+          "kind": "ability_task",
+          "module": "LyraGame",
+          "declaration": {
+            "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets_SingleLineTrace.h",
+            "line": 16,
+            "text": "class UAbilityTask_WaitForInteractableTargets_SingleLineTrace : public UAbilityTask_WaitForInteractableTargets"
+          },
+          "source_files": [
+            "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets_SingleLineTrace.cpp",
+            "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets_SingleLineTrace.h"
+          ],
+          "blueprint_assignable_callbacks": [],
+          "factory_functions": [
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets_SingleLineTrace.h",
+              "line": 23,
+              "text": "UFUNCTION(BlueprintCallable, Category=\"Ability|Tasks\", meta = (HidePin = \"OwningAbility\", DefaultToSelf = \"OwningAbility\", BlueprintInternalUseOnly = \"TRUE\"))",
+              "name": "WaitForInteractableTargets_SingleLineTrace",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets_SingleLineTrace.cpp",
+              "line": 16,
+              "text": "UAbilityTask_WaitForInteractableTargets_SingleLineTrace* UAbilityTask_WaitForInteractableTargets_SingleLineTrace::WaitForInteractableTargets_SingleLineTrace(UGameplayAbility* OwningAbility, FInteractionQuery InteractionQuery, FCollisionProfileName TraceProfile, FGameplayAbilityTargetingLocationInfo StartLocation, float InteractionScanRange, float InteractionScanRate, bool bShowDebug)",
+              "name": "WaitForInteractableTargets_SingleLineTrace",
+              "source": "definition"
+            }
+          ],
+          "activate_methods": [
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets_SingleLineTrace.h",
+              "line": 20,
+              "text": "virtual void Activate() override;",
+              "name": "Activate",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets_SingleLineTrace.cpp",
+              "line": 29,
+              "text": "void UAbilityTask_WaitForInteractableTargets_SingleLineTrace::Activate()",
+              "name": "Activate",
+              "source": "definition"
+            }
+          ],
+          "broadcasts": [],
+          "cleanup_signals": [
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets_SingleLineTrace.h",
+              "line": 28,
+              "text": "virtual void OnDestroy(bool AbilityEnded) override;",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets_SingleLineTrace.cpp",
+              "line": 37,
+              "text": "void UAbilityTask_WaitForInteractableTargets_SingleLineTrace::OnDestroy(bool AbilityEnded)",
+              "name": "OnDestroy",
+              "source": "definition"
+            },
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets_SingleLineTrace.cpp",
+              "line": 37,
+              "text": "void UAbilityTask_WaitForInteractableTargets_SingleLineTrace::OnDestroy(bool AbilityEnded)"
+            },
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_WaitForInteractableTargets_SingleLineTrace.cpp",
+              "line": 44,
+              "text": "Super::OnDestroy(AbilityEnded);"
+            }
+          ],
+          "authoring_policy": "native_policy_required",
+          "required_before_bp": "Keep native or implement a reviewed GAS/custom-K2 policy before any BP graph conversion."
+        },
+        {
+          "class_name": "UAbilityTask_GrantNearbyInteraction",
+          "base_class": "UAbilityTask",
+          "kind": "ability_task",
+          "module": "LyraGame",
+          "declaration": {
+            "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_GrantNearbyInteraction.h",
+            "line": 15,
+            "text": "class UAbilityTask_GrantNearbyInteraction : public UAbilityTask"
+          },
+          "source_files": [
+            "Source/LyraGame/Interaction/Tasks/AbilityTask_GrantNearbyInteraction.cpp",
+            "Source/LyraGame/Interaction/Tasks/AbilityTask_GrantNearbyInteraction.h"
+          ],
+          "blueprint_assignable_callbacks": [],
+          "factory_functions": [
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_GrantNearbyInteraction.h",
+              "line": 22,
+              "text": "UFUNCTION(BlueprintCallable, Category=\"Ability|Tasks\", meta = (HidePin = \"OwningAbility\", DefaultToSelf = \"OwningAbility\", BlueprintInternalUseOnly = \"TRUE\"))",
+              "name": "GrantAbilitiesForNearbyInteractors",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_GrantNearbyInteraction.cpp",
+              "line": 23,
+              "text": "UAbilityTask_GrantNearbyInteraction* UAbilityTask_GrantNearbyInteraction::GrantAbilitiesForNearbyInteractors(UGameplayAbility* OwningAbility, float InteractionScanRange, float InteractionScanRate)",
+              "name": "GrantAbilitiesForNearbyInteractors",
+              "source": "definition"
+            }
+          ],
+          "activate_methods": [
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_GrantNearbyInteraction.h",
+              "line": 19,
+              "text": "virtual void Activate() override;",
+              "name": "Activate",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_GrantNearbyInteraction.cpp",
+              "line": 31,
+              "text": "void UAbilityTask_GrantNearbyInteraction::Activate()",
+              "name": "Activate",
+              "source": "definition"
+            }
+          ],
+          "broadcasts": [],
+          "cleanup_signals": [
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_GrantNearbyInteraction.h",
+              "line": 27,
+              "text": "virtual void OnDestroy(bool AbilityEnded) override;",
+              "source": "declaration"
+            },
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_GrantNearbyInteraction.cpp",
+              "line": 39,
+              "text": "void UAbilityTask_GrantNearbyInteraction::OnDestroy(bool AbilityEnded)",
+              "name": "OnDestroy",
+              "source": "definition"
+            },
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_GrantNearbyInteraction.cpp",
+              "line": 39,
+              "text": "void UAbilityTask_GrantNearbyInteraction::OnDestroy(bool AbilityEnded)"
+            },
+            {
+              "path": "Source/LyraGame/Interaction/Tasks/AbilityTask_GrantNearbyInteraction.cpp",
+              "line": 46,
+              "text": "Super::OnDestroy(AbilityEnded);"
+            }
+          ],
+          "authoring_policy": "native_policy_required",
+          "required_before_bp": "Keep native or implement a reviewed GAS/custom-K2 policy before any BP graph conversion."
+        },
+        {
+          "class_name": "UK2Node_AsyncAction_ListenForGameplayMessages",
+          "base_class": "UK2Node_AsyncAction",
+          "kind": "custom_k2_async_node",
+          "module": "GameplayMessageRouter/GameplayMessageNodes",
+          "declaration": {
+            "path": "Plugins/GameplayMessageRouter/Source/GameplayMessageNodes/Public/K2Node_AsyncAction_ListenForGameplayMessages.h",
+            "line": 22,
+            "text": "class UK2Node_AsyncAction_ListenForGameplayMessages : public UK2Node_AsyncAction"
+          },
+          "source_files": [
+            "Plugins/GameplayMessageRouter/Source/GameplayMessageNodes/Private/K2Node_AsyncAction_ListenForGameplayMessages.cpp",
+            "Plugins/GameplayMessageRouter/Source/GameplayMessageNodes/Public/K2Node_AsyncAction_ListenForGameplayMessages.h"
+          ],
+          "blueprint_assignable_callbacks": [],
+          "factory_functions": [],
+          "activate_methods": [],
+          "broadcasts": [],
+          "cleanup_signals": [],
+          "authoring_policy": "native_policy_required",
+          "required_before_bp": "Keep native or implement a reviewed GAS/custom-K2 policy before any BP graph conversion."
+        }
+      ],
+      "authoring_status": "inventory_only_until_async_proxy_callback_exec_model_exists"
+    },
+    "mcp_gaps": [
+      "generic delegate lifecycle authoring for non-Event-Dispatcher targets",
+      "async proxy node authoring with callback exec pins",
+      "latent call validation exists only as opt-in function-call creation, not full continuation topology",
+      "UMG event binding exists, but it is widget-specific and not a generic delegate solution"
+    ]
+  },
+  "next_reinforcement_candidates": [
+    {
+      "priority": 1,
+      "name": "Native/arbitrary delegate lifecycle and async callback primitives",
+      "why": "Lyra source shows 106 delegate bind/assign/unbind triggers, 144 lifecycle sites that still require native retention, wrapper APIs, or explicit unbind policy, and 13 async proxy classes requiring callback exec or native policy; Blueprint Event Dispatcher lifecycle is now covered, but native delegates, arbitrary delegate targets, and async callback topology still need reinforcement."
+    },
+    {
+      "priority": 2,
+      "name": "CommonUI/UMG structure inventory",
+      "why": "Asset ancestry found 171 CommonUI/UMG Blueprint-like assets."
+    },
+    {
+      "priority": 3,
+      "name": "GameplayAbility-specific classifier",
+      "why": "Asset ancestry found 37 ability Blueprints plus GAS-heavy C++ patterns."
+    },
+    {
+      "priority": 4,
+      "name": "Animation Blueprint read-only graph inventory",
+      "why": "Asset ancestry found 27 animation-related Blueprint assets; current MCP generic graph tools are not AnimGraph tools."
+    },
+    {
+      "priority": 5,
+      "name": "Optional Editor Asset Registry verification",
+      "why": "Use only if exact Unreal AssetRegistry class names or Blueprint graph counts are needed beyond static package tag extraction."
+    }
+  ],
+  "read_only_policy": {
+    "lyra_project_mutation_allowed": false,
+    "editor_opened_for_this_combined_report": false,
+    "inputs_are_existing_reports": true
+  }
+}

@@ -1,0 +1,903 @@
+{
+  "generated_at": "2026-06-07T04:17:10.056552+00:00",
+  "analysis_kind": "bp_authoring_quality_gate",
+  "output_dir": "D:\\Git\\unreal-mcp-cubeless\\Docs\\Analysis\\BPAuthoringQualityGate",
+  "mcp_root": "D:\\Git\\unreal-mcp-cubeless",
+  "plugin_root": "D:\\Git\\CubelessStylized\\Plugins\\UnrealMCP",
+  "capability_manifest": {
+    "raw_capabilities": {
+      "mcp_root": "D:\\Git\\unreal-mcp-cubeless",
+      "plugin_root": "D:\\Git\\CubelessStylized\\Plugins\\UnrealMCP",
+      "python_tool_count": 118,
+      "python_tools": {
+        "blueprint_tools.py": [
+          "add_component_to_blueprint",
+          "compile_and_save_blueprint",
+          "compile_and_validate_blueprint",
+          "compile_blueprint",
+          "create_blueprint",
+          "get_component_property",
+          "list_blueprint_components",
+          "set_blueprint_property",
+          "set_component_property",
+          "set_pawn_properties",
+          "set_physics_properties",
+          "set_static_mesh_properties"
+        ],
+        "editor_tools.py": [
+          "delete_actor",
+          "find_actors_by_name",
+          "focus_viewport",
+          "get_actor_properties",
+          "get_actors_in_level",
+          "set_actor_property",
+          "set_actor_transform",
+          "spawn_actor",
+          "spawn_blueprint_actor"
+        ],
+        "ieta_tools.py": [
+          "show_ieta_connection_status"
+        ],
+        "material_tools.py": [
+          "add_custom_material_node",
+          "add_material_node",
+          "analyze_material_graph",
+          "compile_and_save_material",
+          "connect_material_nodes",
+          "connect_material_property",
+          "delete_material_node",
+          "layout_material_nodes",
+          "list_material_nodes",
+          "resolve_material_graph",
+          "send_material_command",
+          "set_material_node_property"
+        ],
+        "niagara_tools.py": [
+          "compile_and_save_niagara_system",
+          "duplicate_niagara_system_to_temp",
+          "get_prop",
+          "inspect_niagara_system",
+          "list_niagara_assets",
+          "list_niagara_components"
+        ],
+        "node_tools.py": [
+          "add_blueprint_array_function_node",
+          "add_blueprint_boolean_node",
+          "add_blueprint_branch_node",
+          "add_blueprint_break_struct_node",
+          "add_blueprint_call_function_node",
+          "add_blueprint_compare_node",
+          "add_blueprint_custom_event_node",
+          "add_blueprint_dynamic_cast_node",
+          "add_blueprint_enhanced_input_action_node",
+          "add_blueprint_enum_literal_node",
+          "add_blueprint_event_dispatcher",
+          "add_blueprint_event_dispatcher_assign_node",
+          "add_blueprint_event_dispatcher_bind_node",
+          "add_blueprint_event_dispatcher_call_node",
+          "add_blueprint_event_dispatcher_clear_node",
+          "add_blueprint_event_dispatcher_unbind_node",
+          "add_blueprint_event_node",
+          "add_blueprint_function_node",
+          "add_blueprint_function_parameter",
+          "add_blueprint_get_self_component_reference",
+          "add_blueprint_input_action_node",
+          "add_blueprint_input_axis_event_node",
+          "add_blueprint_is_valid_node",
+          "add_blueprint_literal_node",
+          "add_blueprint_local_variable",
+          "add_blueprint_loop_node",
+          "add_blueprint_make_array_node",
+          "add_blueprint_make_struct_node",
+          "add_blueprint_math_node",
+          "add_blueprint_return_node",
+          "add_blueprint_select_node",
+          "add_blueprint_self_reference",
+          "add_blueprint_sequence_node",
+          "add_blueprint_switch_enum_node",
+          "add_blueprint_switch_int_node",
+          "add_blueprint_variable",
+          "add_blueprint_variable_get_node",
+          "add_blueprint_variable_set_node",
+          "add_graph_selector",
+          "connect_blueprint_nodes",
+          "find_blueprint_nodes",
+          "list_blueprint_graphs",
+          "list_blueprint_nodes",
+          "resolve_blueprint",
+          "resolve_blueprint_graph",
+          "send_node_command",
+          "set_blueprint_pin_default"
+        ],
+        "pcg_tools.py": [
+          "add_pcg_node",
+          "compile_or_notify_pcg_graph",
+          "connect_pcg_nodes",
+          "list_pcg_assets",
+          "list_pcg_components",
+          "list_pcg_graph_nodes",
+          "refresh_pcg_components",
+          "resave_pcg_assets",
+          "resolve_pcg_graph",
+          "save_pcg_graph",
+          "send_pcg_command",
+          "set_pcg_debug_enabled",
+          "set_pcg_node_setting"
+        ],
+        "project_tools.py": [
+          "create_input_mapping",
+          "postprocess_content_folder_mcp",
+          "recreate_content_folder_mcp",
+          "repair_world_actor_instances_mcp"
+        ],
+        "python_tools.py": [
+          "execute_unreal_python"
+        ],
+        "texture_generation.py": [
+          "apply_material_to_mesh",
+          "create_material_instance_with_texture",
+          "generate_and_apply_ai_texture",
+          "generate_texture_for_mesh_uv",
+          "generate_texture_from_prompt",
+          "get_static_mesh_uv_layout",
+          "import_texture_to_unreal"
+        ],
+        "umg_tools.py": [
+          "add_button_to_widget",
+          "add_text_block_to_widget",
+          "add_widget_to_viewport",
+          "bind_widget_event",
+          "create_umg_widget_blueprint",
+          "set_text_block_binding"
+        ]
+      },
+      "plugin_command_count": 75,
+      "plugin_commands": [
+        "add_blueprint_array_function_node",
+        "add_blueprint_boolean_node",
+        "add_blueprint_branch_node",
+        "add_blueprint_break_struct_node",
+        "add_blueprint_call_function_node",
+        "add_blueprint_compare_node",
+        "add_blueprint_custom_event_node",
+        "add_blueprint_dynamic_cast_node",
+        "add_blueprint_enhanced_input_action_node",
+        "add_blueprint_enum_literal_node",
+        "add_blueprint_event_dispatcher",
+        "add_blueprint_event_dispatcher_assign_node",
+        "add_blueprint_event_dispatcher_bind_node",
+        "add_blueprint_event_dispatcher_call_node",
+        "add_blueprint_event_dispatcher_clear_node",
+        "add_blueprint_event_dispatcher_unbind_node",
+        "add_blueprint_event_node",
+        "add_blueprint_function_node",
+        "add_blueprint_function_parameter",
+        "add_blueprint_get_self_component_reference",
+        "add_blueprint_input_action_node",
+        "add_blueprint_input_axis_event_node",
+        "add_blueprint_is_valid_node",
+        "add_blueprint_literal_node",
+        "add_blueprint_local_variable",
+        "add_blueprint_loop_node",
+        "add_blueprint_make_array_node",
+        "add_blueprint_make_struct_node",
+        "add_blueprint_math_node",
+        "add_blueprint_return_node",
+        "add_blueprint_select_node",
+        "add_blueprint_self_reference",
+        "add_blueprint_sequence_node",
+        "add_blueprint_switch_enum_node",
+        "add_blueprint_switch_int_node",
+        "add_blueprint_variable",
+        "add_blueprint_variable_get_node",
+        "add_blueprint_variable_set_node",
+        "add_component_to_blueprint",
+        "analyze_blueprint_widget_fallbacks_mcp",
+        "compile_and_save_blueprint",
+        "compile_and_validate_blueprint",
+        "compile_blueprint",
+        "connect_blueprint_nodes",
+        "create_actor",
+        "create_blueprint",
+        "create_input_mapping",
+        "delete_actor",
+        "execute_python",
+        "find_actors_by_name",
+        "find_blueprint_nodes",
+        "focus_viewport",
+        "get_actor_properties",
+        "get_actors_in_level",
+        "get_component_property",
+        "list_blueprint_components",
+        "list_blueprint_graphs",
+        "list_blueprint_nodes",
+        "postprocess_content_folder_mcp",
+        "recreate_content_folder_mcp",
+        "repair_world_actor_instances_mcp",
+        "resolve_blueprint",
+        "resolve_blueprint_graph",
+        "run_content_validation_pipeline_mcp",
+        "set_actor_property",
+        "set_actor_transform",
+        "set_blueprint_pin_default",
+        "set_blueprint_property",
+        "set_component_property",
+        "set_pawn_properties",
+        "set_physics_properties",
+        "set_static_mesh_properties",
+        "spawn_actor",
+        "spawn_blueprint_actor",
+        "take_screenshot"
+      ]
+    },
+    "confirmed_tool_names": [
+      "add_blueprint_array_function_node",
+      "add_blueprint_boolean_node",
+      "add_blueprint_branch_node",
+      "add_blueprint_break_struct_node",
+      "add_blueprint_call_function_node",
+      "add_blueprint_compare_node",
+      "add_blueprint_custom_event_node",
+      "add_blueprint_dynamic_cast_node",
+      "add_blueprint_enhanced_input_action_node",
+      "add_blueprint_enum_literal_node",
+      "add_blueprint_event_dispatcher",
+      "add_blueprint_event_dispatcher_assign_node",
+      "add_blueprint_event_dispatcher_bind_node",
+      "add_blueprint_event_dispatcher_call_node",
+      "add_blueprint_event_dispatcher_clear_node",
+      "add_blueprint_event_dispatcher_unbind_node",
+      "add_blueprint_event_node",
+      "add_blueprint_function_node",
+      "add_blueprint_function_parameter",
+      "add_blueprint_get_self_component_reference",
+      "add_blueprint_input_action_node",
+      "add_blueprint_input_axis_event_node",
+      "add_blueprint_is_valid_node",
+      "add_blueprint_literal_node",
+      "add_blueprint_local_variable",
+      "add_blueprint_loop_node",
+      "add_blueprint_make_array_node",
+      "add_blueprint_make_struct_node",
+      "add_blueprint_math_node",
+      "add_blueprint_return_node",
+      "add_blueprint_select_node",
+      "add_blueprint_self_reference",
+      "add_blueprint_sequence_node",
+      "add_blueprint_switch_enum_node",
+      "add_blueprint_switch_int_node",
+      "add_blueprint_variable",
+      "add_blueprint_variable_get_node",
+      "add_blueprint_variable_set_node",
+      "add_button_to_widget",
+      "add_component_to_blueprint",
+      "add_custom_material_node",
+      "add_graph_selector",
+      "add_material_node",
+      "add_pcg_node",
+      "add_text_block_to_widget",
+      "add_widget_to_viewport",
+      "analyze_blueprint_widget_fallbacks_mcp",
+      "analyze_material_graph",
+      "apply_material_to_mesh",
+      "bind_widget_event",
+      "compile_and_save_blueprint",
+      "compile_and_save_material",
+      "compile_and_save_niagara_system",
+      "compile_and_validate_blueprint",
+      "compile_blueprint",
+      "compile_or_notify_pcg_graph",
+      "connect_blueprint_nodes",
+      "connect_material_nodes",
+      "connect_material_property",
+      "connect_pcg_nodes",
+      "create_actor",
+      "create_blueprint",
+      "create_input_mapping",
+      "create_material_instance_with_texture",
+      "create_umg_widget_blueprint",
+      "delete_actor",
+      "delete_material_node",
+      "duplicate_niagara_system_to_temp",
+      "execute_python",
+      "execute_unreal_python",
+      "find_actors_by_name",
+      "find_blueprint_nodes",
+      "focus_viewport",
+      "generate_and_apply_ai_texture",
+      "generate_texture_for_mesh_uv",
+      "generate_texture_from_prompt",
+      "get_actor_properties",
+      "get_actors_in_level",
+      "get_component_property",
+      "get_prop",
+      "get_static_mesh_uv_layout",
+      "import_texture_to_unreal",
+      "inspect_niagara_system",
+      "layout_material_nodes",
+      "list_blueprint_components",
+      "list_blueprint_graphs",
+      "list_blueprint_nodes",
+      "list_material_nodes",
+      "list_niagara_assets",
+      "list_niagara_components",
+      "list_pcg_assets",
+      "list_pcg_components",
+      "list_pcg_graph_nodes",
+      "postprocess_content_folder_mcp",
+      "recreate_content_folder_mcp",
+      "refresh_pcg_components",
+      "repair_world_actor_instances_mcp",
+      "resave_pcg_assets",
+      "resolve_blueprint",
+      "resolve_blueprint_graph",
+      "resolve_material_graph",
+      "resolve_pcg_graph",
+      "run_content_validation_pipeline_mcp",
+      "save_pcg_graph",
+      "send_material_command",
+      "send_node_command",
+      "send_pcg_command",
+      "set_actor_property",
+      "set_actor_transform",
+      "set_blueprint_pin_default",
+      "set_blueprint_property",
+      "set_component_property",
+      "set_material_node_property",
+      "set_pawn_properties",
+      "set_pcg_debug_enabled",
+      "set_pcg_node_setting",
+      "set_physics_properties",
+      "set_static_mesh_properties",
+      "set_text_block_binding",
+      "show_ieta_connection_status",
+      "spawn_actor",
+      "spawn_blueprint_actor",
+      "take_screenshot"
+    ],
+    "gate_results": [
+      {
+        "key": "asset_creation_temp_path",
+        "label": "Blueprint asset creation under MCP temp path",
+        "ready": true,
+        "required_commands": [
+          "create_blueprint"
+        ],
+        "confirmed_required_commands": [
+          "create_blueprint"
+        ],
+        "missing_required_commands": [],
+        "confirmed_optional_commands": [],
+        "missing_optional_commands": [],
+        "quality_rule": "Generated assets must be under /Game/_MCP_Temp and must be cleanable."
+      },
+      {
+        "key": "component_authoring",
+        "label": "Component authoring",
+        "ready": true,
+        "required_commands": [
+          "add_component_to_blueprint",
+          "list_blueprint_components",
+          "get_component_property"
+        ],
+        "confirmed_required_commands": [
+          "add_component_to_blueprint",
+          "list_blueprint_components",
+          "get_component_property"
+        ],
+        "missing_required_commands": [],
+        "confirmed_optional_commands": [
+          "set_component_property",
+          "set_static_mesh_properties"
+        ],
+        "missing_optional_commands": [],
+        "quality_rule": "Components must be inspectable and compile after creation."
+      },
+      {
+        "key": "variable_authoring",
+        "label": "Member variable authoring",
+        "ready": true,
+        "required_commands": [
+          "add_blueprint_variable"
+        ],
+        "confirmed_required_commands": [
+          "add_blueprint_variable"
+        ],
+        "missing_required_commands": [],
+        "confirmed_optional_commands": [
+          "add_blueprint_variable_get_node",
+          "add_blueprint_variable_set_node"
+        ],
+        "missing_optional_commands": [],
+        "quality_rule": "Variables must preserve type/default metadata and be usable by graph nodes."
+      },
+      {
+        "key": "event_dispatcher_declaration",
+        "label": "Event Dispatcher declaration",
+        "ready": true,
+        "required_commands": [
+          "add_blueprint_event_dispatcher"
+        ],
+        "confirmed_required_commands": [
+          "add_blueprint_event_dispatcher"
+        ],
+        "missing_required_commands": [],
+        "confirmed_optional_commands": [],
+        "missing_optional_commands": [],
+        "quality_rule": "Event Dispatchers must create a multicast delegate variable and delegate signature graph that compile cleanly."
+      },
+      {
+        "key": "event_dispatcher_call_node",
+        "label": "Event Dispatcher call node",
+        "ready": true,
+        "required_commands": [
+          "add_blueprint_event_dispatcher_call_node"
+        ],
+        "confirmed_required_commands": [
+          "add_blueprint_event_dispatcher_call_node"
+        ],
+        "missing_required_commands": [],
+        "confirmed_optional_commands": [],
+        "missing_optional_commands": [],
+        "quality_rule": "Event Dispatcher call nodes must preserve the dispatcher signature, connect into exec flow, and compile cleanly."
+      },
+      {
+        "key": "custom_event_authoring",
+        "label": "Custom event node",
+        "ready": true,
+        "required_commands": [
+          "add_blueprint_custom_event_node"
+        ],
+        "confirmed_required_commands": [
+          "add_blueprint_custom_event_node"
+        ],
+        "missing_required_commands": [],
+        "confirmed_optional_commands": [],
+        "missing_optional_commands": [],
+        "quality_rule": "Custom events must support dispatcher-compatible signatures and expose delegate output pins."
+      },
+      {
+        "key": "event_dispatcher_bind_node",
+        "label": "Event Dispatcher bind node",
+        "ready": true,
+        "required_commands": [
+          "add_blueprint_event_dispatcher_bind_node"
+        ],
+        "confirmed_required_commands": [
+          "add_blueprint_event_dispatcher_bind_node"
+        ],
+        "missing_required_commands": [],
+        "confirmed_optional_commands": [],
+        "missing_optional_commands": [],
+        "quality_rule": "Event Dispatcher bind nodes must accept compatible event delegates and compile cleanly."
+      },
+      {
+        "key": "event_dispatcher_unbind_node",
+        "label": "Event Dispatcher unbind node",
+        "ready": true,
+        "required_commands": [
+          "add_blueprint_event_dispatcher_unbind_node"
+        ],
+        "confirmed_required_commands": [
+          "add_blueprint_event_dispatcher_unbind_node"
+        ],
+        "missing_required_commands": [],
+        "confirmed_optional_commands": [],
+        "missing_optional_commands": [],
+        "quality_rule": "Event Dispatcher unbind nodes must accept compatible event delegates and compile cleanly."
+      },
+      {
+        "key": "event_dispatcher_clear_node",
+        "label": "Event Dispatcher clear node",
+        "ready": true,
+        "required_commands": [
+          "add_blueprint_event_dispatcher_clear_node"
+        ],
+        "confirmed_required_commands": [
+          "add_blueprint_event_dispatcher_clear_node"
+        ],
+        "missing_required_commands": [],
+        "confirmed_optional_commands": [],
+        "missing_optional_commands": [],
+        "quality_rule": "Event Dispatcher clear nodes must remove all bound events without requiring a delegate pin."
+      },
+      {
+        "key": "event_dispatcher_assign_node",
+        "label": "Event Dispatcher assign node",
+        "ready": true,
+        "required_commands": [
+          "add_blueprint_event_dispatcher_assign_node"
+        ],
+        "confirmed_required_commands": [
+          "add_blueprint_event_dispatcher_assign_node"
+        ],
+        "missing_required_commands": [],
+        "confirmed_optional_commands": [],
+        "missing_optional_commands": [],
+        "quality_rule": "Event Dispatcher assign nodes must create a signature-compatible event target and compile cleanly."
+      },
+      {
+        "key": "function_graph_authoring",
+        "label": "Function graph authoring",
+        "ready": true,
+        "required_commands": [
+          "resolve_blueprint_graph",
+          "add_blueprint_function_parameter"
+        ],
+        "confirmed_required_commands": [
+          "resolve_blueprint_graph",
+          "add_blueprint_function_parameter"
+        ],
+        "missing_required_commands": [],
+        "confirmed_optional_commands": [
+          "add_blueprint_local_variable",
+          "add_blueprint_return_node"
+        ],
+        "missing_optional_commands": [],
+        "quality_rule": "Function graphs must be resolvable by stable graph id and compile cleanly."
+      },
+      {
+        "key": "event_graph_topology",
+        "label": "Event graph topology",
+        "ready": true,
+        "required_commands": [
+          "add_blueprint_event_node",
+          "add_blueprint_sequence_node",
+          "add_blueprint_branch_node",
+          "connect_blueprint_nodes",
+          "set_blueprint_pin_default"
+        ],
+        "confirmed_required_commands": [
+          "add_blueprint_event_node",
+          "add_blueprint_sequence_node",
+          "add_blueprint_branch_node",
+          "connect_blueprint_nodes",
+          "set_blueprint_pin_default"
+        ],
+        "missing_required_commands": [],
+        "confirmed_optional_commands": [],
+        "missing_optional_commands": [],
+        "quality_rule": "Exec/data pins must be connected intentionally and inspectable after creation."
+      },
+      {
+        "key": "graph_inspection",
+        "label": "Graph inspection",
+        "ready": true,
+        "required_commands": [
+          "list_blueprint_graphs",
+          "list_blueprint_nodes",
+          "resolve_blueprint"
+        ],
+        "confirmed_required_commands": [
+          "list_blueprint_graphs",
+          "list_blueprint_nodes",
+          "resolve_blueprint"
+        ],
+        "missing_required_commands": [],
+        "confirmed_optional_commands": [],
+        "missing_optional_commands": [],
+        "quality_rule": "Generated graph structure must be re-read after authoring."
+      },
+      {
+        "key": "compile_validation",
+        "label": "Compile and validation",
+        "ready": true,
+        "required_commands": [
+          "compile_and_validate_blueprint"
+        ],
+        "confirmed_required_commands": [
+          "compile_and_validate_blueprint"
+        ],
+        "missing_required_commands": [],
+        "confirmed_optional_commands": [
+          "compile_blueprint",
+          "compile_and_save_blueprint"
+        ],
+        "missing_optional_commands": [],
+        "quality_rule": "Compile must pass with zero errors before save is treated as valid."
+      },
+      {
+        "key": "editor_python_cleanup",
+        "label": "Editor Python cleanup and introspection",
+        "ready": true,
+        "required_commands": [
+          "execute_python"
+        ],
+        "confirmed_required_commands": [
+          "execute_python"
+        ],
+        "missing_required_commands": [],
+        "confirmed_optional_commands": [],
+        "missing_optional_commands": [],
+        "quality_rule": "The gate must inspect project identity and clean temporary assets."
+      }
+    ],
+    "all_required_ready": true,
+    "deferred_authoring_gaps": [
+      "generic delegate lifecycle authoring for non-Event-Dispatcher targets",
+      "async proxy node callback exec pin authoring",
+      "latent continuation topology validation",
+      "CommonUI widget tree and activation policy authoring",
+      "GAS AbilityTask and prediction-safe authoring"
+    ]
+  },
+  "live_gate": {
+    "status": "passed",
+    "host": "127.0.0.1",
+    "port": 55557,
+    "blueprint_name": "MCP_BPQualityGate_ad5db8f2",
+    "asset_path": "/Game/_MCP_Temp/BPAuthoringQualityGate/MCP_BPQualityGate_ad5db8f2",
+    "temp_package_path": "/Game/_MCP_Temp/BPAuthoringQualityGate",
+    "stages": [
+      {
+        "command": "ping",
+        "status": "success"
+      },
+      {
+        "command": "execute_python",
+        "status": "success"
+      },
+      {
+        "command": "execute_python",
+        "status": "success"
+      },
+      {
+        "command": "create_blueprint",
+        "status": "success"
+      },
+      {
+        "command": "add_component_to_blueprint",
+        "status": "success"
+      },
+      {
+        "command": "list_blueprint_components",
+        "status": "success"
+      },
+      {
+        "command": "add_blueprint_variable",
+        "status": "success"
+      },
+      {
+        "command": "add_blueprint_event_dispatcher",
+        "status": "success"
+      },
+      {
+        "command": "resolve_blueprint_graph",
+        "status": "success"
+      },
+      {
+        "command": "add_blueprint_function_parameter",
+        "status": "success"
+      },
+      {
+        "command": "add_blueprint_function_parameter",
+        "status": "success"
+      },
+      {
+        "command": "add_blueprint_event_node",
+        "status": "success"
+      },
+      {
+        "command": "add_blueprint_sequence_node",
+        "status": "success"
+      },
+      {
+        "command": "add_blueprint_branch_node",
+        "status": "success"
+      },
+      {
+        "command": "add_blueprint_event_dispatcher_call_node",
+        "status": "success"
+      },
+      {
+        "command": "add_blueprint_custom_event_node",
+        "status": "success"
+      },
+      {
+        "command": "add_blueprint_event_dispatcher_bind_node",
+        "status": "success"
+      },
+      {
+        "command": "add_blueprint_event_dispatcher_assign_node",
+        "status": "success"
+      },
+      {
+        "command": "add_blueprint_event_dispatcher_unbind_node",
+        "status": "success"
+      },
+      {
+        "command": "add_blueprint_event_dispatcher_clear_node",
+        "status": "success"
+      },
+      {
+        "command": "set_blueprint_pin_default",
+        "status": "success"
+      },
+      {
+        "command": "set_blueprint_pin_default",
+        "status": "success"
+      },
+      {
+        "command": "connect_blueprint_nodes",
+        "status": "success"
+      },
+      {
+        "command": "connect_blueprint_nodes",
+        "status": "success"
+      },
+      {
+        "command": "connect_blueprint_nodes",
+        "status": "success"
+      },
+      {
+        "command": "connect_blueprint_nodes",
+        "status": "success"
+      },
+      {
+        "command": "connect_blueprint_nodes",
+        "status": "success"
+      },
+      {
+        "command": "connect_blueprint_nodes",
+        "status": "success"
+      },
+      {
+        "command": "connect_blueprint_nodes",
+        "status": "success"
+      },
+      {
+        "command": "connect_blueprint_nodes",
+        "status": "success"
+      },
+      {
+        "command": "connect_blueprint_nodes",
+        "status": "success"
+      },
+      {
+        "command": "list_blueprint_graphs",
+        "status": "success"
+      },
+      {
+        "command": "list_blueprint_nodes",
+        "status": "success"
+      },
+      {
+        "command": "compile_and_validate_blueprint",
+        "status": "success"
+      },
+      {
+        "command": "execute_python",
+        "status": "success"
+      },
+      {
+        "command": "execute_python",
+        "status": "success"
+      }
+    ],
+    "cleanup": {
+      "asset_path": "/Game/_MCP_Temp/BPAuthoringQualityGate/MCP_BPQualityGate_ad5db8f2",
+      "deleted": true
+    },
+    "inspection": {
+      "graphs": [
+        {
+          "graph_id": "E19D8EA24961639F76B74593375547DE",
+          "graph_name": "UserConstructionScript",
+          "graph_type": "function",
+          "schema": "EdGraphSchema_K2",
+          "node_count": 1
+        },
+        {
+          "graph_id": "7238460C4CCC2D2CE943B2920AE20536",
+          "graph_name": "QualityFunction_ad5db8f2",
+          "graph_type": "function",
+          "schema": "EdGraphSchema_K2",
+          "node_count": 2
+        },
+        {
+          "graph_id": "290E0DFE40577893C17CC794A3A27E29",
+          "graph_name": "EventGraph",
+          "graph_type": "event",
+          "schema": "EdGraphSchema_K2",
+          "node_count": 12
+        },
+        {
+          "graph_id": "BFB839C543F57E0DB140D0999EB75DB1",
+          "graph_name": "OnQualityGateTriggered",
+          "graph_type": "delegate",
+          "schema": "EdGraphSchema_K2",
+          "node_count": 1
+        }
+      ],
+      "node_count": 12,
+      "event_dispatcher": {
+        "dispatcher_name": "OnQualityGateTriggered",
+        "signature_graph": {
+          "graph_id": "BFB839C543F57E0DB140D0999EB75DB1",
+          "graph_name": "OnQualityGateTriggered",
+          "graph_type": "delegate",
+          "schema": "EdGraphSchema_K2",
+          "node_count": 1
+        },
+        "inputs": [
+          {
+            "parameter_name": "Score",
+            "parameter_type": "int",
+            "pin_type": {
+              "category": "int",
+              "subcategory": "None",
+              "is_array": false
+            }
+          }
+        ]
+      },
+      "event_dispatcher_call": {
+        "node_id": "E564717642A160F224EAE48254367D41",
+        "dispatcher_name": "OnQualityGateTriggered",
+        "signature_function": "/Game/_MCP_Temp/BPAuthoringQualityGate/MCP_BPQualityGate_ad5db8f2.SKEL_MCP_BPQualityGate_ad5db8f2_C:OnQualityGateTriggered__DelegateSignature"
+      },
+      "custom_event": {
+        "node_id": "C1D493C244DDAC2D742AF2B9737B55E4",
+        "custom_event_name": "HandleQualityGateTriggered",
+        "signature_source_dispatcher_name": "OnQualityGateTriggered",
+        "signature_function": "/Engine/Transient.TRASHCLASS_MCP_BPQualityGate_ad5db8f2_13:OnQualityGateTriggered__DelegateSignature_0"
+      },
+      "event_dispatcher_bind": {
+        "node_id": "8F592DC24F789B3A6E6BCAB254F36DA6",
+        "dispatcher_name": "OnQualityGateTriggered",
+        "signature_function": "/Game/_MCP_Temp/BPAuthoringQualityGate/MCP_BPQualityGate_ad5db8f2.SKEL_MCP_BPQualityGate_ad5db8f2_C:OnQualityGateTriggered__DelegateSignature"
+      },
+      "event_dispatcher_assign": {
+        "node_id": "EA79B38A4DA7AA4AB4609CBC7F443480",
+        "dispatcher_name": "OnQualityGateTriggered",
+        "signature_function": "/Engine/Transient.TRASHCLASS_MCP_BPQualityGate_ad5db8f2_14:OnQualityGateTriggered__DelegateSignature_0"
+      },
+      "event_dispatcher_unbind": {
+        "node_id": "8959745B4C33F9ED8DAFD2B2B25BCCD0",
+        "dispatcher_name": "OnQualityGateTriggered",
+        "signature_function": "/Game/_MCP_Temp/BPAuthoringQualityGate/MCP_BPQualityGate_ad5db8f2.SKEL_MCP_BPQualityGate_ad5db8f2_C:OnQualityGateTriggered__DelegateSignature"
+      },
+      "event_dispatcher_clear": {
+        "node_id": "4AC2480F4111186547E8209986ACF8C6",
+        "dispatcher_name": "OnQualityGateTriggered",
+        "signature_function": "/Game/_MCP_Temp/BPAuthoringQualityGate/MCP_BPQualityGate_ad5db8f2.SKEL_MCP_BPQualityGate_ad5db8f2_C:OnQualityGateTriggered__DelegateSignature"
+      },
+      "asset": {
+        "asset_exists": true,
+        "asset_class": "Blueprint",
+        "package_path": "/Game/_MCP_Temp/BPAuthoringQualityGate/MCP_BPQualityGate_ad5db8f2"
+      }
+    },
+    "validation": {
+      "name": "MCP_BPQualityGate_ad5db8f2",
+      "asset_path": "/Game/_MCP_Temp/BPAuthoringQualityGate/MCP_BPQualityGate_ad5db8f2.MCP_BPQualityGate_ad5db8f2",
+      "compiled": true,
+      "validation_pass": true,
+      "status": "up_to_date",
+      "has_warnings": false,
+      "compile_error_count": 0,
+      "compile_warning_count": 0,
+      "compile_errors": [],
+      "compile_warnings": [],
+      "diagnostics": [],
+      "diagnostic_count": 0,
+      "saved": true,
+      "requested_save": true,
+      "refreshed_nodes": true,
+      "was_dirty_before_compile": true,
+      "dirty_after_compile": false
+    },
+    "new_log_errors": [],
+    "project_identity": {
+      "project_file": "D:/Git/CubelessStylized/StylizedCubeless.uproject",
+      "project_dir": "D:/Git/CubelessStylized/",
+      "engine_version": "5.7.4-51494982+++UE5+Release-5.7"
+    }
+  },
+  "verdict": {
+    "status": "existing_bp_authoring_quality_gate_passed",
+    "cxx_changes_required_for_this_gate": false,
+    "lyra_project_used": false,
+    "temp_package_root": "/Game/_MCP_Temp/BPAuthoringQualityGate"
+  }
+}

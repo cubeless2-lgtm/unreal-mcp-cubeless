@@ -1,0 +1,1031 @@
+{
+  "generated_at": "2026-06-07T04:14:25.591109+00:00",
+  "analysis_kind": "bp_authoring_quality_planner",
+  "planner_version": "section_10_initial",
+  "output_dir": "D:\\Git\\unreal-mcp-cubeless\\Docs\\Analysis\\BPAuthoringPlanner",
+  "policy_basis": {
+    "quality_gate_status": "existing_bp_authoring_quality_gate_passed",
+    "current_authoring_ceiling": "temporary_smoke_only_bp_shells_allowlisted_actor_parent_component_hierarchy_property_graph_glue_validation_durable_read_only_asset_exists_preflight_overwrite_rename_decision_save_gate_rollback_draft_executor_readiness_checklist_and_disabled_executor_skeleton",
+    "safe_now": [
+      "inventory delegate/async/latent sites",
+      "create ordinary event/function/call nodes",
+      "declare and call Blueprint Event Dispatchers with signature graphs",
+      "bind Blueprint Event Dispatchers to signature-compatible custom events",
+      "assign, unbind, and clear Blueprint Event Dispatcher lifecycle nodes",
+      "optionally create latent function call nodes when explicitly allowed",
+      "bind some UMG widget events through existing UMG-specific command"
+    ],
+    "not_ready_for": [
+      "whole-project C++ to Blueprint conversion",
+      "replication/RPC/ReplicationGraph lowering",
+      "Gameplay Ability System internals and ability-task flow",
+      "CommonUI widget tree and activation-policy authoring",
+      "Animation Blueprint graph/state-machine conversion",
+      "GameFeature activation and experience architecture recreation",
+      "custom K2/editor-only/Slate behavior recreation"
+    ],
+    "unsafe_without_reinforcement": [
+      "generic delegate lifecycle authoring for non-Event-Dispatcher targets",
+      "native or arbitrary delegate target binding without lifecycle classification",
+      "async action proxy nodes with callback exec outputs",
+      "native AddUObject/AddLambda lifecycle conversion",
+      "AbilityTask conversion",
+      "custom K2 async node recreation"
+    ],
+    "delegate_lifecycle_sites": 263,
+    "async_proxy_classes": 13,
+    "async_proxy_classes_requiring_policy": 13
+  },
+  "summary": {
+    "request_count": 14,
+    "status_counts": {
+      "safe_to_author": 11,
+      "blocked_until_reinforced": 3
+    },
+    "safe_rule_counts": {
+      "blueprint_shell": 6,
+      "component_setup": 5,
+      "variables_defaults": 6,
+      "function_graph_glue": 7,
+      "event_dispatcher_lifecycle": 1
+    },
+    "review_rule_counts": {},
+    "blocked_rule_counts": {
+      "async_proxy_callback_exec": 1,
+      "gas_ability_task": 1,
+      "replication_rpc": 1,
+      "commonui_structure": 1
+    }
+  },
+  "plans": [
+    {
+      "id": "simple_actor_bp",
+      "request": "Create an Actor Blueprint shell with a Static Mesh Component, exposed health variable, BeginPlay event, branch, and function call.",
+      "target_class": "",
+      "status": "safe_to_author",
+      "reason": "Only currently safe authoring patterns detected: Blueprint shell / class setup, Component composition, Variables and defaults, Function calls and graph glue.",
+      "matched_rules": [
+        {
+          "key": "blueprint_shell",
+          "label": "Blueprint shell / class setup",
+          "status": "safe_to_author"
+        },
+        {
+          "key": "component_setup",
+          "label": "Component composition",
+          "status": "safe_to_author"
+        },
+        {
+          "key": "variables_defaults",
+          "label": "Variables and defaults",
+          "status": "safe_to_author"
+        },
+        {
+          "key": "function_graph_glue",
+          "label": "Function calls and graph glue",
+          "status": "safe_to_author"
+        }
+      ],
+      "safe_steps": [
+        {
+          "key": "blueprint_shell",
+          "label": "Blueprint shell / class setup",
+          "guidance": "Create a narrow Blueprint shell using an existing parent class; keep native behavior in native classes.",
+          "tools": [
+            "create_blueprint",
+            "compile_and_validate_blueprint"
+          ]
+        },
+        {
+          "key": "component_setup",
+          "label": "Component composition",
+          "guidance": "Add existing component classes and set exposed defaults; do not recreate native component internals.",
+          "tools": [
+            "add_component_to_blueprint",
+            "list_blueprint_components",
+            "get_component_property",
+            "set_component_property"
+          ]
+        },
+        {
+          "key": "variables_defaults",
+          "label": "Variables and defaults",
+          "guidance": "Add Blueprint variables with explicit type/default metadata and expose only requested controls.",
+          "tools": [
+            "add_blueprint_variable",
+            "set_blueprint_pin_default"
+          ]
+        },
+        {
+          "key": "function_graph_glue",
+          "label": "Function calls and graph glue",
+          "guidance": "Author ordinary reflected function calls and simple control-flow glue only.",
+          "tools": [
+            "resolve_blueprint_graph",
+            "add_blueprint_function_parameter",
+            "add_blueprint_local_variable",
+            "add_blueprint_variable_get_node",
+            "add_blueprint_variable_set_node",
+            "add_blueprint_self_reference",
+            "add_blueprint_math_node",
+            "add_blueprint_compare_node",
+            "add_blueprint_return_node",
+            "add_blueprint_call_function_node",
+            "add_blueprint_branch_node",
+            "add_blueprint_sequence_node",
+            "connect_blueprint_nodes"
+          ]
+        }
+      ],
+      "requires_review": [],
+      "blocked_items": [],
+      "needed_mcp_tools": [
+        "create_blueprint",
+        "compile_and_validate_blueprint",
+        "add_component_to_blueprint",
+        "list_blueprint_components",
+        "get_component_property",
+        "set_component_property",
+        "add_blueprint_variable",
+        "set_blueprint_pin_default",
+        "resolve_blueprint_graph",
+        "add_blueprint_function_parameter",
+        "add_blueprint_local_variable",
+        "add_blueprint_variable_get_node",
+        "add_blueprint_variable_set_node",
+        "add_blueprint_self_reference",
+        "add_blueprint_math_node",
+        "add_blueprint_compare_node",
+        "add_blueprint_return_node",
+        "add_blueprint_call_function_node",
+        "add_blueprint_branch_node",
+        "add_blueprint_sequence_node",
+        "connect_blueprint_nodes"
+      ],
+      "validation_plan": [
+        "resolve_blueprint or create under /Game/_MCP_Temp for smoke when possible",
+        "resolve_blueprint",
+        "compile_and_validate_blueprint",
+        "list_blueprint_nodes",
+        "compile_and_validate_blueprint before save",
+        "list_blueprint_nodes after authoring"
+      ],
+      "false_safe_guard": "Any blocked match overrides safe steps. Requests with no known-safe match require review."
+    },
+    {
+      "id": "component_function_glue",
+      "request": "Make a Blueprint component setup that calls an existing reflected function and connects simple branch flow.",
+      "target_class": "",
+      "status": "safe_to_author",
+      "reason": "Only currently safe authoring patterns detected: Blueprint shell / class setup, Component composition, Function calls and graph glue.",
+      "matched_rules": [
+        {
+          "key": "blueprint_shell",
+          "label": "Blueprint shell / class setup",
+          "status": "safe_to_author"
+        },
+        {
+          "key": "component_setup",
+          "label": "Component composition",
+          "status": "safe_to_author"
+        },
+        {
+          "key": "function_graph_glue",
+          "label": "Function calls and graph glue",
+          "status": "safe_to_author"
+        }
+      ],
+      "safe_steps": [
+        {
+          "key": "blueprint_shell",
+          "label": "Blueprint shell / class setup",
+          "guidance": "Create a narrow Blueprint shell using an existing parent class; keep native behavior in native classes.",
+          "tools": [
+            "create_blueprint",
+            "compile_and_validate_blueprint"
+          ]
+        },
+        {
+          "key": "component_setup",
+          "label": "Component composition",
+          "guidance": "Add existing component classes and set exposed defaults; do not recreate native component internals.",
+          "tools": [
+            "add_component_to_blueprint",
+            "list_blueprint_components",
+            "get_component_property",
+            "set_component_property"
+          ]
+        },
+        {
+          "key": "function_graph_glue",
+          "label": "Function calls and graph glue",
+          "guidance": "Author ordinary reflected function calls and simple control-flow glue only.",
+          "tools": [
+            "resolve_blueprint_graph",
+            "add_blueprint_function_parameter",
+            "add_blueprint_local_variable",
+            "add_blueprint_variable_get_node",
+            "add_blueprint_variable_set_node",
+            "add_blueprint_self_reference",
+            "add_blueprint_math_node",
+            "add_blueprint_compare_node",
+            "add_blueprint_return_node",
+            "add_blueprint_call_function_node",
+            "add_blueprint_branch_node",
+            "add_blueprint_sequence_node",
+            "connect_blueprint_nodes"
+          ]
+        }
+      ],
+      "requires_review": [],
+      "blocked_items": [],
+      "needed_mcp_tools": [
+        "create_blueprint",
+        "compile_and_validate_blueprint",
+        "add_component_to_blueprint",
+        "list_blueprint_components",
+        "get_component_property",
+        "set_component_property",
+        "resolve_blueprint_graph",
+        "add_blueprint_function_parameter",
+        "add_blueprint_local_variable",
+        "add_blueprint_variable_get_node",
+        "add_blueprint_variable_set_node",
+        "add_blueprint_self_reference",
+        "add_blueprint_math_node",
+        "add_blueprint_compare_node",
+        "add_blueprint_return_node",
+        "add_blueprint_call_function_node",
+        "add_blueprint_branch_node",
+        "add_blueprint_sequence_node",
+        "connect_blueprint_nodes"
+      ],
+      "validation_plan": [
+        "resolve_blueprint or create under /Game/_MCP_Temp for smoke when possible",
+        "resolve_blueprint",
+        "compile_and_validate_blueprint",
+        "list_blueprint_nodes",
+        "compile_and_validate_blueprint before save",
+        "list_blueprint_nodes after authoring"
+      ],
+      "false_safe_guard": "Any blocked match overrides safe steps. Requests with no known-safe match require review."
+    },
+    {
+      "id": "component_hierarchy",
+      "request": "Create an Actor Blueprint shell with a Scene Component root and a child Static Mesh Component attached to that root.",
+      "target_class": "",
+      "status": "safe_to_author",
+      "reason": "Only currently safe authoring patterns detected: Blueprint shell / class setup, Component composition.",
+      "matched_rules": [
+        {
+          "key": "blueprint_shell",
+          "label": "Blueprint shell / class setup",
+          "status": "safe_to_author"
+        },
+        {
+          "key": "component_setup",
+          "label": "Component composition",
+          "status": "safe_to_author"
+        }
+      ],
+      "safe_steps": [
+        {
+          "key": "blueprint_shell",
+          "label": "Blueprint shell / class setup",
+          "guidance": "Create a narrow Blueprint shell using an existing parent class; keep native behavior in native classes.",
+          "tools": [
+            "create_blueprint",
+            "compile_and_validate_blueprint"
+          ]
+        },
+        {
+          "key": "component_setup",
+          "label": "Component composition",
+          "guidance": "Add existing component classes and set exposed defaults; do not recreate native component internals.",
+          "tools": [
+            "add_component_to_blueprint",
+            "list_blueprint_components",
+            "get_component_property",
+            "set_component_property"
+          ]
+        }
+      ],
+      "requires_review": [],
+      "blocked_items": [],
+      "needed_mcp_tools": [
+        "create_blueprint",
+        "compile_and_validate_blueprint",
+        "add_component_to_blueprint",
+        "list_blueprint_components",
+        "get_component_property",
+        "set_component_property"
+      ],
+      "validation_plan": [
+        "resolve_blueprint or create under /Game/_MCP_Temp for smoke when possible",
+        "resolve_blueprint",
+        "compile_and_validate_blueprint",
+        "compile_and_validate_blueprint before save",
+        "list_blueprint_nodes after authoring"
+      ],
+      "false_safe_guard": "Any blocked match overrides safe steps. Requests with no known-safe match require review."
+    },
+    {
+      "id": "component_property_defaults",
+      "request": "Create an Actor Blueprint shell with a Static Mesh Component visibility false.",
+      "target_class": "",
+      "status": "safe_to_author",
+      "reason": "Only currently safe authoring patterns detected: Blueprint shell / class setup, Component composition.",
+      "matched_rules": [
+        {
+          "key": "blueprint_shell",
+          "label": "Blueprint shell / class setup",
+          "status": "safe_to_author"
+        },
+        {
+          "key": "component_setup",
+          "label": "Component composition",
+          "status": "safe_to_author"
+        }
+      ],
+      "safe_steps": [
+        {
+          "key": "blueprint_shell",
+          "label": "Blueprint shell / class setup",
+          "guidance": "Create a narrow Blueprint shell using an existing parent class; keep native behavior in native classes.",
+          "tools": [
+            "create_blueprint",
+            "compile_and_validate_blueprint"
+          ]
+        },
+        {
+          "key": "component_setup",
+          "label": "Component composition",
+          "guidance": "Add existing component classes and set exposed defaults; do not recreate native component internals.",
+          "tools": [
+            "add_component_to_blueprint",
+            "list_blueprint_components",
+            "get_component_property",
+            "set_component_property"
+          ]
+        }
+      ],
+      "requires_review": [],
+      "blocked_items": [],
+      "needed_mcp_tools": [
+        "create_blueprint",
+        "compile_and_validate_blueprint",
+        "add_component_to_blueprint",
+        "list_blueprint_components",
+        "get_component_property",
+        "set_component_property"
+      ],
+      "validation_plan": [
+        "resolve_blueprint or create under /Game/_MCP_Temp for smoke when possible",
+        "resolve_blueprint",
+        "compile_and_validate_blueprint",
+        "compile_and_validate_blueprint before save",
+        "list_blueprint_nodes after authoring"
+      ],
+      "false_safe_guard": "Any blocked match overrides safe steps. Requests with no known-safe match require review."
+    },
+    {
+      "id": "function_graph_body_math",
+      "request": "Create a function graph with a local variable, math node, dataflow, and return node.",
+      "target_class": "",
+      "status": "safe_to_author",
+      "reason": "Only currently safe authoring patterns detected: Variables and defaults, Function calls and graph glue.",
+      "matched_rules": [
+        {
+          "key": "variables_defaults",
+          "label": "Variables and defaults",
+          "status": "safe_to_author"
+        },
+        {
+          "key": "function_graph_glue",
+          "label": "Function calls and graph glue",
+          "status": "safe_to_author"
+        }
+      ],
+      "safe_steps": [
+        {
+          "key": "variables_defaults",
+          "label": "Variables and defaults",
+          "guidance": "Add Blueprint variables with explicit type/default metadata and expose only requested controls.",
+          "tools": [
+            "add_blueprint_variable",
+            "set_blueprint_pin_default"
+          ]
+        },
+        {
+          "key": "function_graph_glue",
+          "label": "Function calls and graph glue",
+          "guidance": "Author ordinary reflected function calls and simple control-flow glue only.",
+          "tools": [
+            "resolve_blueprint_graph",
+            "add_blueprint_function_parameter",
+            "add_blueprint_local_variable",
+            "add_blueprint_variable_get_node",
+            "add_blueprint_variable_set_node",
+            "add_blueprint_self_reference",
+            "add_blueprint_math_node",
+            "add_blueprint_compare_node",
+            "add_blueprint_return_node",
+            "add_blueprint_call_function_node",
+            "add_blueprint_branch_node",
+            "add_blueprint_sequence_node",
+            "connect_blueprint_nodes"
+          ]
+        }
+      ],
+      "requires_review": [],
+      "blocked_items": [],
+      "needed_mcp_tools": [
+        "add_blueprint_variable",
+        "set_blueprint_pin_default",
+        "resolve_blueprint_graph",
+        "add_blueprint_function_parameter",
+        "add_blueprint_local_variable",
+        "add_blueprint_variable_get_node",
+        "add_blueprint_variable_set_node",
+        "add_blueprint_self_reference",
+        "add_blueprint_math_node",
+        "add_blueprint_compare_node",
+        "add_blueprint_return_node",
+        "add_blueprint_call_function_node",
+        "add_blueprint_branch_node",
+        "add_blueprint_sequence_node",
+        "connect_blueprint_nodes"
+      ],
+      "validation_plan": [
+        "resolve_blueprint or create under /Game/_MCP_Temp for smoke when possible",
+        "resolve_blueprint",
+        "compile_and_validate_blueprint",
+        "list_blueprint_nodes",
+        "compile_and_validate_blueprint before save",
+        "list_blueprint_nodes after authoring"
+      ],
+      "false_safe_guard": "Any blocked match overrides safe steps. Requests with no known-safe match require review."
+    },
+    {
+      "id": "function_graph_local_set",
+      "request": "Create a function graph with an input parameter, math node, local variable set node, and return node.",
+      "target_class": "",
+      "status": "safe_to_author",
+      "reason": "Only currently safe authoring patterns detected: Variables and defaults, Function calls and graph glue.",
+      "matched_rules": [
+        {
+          "key": "variables_defaults",
+          "label": "Variables and defaults",
+          "status": "safe_to_author"
+        },
+        {
+          "key": "function_graph_glue",
+          "label": "Function calls and graph glue",
+          "status": "safe_to_author"
+        }
+      ],
+      "safe_steps": [
+        {
+          "key": "variables_defaults",
+          "label": "Variables and defaults",
+          "guidance": "Add Blueprint variables with explicit type/default metadata and expose only requested controls.",
+          "tools": [
+            "add_blueprint_variable",
+            "set_blueprint_pin_default"
+          ]
+        },
+        {
+          "key": "function_graph_glue",
+          "label": "Function calls and graph glue",
+          "guidance": "Author ordinary reflected function calls and simple control-flow glue only.",
+          "tools": [
+            "resolve_blueprint_graph",
+            "add_blueprint_function_parameter",
+            "add_blueprint_local_variable",
+            "add_blueprint_variable_get_node",
+            "add_blueprint_variable_set_node",
+            "add_blueprint_self_reference",
+            "add_blueprint_math_node",
+            "add_blueprint_compare_node",
+            "add_blueprint_return_node",
+            "add_blueprint_call_function_node",
+            "add_blueprint_branch_node",
+            "add_blueprint_sequence_node",
+            "connect_blueprint_nodes"
+          ]
+        }
+      ],
+      "requires_review": [],
+      "blocked_items": [],
+      "needed_mcp_tools": [
+        "add_blueprint_variable",
+        "set_blueprint_pin_default",
+        "resolve_blueprint_graph",
+        "add_blueprint_function_parameter",
+        "add_blueprint_local_variable",
+        "add_blueprint_variable_get_node",
+        "add_blueprint_variable_set_node",
+        "add_blueprint_self_reference",
+        "add_blueprint_math_node",
+        "add_blueprint_compare_node",
+        "add_blueprint_return_node",
+        "add_blueprint_call_function_node",
+        "add_blueprint_branch_node",
+        "add_blueprint_sequence_node",
+        "connect_blueprint_nodes"
+      ],
+      "validation_plan": [
+        "resolve_blueprint or create under /Game/_MCP_Temp for smoke when possible",
+        "resolve_blueprint",
+        "compile_and_validate_blueprint",
+        "list_blueprint_nodes",
+        "compile_and_validate_blueprint before save",
+        "list_blueprint_nodes after authoring"
+      ],
+      "false_safe_guard": "Any blocked match overrides safe steps. Requests with no known-safe match require review."
+    },
+    {
+      "id": "function_graph_compare_branch",
+      "request": "Create a function graph with an input parameter, compare node, branch, then and else local variable set nodes, and return node.",
+      "target_class": "",
+      "status": "safe_to_author",
+      "reason": "Only currently safe authoring patterns detected: Variables and defaults, Function calls and graph glue.",
+      "matched_rules": [
+        {
+          "key": "variables_defaults",
+          "label": "Variables and defaults",
+          "status": "safe_to_author"
+        },
+        {
+          "key": "function_graph_glue",
+          "label": "Function calls and graph glue",
+          "status": "safe_to_author"
+        }
+      ],
+      "safe_steps": [
+        {
+          "key": "variables_defaults",
+          "label": "Variables and defaults",
+          "guidance": "Add Blueprint variables with explicit type/default metadata and expose only requested controls.",
+          "tools": [
+            "add_blueprint_variable",
+            "set_blueprint_pin_default"
+          ]
+        },
+        {
+          "key": "function_graph_glue",
+          "label": "Function calls and graph glue",
+          "guidance": "Author ordinary reflected function calls and simple control-flow glue only.",
+          "tools": [
+            "resolve_blueprint_graph",
+            "add_blueprint_function_parameter",
+            "add_blueprint_local_variable",
+            "add_blueprint_variable_get_node",
+            "add_blueprint_variable_set_node",
+            "add_blueprint_self_reference",
+            "add_blueprint_math_node",
+            "add_blueprint_compare_node",
+            "add_blueprint_return_node",
+            "add_blueprint_call_function_node",
+            "add_blueprint_branch_node",
+            "add_blueprint_sequence_node",
+            "connect_blueprint_nodes"
+          ]
+        }
+      ],
+      "requires_review": [],
+      "blocked_items": [],
+      "needed_mcp_tools": [
+        "add_blueprint_variable",
+        "set_blueprint_pin_default",
+        "resolve_blueprint_graph",
+        "add_blueprint_function_parameter",
+        "add_blueprint_local_variable",
+        "add_blueprint_variable_get_node",
+        "add_blueprint_variable_set_node",
+        "add_blueprint_self_reference",
+        "add_blueprint_math_node",
+        "add_blueprint_compare_node",
+        "add_blueprint_return_node",
+        "add_blueprint_call_function_node",
+        "add_blueprint_branch_node",
+        "add_blueprint_sequence_node",
+        "connect_blueprint_nodes"
+      ],
+      "validation_plan": [
+        "resolve_blueprint or create under /Game/_MCP_Temp for smoke when possible",
+        "resolve_blueprint",
+        "compile_and_validate_blueprint",
+        "list_blueprint_nodes",
+        "compile_and_validate_blueprint before save",
+        "list_blueprint_nodes after authoring"
+      ],
+      "false_safe_guard": "Any blocked match overrides safe steps. Requests with no known-safe match require review."
+    },
+    {
+      "id": "typed_variables_defaults",
+      "request": "Create an Actor Blueprint shell with a Scene Component, bool variable default, string variable default, and vector variable default.",
+      "target_class": "",
+      "status": "safe_to_author",
+      "reason": "Only currently safe authoring patterns detected: Blueprint shell / class setup, Component composition, Variables and defaults.",
+      "matched_rules": [
+        {
+          "key": "blueprint_shell",
+          "label": "Blueprint shell / class setup",
+          "status": "safe_to_author"
+        },
+        {
+          "key": "component_setup",
+          "label": "Component composition",
+          "status": "safe_to_author"
+        },
+        {
+          "key": "variables_defaults",
+          "label": "Variables and defaults",
+          "status": "safe_to_author"
+        }
+      ],
+      "safe_steps": [
+        {
+          "key": "blueprint_shell",
+          "label": "Blueprint shell / class setup",
+          "guidance": "Create a narrow Blueprint shell using an existing parent class; keep native behavior in native classes.",
+          "tools": [
+            "create_blueprint",
+            "compile_and_validate_blueprint"
+          ]
+        },
+        {
+          "key": "component_setup",
+          "label": "Component composition",
+          "guidance": "Add existing component classes and set exposed defaults; do not recreate native component internals.",
+          "tools": [
+            "add_component_to_blueprint",
+            "list_blueprint_components",
+            "get_component_property",
+            "set_component_property"
+          ]
+        },
+        {
+          "key": "variables_defaults",
+          "label": "Variables and defaults",
+          "guidance": "Add Blueprint variables with explicit type/default metadata and expose only requested controls.",
+          "tools": [
+            "add_blueprint_variable",
+            "set_blueprint_pin_default"
+          ]
+        }
+      ],
+      "requires_review": [],
+      "blocked_items": [],
+      "needed_mcp_tools": [
+        "create_blueprint",
+        "compile_and_validate_blueprint",
+        "add_component_to_blueprint",
+        "list_blueprint_components",
+        "get_component_property",
+        "set_component_property",
+        "add_blueprint_variable",
+        "set_blueprint_pin_default"
+      ],
+      "validation_plan": [
+        "resolve_blueprint or create under /Game/_MCP_Temp for smoke when possible",
+        "resolve_blueprint",
+        "compile_and_validate_blueprint",
+        "compile_and_validate_blueprint before save",
+        "list_blueprint_nodes after authoring"
+      ],
+      "false_safe_guard": "Any blocked match overrides safe steps. Requests with no known-safe match require review."
+    },
+    {
+      "id": "event_sequence_flow",
+      "request": "Create an Actor Blueprint shell with BeginPlay, a Sequence node, and two PrintString calls.",
+      "target_class": "",
+      "status": "safe_to_author",
+      "reason": "Only currently safe authoring patterns detected: Blueprint shell / class setup, Function calls and graph glue.",
+      "matched_rules": [
+        {
+          "key": "blueprint_shell",
+          "label": "Blueprint shell / class setup",
+          "status": "safe_to_author"
+        },
+        {
+          "key": "function_graph_glue",
+          "label": "Function calls and graph glue",
+          "status": "safe_to_author"
+        }
+      ],
+      "safe_steps": [
+        {
+          "key": "blueprint_shell",
+          "label": "Blueprint shell / class setup",
+          "guidance": "Create a narrow Blueprint shell using an existing parent class; keep native behavior in native classes.",
+          "tools": [
+            "create_blueprint",
+            "compile_and_validate_blueprint"
+          ]
+        },
+        {
+          "key": "function_graph_glue",
+          "label": "Function calls and graph glue",
+          "guidance": "Author ordinary reflected function calls and simple control-flow glue only.",
+          "tools": [
+            "resolve_blueprint_graph",
+            "add_blueprint_function_parameter",
+            "add_blueprint_local_variable",
+            "add_blueprint_variable_get_node",
+            "add_blueprint_variable_set_node",
+            "add_blueprint_self_reference",
+            "add_blueprint_math_node",
+            "add_blueprint_compare_node",
+            "add_blueprint_return_node",
+            "add_blueprint_call_function_node",
+            "add_blueprint_branch_node",
+            "add_blueprint_sequence_node",
+            "connect_blueprint_nodes"
+          ]
+        }
+      ],
+      "requires_review": [],
+      "blocked_items": [],
+      "needed_mcp_tools": [
+        "create_blueprint",
+        "compile_and_validate_blueprint",
+        "resolve_blueprint_graph",
+        "add_blueprint_function_parameter",
+        "add_blueprint_local_variable",
+        "add_blueprint_variable_get_node",
+        "add_blueprint_variable_set_node",
+        "add_blueprint_self_reference",
+        "add_blueprint_math_node",
+        "add_blueprint_compare_node",
+        "add_blueprint_return_node",
+        "add_blueprint_call_function_node",
+        "add_blueprint_branch_node",
+        "add_blueprint_sequence_node",
+        "connect_blueprint_nodes"
+      ],
+      "validation_plan": [
+        "resolve_blueprint or create under /Game/_MCP_Temp for smoke when possible",
+        "resolve_blueprint",
+        "compile_and_validate_blueprint",
+        "list_blueprint_nodes",
+        "compile_and_validate_blueprint before save",
+        "list_blueprint_nodes after authoring"
+      ],
+      "false_safe_guard": "Any blocked match overrides safe steps. Requests with no known-safe match require review."
+    },
+    {
+      "id": "generated_function_invocation",
+      "request": "Create a function graph and call the generated function from BeginPlay with an input default, then store the output in a variable.",
+      "target_class": "",
+      "status": "safe_to_author",
+      "reason": "Only currently safe authoring patterns detected: Variables and defaults, Function calls and graph glue.",
+      "matched_rules": [
+        {
+          "key": "variables_defaults",
+          "label": "Variables and defaults",
+          "status": "safe_to_author"
+        },
+        {
+          "key": "function_graph_glue",
+          "label": "Function calls and graph glue",
+          "status": "safe_to_author"
+        }
+      ],
+      "safe_steps": [
+        {
+          "key": "variables_defaults",
+          "label": "Variables and defaults",
+          "guidance": "Add Blueprint variables with explicit type/default metadata and expose only requested controls.",
+          "tools": [
+            "add_blueprint_variable",
+            "set_blueprint_pin_default"
+          ]
+        },
+        {
+          "key": "function_graph_glue",
+          "label": "Function calls and graph glue",
+          "guidance": "Author ordinary reflected function calls and simple control-flow glue only.",
+          "tools": [
+            "resolve_blueprint_graph",
+            "add_blueprint_function_parameter",
+            "add_blueprint_local_variable",
+            "add_blueprint_variable_get_node",
+            "add_blueprint_variable_set_node",
+            "add_blueprint_self_reference",
+            "add_blueprint_math_node",
+            "add_blueprint_compare_node",
+            "add_blueprint_return_node",
+            "add_blueprint_call_function_node",
+            "add_blueprint_branch_node",
+            "add_blueprint_sequence_node",
+            "connect_blueprint_nodes"
+          ]
+        }
+      ],
+      "requires_review": [],
+      "blocked_items": [],
+      "needed_mcp_tools": [
+        "add_blueprint_variable",
+        "set_blueprint_pin_default",
+        "resolve_blueprint_graph",
+        "add_blueprint_function_parameter",
+        "add_blueprint_local_variable",
+        "add_blueprint_variable_get_node",
+        "add_blueprint_variable_set_node",
+        "add_blueprint_self_reference",
+        "add_blueprint_math_node",
+        "add_blueprint_compare_node",
+        "add_blueprint_return_node",
+        "add_blueprint_call_function_node",
+        "add_blueprint_branch_node",
+        "add_blueprint_sequence_node",
+        "connect_blueprint_nodes"
+      ],
+      "validation_plan": [
+        "resolve_blueprint or create under /Game/_MCP_Temp for smoke when possible",
+        "resolve_blueprint",
+        "compile_and_validate_blueprint",
+        "list_blueprint_nodes",
+        "compile_and_validate_blueprint before save",
+        "list_blueprint_nodes after authoring"
+      ],
+      "false_safe_guard": "Any blocked match overrides safe steps. Requests with no known-safe match require review."
+    },
+    {
+      "id": "event_dispatcher_lifecycle",
+      "request": "Create a Blueprint Event Dispatcher, call it, bind it to a compatible custom event, assign it, unbind it, and clear it.",
+      "target_class": "",
+      "status": "safe_to_author",
+      "reason": "Only currently safe authoring patterns detected: Blueprint Event Dispatcher lifecycle.",
+      "matched_rules": [
+        {
+          "key": "event_dispatcher_lifecycle",
+          "label": "Blueprint Event Dispatcher lifecycle",
+          "status": "safe_to_author"
+        }
+      ],
+      "safe_steps": [
+        {
+          "key": "event_dispatcher_lifecycle",
+          "label": "Blueprint Event Dispatcher lifecycle",
+          "guidance": "Use Blueprint Event Dispatcher primitives only when the delegate owner and cleanup semantics are Blueprint-equivalent.",
+          "tools": [
+            "add_blueprint_event_dispatcher",
+            "add_blueprint_event_dispatcher_call_node",
+            "add_blueprint_custom_event_node",
+            "add_blueprint_event_dispatcher_bind_node",
+            "add_blueprint_event_dispatcher_assign_node",
+            "add_blueprint_event_dispatcher_unbind_node",
+            "add_blueprint_event_dispatcher_clear_node",
+            "connect_blueprint_nodes"
+          ]
+        }
+      ],
+      "requires_review": [],
+      "blocked_items": [],
+      "needed_mcp_tools": [
+        "add_blueprint_event_dispatcher",
+        "add_blueprint_event_dispatcher_call_node",
+        "add_blueprint_custom_event_node",
+        "add_blueprint_event_dispatcher_bind_node",
+        "add_blueprint_event_dispatcher_assign_node",
+        "add_blueprint_event_dispatcher_unbind_node",
+        "add_blueprint_event_dispatcher_clear_node",
+        "connect_blueprint_nodes"
+      ],
+      "validation_plan": [
+        "resolve_blueprint or create under /Game/_MCP_Temp for smoke when possible",
+        "list_blueprint_graphs",
+        "list_blueprint_nodes",
+        "compile_and_validate_blueprint",
+        "compile_and_validate_blueprint before save",
+        "list_blueprint_nodes after authoring"
+      ],
+      "false_safe_guard": "Any blocked match overrides safe steps. Requests with no known-safe match require review."
+    },
+    {
+      "id": "async_proxy_request",
+      "request": "Convert a UBlueprintAsyncActionBase async action with callback exec pins, Activate(), Broadcast(), and cancellation cleanup.",
+      "target_class": "",
+      "status": "blocked_until_reinforced",
+      "reason": "Blocked patterns detected: Async proxy callback exec topology.",
+      "matched_rules": [
+        {
+          "key": "async_proxy_callback_exec",
+          "label": "Async proxy callback exec topology",
+          "status": "blocked_until_reinforced"
+        }
+      ],
+      "safe_steps": [],
+      "requires_review": [],
+      "blocked_items": [
+        {
+          "key": "async_proxy_callback_exec",
+          "label": "Async proxy callback exec topology",
+          "reason": "Async proxy nodes need callback exec pin, payload pin, activation, cancellation, and cleanup modeling first.",
+          "required_before_authoring": [
+            "async proxy callback inventory"
+          ]
+        }
+      ],
+      "needed_mcp_tools": [],
+      "validation_plan": [
+        "async proxy callback inventory",
+        "do not author Blueprint graph until blocked items are removed or reinforced"
+      ],
+      "false_safe_guard": "Any blocked match overrides safe steps. Requests with no known-safe match require review."
+    },
+    {
+      "id": "gas_replication_request",
+      "request": "Build a Gameplay Ability with AbilityTask prediction and replicated Server RPC state changes.",
+      "target_class": "",
+      "status": "blocked_until_reinforced",
+      "reason": "Blocked patterns detected: Gameplay Ability System / AbilityTask, Replication, RPC, or ReplicationGraph.",
+      "matched_rules": [
+        {
+          "key": "gas_ability_task",
+          "label": "Gameplay Ability System / AbilityTask",
+          "status": "blocked_until_reinforced"
+        },
+        {
+          "key": "replication_rpc",
+          "label": "Replication, RPC, or ReplicationGraph",
+          "status": "blocked_until_reinforced"
+        }
+      ],
+      "safe_steps": [],
+      "requires_review": [],
+      "blocked_items": [
+        {
+          "key": "gas_ability_task",
+          "label": "Gameplay Ability System / AbilityTask",
+          "reason": "GAS internals and AbilityTasks require domain-specific native policy and prediction-safe authoring.",
+          "required_before_authoring": [
+            "GAS classifier",
+            "native review"
+          ]
+        },
+        {
+          "key": "replication_rpc",
+          "label": "Replication, RPC, or ReplicationGraph",
+          "reason": "Replication and RPC authority policy are native-blocked for generic C++ to BP lowering.",
+          "required_before_authoring": [
+            "native networking review"
+          ]
+        }
+      ],
+      "needed_mcp_tools": [],
+      "validation_plan": [
+        "GAS classifier",
+        "native review",
+        "native networking review",
+        "do not author Blueprint graph until blocked items are removed or reinforced"
+      ],
+      "false_safe_guard": "Any blocked match overrides safe steps. Requests with no known-safe match require review."
+    },
+    {
+      "id": "commonui_request",
+      "request": "Create a CommonUI activatable widget tree with layer activation policy and back handling.",
+      "target_class": "",
+      "status": "blocked_until_reinforced",
+      "reason": "Blocked patterns detected: CommonUI structure or activation policy.",
+      "matched_rules": [
+        {
+          "key": "commonui_structure",
+          "label": "CommonUI structure or activation policy",
+          "status": "blocked_until_reinforced"
+        }
+      ],
+      "safe_steps": [],
+      "requires_review": [],
+      "blocked_items": [
+        {
+          "key": "commonui_structure",
+          "label": "CommonUI structure or activation policy",
+          "reason": "CommonUI widget tree, layer, and activation policy authoring need dedicated tooling before BP generation.",
+          "required_before_authoring": [
+            "CommonUI/UMG structure inventory"
+          ]
+        }
+      ],
+      "needed_mcp_tools": [],
+      "validation_plan": [
+        "CommonUI/UMG structure inventory",
+        "do not author Blueprint graph until blocked items are removed or reinforced"
+      ],
+      "false_safe_guard": "Any blocked match overrides safe steps. Requests with no known-safe match require review."
+    }
+  ],
+  "policy": {
+    "status_priority": [
+      "blocked_until_reinforced",
+      "requires_review",
+      "safe_to_author"
+    ],
+    "default_for_unknown_requests": "requires_review",
+    "lyra_specific_content_dependency": false,
+    "cxx_changes_required": false
+  }
+}
