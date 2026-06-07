@@ -21,6 +21,7 @@ import bp_authoring_durable_canary_command_allowlist_contract as canary_command_
 import bp_authoring_durable_canary_creation_boundary_contract as canary_creation_boundary
 import bp_authoring_durable_canary_read_only_retry_envelope_contract as canary_read_only_retry
 import bp_authoring_durable_canary_read_only_retry_result_admission_contract as retry_result_admission
+import bp_authoring_durable_canary_rehearsal_promotion_barrier_contract as rehearsal_promotion_barrier
 import bp_authoring_durable_canary_rehearsal_readiness_contract as canary_rehearsal_readiness
 import bp_authoring_durable_executor_review_contract as executor_review
 import bp_authoring_durable_live_evidence_refresh_contract as live_evidence_refresh
@@ -32,7 +33,7 @@ import bp_authoring_durable_save_gate_final_review_contract as save_gate_final_r
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_73_bp_authoring_release_boundary_v15"
+REPORT_SCHEMA = "section_74_bp_authoring_release_boundary_v16"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -1391,6 +1392,140 @@ def build_canary_read_only_retry_result_admission_row(
     )
 
 
+def build_canary_rehearsal_promotion_barrier_row(
+    contract_summary: Dict[str, Any],
+    executor_summary: Dict[str, Any],
+    project_root: Path,
+    planner_report: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    recovery_contract = bridge_recovery_readiness.build_bridge_recovery_readiness_contract(
+        requested=True,
+        recovery_inputs=bridge_recovery_readiness.collect_bridge_recovery_inputs(project_root),
+    )
+    allowlist_contract = canary_command_allowlist.build_canary_command_allowlist_contract(
+        requested=True,
+        executor_summary=executor_summary,
+    )
+    retry_envelope_contract = canary_read_only_retry.build_canary_read_only_retry_envelope_contract(
+        requested=True,
+        bridge_recovery_summary=bridge_recovery_readiness.summarize_bridge_recovery_readiness_contracts(
+            [recovery_contract]
+        ),
+        canary_live_preflight_summary=contract_summary.get("durable_canary_live_preflight_summary", {}),
+        command_allowlist_summary=canary_command_allowlist.summarize_canary_command_allowlist_contracts(
+            [allowlist_contract]
+        ),
+    )
+    retry_admission_contract = retry_result_admission.build_canary_read_only_retry_result_admission_contract(
+        requested=True,
+        retry_envelope_summary=canary_read_only_retry.summarize_canary_read_only_retry_envelopes(
+            [retry_envelope_contract]
+        ),
+    )
+    live_contract = live_evidence_refresh.build_live_evidence_refresh_contract(
+        requested=True,
+        planner_report=planner_report,
+    )
+    marker_contract = ownership_marker_proof.build_ownership_marker_proof_contract(
+        requested=True,
+        contract_summary=contract_summary,
+    )
+    cleanup_contract = rollback_cleanup_proof.build_rollback_cleanup_proof_contract(
+        requested=True,
+        contract_summary=contract_summary,
+        marker_proof_contract=marker_contract,
+    )
+    save_contract = save_gate_final_review.build_save_gate_final_review_contract(
+        requested=True,
+        contract_summary=contract_summary,
+        executor_summary=executor_summary,
+    )
+    rehearsal_contract = canary_rehearsal_readiness.build_canary_rehearsal_readiness_contract(
+        requested=True,
+        bridge_refresh_summary=contract_summary.get("durable_canary_bridge_refresh_summary", {}),
+        live_evidence_summary=live_evidence_refresh.summarize_live_evidence_refresh_contracts([live_contract]),
+        marker_proof_summary=ownership_marker_proof.summarize_ownership_marker_proof_contracts([marker_contract]),
+        cleanup_proof_summary=rollback_cleanup_proof.summarize_rollback_cleanup_proof_contracts([cleanup_contract]),
+        save_review_summary=save_gate_final_review.summarize_save_gate_final_review_contracts([save_contract]),
+    )
+    contract = rehearsal_promotion_barrier.build_canary_rehearsal_promotion_barrier_contract(
+        requested=True,
+        retry_result_admission_summary=retry_result_admission.summarize_canary_read_only_retry_result_admissions(
+            [retry_admission_contract]
+        ),
+        rehearsal_readiness_summary=canary_rehearsal_readiness.summarize_canary_rehearsal_readiness_contracts(
+            [rehearsal_contract]
+        ),
+        marker_proof_summary=ownership_marker_proof.summarize_ownership_marker_proof_contracts([marker_contract]),
+        cleanup_proof_summary=rollback_cleanup_proof.summarize_rollback_cleanup_proof_contracts([cleanup_contract]),
+        save_review_summary=save_gate_final_review.summarize_save_gate_final_review_contracts([save_contract]),
+    )
+    summary = rehearsal_promotion_barrier.summarize_canary_rehearsal_promotion_barriers([contract])
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_canary_rehearsal_promotion_barrier_count": 1,
+        "promotion_barrier_defined_count": 1,
+        "read_only_result_admitted_count": 0,
+        "rehearsal_readiness_review_complete_count": 1,
+        "promotion_inputs_satisfied_count": 0,
+        "promotion_execution_release_present_count": 0,
+        "missing_promotion_prerequisite_count": 7,
+        "canary_rehearsal_promotion_allowed_count": 0,
+        "live_canary_rehearsal_allowed_count": 0,
+        "live_canary_rehearsal_performed_count": 0,
+        "canary_creation_allowed_count": 0,
+        "canary_save_allowed_count": 0,
+        "canary_cleanup_allowed_count": 0,
+        "durable_executor_may_open_after_promotion_count": 0,
+        "durable_authoring_allowed_count": 0,
+        "save_delete_rename_allowed_count": 0,
+        "cleanup_allowed_count": 0,
+        "live_creation_command_count": 0,
+        "live_save_command_count": 0,
+        "live_delete_rename_command_count": 0,
+        "live_cleanup_command_count": 0,
+    }
+    actual = {
+        "summary_status": summary.get("status"),
+        "durable_requested_canary_rehearsal_promotion_barrier_count": summary.get(
+            "durable_requested_canary_rehearsal_promotion_barrier_count"
+        ),
+        "promotion_barrier_defined_count": summary.get("promotion_barrier_defined_count"),
+        "read_only_result_admitted_count": summary.get("read_only_result_admitted_count"),
+        "rehearsal_readiness_review_complete_count": summary.get("rehearsal_readiness_review_complete_count"),
+        "promotion_inputs_satisfied_count": summary.get("promotion_inputs_satisfied_count"),
+        "promotion_execution_release_present_count": summary.get("promotion_execution_release_present_count"),
+        "missing_promotion_prerequisite_count": summary.get("missing_promotion_prerequisite_count"),
+        "canary_rehearsal_promotion_allowed_count": summary.get("canary_rehearsal_promotion_allowed_count"),
+        "live_canary_rehearsal_allowed_count": summary.get("live_canary_rehearsal_allowed_count"),
+        "live_canary_rehearsal_performed_count": summary.get("live_canary_rehearsal_performed_count"),
+        "canary_creation_allowed_count": summary.get("canary_creation_allowed_count"),
+        "canary_save_allowed_count": summary.get("canary_save_allowed_count"),
+        "canary_cleanup_allowed_count": summary.get("canary_cleanup_allowed_count"),
+        "durable_executor_may_open_after_promotion_count": summary.get(
+            "durable_executor_may_open_after_promotion_count"
+        ),
+        "durable_authoring_allowed_count": summary.get("durable_authoring_allowed_count"),
+        "save_delete_rename_allowed_count": summary.get("save_delete_rename_allowed_count"),
+        "cleanup_allowed_count": summary.get("cleanup_allowed_count"),
+        "live_creation_command_count": summary.get("live_creation_command_count"),
+        "live_save_command_count": summary.get("live_save_command_count"),
+        "live_delete_rename_command_count": summary.get("live_delete_rename_command_count"),
+        "live_cleanup_command_count": summary.get("live_cleanup_command_count"),
+    }
+    return row(
+        "durable_canary_rehearsal_promotion_barrier_contract",
+        "Section 74 durable canary rehearsal promotion barrier contract",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "An admitted read-only retry result cannot promote itself to live canary rehearsal.",
+            "A separate durable rehearsal execution release is still required before any live authoring command.",
+        ),
+    )
+
+
 def build_section_51_58_consolidation_row(
     contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -1662,7 +1797,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     lyra_report = read_json(lyra_report_path)
     preliminary_verdict = {
         "status": "passed",
-        "release_boundary_version": "section_73_v15",
+        "release_boundary_version": "section_74_v16",
         "durable_authoring_enabled": False,
     }
     decision_contract = mvp_decision.build_mvp_decision_contract(
@@ -1703,6 +1838,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         build_bridge_recovery_readiness_row(project_root),
         build_canary_read_only_retry_envelope_row(contract_summary, executor_summary, project_root),
         build_canary_read_only_retry_result_admission_row(contract_summary, executor_summary, project_root),
+        build_canary_rehearsal_promotion_barrier_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        ),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -1723,7 +1864,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
-            "release_boundary_version": "section_73_v15",
+            "release_boundary_version": "section_74_v16",
             "mvp_decision_status": decision_contract["decision_status"],
             "temporary_blueprint_authoring_mvp_ready": decision_contract[
                 "temporary_blueprint_authoring_mvp_ready"
@@ -1750,10 +1891,13 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "section_73_canary_read_only_retry_result_admission_status": (
                 "passed" if not failed_blocking else "failed"
             ),
+            "section_74_canary_rehearsal_promotion_barrier_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
             "final_durable_release_ready": False,
             "main_push_requested": False,
             "current_authoring_ceiling": (
-                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_section_64_canary_command_allowlist_contract_section_65_canary_creation_boundary_contract_section_66_ownership_marker_proof_contract_section_67_rollback_cleanup_proof_contract_section_68_save_gate_final_review_contract_section_69_canary_rehearsal_readiness_contract_section_70_durable_release_decision_contract_section_71_bridge_recovery_readiness_contract_section_72_canary_read_only_retry_envelope_contract_and_section_73_canary_read_only_retry_result_admission_contract"
+                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_section_64_canary_command_allowlist_contract_section_65_canary_creation_boundary_contract_section_66_ownership_marker_proof_contract_section_67_rollback_cleanup_proof_contract_section_68_save_gate_final_review_contract_section_69_canary_rehearsal_readiness_contract_section_70_durable_release_decision_contract_section_71_bridge_recovery_readiness_contract_section_72_canary_read_only_retry_envelope_contract_section_73_canary_read_only_retry_result_admission_contract_and_section_74_canary_rehearsal_promotion_barrier_contract"
             ),
             "cxx_changes_required": False,
         },

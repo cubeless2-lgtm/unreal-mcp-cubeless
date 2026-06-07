@@ -1,7 +1,7 @@
 {
-  "schema": "section_73_bp_authoring_release_boundary_v15",
+  "schema": "section_74_bp_authoring_release_boundary_v16",
   "analysis_kind": "bp_authoring_release_boundary",
-  "generated_at": "2026-06-07T09:18:36.817822+00:00",
+  "generated_at": "2026-06-07T09:27:11.593267+00:00",
   "repo_root": "D:\\Git\\unreal-mcp-cubeless",
   "project_root": "D:\\Git\\CubelessStylized",
   "report_inputs": {
@@ -1051,6 +1051,64 @@
       ]
     },
     {
+      "id": "durable_canary_rehearsal_promotion_barrier_contract",
+      "label": "Section 74 durable canary rehearsal promotion barrier contract",
+      "status": "passed",
+      "blocking": true,
+      "expected": {
+        "summary_status": "passed",
+        "durable_requested_canary_rehearsal_promotion_barrier_count": 1,
+        "promotion_barrier_defined_count": 1,
+        "read_only_result_admitted_count": 0,
+        "rehearsal_readiness_review_complete_count": 1,
+        "promotion_inputs_satisfied_count": 0,
+        "promotion_execution_release_present_count": 0,
+        "missing_promotion_prerequisite_count": 7,
+        "canary_rehearsal_promotion_allowed_count": 0,
+        "live_canary_rehearsal_allowed_count": 0,
+        "live_canary_rehearsal_performed_count": 0,
+        "canary_creation_allowed_count": 0,
+        "canary_save_allowed_count": 0,
+        "canary_cleanup_allowed_count": 0,
+        "durable_executor_may_open_after_promotion_count": 0,
+        "durable_authoring_allowed_count": 0,
+        "save_delete_rename_allowed_count": 0,
+        "cleanup_allowed_count": 0,
+        "live_creation_command_count": 0,
+        "live_save_command_count": 0,
+        "live_delete_rename_command_count": 0,
+        "live_cleanup_command_count": 0
+      },
+      "actual": {
+        "summary_status": "passed",
+        "durable_requested_canary_rehearsal_promotion_barrier_count": 1,
+        "promotion_barrier_defined_count": 1,
+        "read_only_result_admitted_count": 0,
+        "rehearsal_readiness_review_complete_count": 1,
+        "promotion_inputs_satisfied_count": 0,
+        "promotion_execution_release_present_count": 0,
+        "missing_promotion_prerequisite_count": 7,
+        "canary_rehearsal_promotion_allowed_count": 0,
+        "live_canary_rehearsal_allowed_count": 0,
+        "live_canary_rehearsal_performed_count": 0,
+        "canary_creation_allowed_count": 0,
+        "canary_save_allowed_count": 0,
+        "canary_cleanup_allowed_count": 0,
+        "durable_executor_may_open_after_promotion_count": 0,
+        "durable_authoring_allowed_count": 0,
+        "save_delete_rename_allowed_count": 0,
+        "cleanup_allowed_count": 0,
+        "live_creation_command_count": 0,
+        "live_save_command_count": 0,
+        "live_delete_rename_command_count": 0,
+        "live_cleanup_command_count": 0
+      },
+      "notes": [
+        "An admitted read-only retry result cannot promote itself to live canary rehearsal.",
+        "A separate durable rehearsal execution release is still required before any live authoring command."
+      ]
+    },
+    {
       "id": "planner_driven_live_smoke_report",
       "label": "Planner-driven live smoke report",
       "status": "passed",
@@ -1203,7 +1261,7 @@
   ],
   "verdict": {
     "status": "passed",
-    "release_boundary_version": "section_73_v15",
+    "release_boundary_version": "section_74_v16",
     "mvp_decision_status": "temporary_mvp_ready_durable_not_enabled",
     "temporary_blueprint_authoring_mvp_ready": true,
     "durable_blueprint_authoring_mvp_ready": false,
@@ -1226,9 +1284,10 @@
     "section_71_bridge_recovery_readiness_status": "passed",
     "section_72_canary_read_only_retry_envelope_status": "passed",
     "section_73_canary_read_only_retry_result_admission_status": "passed",
+    "section_74_canary_rehearsal_promotion_barrier_status": "passed",
     "final_durable_release_ready": false,
     "main_push_requested": false,
-    "current_authoring_ceiling": "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_section_64_canary_command_allowlist_contract_section_65_canary_creation_boundary_contract_section_66_ownership_marker_proof_contract_section_67_rollback_cleanup_proof_contract_section_68_save_gate_final_review_contract_section_69_canary_rehearsal_readiness_contract_section_70_durable_release_decision_contract_section_71_bridge_recovery_readiness_contract_section_72_canary_read_only_retry_envelope_contract_and_section_73_canary_read_only_retry_result_admission_contract",
+    "current_authoring_ceiling": "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_section_64_canary_command_allowlist_contract_section_65_canary_creation_boundary_contract_section_66_ownership_marker_proof_contract_section_67_rollback_cleanup_proof_contract_section_68_save_gate_final_review_contract_section_69_canary_rehearsal_readiness_contract_section_70_durable_release_decision_contract_section_71_bridge_recovery_readiness_contract_section_72_canary_read_only_retry_envelope_contract_section_73_canary_read_only_retry_result_admission_contract_and_section_74_canary_rehearsal_promotion_barrier_contract",
     "cxx_changes_required": false
   },
   "next_reinforcement_candidates": [
