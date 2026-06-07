@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_87_v29"
+        assert report["verdict"]["release_boundary_version"] == "section_88_v30"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -82,6 +82,7 @@ def main() -> int:
         assert report["verdict"]["section_85_canary_authoring_command_status"] == "passed"
         assert report["verdict"]["section_86_canary_authoring_command_dispatch_status"] == "passed"
         assert report["verdict"]["section_87_canary_authoring_command_execution_status"] == "passed"
+        assert report["verdict"]["section_88_canary_authoring_command_execution_evidence_status"] == "passed"
         assert report["verdict"]["final_durable_release_ready"] is False
         assert report["verdict"]["main_push_requested"] is False
         assert report["verdict"]["mvp_decision_status"] == "temporary_mvp_ready_durable_not_enabled"
@@ -823,6 +824,53 @@ def main() -> int:
         assert execution_row["actual"]["live_command_executed_count"] == 0
         assert execution_row["actual"]["reported_allowed_evidence_command_count"] == 0
         assert execution_row["actual"]["reported_forbidden_evidence_command_count"] == 0
+        evidence_row = find_row(report, "durable_canary_authoring_command_execution_evidence_contract")
+        assert evidence_row["status"] == "passed"
+        assert evidence_row["actual"]["durable_requested_canary_authoring_command_execution_evidence_count"] == 1
+        assert evidence_row["actual"]["evidence_contract_defined_count"] == 1
+        assert evidence_row["actual"]["execution_contract_ready_count"] == 1
+        assert evidence_row["actual"]["execution_inputs_satisfied_count"] == 0
+        assert evidence_row["actual"]["execution_record_valid_count"] == 0
+        assert evidence_row["actual"]["planned_authoring_commands_present_count"] == 0
+        assert evidence_row["actual"]["allowed_authoring_commands_present_count"] == 0
+        assert evidence_row["actual"]["evidence_inputs_satisfied_count"] == 0
+        assert evidence_row["actual"]["evidence_record_present_count"] == 0
+        assert evidence_row["actual"]["record_schema_matches_count"] == 0
+        assert evidence_row["actual"]["evidence_scope_matches_count"] == 0
+        assert evidence_row["actual"]["explicit_evidence_authorized_count"] == 0
+        assert evidence_row["actual"]["evidence_status_passed_count"] == 0
+        assert evidence_row["actual"]["no_save_delete_rename_acknowledged_count"] == 0
+        assert evidence_row["actual"]["allowed_evidence_command_observed_count"] == 0
+        assert evidence_row["actual"]["no_forbidden_evidence_commands_count"] == 0
+        assert evidence_row["actual"]["authoring_command_execution_evidence_admitted_count"] == 0
+        assert evidence_row["actual"]["evidence_record_rejected_count"] == 0
+        assert evidence_row["actual"]["unsafe_evidence_record_count"] == 0
+        assert evidence_row["actual"]["missing_evidence_prerequisite_count"] == 13
+        assert evidence_row["actual"]["reported_allowed_evidence_command_count"] == 0
+        assert evidence_row["actual"]["reported_forbidden_evidence_command_count"] == 0
+        assert evidence_row["actual"]["durable_authoring_command_dispatch_allowed_count"] == 0
+        assert evidence_row["actual"]["durable_authoring_command_dispatched_count"] == 0
+        assert evidence_row["actual"]["durable_authoring_command_execution_allowed_count"] == 0
+        assert evidence_row["actual"]["durable_authoring_command_executed_count"] == 0
+        assert evidence_row["actual"]["durable_promotion_allowed_count"] == 0
+        assert evidence_row["actual"]["durable_authoring_enabled_count"] == 0
+        assert evidence_row["actual"]["durable_authoring_allowed_count"] == 0
+        assert evidence_row["actual"]["save_delete_rename_allowed_count"] == 0
+        assert evidence_row["actual"]["cleanup_allowed_count"] == 0
+        assert evidence_row["actual"]["live_command_dispatch_allowed_count"] == 0
+        assert evidence_row["actual"]["live_command_plan_emitted_count"] == 0
+        assert evidence_row["actual"]["live_command_execution_allowed_count"] == 0
+        assert evidence_row["actual"]["live_command_executed_count"] == 0
+        assert evidence_row["actual"]["reported_authoring_create_command_count"] == 0
+        assert evidence_row["actual"]["reported_authoring_compile_command_count"] == 0
+        assert evidence_row["actual"]["reported_authoring_marker_write_command_count"] == 0
+        assert evidence_row["actual"]["reported_authoring_marker_readback_command_count"] == 0
+        assert evidence_row["actual"]["reported_authoring_read_only_exists_check_command_count"] == 0
+        assert evidence_row["actual"]["reported_authoring_save_command_count"] == 0
+        assert evidence_row["actual"]["reported_authoring_delete_rename_command_count"] == 0
+        assert evidence_row["actual"]["reported_authoring_cleanup_command_count"] == 0
+        assert evidence_row["actual"]["reported_authoring_duplicate_replace_command_count"] == 0
+        assert evidence_row["actual"]["reported_authoring_live_dispatch_execution_command_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
