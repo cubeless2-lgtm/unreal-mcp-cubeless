@@ -29,13 +29,14 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_65_v7"
+        assert report["verdict"]["release_boundary_version"] == "section_66_v8"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
         assert report["verdict"]["section_63_executor_review_status"] == "passed"
         assert report["verdict"]["section_64_canary_command_allowlist_status"] == "passed"
         assert report["verdict"]["section_65_canary_creation_boundary_status"] == "passed"
+        assert report["verdict"]["section_66_ownership_marker_proof_status"] == "passed"
         assert report["verdict"]["mvp_decision_status"] == "temporary_mvp_ready_durable_not_enabled"
         assert report["verdict"]["temporary_blueprint_authoring_mvp_ready"] is True
         assert report["verdict"]["durable_blueprint_authoring_mvp_ready"] is False
@@ -158,6 +159,20 @@ def main() -> int:
         assert creation_boundary_row["actual"]["durable_executor_may_open_for_creation_count"] == 0
         assert creation_boundary_row["actual"]["live_creation_command_count"] == 0
         assert creation_boundary_row["actual"]["live_save_or_delete_command_count"] == 0
+        marker_proof_row = find_row(report, "durable_ownership_marker_write_readback_proof_contract")
+        assert marker_proof_row["status"] == "passed"
+        assert marker_proof_row["actual"]["durable_requested_ownership_marker_proof_count"] == 1
+        assert marker_proof_row["actual"]["ownership_marker_policy_ready_count"] == 1
+        assert marker_proof_row["actual"]["write_readback_proof_required_count"] == 1
+        assert marker_proof_row["actual"]["marker_write_performed_count"] == 0
+        assert marker_proof_row["actual"]["marker_readback_verified_count"] == 0
+        assert marker_proof_row["actual"]["write_readback_proof_satisfied_count"] == 0
+        assert marker_proof_row["actual"]["cleanup_allowed_after_marker_proof_count"] == 0
+        assert marker_proof_row["actual"]["delete_allowed_after_marker_proof_count"] == 0
+        assert marker_proof_row["actual"]["durable_executor_may_open_after_marker_proof_count"] == 0
+        assert marker_proof_row["actual"]["live_write_command_count"] == 0
+        assert marker_proof_row["actual"]["live_readback_command_count"] == 0
+        assert marker_proof_row["actual"]["live_delete_command_count"] == 0
         canary_recovery_row = find_row(report, "durable_canary_recovery_matrix")
         assert canary_recovery_row["status"] == "passed"
         assert canary_recovery_row["actual"]["durable_requested_canary_recovery_count"] == 1

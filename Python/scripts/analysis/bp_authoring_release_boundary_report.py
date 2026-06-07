@@ -21,10 +21,11 @@ import bp_authoring_durable_canary_creation_boundary_contract as canary_creation
 import bp_authoring_durable_executor_review_contract as executor_review
 import bp_authoring_durable_live_evidence_refresh_contract as live_evidence_refresh
 import bp_authoring_durable_mvp_decision_contract as mvp_decision
+import bp_authoring_durable_ownership_marker_proof_contract as ownership_marker_proof
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_65_bp_authoring_release_boundary_v7"
+REPORT_SCHEMA = "section_66_bp_authoring_release_boundary_v8"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -836,6 +837,59 @@ def build_canary_creation_boundary_row(
     )
 
 
+def build_ownership_marker_proof_row(contract_summary: Dict[str, Any]) -> Dict[str, Any]:
+    contract = ownership_marker_proof.build_ownership_marker_proof_contract(
+        requested=True,
+        contract_summary=contract_summary,
+    )
+    summary = ownership_marker_proof.summarize_ownership_marker_proof_contracts([contract])
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_ownership_marker_proof_count": 1,
+        "ownership_marker_policy_ready_count": 1,
+        "write_readback_proof_required_count": 1,
+        "marker_write_performed_count": 0,
+        "marker_readback_verified_count": 0,
+        "write_readback_proof_satisfied_count": 0,
+        "cleanup_allowed_after_marker_proof_count": 0,
+        "delete_allowed_after_marker_proof_count": 0,
+        "durable_executor_may_open_after_marker_proof_count": 0,
+        "live_write_command_count": 0,
+        "live_readback_command_count": 0,
+        "live_delete_command_count": 0,
+    }
+    actual = {
+        "summary_status": summary.get("status"),
+        "durable_requested_ownership_marker_proof_count": summary.get(
+            "durable_requested_ownership_marker_proof_count"
+        ),
+        "ownership_marker_policy_ready_count": summary.get("ownership_marker_policy_ready_count"),
+        "write_readback_proof_required_count": summary.get("write_readback_proof_required_count"),
+        "marker_write_performed_count": summary.get("marker_write_performed_count"),
+        "marker_readback_verified_count": summary.get("marker_readback_verified_count"),
+        "write_readback_proof_satisfied_count": summary.get("write_readback_proof_satisfied_count"),
+        "cleanup_allowed_after_marker_proof_count": summary.get("cleanup_allowed_after_marker_proof_count"),
+        "delete_allowed_after_marker_proof_count": summary.get("delete_allowed_after_marker_proof_count"),
+        "durable_executor_may_open_after_marker_proof_count": summary.get(
+            "durable_executor_may_open_after_marker_proof_count"
+        ),
+        "live_write_command_count": summary.get("live_write_command_count"),
+        "live_readback_command_count": summary.get("live_readback_command_count"),
+        "live_delete_command_count": summary.get("live_delete_command_count"),
+    }
+    return row(
+        "durable_ownership_marker_write_readback_proof_contract",
+        "Section 66 durable ownership marker write/readback proof contract",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "Ownership marker policy is ready, but write/readback proof has not been performed.",
+            "Cleanup and delete remain disabled until a verified executor-created marker exists.",
+        ),
+    )
+
+
 def build_section_51_58_consolidation_row(
     contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -1107,7 +1161,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     lyra_report = read_json(lyra_report_path)
     preliminary_verdict = {
         "status": "passed",
-        "release_boundary_version": "section_65_v7",
+        "release_boundary_version": "section_66_v8",
         "durable_authoring_enabled": False,
     }
     decision_contract = mvp_decision.build_mvp_decision_contract(
@@ -1133,6 +1187,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         build_executor_review_row(executor_summary),
         build_canary_command_allowlist_row(executor_summary),
         build_canary_creation_boundary_row(contract_summary, executor_summary),
+        build_ownership_marker_proof_row(contract_summary),
         build_durable_canary_recovery_row(contract_summary, executor_summary),
         build_section_51_58_consolidation_row(contract_summary, executor_summary),
         build_mvp_decision_row(decision_contract),
@@ -1156,7 +1211,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
-            "release_boundary_version": "section_65_v7",
+            "release_boundary_version": "section_66_v8",
             "mvp_decision_status": decision_contract["decision_status"],
             "temporary_blueprint_authoring_mvp_ready": decision_contract[
                 "temporary_blueprint_authoring_mvp_ready"
@@ -1173,8 +1228,9 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "section_63_executor_review_status": "passed" if not failed_blocking else "failed",
             "section_64_canary_command_allowlist_status": "passed" if not failed_blocking else "failed",
             "section_65_canary_creation_boundary_status": "passed" if not failed_blocking else "failed",
+            "section_66_ownership_marker_proof_status": "passed" if not failed_blocking else "failed",
             "current_authoring_ceiling": (
-                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_section_64_canary_command_allowlist_contract_and_section_65_canary_creation_boundary_contract"
+                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_section_64_canary_command_allowlist_contract_section_65_canary_creation_boundary_contract_and_section_66_ownership_marker_proof_contract"
             ),
             "cxx_changes_required": False,
         },
