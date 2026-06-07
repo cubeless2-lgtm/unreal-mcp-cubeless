@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_151_v93"
+        assert report["verdict"]["release_boundary_version"] == "section_152_v94"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -253,6 +253,12 @@ def main() -> int:
         assert (
             report["verdict"][
                 "section_151_durable_executor_authoring_command_completion_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_152_durable_executor_authoring_command_result_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_status"
             ]
             == "passed"
         )
@@ -4805,6 +4811,74 @@ def main() -> int:
                 "actual"
             ]
             == expected_completion_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_actual
+        )
+        executor_authoring_result_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_row = find_row(
+            report,
+            "durable_executor_authoring_command_result_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_contract",
+        )
+        assert (
+            executor_authoring_result_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_row[
+                "status"
+            ]
+            == "passed"
+        )
+        expected_result_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_actual = {
+            "summary_status": "passed",
+            "durable_requested_executor_authoring_command_result_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_count": 1,
+            "readback_contract_defined_count": 1,
+            "result_contract_ready_count": 1,
+            "result_inputs_satisfied_count": 0,
+            "result_record_valid_count": 0,
+            "allowed_result_observed_count": 0,
+            "no_forbidden_results_count": 0,
+            "readback_inputs_satisfied_count": 0,
+            "readback_record_present_count": 0,
+            "record_schema_matches_count": 0,
+            "readback_scope_matches_count": 0,
+            "explicit_readback_authorized_count": 0,
+            "readback_status_passed_count": 0,
+            "no_save_delete_rename_acknowledged_count": 0,
+            "explicit_durable_mvp_request_reconfirmed_count": 0,
+            "allowed_readback_observed_count": 0,
+            "no_forbidden_readbacks_count": 0,
+            "readback_record_valid_count": 0,
+            "readback_record_rejected_count": 0,
+            "unsafe_readback_record_count": 0,
+            "missing_readback_prerequisite_count": 14,
+            "reported_allowed_readback_count": 0,
+            "reported_forbidden_readback_count": 0,
+            "durable_authoring_command_result_readback_accepted_count": 0,
+            "durable_authoring_command_completion_result_accepted_count": 0,
+            "durable_authoring_command_completed_count": 0,
+            "asset_write_performed_count": 0,
+            "package_dirty_marked_count": 0,
+            "durable_authoring_enabled_count": 0,
+            "durable_authoring_allowed_count": 0,
+            "code_change_performed_count": 0,
+            "executor_code_modified_count": 0,
+            "unreal_asset_modified_count": 0,
+            "live_bridge_probe_started_count": 0,
+            "save_delete_rename_allowed_count": 0,
+            "cleanup_allowed_count": 0,
+            "live_command_dispatched_count": 0,
+            "live_command_executed_count": 0,
+            "reported_no_completion_readback_count": 0,
+            "reported_no_write_readback_count": 0,
+            "reported_no_save_readback_count": 0,
+            "reported_completed_readback_count": 0,
+            "reported_asset_write_readback_count": 0,
+            "reported_package_dirty_readback_count": 0,
+            "reported_save_readback_count": 0,
+            "reported_delete_rename_readback_count": 0,
+            "reported_cleanup_readback_count": 0,
+            "reported_code_change_readback_count": 0,
+            "reported_live_command_readback_count": 0,
+        }
+        assert (
+            executor_authoring_result_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_row[
+                "actual"
+            ]
+            == expected_result_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_actual
         )
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
