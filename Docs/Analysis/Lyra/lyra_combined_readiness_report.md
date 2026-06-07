@@ -1,6 +1,6 @@
 # Lyra Combined BP Authoring Readiness
 
-- Generated UTC: `2026-06-07T04:22:14.795007+00:00`
+- Generated UTC: `2026-06-07T04:34:24.244295+00:00`
 - Project root: `D:\Git\LyraStarterGame`
 - Minimum stable scope: `readiness_classification_and_candidate_selection`
 - Current authoring ceiling: `temporary_smoke_only_bp_shells_allowlisted_actor_parent_component_hierarchy_property_graph_glue_validation_durable_read_only_asset_exists_preflight_overwrite_rename_decision_save_gate_rollback_draft_executor_readiness_checklist_and_disabled_executor_skeleton`

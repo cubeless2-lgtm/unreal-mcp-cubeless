@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-07T04:17:10.056552+00:00",
+  "generated_at": "2026-06-07T04:32:27.448760+00:00",
   "analysis_kind": "bp_authoring_quality_gate",
   "output_dir": "D:\\Git\\unreal-mcp-cubeless\\Docs\\Analysis\\BPAuthoringQualityGate",
   "mcp_root": "D:\\Git\\unreal-mcp-cubeless",
@@ -625,8 +625,8 @@
     "status": "passed",
     "host": "127.0.0.1",
     "port": 55557,
-    "blueprint_name": "MCP_BPQualityGate_ad5db8f2",
-    "asset_path": "/Game/_MCP_Temp/BPAuthoringQualityGate/MCP_BPQualityGate_ad5db8f2",
+    "blueprint_name": "MCP_BPQualityGate_64273358",
+    "asset_path": "/Game/_MCP_Temp/BPAuthoringQualityGate/MCP_BPQualityGate_64273358",
     "temp_package_path": "/Game/_MCP_Temp/BPAuthoringQualityGate",
     "stages": [
       {
@@ -775,34 +775,34 @@
       }
     ],
     "cleanup": {
-      "asset_path": "/Game/_MCP_Temp/BPAuthoringQualityGate/MCP_BPQualityGate_ad5db8f2",
+      "asset_path": "/Game/_MCP_Temp/BPAuthoringQualityGate/MCP_BPQualityGate_64273358",
       "deleted": true
     },
     "inspection": {
       "graphs": [
         {
-          "graph_id": "E19D8EA24961639F76B74593375547DE",
+          "graph_id": "E36185474EB0D02B758E02987ECFDEB9",
           "graph_name": "UserConstructionScript",
           "graph_type": "function",
           "schema": "EdGraphSchema_K2",
           "node_count": 1
         },
         {
-          "graph_id": "7238460C4CCC2D2CE943B2920AE20536",
-          "graph_name": "QualityFunction_ad5db8f2",
+          "graph_id": "81595F44424CCDB1012A53B7747F9901",
+          "graph_name": "QualityFunction_64273358",
           "graph_type": "function",
           "schema": "EdGraphSchema_K2",
           "node_count": 2
         },
         {
-          "graph_id": "290E0DFE40577893C17CC794A3A27E29",
+          "graph_id": "F58220C14FB45ECEB1B997B069704C76",
           "graph_name": "EventGraph",
           "graph_type": "event",
           "schema": "EdGraphSchema_K2",
           "node_count": 12
         },
         {
-          "graph_id": "BFB839C543F57E0DB140D0999EB75DB1",
+          "graph_id": "431BCD0A4EE8AF400AB57F8D62CE46A1",
           "graph_name": "OnQualityGateTriggered",
           "graph_type": "delegate",
           "schema": "EdGraphSchema_K2",
@@ -813,7 +813,7 @@
       "event_dispatcher": {
         "dispatcher_name": "OnQualityGateTriggered",
         "signature_graph": {
-          "graph_id": "BFB839C543F57E0DB140D0999EB75DB1",
+          "graph_id": "431BCD0A4EE8AF400AB57F8D62CE46A1",
           "graph_name": "OnQualityGateTriggered",
           "graph_type": "delegate",
           "schema": "EdGraphSchema_K2",
@@ -832,45 +832,45 @@
         ]
       },
       "event_dispatcher_call": {
-        "node_id": "E564717642A160F224EAE48254367D41",
+        "node_id": "052175F64170DF35AA511CBA13A13A95",
         "dispatcher_name": "OnQualityGateTriggered",
-        "signature_function": "/Game/_MCP_Temp/BPAuthoringQualityGate/MCP_BPQualityGate_ad5db8f2.SKEL_MCP_BPQualityGate_ad5db8f2_C:OnQualityGateTriggered__DelegateSignature"
+        "signature_function": "/Game/_MCP_Temp/BPAuthoringQualityGate/MCP_BPQualityGate_64273358.SKEL_MCP_BPQualityGate_64273358_C:OnQualityGateTriggered__DelegateSignature"
       },
       "custom_event": {
-        "node_id": "C1D493C244DDAC2D742AF2B9737B55E4",
+        "node_id": "7C3E348843C775288AEE8BB1433F2E82",
         "custom_event_name": "HandleQualityGateTriggered",
         "signature_source_dispatcher_name": "OnQualityGateTriggered",
-        "signature_function": "/Engine/Transient.TRASHCLASS_MCP_BPQualityGate_ad5db8f2_13:OnQualityGateTriggered__DelegateSignature_0"
+        "signature_function": "/Engine/Transient.TRASHCLASS_MCP_BPQualityGate_13:OnQualityGateTriggered__DelegateSignature_0"
       },
       "event_dispatcher_bind": {
-        "node_id": "8F592DC24F789B3A6E6BCAB254F36DA6",
+        "node_id": "662F5FD748DADA5D3CD94FB3F4A04517",
         "dispatcher_name": "OnQualityGateTriggered",
-        "signature_function": "/Game/_MCP_Temp/BPAuthoringQualityGate/MCP_BPQualityGate_ad5db8f2.SKEL_MCP_BPQualityGate_ad5db8f2_C:OnQualityGateTriggered__DelegateSignature"
+        "signature_function": "/Game/_MCP_Temp/BPAuthoringQualityGate/MCP_BPQualityGate_64273358.SKEL_MCP_BPQualityGate_64273358_C:OnQualityGateTriggered__DelegateSignature"
       },
       "event_dispatcher_assign": {
-        "node_id": "EA79B38A4DA7AA4AB4609CBC7F443480",
+        "node_id": "28BF215D470522BEDA3C4EB67AECE6E4",
         "dispatcher_name": "OnQualityGateTriggered",
-        "signature_function": "/Engine/Transient.TRASHCLASS_MCP_BPQualityGate_ad5db8f2_14:OnQualityGateTriggered__DelegateSignature_0"
+        "signature_function": "/Engine/Transient.TRASHCLASS_MCP_BPQualityGate_14:OnQualityGateTriggered__DelegateSignature_0"
       },
       "event_dispatcher_unbind": {
-        "node_id": "8959745B4C33F9ED8DAFD2B2B25BCCD0",
+        "node_id": "E2A9C94040A362AD8324F1B91EF9BDCC",
         "dispatcher_name": "OnQualityGateTriggered",
-        "signature_function": "/Game/_MCP_Temp/BPAuthoringQualityGate/MCP_BPQualityGate_ad5db8f2.SKEL_MCP_BPQualityGate_ad5db8f2_C:OnQualityGateTriggered__DelegateSignature"
+        "signature_function": "/Game/_MCP_Temp/BPAuthoringQualityGate/MCP_BPQualityGate_64273358.SKEL_MCP_BPQualityGate_64273358_C:OnQualityGateTriggered__DelegateSignature"
       },
       "event_dispatcher_clear": {
-        "node_id": "4AC2480F4111186547E8209986ACF8C6",
+        "node_id": "13926A5441949C464FB99EBD765EC117",
         "dispatcher_name": "OnQualityGateTriggered",
-        "signature_function": "/Game/_MCP_Temp/BPAuthoringQualityGate/MCP_BPQualityGate_ad5db8f2.SKEL_MCP_BPQualityGate_ad5db8f2_C:OnQualityGateTriggered__DelegateSignature"
+        "signature_function": "/Game/_MCP_Temp/BPAuthoringQualityGate/MCP_BPQualityGate_64273358.SKEL_MCP_BPQualityGate_64273358_C:OnQualityGateTriggered__DelegateSignature"
       },
       "asset": {
         "asset_exists": true,
         "asset_class": "Blueprint",
-        "package_path": "/Game/_MCP_Temp/BPAuthoringQualityGate/MCP_BPQualityGate_ad5db8f2"
+        "package_path": "/Game/_MCP_Temp/BPAuthoringQualityGate/MCP_BPQualityGate_64273358"
       }
     },
     "validation": {
-      "name": "MCP_BPQualityGate_ad5db8f2",
-      "asset_path": "/Game/_MCP_Temp/BPAuthoringQualityGate/MCP_BPQualityGate_ad5db8f2.MCP_BPQualityGate_ad5db8f2",
+      "name": "MCP_BPQualityGate_64273358",
+      "asset_path": "/Game/_MCP_Temp/BPAuthoringQualityGate/MCP_BPQualityGate_64273358.MCP_BPQualityGate_64273358",
       "compiled": true,
       "validation_pass": true,
       "status": "up_to_date",
