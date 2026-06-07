@@ -148,6 +148,18 @@ def main() -> int:
         assert report["summary"]["durable_canary_live_preflight_authoring_command_count"] == 0
         assert report["summary"]["durable_canary_live_preflight_save_or_delete_command_count"] == 0
         assert report["summary"]["durable_canary_live_preflight_cleanup_command_count"] == 0
+        assert report["summary"]["durable_canary_bridge_refresh_request_count"] == 1
+        assert report["summary"]["durable_canary_bridge_refresh_required_count"] == 1
+        assert report["summary"]["durable_canary_bridge_refresh_reachable_count"] == 0
+        assert report["summary"]["durable_canary_bridge_refresh_read_only_result_refreshed_count"] == 0
+        assert report["summary"]["durable_canary_bridge_refresh_satisfied_count"] == 0
+        assert report["summary"]["durable_canary_bridge_refresh_execution_allowed_count"] == 0
+        assert report["summary"]["durable_canary_bridge_refresh_executor_may_open_count"] == 0
+        assert report["summary"]["durable_canary_bridge_refresh_save_or_delete_allowed_count"] == 0
+        assert report["summary"]["durable_canary_bridge_refresh_cleanup_command_allowed_count"] == 0
+        assert report["summary"]["durable_canary_bridge_refresh_live_authoring_command_count"] == 0
+        assert report["summary"]["durable_canary_bridge_refresh_live_save_or_delete_command_count"] == 0
+        assert report["summary"]["durable_canary_bridge_refresh_live_cleanup_command_count"] == 0
         assert report["summary"]["durable_canary_recovery_request_count"] == 1
         assert report["summary"]["durable_canary_recovery_matrix_ready_count"] == 1
         assert report["summary"]["durable_canary_recovery_scenario_count"] == 6
@@ -225,6 +237,11 @@ def main() -> int:
         assert safe_actor["durable_canary_live_preflight_contract"]["requested"] is False
         assert safe_actor["durable_canary_live_preflight_contract"]["read_only_live_preflight_allowed"] is False
         assert safe_actor["durable_canary_live_preflight_contract"]["canary_execution_allowed_after_preflight"] is False
+        assert safe_actor["durable_canary_bridge_refresh_contract"]["schema"] == "section_61_durable_canary_bridge_refresh_contract_v1"
+        assert safe_actor["durable_canary_bridge_refresh_contract"]["requested"] is False
+        assert safe_actor["durable_canary_bridge_refresh_contract"]["bridge_refresh_required"] is False
+        assert safe_actor["durable_canary_bridge_refresh_contract"]["bridge_refresh_satisfied"] is False
+        assert safe_actor["durable_canary_bridge_refresh_contract"]["durable_executor_may_open_after_refresh"] is False
         assert safe_actor["durable_canary_recovery_matrix_contract"]["schema"] == "section_58_durable_canary_recovery_matrix_v1"
         assert safe_actor["durable_canary_recovery_matrix_contract"]["requested"] is False
         assert safe_actor["durable_canary_recovery_matrix_contract"]["recovery_matrix_ready"] is False
@@ -438,6 +455,13 @@ def main() -> int:
             durable_save["durable_canary_live_preflight_contract"]
             == durable_save["authoring_executor_contract"]["durable_canary_live_preflight"]
         )
+        assert durable_save["durable_canary_bridge_refresh_contract"] == preflight_contract[
+            "durable_canary_bridge_refresh_contract"
+        ]
+        assert (
+            durable_save["durable_canary_bridge_refresh_contract"]
+            == durable_save["authoring_executor_contract"]["durable_canary_bridge_refresh"]
+        )
         assert durable_save["durable_canary_recovery_matrix_contract"] == preflight_contract[
             "durable_canary_recovery_matrix_contract"
         ]
@@ -563,6 +587,26 @@ def main() -> int:
         assert canary_live_preflight["live_save_or_delete_command_count"] == 0
         assert canary_live_preflight["live_cleanup_command_count"] == 0
         assert "section_57_read_only_canary_preflight_only" in canary_live_preflight["blocked_by"]
+        canary_bridge_refresh = durable_save["durable_canary_bridge_refresh_contract"]
+        assert canary_bridge_refresh["schema"] == "section_61_durable_canary_bridge_refresh_contract_v1"
+        assert canary_bridge_refresh["requested"] is True
+        assert canary_bridge_refresh["expected_mcp_server"] == "unrealMCP"
+        assert canary_bridge_refresh["expected_bridge_host"] == "127.0.0.1"
+        assert canary_bridge_refresh["expected_bridge_port"] == 55557
+        assert canary_bridge_refresh["canary_asset_path"] == "/Game/_MCP_Temp/DurableCanary/BP_PlannerDurable_Canary"
+        assert canary_bridge_refresh["read_only_preflight_allowed"] is True
+        assert canary_bridge_refresh["bridge_refresh_required"] is True
+        assert canary_bridge_refresh["bridge_reachable"] is False
+        assert canary_bridge_refresh["read_only_result_refreshed"] is False
+        assert canary_bridge_refresh["bridge_refresh_satisfied"] is False
+        assert canary_bridge_refresh["canary_execution_allowed_after_refresh"] is False
+        assert canary_bridge_refresh["durable_executor_may_open_after_refresh"] is False
+        assert canary_bridge_refresh["save_or_delete_allowed"] is False
+        assert canary_bridge_refresh["cleanup_command_allowed"] is False
+        assert canary_bridge_refresh["live_authoring_command_count"] == 0
+        assert canary_bridge_refresh["live_save_or_delete_command_count"] == 0
+        assert canary_bridge_refresh["live_cleanup_command_count"] == 0
+        assert "section_61_bridge_refresh_blocks_durable_execution" in canary_bridge_refresh["blocked_by"]
         canary_recovery = durable_save["durable_canary_recovery_matrix_contract"]
         assert canary_recovery["schema"] == "section_58_durable_canary_recovery_matrix_v1"
         assert canary_recovery["requested"] is True
@@ -622,6 +666,7 @@ def main() -> int:
         assert "section_55_durable_canary_prep_contract_v1" in skeleton_contract["input_contracts"]
         assert "section_56_durable_canary_approval_gate_v1" in skeleton_contract["input_contracts"]
         assert "section_57_durable_canary_live_preflight_contract_v1" in skeleton_contract["input_contracts"]
+        assert "section_61_durable_canary_bridge_refresh_contract_v1" in skeleton_contract["input_contracts"]
         assert "section_58_durable_canary_recovery_matrix_v1" in skeleton_contract["input_contracts"]
         assert "section_37_durable_save_gate_contract_v1" in skeleton_contract["input_contracts"]
         assert "section_38_durable_executor_readiness_contract_v1" in skeleton_contract["input_contracts"]

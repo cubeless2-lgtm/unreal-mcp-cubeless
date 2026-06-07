@@ -22,6 +22,7 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 import bp_authoring_durable_canary_contract as durable_canary
 import bp_authoring_durable_canary_approval_contract as durable_canary_approval
+import bp_authoring_durable_canary_bridge_refresh_contract as durable_canary_bridge_refresh
 import bp_authoring_durable_canary_live_preflight_contract as durable_canary_live_preflight
 import bp_authoring_durable_canary_recovery_contract as durable_canary_recovery
 import bp_authoring_durable_enable_contract as durable_enable
@@ -695,6 +696,10 @@ def build_durable_preflight_contract(
         canary_prep_contract=canary_prep_contract,
         canary_approval_gate_contract=canary_approval_gate_contract,
     )
+    canary_bridge_refresh_contract = durable_canary_bridge_refresh.build_bridge_refresh_contract(
+        requested=requested,
+        canary_live_preflight_contract=canary_live_preflight_contract,
+    )
     canary_recovery_matrix_contract = durable_canary_recovery.build_canary_recovery_matrix_contract(
         requested=requested,
         canary_prep_contract=canary_prep_contract,
@@ -704,10 +709,12 @@ def build_durable_preflight_contract(
         executor_skeleton_contract["input_contracts"].append(canary_prep_contract["schema"])
         executor_skeleton_contract["input_contracts"].append(canary_approval_gate_contract["schema"])
         executor_skeleton_contract["input_contracts"].append(canary_live_preflight_contract["schema"])
+        executor_skeleton_contract["input_contracts"].append(canary_bridge_refresh_contract["schema"])
         executor_skeleton_contract["input_contracts"].append(canary_recovery_matrix_contract["schema"])
         executor_skeleton_contract["required_manifest_inputs"].append("durable_canary_prep_contract")
         executor_skeleton_contract["required_manifest_inputs"].append("durable_canary_approval_gate_contract")
         executor_skeleton_contract["required_manifest_inputs"].append("durable_canary_live_preflight_contract")
+        executor_skeleton_contract["required_manifest_inputs"].append("durable_canary_bridge_refresh_contract")
         executor_skeleton_contract["required_manifest_inputs"].append("durable_canary_recovery_matrix_contract")
     save_gate_passed = False
     preflight_pass = (
@@ -743,6 +750,7 @@ def build_durable_preflight_contract(
         "durable_canary_prep_contract": canary_prep_contract,
         "durable_canary_approval_gate_contract": canary_approval_gate_contract,
         "durable_canary_live_preflight_contract": canary_live_preflight_contract,
+        "durable_canary_bridge_refresh_contract": canary_bridge_refresh_contract,
         "durable_canary_recovery_matrix_contract": canary_recovery_matrix_contract,
         "durable_save_gate_contract": save_gate_contract,
         "durable_rollback_policy_contract": rollback_policy_contract,
@@ -802,6 +810,7 @@ def build_durable_authoring_contract(
         "durable_canary_prep_contract": preflight_contract["durable_canary_prep_contract"],
         "durable_canary_approval_gate_contract": preflight_contract["durable_canary_approval_gate_contract"],
         "durable_canary_live_preflight_contract": preflight_contract["durable_canary_live_preflight_contract"],
+        "durable_canary_bridge_refresh_contract": preflight_contract["durable_canary_bridge_refresh_contract"],
         "durable_canary_recovery_matrix_contract": preflight_contract["durable_canary_recovery_matrix_contract"],
         "overwrite_policy": "requires_explicit_review",
         "preflight_required": [
@@ -863,6 +872,9 @@ def build_authoring_executor_contract(
         ],
         "durable_canary_live_preflight": durable_authoring_contract["durable_preflight_contract"][
             "durable_canary_live_preflight_contract"
+        ],
+        "durable_canary_bridge_refresh": durable_authoring_contract["durable_preflight_contract"][
+            "durable_canary_bridge_refresh_contract"
         ],
         "durable_canary_recovery_matrix": durable_authoring_contract["durable_preflight_contract"][
             "durable_canary_recovery_matrix_contract"
@@ -3273,6 +3285,9 @@ def build_job_manifest(
         "durable_canary_live_preflight_contract": durable_authoring_contract["durable_preflight_contract"][
             "durable_canary_live_preflight_contract"
         ],
+        "durable_canary_bridge_refresh_contract": durable_authoring_contract["durable_preflight_contract"][
+            "durable_canary_bridge_refresh_contract"
+        ],
         "durable_canary_recovery_matrix_contract": durable_authoring_contract["durable_preflight_contract"][
             "durable_canary_recovery_matrix_contract"
         ],
@@ -3389,6 +3404,9 @@ def summarize_manifests(manifests: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
     )
     canary_live_preflight_summary = durable_canary_live_preflight.summarize_canary_live_preflight_contracts(
         [manifest.get("durable_canary_live_preflight_contract", {}) for manifest in manifests]
+    )
+    canary_bridge_refresh_summary = durable_canary_bridge_refresh.summarize_bridge_refresh_contracts(
+        [manifest.get("durable_canary_bridge_refresh_contract", {}) for manifest in manifests]
     )
     canary_recovery_summary = durable_canary_recovery.summarize_canary_recovery_matrices(
         [manifest.get("durable_canary_recovery_matrix_contract", {}) for manifest in manifests]
@@ -3568,6 +3586,41 @@ def summarize_manifests(manifests: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
         "durable_canary_live_preflight_cleanup_command_count": canary_live_preflight_summary[
             "live_cleanup_command_count"
         ],
+        "durable_canary_bridge_refresh_summary": canary_bridge_refresh_summary,
+        "durable_canary_bridge_refresh_request_count": canary_bridge_refresh_summary[
+            "durable_requested_bridge_refresh_count"
+        ],
+        "durable_canary_bridge_refresh_required_count": canary_bridge_refresh_summary[
+            "bridge_refresh_required_count"
+        ],
+        "durable_canary_bridge_refresh_reachable_count": canary_bridge_refresh_summary["bridge_reachable_count"],
+        "durable_canary_bridge_refresh_read_only_result_refreshed_count": canary_bridge_refresh_summary[
+            "read_only_result_refreshed_count"
+        ],
+        "durable_canary_bridge_refresh_satisfied_count": canary_bridge_refresh_summary[
+            "bridge_refresh_satisfied_count"
+        ],
+        "durable_canary_bridge_refresh_execution_allowed_count": canary_bridge_refresh_summary[
+            "canary_execution_allowed_after_refresh_count"
+        ],
+        "durable_canary_bridge_refresh_executor_may_open_count": canary_bridge_refresh_summary[
+            "durable_executor_may_open_after_refresh_count"
+        ],
+        "durable_canary_bridge_refresh_save_or_delete_allowed_count": canary_bridge_refresh_summary[
+            "save_or_delete_allowed_count"
+        ],
+        "durable_canary_bridge_refresh_cleanup_command_allowed_count": canary_bridge_refresh_summary[
+            "cleanup_command_allowed_count"
+        ],
+        "durable_canary_bridge_refresh_live_authoring_command_count": canary_bridge_refresh_summary[
+            "live_authoring_command_count"
+        ],
+        "durable_canary_bridge_refresh_live_save_or_delete_command_count": canary_bridge_refresh_summary[
+            "live_save_or_delete_command_count"
+        ],
+        "durable_canary_bridge_refresh_live_cleanup_command_count": canary_bridge_refresh_summary[
+            "live_cleanup_command_count"
+        ],
         "durable_canary_recovery_summary": canary_recovery_summary,
         "durable_canary_recovery_request_count": canary_recovery_summary[
             "durable_requested_canary_recovery_count"
@@ -3710,6 +3763,9 @@ def render_markdown(report: Dict[str, Any]) -> str:
         f"- Durable canary approval live execution allowed: `{summary['durable_canary_approval_live_execution_allowed_count']}`",
         f"- Durable canary live preflight read-only allowed: `{summary['durable_canary_live_preflight_read_only_allowed_count']}`",
         f"- Durable canary live preflight execution allowed: `{summary['durable_canary_live_preflight_execution_allowed_count']}`",
+        f"- Durable canary bridge refresh required: `{summary['durable_canary_bridge_refresh_required_count']}`",
+        f"- Durable canary bridge refresh satisfied: `{summary['durable_canary_bridge_refresh_satisfied_count']}`",
+        f"- Durable canary bridge refresh executor may open: `{summary['durable_canary_bridge_refresh_executor_may_open_count']}`",
         f"- Durable canary recovery matrix ready: `{summary['durable_canary_recovery_matrix_ready_count']}`",
         f"- Durable canary recovery scenarios: `{summary['durable_canary_recovery_scenario_count']}`",
         f"- Durable canary recovery cleanup commands allowed: `{summary['durable_canary_recovery_cleanup_command_allowed_count']}`",
@@ -3760,6 +3816,8 @@ def render_markdown(report: Dict[str, Any]) -> str:
                 f"- Durable canary approval live allowed: `{manifest['durable_canary_approval_gate_contract']['canary_live_execution_allowed']}`",
                 f"- Durable canary live preflight read-only allowed: `{manifest['durable_canary_live_preflight_contract']['read_only_live_preflight_allowed']}`",
                 f"- Durable canary live preflight execution allowed: `{manifest['durable_canary_live_preflight_contract']['canary_execution_allowed_after_preflight']}`",
+                f"- Durable canary bridge refresh satisfied: `{manifest['durable_canary_bridge_refresh_contract']['bridge_refresh_satisfied']}`",
+                f"- Durable canary bridge refresh executor may open: `{manifest['durable_canary_bridge_refresh_contract']['durable_executor_may_open_after_refresh']}`",
                 f"- Durable canary recovery matrix ready: `{manifest['durable_canary_recovery_matrix_contract']['recovery_matrix_ready']}`",
                 f"- Durable canary recovery cleanup allowed: `{manifest['durable_canary_recovery_matrix_contract']['cleanup_command_allowed']}`",
                 f"- Durable rollback ready: `{manifest['durable_rollback_policy_contract']['rollback_policy_ready']}`",

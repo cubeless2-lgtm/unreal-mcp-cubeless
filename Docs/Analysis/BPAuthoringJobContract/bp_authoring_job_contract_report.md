@@ -1,6 +1,6 @@
 # BP Authoring Job Contract
 
-- Generated UTC: `2026-06-07T08:00:18.365569+00:00`
+- Generated UTC: `2026-06-07T08:29:51.480663+00:00`
 - Manifest version: `section_58_bp_authoring_job_contract_v36`
 - Temp package path: `/Game/_MCP_Temp/PlannerDrivenSmoke`
 - Manifests: `19`
@@ -54,6 +54,9 @@
 - Durable canary approval live execution allowed: `0`
 - Durable canary live preflight read-only allowed: `1`
 - Durable canary live preflight execution allowed: `0`
+- Durable canary bridge refresh required: `1`
+- Durable canary bridge refresh satisfied: `0`
+- Durable canary bridge refresh executor may open: `0`
 - Durable canary recovery matrix ready: `1`
 - Durable canary recovery scenarios: `6`
 - Durable canary recovery cleanup commands allowed: `0`
@@ -103,6 +106,8 @@
 - Durable canary approval live allowed: `False`
 - Durable canary live preflight read-only allowed: `False`
 - Durable canary live preflight execution allowed: `False`
+- Durable canary bridge refresh satisfied: `False`
+- Durable canary bridge refresh executor may open: `False`
 - Durable canary recovery matrix ready: `False`
 - Durable canary recovery cleanup allowed: `False`
 - Durable rollback ready: `False`
@@ -199,6 +204,8 @@ Structural validation plan:
 - Durable canary approval live allowed: `False`
 - Durable canary live preflight read-only allowed: `False`
 - Durable canary live preflight execution allowed: `False`
+- Durable canary bridge refresh satisfied: `False`
+- Durable canary bridge refresh executor may open: `False`
 - Durable canary recovery matrix ready: `False`
 - Durable canary recovery cleanup allowed: `False`
 - Durable rollback ready: `False`
@@ -307,6 +314,8 @@ Structural validation plan:
 - Durable canary approval live allowed: `False`
 - Durable canary live preflight read-only allowed: `False`
 - Durable canary live preflight execution allowed: `False`
+- Durable canary bridge refresh satisfied: `False`
+- Durable canary bridge refresh executor may open: `False`
 - Durable canary recovery matrix ready: `False`
 - Durable canary recovery cleanup allowed: `False`
 - Durable rollback ready: `False`
@@ -406,6 +415,8 @@ Structural validation plan:
 - Durable canary approval live allowed: `False`
 - Durable canary live preflight read-only allowed: `False`
 - Durable canary live preflight execution allowed: `False`
+- Durable canary bridge refresh satisfied: `False`
+- Durable canary bridge refresh executor may open: `False`
 - Durable canary recovery matrix ready: `False`
 - Durable canary recovery cleanup allowed: `False`
 - Durable rollback ready: `False`
@@ -502,6 +513,8 @@ Structural validation plan:
 - Durable canary approval live allowed: `False`
 - Durable canary live preflight read-only allowed: `False`
 - Durable canary live preflight execution allowed: `False`
+- Durable canary bridge refresh satisfied: `False`
+- Durable canary bridge refresh executor may open: `False`
 - Durable canary recovery matrix ready: `False`
 - Durable canary recovery cleanup allowed: `False`
 - Durable rollback ready: `False`
@@ -588,6 +601,8 @@ Blocked/review reasons:
 - Durable canary approval live allowed: `False`
 - Durable canary live preflight read-only allowed: `False`
 - Durable canary live preflight execution allowed: `False`
+- Durable canary bridge refresh satisfied: `False`
+- Durable canary bridge refresh executor may open: `False`
 - Durable canary recovery matrix ready: `False`
 - Durable canary recovery cleanup allowed: `False`
 - Durable rollback ready: `False`
@@ -674,6 +689,8 @@ Blocked/review reasons:
 - Durable canary approval live allowed: `False`
 - Durable canary live preflight read-only allowed: `True`
 - Durable canary live preflight execution allowed: `False`
+- Durable canary bridge refresh satisfied: `False`
+- Durable canary bridge refresh executor may open: `False`
 - Durable canary recovery matrix ready: `True`
 - Durable canary recovery cleanup allowed: `False`
 - Durable rollback ready: `False`
@@ -760,6 +777,8 @@ Blocked/review reasons:
 - Durable canary approval live allowed: `False`
 - Durable canary live preflight read-only allowed: `False`
 - Durable canary live preflight execution allowed: `False`
+- Durable canary bridge refresh satisfied: `False`
+- Durable canary bridge refresh executor may open: `False`
 - Durable canary recovery matrix ready: `False`
 - Durable canary recovery cleanup allowed: `False`
 - Durable rollback ready: `False`
@@ -854,6 +873,8 @@ Structural validation plan:
 - Durable canary approval live allowed: `False`
 - Durable canary live preflight read-only allowed: `False`
 - Durable canary live preflight execution allowed: `False`
+- Durable canary bridge refresh satisfied: `False`
+- Durable canary bridge refresh executor may open: `False`
 - Durable canary recovery matrix ready: `False`
 - Durable canary recovery cleanup allowed: `False`
 - Durable rollback ready: `False`
@@ -964,6 +985,8 @@ Structural validation plan:
 - Durable canary approval live allowed: `False`
 - Durable canary live preflight read-only allowed: `False`
 - Durable canary live preflight execution allowed: `False`
+- Durable canary bridge refresh satisfied: `False`
+- Durable canary bridge refresh executor may open: `False`
 - Durable canary recovery matrix ready: `False`
 - Durable canary recovery cleanup allowed: `False`
 - Durable rollback ready: `False`
@@ -1075,6 +1098,8 @@ Structural validation plan:
 - Durable canary approval live allowed: `False`
 - Durable canary live preflight read-only allowed: `False`
 - Durable canary live preflight execution allowed: `False`
+- Durable canary bridge refresh satisfied: `False`
+- Durable canary bridge refresh executor may open: `False`
 - Durable canary recovery matrix ready: `False`
 - Durable canary recovery cleanup allowed: `False`
 - Durable rollback ready: `False`
@@ -1226,6 +1251,8 @@ Structural validation plan:
 - Durable canary approval live allowed: `False`
 - Durable canary live preflight read-only allowed: `False`
 - Durable canary live preflight execution allowed: `False`
+- Durable canary bridge refresh satisfied: `False`
+- Durable canary bridge refresh executor may open: `False`
 - Durable canary recovery matrix ready: `False`
 - Durable canary recovery cleanup allowed: `False`
 - Durable rollback ready: `False`
@@ -1316,6 +1343,8 @@ Structural validation plan:
 - Durable canary approval live allowed: `False`
 - Durable canary live preflight read-only allowed: `False`
 - Durable canary live preflight execution allowed: `False`
+- Durable canary bridge refresh satisfied: `False`
+- Durable canary bridge refresh executor may open: `False`
 - Durable canary recovery matrix ready: `False`
 - Durable canary recovery cleanup allowed: `False`
 - Durable rollback ready: `False`
@@ -1436,6 +1465,8 @@ Structural validation plan:
 - Durable canary approval live allowed: `False`
 - Durable canary live preflight read-only allowed: `False`
 - Durable canary live preflight execution allowed: `False`
+- Durable canary bridge refresh satisfied: `False`
+- Durable canary bridge refresh executor may open: `False`
 - Durable canary recovery matrix ready: `False`
 - Durable canary recovery cleanup allowed: `False`
 - Durable rollback ready: `False`
@@ -1604,6 +1635,8 @@ Structural validation plan:
 - Durable canary approval live allowed: `False`
 - Durable canary live preflight read-only allowed: `False`
 - Durable canary live preflight execution allowed: `False`
+- Durable canary bridge refresh satisfied: `False`
+- Durable canary bridge refresh executor may open: `False`
 - Durable canary recovery matrix ready: `False`
 - Durable canary recovery cleanup allowed: `False`
 - Durable rollback ready: `False`
@@ -1750,6 +1783,8 @@ Structural validation plan:
 - Durable canary approval live allowed: `False`
 - Durable canary live preflight read-only allowed: `False`
 - Durable canary live preflight execution allowed: `False`
+- Durable canary bridge refresh satisfied: `False`
+- Durable canary bridge refresh executor may open: `False`
 - Durable canary recovery matrix ready: `False`
 - Durable canary recovery cleanup allowed: `False`
 - Durable rollback ready: `False`
@@ -1836,6 +1871,8 @@ Blocked/review reasons:
 - Durable canary approval live allowed: `False`
 - Durable canary live preflight read-only allowed: `False`
 - Durable canary live preflight execution allowed: `False`
+- Durable canary bridge refresh satisfied: `False`
+- Durable canary bridge refresh executor may open: `False`
 - Durable canary recovery matrix ready: `False`
 - Durable canary recovery cleanup allowed: `False`
 - Durable rollback ready: `False`
@@ -1922,6 +1959,8 @@ Blocked/review reasons:
 - Durable canary approval live allowed: `False`
 - Durable canary live preflight read-only allowed: `False`
 - Durable canary live preflight execution allowed: `False`
+- Durable canary bridge refresh satisfied: `False`
+- Durable canary bridge refresh executor may open: `False`
 - Durable canary recovery matrix ready: `False`
 - Durable canary recovery cleanup allowed: `False`
 - Durable rollback ready: `False`
@@ -2009,6 +2048,8 @@ Blocked/review reasons:
 - Durable canary approval live allowed: `False`
 - Durable canary live preflight read-only allowed: `False`
 - Durable canary live preflight execution allowed: `False`
+- Durable canary bridge refresh satisfied: `False`
+- Durable canary bridge refresh executor may open: `False`
 - Durable canary recovery matrix ready: `False`
 - Durable canary recovery cleanup allowed: `False`
 - Durable rollback ready: `False`

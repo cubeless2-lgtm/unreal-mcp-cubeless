@@ -381,6 +381,10 @@ def build_durable_executor_gate(manifest: Dict[str, Any], command_plan: Sequence
         "durable_canary_live_preflight_contract",
         preflight.get("durable_canary_live_preflight_contract", {}),
     )
+    canary_bridge_refresh = manifest.get(
+        "durable_canary_bridge_refresh_contract",
+        preflight.get("durable_canary_bridge_refresh_contract", {}),
+    )
     canary_recovery = manifest.get(
         "durable_canary_recovery_matrix_contract",
         preflight.get("durable_canary_recovery_matrix_contract", {}),
@@ -440,6 +444,14 @@ def build_durable_executor_gate(manifest: Dict[str, Any], command_plan: Sequence
         or canary_live_preflight.get("live_authoring_command_count", 0) > 0
         or canary_live_preflight.get("live_save_or_delete_command_count", 0) > 0
         or canary_live_preflight.get("live_cleanup_command_count", 0) > 0
+        or canary_bridge_refresh.get("canary_execution_allowed_after_refresh")
+        or canary_bridge_refresh.get("durable_executor_may_open_after_refresh")
+        or canary_bridge_refresh.get("authoring_command_allowed")
+        or canary_bridge_refresh.get("save_or_delete_allowed")
+        or canary_bridge_refresh.get("cleanup_command_allowed")
+        or canary_bridge_refresh.get("live_authoring_command_count", 0) > 0
+        or canary_bridge_refresh.get("live_save_or_delete_command_count", 0) > 0
+        or canary_bridge_refresh.get("live_cleanup_command_count", 0) > 0
         or canary_recovery.get("cleanup_command_allowed")
         or canary_recovery.get("delete_command_allowed")
         or canary_recovery.get("save_command_allowed")
@@ -476,6 +488,7 @@ def build_durable_executor_gate(manifest: Dict[str, Any], command_plan: Sequence
     required_before_execution.update(canary_prep.get("required_reinforcement", []))
     required_before_execution.update(canary_approval.get("required_reinforcement", []))
     required_before_execution.update(canary_live_preflight.get("required_reinforcement", []))
+    required_before_execution.update(canary_bridge_refresh.get("required_reinforcement", []))
     required_before_execution.update(canary_recovery.get("required_reinforcement", []))
     required_before_execution.update(save_gate.get("required_reinforcement", []))
     required_before_execution.update(rollback.get("required_reinforcement", []))
@@ -552,6 +565,29 @@ def build_durable_executor_gate(manifest: Dict[str, Any], command_plan: Sequence
         ),
         "canary_live_preflight_cleanup_command_count": int(
             canary_live_preflight.get("live_cleanup_command_count", 0)
+        ),
+        "canary_bridge_refresh_required": bool(canary_bridge_refresh.get("bridge_refresh_required")),
+        "canary_bridge_refresh_reachable": bool(canary_bridge_refresh.get("bridge_reachable")),
+        "canary_bridge_refresh_read_only_result_refreshed": bool(
+            canary_bridge_refresh.get("read_only_result_refreshed")
+        ),
+        "canary_bridge_refresh_satisfied": bool(canary_bridge_refresh.get("bridge_refresh_satisfied")),
+        "canary_bridge_refresh_execution_allowed": bool(
+            canary_bridge_refresh.get("canary_execution_allowed_after_refresh")
+        ),
+        "canary_bridge_refresh_executor_may_open": bool(
+            canary_bridge_refresh.get("durable_executor_may_open_after_refresh")
+        ),
+        "canary_bridge_refresh_save_or_delete_allowed": bool(canary_bridge_refresh.get("save_or_delete_allowed")),
+        "canary_bridge_refresh_cleanup_allowed": bool(canary_bridge_refresh.get("cleanup_command_allowed")),
+        "canary_bridge_refresh_authoring_command_count": int(
+            canary_bridge_refresh.get("live_authoring_command_count", 0)
+        ),
+        "canary_bridge_refresh_save_or_delete_command_count": int(
+            canary_bridge_refresh.get("live_save_or_delete_command_count", 0)
+        ),
+        "canary_bridge_refresh_cleanup_command_count": int(
+            canary_bridge_refresh.get("live_cleanup_command_count", 0)
         ),
         "canary_recovery_matrix_ready": bool(canary_recovery.get("recovery_matrix_ready")),
         "canary_recovery_scenario_count": int(canary_recovery.get("scenario_count", 0)),
@@ -643,6 +679,13 @@ def build_executor_policy(manifest: Dict[str, Any], temp_package_path: str) -> D
         or durable_gate["canary_live_preflight_authoring_command_count"] > 0
         or durable_gate["canary_live_preflight_save_or_delete_command_count"] > 0
         or durable_gate["canary_live_preflight_cleanup_command_count"] > 0
+        or durable_gate["canary_bridge_refresh_execution_allowed"]
+        or durable_gate["canary_bridge_refresh_executor_may_open"]
+        or durable_gate["canary_bridge_refresh_save_or_delete_allowed"]
+        or durable_gate["canary_bridge_refresh_cleanup_allowed"]
+        or durable_gate["canary_bridge_refresh_authoring_command_count"] > 0
+        or durable_gate["canary_bridge_refresh_save_or_delete_command_count"] > 0
+        or durable_gate["canary_bridge_refresh_cleanup_command_count"] > 0
         or durable_gate["canary_recovery_cleanup_allowed"]
         or durable_gate["canary_recovery_delete_allowed"]
         or durable_gate["canary_recovery_save_allowed"]
@@ -968,6 +1011,39 @@ def summarize_executor_policies(manifests: Sequence[Dict[str, Any]], temp_packag
         "canary_live_preflight_cleanup_command_count": sum(
             gate["canary_live_preflight_cleanup_command_count"] for gate in durable_gates
         ),
+        "canary_bridge_refresh_required_count": sum(
+            1 for gate in durable_gates if gate["canary_bridge_refresh_required"]
+        ),
+        "canary_bridge_refresh_reachable_count": sum(
+            1 for gate in durable_gates if gate["canary_bridge_refresh_reachable"]
+        ),
+        "canary_bridge_refresh_read_only_result_refreshed_count": sum(
+            1 for gate in durable_gates if gate["canary_bridge_refresh_read_only_result_refreshed"]
+        ),
+        "canary_bridge_refresh_satisfied_count": sum(
+            1 for gate in durable_gates if gate["canary_bridge_refresh_satisfied"]
+        ),
+        "canary_bridge_refresh_execution_allowed_count": sum(
+            1 for gate in durable_gates if gate["canary_bridge_refresh_execution_allowed"]
+        ),
+        "canary_bridge_refresh_executor_may_open_count": sum(
+            1 for gate in durable_gates if gate["canary_bridge_refresh_executor_may_open"]
+        ),
+        "canary_bridge_refresh_save_or_delete_allowed_count": sum(
+            1 for gate in durable_gates if gate["canary_bridge_refresh_save_or_delete_allowed"]
+        ),
+        "canary_bridge_refresh_cleanup_allowed_count": sum(
+            1 for gate in durable_gates if gate["canary_bridge_refresh_cleanup_allowed"]
+        ),
+        "canary_bridge_refresh_authoring_command_count": sum(
+            gate["canary_bridge_refresh_authoring_command_count"] for gate in durable_gates
+        ),
+        "canary_bridge_refresh_save_or_delete_command_count": sum(
+            gate["canary_bridge_refresh_save_or_delete_command_count"] for gate in durable_gates
+        ),
+        "canary_bridge_refresh_cleanup_command_count": sum(
+            gate["canary_bridge_refresh_cleanup_command_count"] for gate in durable_gates
+        ),
         "canary_recovery_matrix_ready_count": sum(1 for gate in durable_gates if gate["canary_recovery_matrix_ready"]),
         "canary_recovery_scenario_count": sum(gate["canary_recovery_scenario_count"] for gate in durable_gates),
         "canary_recovery_cleanup_allowed_count": sum(
@@ -1030,6 +1106,13 @@ def summarize_executor_policies(manifests: Sequence[Dict[str, Any]], temp_packag
             and sum(gate["canary_live_preflight_authoring_command_count"] for gate in durable_gates) == 0
             and sum(gate["canary_live_preflight_save_or_delete_command_count"] for gate in durable_gates) == 0
             and sum(gate["canary_live_preflight_cleanup_command_count"] for gate in durable_gates) == 0
+            and sum(1 for gate in durable_gates if gate["canary_bridge_refresh_execution_allowed"]) == 0
+            and sum(1 for gate in durable_gates if gate["canary_bridge_refresh_executor_may_open"]) == 0
+            and sum(1 for gate in durable_gates if gate["canary_bridge_refresh_save_or_delete_allowed"]) == 0
+            and sum(1 for gate in durable_gates if gate["canary_bridge_refresh_cleanup_allowed"]) == 0
+            and sum(gate["canary_bridge_refresh_authoring_command_count"] for gate in durable_gates) == 0
+            and sum(gate["canary_bridge_refresh_save_or_delete_command_count"] for gate in durable_gates) == 0
+            and sum(gate["canary_bridge_refresh_cleanup_command_count"] for gate in durable_gates) == 0
             and sum(1 for gate in durable_gates if gate["canary_recovery_cleanup_allowed"]) == 0
             and sum(1 for gate in durable_gates if gate["canary_recovery_delete_allowed"]) == 0
             and sum(1 for gate in durable_gates if gate["canary_recovery_save_allowed"]) == 0

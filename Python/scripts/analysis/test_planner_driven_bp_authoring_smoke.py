@@ -102,6 +102,18 @@ def main() -> int:
         assert report["authoring_job_contract"]["durable_canary_live_preflight_authoring_command_count"] == 0
         assert report["authoring_job_contract"]["durable_canary_live_preflight_save_or_delete_command_count"] == 0
         assert report["authoring_job_contract"]["durable_canary_live_preflight_cleanup_command_count"] == 0
+        assert report["authoring_job_contract"]["durable_canary_bridge_refresh_request_count"] == 1
+        assert report["authoring_job_contract"]["durable_canary_bridge_refresh_required_count"] == 1
+        assert report["authoring_job_contract"]["durable_canary_bridge_refresh_reachable_count"] == 0
+        assert report["authoring_job_contract"]["durable_canary_bridge_refresh_read_only_result_refreshed_count"] == 0
+        assert report["authoring_job_contract"]["durable_canary_bridge_refresh_satisfied_count"] == 0
+        assert report["authoring_job_contract"]["durable_canary_bridge_refresh_execution_allowed_count"] == 0
+        assert report["authoring_job_contract"]["durable_canary_bridge_refresh_executor_may_open_count"] == 0
+        assert report["authoring_job_contract"]["durable_canary_bridge_refresh_save_or_delete_allowed_count"] == 0
+        assert report["authoring_job_contract"]["durable_canary_bridge_refresh_cleanup_command_allowed_count"] == 0
+        assert report["authoring_job_contract"]["durable_canary_bridge_refresh_live_authoring_command_count"] == 0
+        assert report["authoring_job_contract"]["durable_canary_bridge_refresh_live_save_or_delete_command_count"] == 0
+        assert report["authoring_job_contract"]["durable_canary_bridge_refresh_live_cleanup_command_count"] == 0
         assert report["authoring_job_contract"]["durable_canary_recovery_request_count"] == 1
         assert report["authoring_job_contract"]["durable_canary_recovery_matrix_ready_count"] == 1
         assert report["authoring_job_contract"]["durable_canary_recovery_scenario_count"] == 6
@@ -189,6 +201,32 @@ def main() -> int:
             == 0
         )
         assert report["manifest_executor"]["durable_gate_summary"]["canary_live_preflight_cleanup_command_count"] == 0
+        assert report["manifest_executor"]["durable_gate_summary"]["canary_bridge_refresh_required_count"] == 1
+        assert report["manifest_executor"]["durable_gate_summary"]["canary_bridge_refresh_reachable_count"] == 0
+        assert (
+            report["manifest_executor"]["durable_gate_summary"][
+                "canary_bridge_refresh_read_only_result_refreshed_count"
+            ]
+            == 0
+        )
+        assert report["manifest_executor"]["durable_gate_summary"]["canary_bridge_refresh_satisfied_count"] == 0
+        assert report["manifest_executor"]["durable_gate_summary"]["canary_bridge_refresh_execution_allowed_count"] == 0
+        assert report["manifest_executor"]["durable_gate_summary"]["canary_bridge_refresh_executor_may_open_count"] == 0
+        assert (
+            report["manifest_executor"]["durable_gate_summary"][
+                "canary_bridge_refresh_save_or_delete_allowed_count"
+            ]
+            == 0
+        )
+        assert report["manifest_executor"]["durable_gate_summary"]["canary_bridge_refresh_cleanup_allowed_count"] == 0
+        assert report["manifest_executor"]["durable_gate_summary"]["canary_bridge_refresh_authoring_command_count"] == 0
+        assert (
+            report["manifest_executor"]["durable_gate_summary"][
+                "canary_bridge_refresh_save_or_delete_command_count"
+            ]
+            == 0
+        )
+        assert report["manifest_executor"]["durable_gate_summary"]["canary_bridge_refresh_cleanup_command_count"] == 0
         assert report["manifest_executor"]["durable_gate_summary"]["canary_recovery_matrix_ready_count"] == 1
         assert report["manifest_executor"]["durable_gate_summary"]["canary_recovery_scenario_count"] == 6
         assert report["manifest_executor"]["durable_gate_summary"]["canary_recovery_cleanup_allowed_count"] == 0
@@ -329,6 +367,24 @@ def main() -> int:
             is False
         )
         assert (
+            durable_save["durable_preflight_contract"]["durable_canary_bridge_refresh_contract"][
+                "bridge_refresh_required"
+            ]
+            is True
+        )
+        assert (
+            durable_save["durable_preflight_contract"]["durable_canary_bridge_refresh_contract"][
+                "bridge_refresh_satisfied"
+            ]
+            is False
+        )
+        assert (
+            durable_save["durable_preflight_contract"]["durable_canary_bridge_refresh_contract"][
+                "durable_executor_may_open_after_refresh"
+            ]
+            is False
+        )
+        assert (
             durable_save["durable_preflight_contract"]["durable_canary_recovery_matrix_contract"][
                 "recovery_matrix_ready"
             ]
@@ -374,6 +430,10 @@ def main() -> int:
         assert durable_executor_policy["durable_executor_gate"]["canary_live_preflight_read_only_allowed"] is True
         assert durable_executor_policy["durable_executor_gate"]["canary_live_preflight_execution_allowed"] is False
         assert durable_executor_policy["durable_executor_gate"]["canary_live_preflight_save_or_delete_allowed"] is False
+        assert durable_executor_policy["durable_executor_gate"]["canary_bridge_refresh_required"] is True
+        assert durable_executor_policy["durable_executor_gate"]["canary_bridge_refresh_satisfied"] is False
+        assert durable_executor_policy["durable_executor_gate"]["canary_bridge_refresh_executor_may_open"] is False
+        assert durable_executor_policy["durable_executor_gate"]["canary_bridge_refresh_save_or_delete_allowed"] is False
         assert durable_executor_policy["durable_executor_gate"]["canary_recovery_matrix_ready"] is True
         assert durable_executor_policy["durable_executor_gate"]["canary_recovery_cleanup_allowed"] is False
         assert durable_executor_policy["durable_executor_gate"]["canary_recovery_delete_allowed"] is False

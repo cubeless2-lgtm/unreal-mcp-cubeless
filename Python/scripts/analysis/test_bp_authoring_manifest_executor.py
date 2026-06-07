@@ -83,6 +83,17 @@ def main() -> int:
         "canary_live_preflight_authoring_command_count": 0,
         "canary_live_preflight_save_or_delete_command_count": 0,
         "canary_live_preflight_cleanup_command_count": 0,
+        "canary_bridge_refresh_required_count": 1,
+        "canary_bridge_refresh_reachable_count": 0,
+        "canary_bridge_refresh_read_only_result_refreshed_count": 0,
+        "canary_bridge_refresh_satisfied_count": 0,
+        "canary_bridge_refresh_execution_allowed_count": 0,
+        "canary_bridge_refresh_executor_may_open_count": 0,
+        "canary_bridge_refresh_save_or_delete_allowed_count": 0,
+        "canary_bridge_refresh_cleanup_allowed_count": 0,
+        "canary_bridge_refresh_authoring_command_count": 0,
+        "canary_bridge_refresh_save_or_delete_command_count": 0,
+        "canary_bridge_refresh_cleanup_command_count": 0,
         "canary_recovery_matrix_ready_count": 1,
         "canary_recovery_scenario_count": 6,
         "canary_recovery_cleanup_allowed_count": 0,
@@ -184,6 +195,17 @@ def main() -> int:
     assert durable_gate["canary_live_preflight_authoring_command_count"] == 0
     assert durable_gate["canary_live_preflight_save_or_delete_command_count"] == 0
     assert durable_gate["canary_live_preflight_cleanup_command_count"] == 0
+    assert durable_gate["canary_bridge_refresh_required"] is True
+    assert durable_gate["canary_bridge_refresh_reachable"] is False
+    assert durable_gate["canary_bridge_refresh_read_only_result_refreshed"] is False
+    assert durable_gate["canary_bridge_refresh_satisfied"] is False
+    assert durable_gate["canary_bridge_refresh_execution_allowed"] is False
+    assert durable_gate["canary_bridge_refresh_executor_may_open"] is False
+    assert durable_gate["canary_bridge_refresh_save_or_delete_allowed"] is False
+    assert durable_gate["canary_bridge_refresh_cleanup_allowed"] is False
+    assert durable_gate["canary_bridge_refresh_authoring_command_count"] == 0
+    assert durable_gate["canary_bridge_refresh_save_or_delete_command_count"] == 0
+    assert durable_gate["canary_bridge_refresh_cleanup_command_count"] == 0
     assert durable_gate["canary_recovery_matrix_ready"] is True
     assert durable_gate["canary_recovery_scenario_count"] == 6
     assert durable_gate["canary_recovery_cleanup_allowed"] is False

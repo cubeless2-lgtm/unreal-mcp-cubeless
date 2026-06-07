@@ -1,7 +1,7 @@
 {
-  "schema": "section_59_bp_authoring_release_boundary_v2",
+  "schema": "section_61_bp_authoring_release_boundary_v3",
   "analysis_kind": "bp_authoring_release_boundary",
-  "generated_at": "2026-06-07T08:05:34.871679+00:00",
+  "generated_at": "2026-06-07T08:29:51.646719+00:00",
   "repo_root": "D:\\Git\\unreal-mcp-cubeless",
   "project_root": "D:\\Git\\CubelessStylized",
   "report_inputs": {
@@ -111,7 +111,7 @@
     },
     {
       "id": "durable_executor_gate_matrix",
-      "label": "Section 46-48 durable executor gate matrix",
+      "label": "Section 46-48/61 durable executor gate matrix",
       "status": "passed",
       "blocking": true,
       "expected": {
@@ -123,6 +123,9 @@
         "allowed_live_authoring_command_count": 0,
         "contract_save_allowed_count": 0,
         "save_or_delete_commands_allowed_count": 0,
+        "canary_bridge_refresh_execution_allowed_count": 0,
+        "canary_bridge_refresh_executor_may_open_count": 0,
+        "canary_bridge_refresh_save_or_delete_allowed_count": 0,
         "preflight_pass_count": 0
       },
       "actual": {
@@ -134,6 +137,9 @@
         "allowed_live_authoring_command_count": 0,
         "contract_save_allowed_count": 0,
         "save_or_delete_commands_allowed_count": 0,
+        "canary_bridge_refresh_execution_allowed_count": 0,
+        "canary_bridge_refresh_executor_may_open_count": 0,
+        "canary_bridge_refresh_save_or_delete_allowed_count": 0,
         "preflight_pass_count": 0
       },
       "notes": []
@@ -399,6 +405,56 @@
       ]
     },
     {
+      "id": "durable_canary_bridge_refresh_contract",
+      "label": "Section 61 durable canary bridge refresh contract",
+      "status": "passed",
+      "blocking": true,
+      "expected": {
+        "summary_status": "passed",
+        "durable_requested_bridge_refresh_count": 1,
+        "read_only_preflight_allowed_count": 1,
+        "bridge_refresh_required_count": 1,
+        "bridge_reachable_count": 0,
+        "read_only_result_refreshed_count": 0,
+        "bridge_refresh_satisfied_count": 0,
+        "canary_execution_allowed_after_refresh_count": 0,
+        "durable_executor_may_open_after_refresh_count": 0,
+        "save_or_delete_allowed_count": 0,
+        "cleanup_command_allowed_count": 0,
+        "live_authoring_command_count": 0,
+        "live_save_or_delete_command_count": 0,
+        "live_cleanup_command_count": 0,
+        "executor_gate_required_count": 1,
+        "executor_gate_satisfied_count": 0,
+        "executor_gate_execution_allowed_count": 0,
+        "executor_gate_executor_may_open_count": 0
+      },
+      "actual": {
+        "summary_status": "passed",
+        "durable_requested_bridge_refresh_count": 1,
+        "read_only_preflight_allowed_count": 1,
+        "bridge_refresh_required_count": 1,
+        "bridge_reachable_count": 0,
+        "read_only_result_refreshed_count": 0,
+        "bridge_refresh_satisfied_count": 0,
+        "canary_execution_allowed_after_refresh_count": 0,
+        "durable_executor_may_open_after_refresh_count": 0,
+        "save_or_delete_allowed_count": 0,
+        "cleanup_command_allowed_count": 0,
+        "live_authoring_command_count": 0,
+        "live_save_or_delete_command_count": 0,
+        "live_cleanup_command_count": 0,
+        "executor_gate_required_count": 1,
+        "executor_gate_satisfied_count": 0,
+        "executor_gate_execution_allowed_count": 0,
+        "executor_gate_executor_may_open_count": 0
+      },
+      "notes": [
+        "Bridge refresh and fresh read-only canary evidence are required before any future canary execution.",
+        "Missing bridge evidence keeps execution closed rather than enabling durable authoring."
+      ]
+    },
+    {
       "id": "durable_canary_recovery_matrix",
       "label": "Section 58 durable canary recovery matrix",
       "status": "passed",
@@ -657,7 +713,7 @@
   ],
   "verdict": {
     "status": "passed",
-    "release_boundary_version": "section_59_v2",
+    "release_boundary_version": "section_61_v3",
     "mvp_decision_status": "temporary_mvp_ready_durable_not_enabled",
     "temporary_blueprint_authoring_mvp_ready": true,
     "durable_blueprint_authoring_mvp_ready": false,
@@ -667,7 +723,8 @@
     "durable_authoring_enabled": false,
     "durable_authoring_release_status": "not_enabled_read_only_preflight_only",
     "section_51_58_contract_status": "passed",
-    "current_authoring_ceiling": "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_and_section_59_release_boundary_v2",
+    "section_61_bridge_refresh_status": "passed",
+    "current_authoring_ceiling": "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_and_section_61_bridge_refresh_contract",
     "cxx_changes_required": false
   },
   "next_reinforcement_candidates": [

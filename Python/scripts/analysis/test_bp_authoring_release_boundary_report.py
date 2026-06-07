@@ -29,8 +29,9 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_59_v2"
+        assert report["verdict"]["release_boundary_version"] == "section_61_v3"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
+        assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["mvp_decision_status"] == "temporary_mvp_ready_durable_not_enabled"
         assert report["verdict"]["temporary_blueprint_authoring_mvp_ready"] is True
         assert report["verdict"]["durable_blueprint_authoring_mvp_ready"] is False
@@ -88,6 +89,21 @@ def main() -> int:
         assert canary_live_preflight_row["actual"]["canary_execution_allowed_after_preflight_count"] == 0
         assert canary_live_preflight_row["actual"]["live_save_or_delete_command_count"] == 0
         assert canary_live_preflight_row["actual"]["live_cleanup_command_count"] == 0
+        canary_bridge_refresh_row = find_row(report, "durable_canary_bridge_refresh_contract")
+        assert canary_bridge_refresh_row["status"] == "passed"
+        assert canary_bridge_refresh_row["actual"]["durable_requested_bridge_refresh_count"] == 1
+        assert canary_bridge_refresh_row["actual"]["read_only_preflight_allowed_count"] == 1
+        assert canary_bridge_refresh_row["actual"]["bridge_refresh_required_count"] == 1
+        assert canary_bridge_refresh_row["actual"]["bridge_reachable_count"] == 0
+        assert canary_bridge_refresh_row["actual"]["read_only_result_refreshed_count"] == 0
+        assert canary_bridge_refresh_row["actual"]["bridge_refresh_satisfied_count"] == 0
+        assert canary_bridge_refresh_row["actual"]["canary_execution_allowed_after_refresh_count"] == 0
+        assert canary_bridge_refresh_row["actual"]["durable_executor_may_open_after_refresh_count"] == 0
+        assert canary_bridge_refresh_row["actual"]["live_save_or_delete_command_count"] == 0
+        assert canary_bridge_refresh_row["actual"]["executor_gate_required_count"] == 1
+        assert canary_bridge_refresh_row["actual"]["executor_gate_satisfied_count"] == 0
+        assert canary_bridge_refresh_row["actual"]["executor_gate_execution_allowed_count"] == 0
+        assert canary_bridge_refresh_row["actual"]["executor_gate_executor_may_open_count"] == 0
         canary_recovery_row = find_row(report, "durable_canary_recovery_matrix")
         assert canary_recovery_row["status"] == "passed"
         assert canary_recovery_row["actual"]["durable_requested_canary_recovery_count"] == 1
