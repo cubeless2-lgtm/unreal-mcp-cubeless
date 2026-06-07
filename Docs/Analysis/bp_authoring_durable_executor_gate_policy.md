@@ -52,7 +52,36 @@ The planner-driven live smoke may run this read-only preflight while still
 blocking durable authoring. It must fail if the preflight result attempts
 authoring, save, delete, rename, or reports an unexpected manifest id.
 
+## Section 51 - Durable Authoring Enable Contract
+
+Section 51 still does not enable durable Blueprint creation or saving. It
+separates the preconditions a later durable executor must satisfy before it can
+open:
+
+- target package allowlist
+- exactly one overwrite-or-rename decision
+- rollback readiness that protects preexisting assets
+- executor-created asset ownership marker policy
+
+For the default request set, the release boundary must prove:
+
+- durable enable contract requests: `1`
+- enable contract satisfied: `0`
+- durable executor may open: `0`
+- durable authoring allowed: `0`
+- forbidden command allowance for `save=true`, `save_asset`, `delete_asset`, and `rename_asset`: `0`
+- target allowlist gate passed: `1`
+- overwrite/rename decision gate passed: `0`
+- rollback readiness gate passed: `0`
+- ownership marker gate passed: `0`
+
+The contract is intentionally stricter than the current read-only preflight.
+Even if all Section 51 gates are satisfied in a future offline contract, this
+section alone still reports `durable_executor_may_open=false`; a later explicit
+durable release must separately enable and verify live durable authoring.
+
 ## Decision
 
-Section 46-48 improves durable safety visibility only. It does not enable
-durable Blueprint creation or saving.
+Section 46-48 improves durable safety visibility, and Section 51 separates the
+future durable enable gates. These sections do not enable durable Blueprint
+creation, saving, delete, or rename.

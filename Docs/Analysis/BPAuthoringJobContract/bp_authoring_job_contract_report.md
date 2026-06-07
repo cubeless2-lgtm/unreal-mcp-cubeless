@@ -1,7 +1,7 @@
 # BP Authoring Job Contract
 
-- Generated UTC: `2026-06-07T05:17:08.730519+00:00`
-- Manifest version: `section_39_bp_authoring_job_contract_v28`
+- Generated UTC: `2026-06-07T06:32:56.701511+00:00`
+- Manifest version: `section_51_bp_authoring_job_contract_v29`
 - Temp package path: `/Game/_MCP_Temp/PlannerDrivenSmoke`
 - Manifests: `19`
 - Executable manifests: `12`
@@ -30,6 +30,15 @@
 - Durable executor skeleton enabled: `0`
 - Durable executor skeleton executable: `0`
 - Durable executor skeleton command count: `0`
+- Durable enable contract requests: `1`
+- Durable enable contract satisfied: `0`
+- Durable enable executor may open: `0`
+- Durable enable forbidden command allowed: `0`
+- Durable enable failed required gates: `3`
+- Durable enable target allowlist passed: `1`
+- Durable enable overwrite/rename passed: `0`
+- Durable enable rollback readiness passed: `0`
+- Durable enable ownership marker passed: `0`
 
 ## Status Counts
 
@@ -57,6 +66,9 @@
 - Durable save gate allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
+- Durable enable satisfied: `False`
+- Durable enable executor may open: `False`
+- Durable enable failed gates: `none`
 - Durable executor skeleton enabled: `False`
 - Durable executor skeleton executable: `False`
 
@@ -136,6 +148,9 @@ Structural validation plan:
 - Durable save gate allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
+- Durable enable satisfied: `False`
+- Durable enable executor may open: `False`
+- Durable enable failed gates: `none`
 - Durable executor skeleton enabled: `False`
 - Durable executor skeleton executable: `False`
 
@@ -227,6 +242,9 @@ Structural validation plan:
 - Durable save gate allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
+- Durable enable satisfied: `False`
+- Durable enable executor may open: `False`
+- Durable enable failed gates: `none`
 - Durable executor skeleton enabled: `False`
 - Durable executor skeleton executable: `False`
 
@@ -309,6 +327,9 @@ Structural validation plan:
 - Durable save gate allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
+- Durable enable satisfied: `False`
+- Durable enable executor may open: `False`
+- Durable enable failed gates: `none`
 - Durable executor skeleton enabled: `False`
 - Durable executor skeleton executable: `False`
 
@@ -388,6 +409,9 @@ Structural validation plan:
 - Durable save gate allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
+- Durable enable satisfied: `False`
+- Durable enable executor may open: `False`
+- Durable enable failed gates: `none`
 - Durable executor skeleton enabled: `False`
 - Durable executor skeleton executable: `False`
 
@@ -457,6 +481,9 @@ Blocked/review reasons:
 - Durable save gate allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
+- Durable enable satisfied: `False`
+- Durable enable executor may open: `False`
+- Durable enable failed gates: `none`
 - Durable executor skeleton enabled: `False`
 - Durable executor skeleton executable: `False`
 
@@ -526,6 +553,9 @@ Blocked/review reasons:
 - Durable save gate allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
+- Durable enable satisfied: `False`
+- Durable enable executor may open: `False`
+- Durable enable failed gates: `overwrite_rename_decision, rollback_readiness, executor_created_ownership_marker`
 - Durable executor skeleton enabled: `False`
 - Durable executor skeleton executable: `False`
 
@@ -575,7 +605,7 @@ Structural validation plan:
 - none
 
 Blocked/review reasons:
-- `requires_review` `contract_durable_executor_not_enabled`: The request asks for a saved or durable Blueprint asset, but Section 39 only permits dry-run durable preflight, read-only live asset-exists checking, overwrite/rename decision classification, save-gate/rollback policy drafting, executor-readiness checking, a disabled durable executor skeleton, and temporary-smoke execution with save=false until durable save execution is explicitly enabled.
+- `requires_review` `contract_durable_executor_not_enabled`: The request asks for a saved or durable Blueprint asset, but Section 51 only separates the durable enable conditions. Dry-run durable preflight, read-only live asset-exists checking, target allowlist, overwrite/rename decision classification, save-gate/rollback policy drafting, executor-readiness checking, ownership-marker readiness, a disabled durable executor skeleton, and temporary-smoke execution with save=false are allowed; durable save execution remains disabled.
 
 ### safe_function_graph_authoring
 
@@ -595,6 +625,9 @@ Blocked/review reasons:
 - Durable save gate allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
+- Durable enable satisfied: `False`
+- Durable enable executor may open: `False`
+- Durable enable failed gates: `none`
 - Durable executor skeleton enabled: `False`
 - Durable executor skeleton executable: `False`
 
@@ -672,6 +705,9 @@ Structural validation plan:
 - Durable save gate allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
+- Durable enable satisfied: `False`
+- Durable enable executor may open: `False`
+- Durable enable failed gates: `none`
 - Durable executor skeleton enabled: `False`
 - Durable executor skeleton executable: `False`
 
@@ -765,6 +801,9 @@ Structural validation plan:
 - Durable save gate allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
+- Durable enable satisfied: `False`
+- Durable enable executor may open: `False`
+- Durable enable failed gates: `none`
 - Durable executor skeleton enabled: `False`
 - Durable executor skeleton executable: `False`
 
@@ -859,6 +898,9 @@ Structural validation plan:
 - Durable save gate allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
+- Durable enable satisfied: `False`
+- Durable enable executor may open: `False`
+- Durable enable failed gates: `none`
 - Durable executor skeleton enabled: `False`
 - Durable executor skeleton executable: `False`
 
@@ -993,6 +1035,9 @@ Structural validation plan:
 - Durable save gate allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
+- Durable enable satisfied: `False`
+- Durable enable executor may open: `False`
+- Durable enable failed gates: `none`
 - Durable executor skeleton enabled: `False`
 - Durable executor skeleton executable: `False`
 
@@ -1066,6 +1111,9 @@ Structural validation plan:
 - Durable save gate allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
+- Durable enable satisfied: `False`
+- Durable enable executor may open: `False`
+- Durable enable failed gates: `none`
 - Durable executor skeleton enabled: `False`
 - Durable executor skeleton executable: `False`
 
@@ -1169,6 +1217,9 @@ Structural validation plan:
 - Durable save gate allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
+- Durable enable satisfied: `False`
+- Durable enable executor may open: `False`
+- Durable enable failed gates: `none`
 - Durable executor skeleton enabled: `False`
 - Durable executor skeleton executable: `False`
 
@@ -1320,6 +1371,9 @@ Structural validation plan:
 - Durable save gate allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
+- Durable enable satisfied: `False`
+- Durable enable executor may open: `False`
+- Durable enable failed gates: `none`
 - Durable executor skeleton enabled: `False`
 - Durable executor skeleton executable: `False`
 
@@ -1449,6 +1503,9 @@ Structural validation plan:
 - Durable save gate allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
+- Durable enable satisfied: `False`
+- Durable enable executor may open: `False`
+- Durable enable failed gates: `none`
 - Durable executor skeleton enabled: `False`
 - Durable executor skeleton executable: `False`
 
@@ -1518,6 +1575,9 @@ Blocked/review reasons:
 - Durable save gate allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
+- Durable enable satisfied: `False`
+- Durable enable executor may open: `False`
+- Durable enable failed gates: `none`
 - Durable executor skeleton enabled: `False`
 - Durable executor skeleton executable: `False`
 
@@ -1587,6 +1647,9 @@ Blocked/review reasons:
 - Durable save gate allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
+- Durable enable satisfied: `False`
+- Durable enable executor may open: `False`
+- Durable enable failed gates: `none`
 - Durable executor skeleton enabled: `False`
 - Durable executor skeleton executable: `False`
 
@@ -1657,6 +1720,9 @@ Blocked/review reasons:
 - Durable save gate allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
+- Durable enable satisfied: `False`
+- Durable enable executor may open: `False`
+- Durable enable failed gates: `none`
 - Durable executor skeleton enabled: `False`
 - Durable executor skeleton executable: `False`
 

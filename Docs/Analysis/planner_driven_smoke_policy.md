@@ -65,4 +65,7 @@ job manifest until dedicated reinforcement exists.
 - Section 39 disabled durable executor skeleton may be reported, but
   `executor_enabled=false`, `can_execute=false`, and `command_plan=[]` mean the
   smoke runner must not run durable executor commands.
+- Section 51 durable authoring enable contract may be reported, but
+  `durable_executor_may_open=false` and the save/delete/rename forbidden-command
+  flags mean the smoke runner must not run durable executor commands.
 - Section 11 does not require C++ changes.

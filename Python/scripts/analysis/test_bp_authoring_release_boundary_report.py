@@ -35,6 +35,11 @@ def main() -> int:
         assert find_row(report, "manifest_executor_policy")["status"] == "passed"
         assert find_row(report, "executor_capability_matrix")["status"] == "passed"
         assert find_row(report, "durable_executor_gate_matrix")["status"] == "passed"
+        enable_row = find_row(report, "durable_authoring_enable_contract")
+        assert enable_row["status"] == "passed"
+        assert enable_row["actual"]["enable_contract_satisfied_count"] == 0
+        assert enable_row["actual"]["durable_executor_may_open_count"] == 0
+        assert enable_row["actual"]["executor_gate_may_open_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         assert find_row(report, "durable_read_only_live_preflight")["status"] == "passed"
         assert find_row(report, "project_filesystem_side_effect_boundary")["status"] == "passed"

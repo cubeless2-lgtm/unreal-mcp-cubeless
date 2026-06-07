@@ -164,6 +164,48 @@ def build_durable_gate_matrix_row(executor_summary: Dict[str, Any]) -> Dict[str,
     )
 
 
+def build_durable_enable_contract_row(contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]) -> Dict[str, Any]:
+    enable_summary = contract_summary.get("durable_enable_contract_summary", {})
+    durable_gate_summary = executor_summary.get("durable_gate_summary", {})
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_manifest_count": 1,
+        "enable_contract_satisfied_count": 0,
+        "durable_executor_may_open_count": 0,
+        "durable_authoring_allowed_count": 0,
+        "forbidden_command_allowed_count": 0,
+        "target_package_allowlist_passed_count": 1,
+        "overwrite_rename_decision_passed_count": 0,
+        "rollback_readiness_passed_count": 0,
+        "ownership_marker_passed_count": 0,
+        "executor_gate_may_open_count": 0,
+    }
+    actual = {
+        "summary_status": enable_summary.get("status"),
+        "durable_requested_manifest_count": enable_summary.get("durable_requested_manifest_count"),
+        "enable_contract_satisfied_count": enable_summary.get("enable_contract_satisfied_count"),
+        "durable_executor_may_open_count": enable_summary.get("durable_executor_may_open_count"),
+        "durable_authoring_allowed_count": enable_summary.get("durable_authoring_allowed_count"),
+        "forbidden_command_allowed_count": enable_summary.get("forbidden_command_allowed_count"),
+        "target_package_allowlist_passed_count": enable_summary.get("target_package_allowlist_passed_count"),
+        "overwrite_rename_decision_passed_count": enable_summary.get("overwrite_rename_decision_passed_count"),
+        "rollback_readiness_passed_count": enable_summary.get("rollback_readiness_passed_count"),
+        "ownership_marker_passed_count": enable_summary.get("ownership_marker_passed_count"),
+        "executor_gate_may_open_count": durable_gate_summary.get("durable_enable_executor_may_open_count"),
+    }
+    return row(
+        "durable_authoring_enable_contract",
+        "Section 51 durable authoring enable contract",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "Section 51 separates target allowlist, overwrite/rename, rollback readiness, and ownership marker gates.",
+            "It does not enable durable save/delete/rename/live authoring.",
+        ),
+    )
+
+
 def build_planner_live_rows(planner_report_path: Path, planner_report: Optional[Dict[str, Any]]) -> List[Dict[str, Any]]:
     if planner_report is None:
         return [missing_row("planner_driven_live_smoke_report", "Planner-driven live smoke report", planner_report_path)]
@@ -331,6 +373,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         build_executor_matrix_row(executor_summary),
         build_capability_matrix_row(executor_summary),
         build_durable_gate_matrix_row(executor_summary),
+        build_durable_enable_contract_row(contract_summary, executor_summary),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -357,12 +400,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "durable_authoring_enabled": False,
             "durable_authoring_release_status": "not_enabled_read_only_preflight_only",
             "current_authoring_ceiling": (
-                "planner_safe_temporary_manifest_execution_with_structural_validation_and_durable_read_only_preflight"
+                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_and_section_51_enable_contract"
             ),
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
-            "durable executor enable contract with explicit save gate promotion",
+            "durable executor dry-run plan after Section 51 enable gates are satisfied offline",
             "component default/type readback expansion for broader Blueprint classes",
             "function call diagnostics and graph layout repair suggestions",
             "UMG/CommonUI authoring classifier and non-executable manifest coverage",
@@ -398,7 +441,7 @@ def render_markdown(report: Dict[str, Any]) -> str:
             "",
             "## Decision",
             "",
-            "This boundary permits temporary planner-safe manifest execution only. Durable Blueprint creation and saving remain disabled until a separate durable executor, save gate, and rollback ownership policy are proven.",
+            "This boundary permits temporary planner-safe manifest execution only. Section 51 records the durable authoring enable contract, but durable Blueprint creation, saving, delete, and rename remain disabled until a later explicit durable release.",
             "",
             "## Next Reinforcement Candidates",
             "",

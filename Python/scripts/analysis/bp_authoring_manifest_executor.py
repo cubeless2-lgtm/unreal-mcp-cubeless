@@ -364,6 +364,7 @@ def build_durable_executor_gate(manifest: Dict[str, Any], command_plan: Sequence
     preflight = manifest.get("durable_preflight_contract", {})
     save_gate = manifest.get("durable_save_gate_contract", preflight.get("durable_save_gate_contract", {}))
     rollback = manifest.get("durable_rollback_policy_contract", preflight.get("durable_rollback_policy_contract", {}))
+    enable_contract = manifest.get("durable_enable_contract", preflight.get("durable_enable_contract", {}))
     readiness = manifest.get(
         "durable_executor_readiness_contract",
         preflight.get("durable_executor_readiness_contract", {}),
@@ -384,13 +385,20 @@ def build_durable_executor_gate(manifest: Dict[str, Any], command_plan: Sequence
         skeleton.get("save_commands_allowed")
         or skeleton.get("delete_commands_allowed")
         or skeleton.get("rename_commands_allowed")
+        or enable_contract.get("save_true_allowed")
+        or enable_contract.get("save_asset_allowed")
+        or enable_contract.get("delete_asset_allowed")
+        or enable_contract.get("rename_asset_allowed")
         or any(item.get("save_requested") for item in command_plan)
         or any(item.get("command") in FORBIDDEN_LIVE_COMMANDS for item in command_plan)
     )
     blocked_by = set(skeleton.get("disabled_by", []))
+    blocked_by.update(enable_contract.get("failed_required_gate_ids", []))
     blocked_by.update(save_gate.get("blocked_by", []))
     blocked_by.update(readiness.get("failing_checks", []))
     if requested:
+        if not enable_contract.get("enable_contract_satisfied"):
+            blocked_by.add("durable_enable_contract_not_satisfied")
         if not executor_enabled:
             blocked_by.add("durable_executor_disabled")
         if not executor_can_execute:
@@ -405,6 +413,7 @@ def build_durable_executor_gate(manifest: Dict[str, Any], command_plan: Sequence
     required_before_execution.update(preflight.get("required_reinforcement", []))
     required_before_execution.update(save_gate.get("required_reinforcement", []))
     required_before_execution.update(rollback.get("required_reinforcement", []))
+    required_before_execution.update(enable_contract.get("required_reinforcement", []))
     required_before_execution.update(readiness.get("required_reinforcement", []))
     required_before_execution.update(skeleton.get("required_reinforcement", []))
     if not requested:
@@ -424,6 +433,10 @@ def build_durable_executor_gate(manifest: Dict[str, Any], command_plan: Sequence
         "read_only_live_command": preflight.get("asset_exists_check_command", "unreal.EditorAssetLibrary.does_asset_exist"),
         "live_scope": "read_only_asset_exists_check_only" if read_only_preflight_allowed else "none",
         "durable_authoring_allowed": False,
+        "durable_enable_contract_schema": enable_contract.get("schema", ""),
+        "durable_enable_contract_satisfied": bool(enable_contract.get("enable_contract_satisfied")),
+        "durable_enable_executor_may_open": bool(enable_contract.get("durable_executor_may_open")),
+        "durable_enable_failed_required_gate_ids": list(enable_contract.get("failed_required_gate_ids", [])),
         "durable_executor_enabled": executor_enabled,
         "durable_executor_can_execute": executor_can_execute,
         "durable_executor_command_count": len(skeleton_command_plan),
@@ -479,6 +492,7 @@ def build_executor_policy(manifest: Dict[str, Any], temp_package_path: str) -> D
     if (
         durable_gate["durable_executor_enabled"]
         or durable_gate["durable_executor_can_execute"]
+        or durable_gate["durable_enable_executor_may_open"]
         or durable_gate["contract_save_allowed"]
         or durable_gate["save_or_delete_commands_allowed"]
         or durable_gate["allowed_live_authoring_command_count"]
@@ -707,6 +721,13 @@ def summarize_executor_policies(manifests: Sequence[Dict[str, Any]], temp_packag
         "schema": DURABLE_GATE_SCHEMA,
         "durable_requested_manifest_count": durable_requested_count,
         "read_only_live_preflight_allowed_count": sum(1 for gate in durable_gates if gate["read_only_live_preflight_allowed"]),
+        "durable_enable_contract_satisfied_count": sum(
+            1 for gate in durable_gates if gate["durable_enable_contract_satisfied"]
+        ),
+        "durable_enable_executor_may_open_count": sum(1 for gate in durable_gates if gate["durable_enable_executor_may_open"]),
+        "durable_enable_failed_required_gate_count": sum(
+            len(gate["durable_enable_failed_required_gate_ids"]) for gate in durable_gates
+        ),
         "durable_executor_enabled_count": sum(1 for gate in durable_gates if gate["durable_executor_enabled"]),
         "durable_executor_executable_count": sum(1 for gate in durable_gates if gate["durable_executor_can_execute"]),
         "durable_executor_command_count": sum(gate["durable_executor_command_count"] for gate in durable_gates),
@@ -717,6 +738,8 @@ def summarize_executor_policies(manifests: Sequence[Dict[str, Any]], temp_packag
         "status": "passed"
         if (
             durable_requested_count == sum(1 for gate in durable_gates if gate["read_only_live_preflight_allowed"])
+            and sum(1 for gate in durable_gates if gate["durable_enable_contract_satisfied"]) == 0
+            and sum(1 for gate in durable_gates if gate["durable_enable_executor_may_open"]) == 0
             and sum(1 for gate in durable_gates if gate["durable_executor_enabled"]) == 0
             and sum(1 for gate in durable_gates if gate["durable_executor_can_execute"]) == 0
             and sum(gate["allowed_live_authoring_command_count"] for gate in durable_gates) == 0

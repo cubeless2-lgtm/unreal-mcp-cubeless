@@ -20,11 +20,12 @@ from itertools import combinations
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
+import bp_authoring_durable_enable_contract as durable_enable
 import bp_authoring_planner as planner
 import external_project_readiness_analyzer as base
 
 
-MANIFEST_VERSION = "section_39_bp_authoring_job_contract_v28"
+MANIFEST_VERSION = "section_51_bp_authoring_job_contract_v29"
 DEFAULT_TEMP_PACKAGE_PATH = "/Game/_MCP_Temp/PlannerDrivenSmoke"
 
 AUTHORING_COMMANDS = {
@@ -508,11 +509,14 @@ def build_durable_executor_skeleton_contract(
     save_gate_contract: Dict[str, Any],
     rollback_policy_contract: Dict[str, Any],
     readiness_contract: Dict[str, Any],
+    enable_contract: Dict[str, Any],
 ) -> Dict[str, Any]:
     readiness_failures = list(readiness_contract.get("failing_checks", []))
+    enable_failures = list(enable_contract.get("failed_required_gate_ids", []))
     disabled_by = []
     if requested:
         disabled_by = ["durable_executor_skeleton_disabled"]
+        disabled_by.extend(enable_failures)
         disabled_by.extend(readiness_failures)
     return {
         "id": "durable_executor_skeleton",
@@ -528,14 +532,18 @@ def build_durable_executor_skeleton_contract(
         "delete_commands_allowed": False,
         "rename_commands_allowed": False,
         "allowed_live_command_count": 0,
+        "enable_contract_satisfied": bool(enable_contract.get("enable_contract_satisfied")),
+        "durable_executor_may_open": bool(enable_contract.get("durable_executor_may_open")),
         "input_contracts": [
             preflight_schema,
+            enable_contract["schema"],
             save_gate_contract["schema"],
             rollback_policy_contract["schema"],
             readiness_contract["schema"],
         ],
         "required_manifest_inputs": [
             "durable_preflight_contract",
+            "durable_enable_contract",
             "durable_save_gate_contract",
             "durable_rollback_policy_contract",
             "durable_executor_readiness_contract",
@@ -597,12 +605,22 @@ def build_durable_preflight_contract(
         save_gate_contract,
         rollback_policy_contract,
     )
+    enable_contract = durable_enable.build_enable_contract(
+        requested=requested,
+        target_package_path=package_path,
+        target_asset_path=target_asset_path,
+        package_path_allowed=package_path_allowed,
+        overwrite_rename_decision_contract=overwrite_rename_decision_contract,
+        rollback_policy_contract=rollback_policy_contract,
+        ownership_marker_policy_ready=False,
+    )
     executor_skeleton_contract = build_durable_executor_skeleton_contract(
         requested,
         "section_39_durable_preflight_contract_v1",
         save_gate_contract,
         rollback_policy_contract,
         readiness_contract,
+        enable_contract,
     )
     save_gate_passed = False
     preflight_pass = (
@@ -631,6 +649,7 @@ def build_durable_preflight_contract(
         "overwrite_decision_present": overwrite_decision_present,
         "rename_decision_present": rename_decision_present,
         "overwrite_rename_decision_contract": overwrite_rename_decision_contract,
+        "durable_enable_contract": enable_contract,
         "durable_save_gate_contract": save_gate_contract,
         "durable_rollback_policy_contract": rollback_policy_contract,
         "durable_executor_readiness_contract": readiness_contract,
@@ -682,6 +701,7 @@ def build_durable_authoring_contract(
         "save_allowed": False,
         "temporary_smoke_may_save": False,
         "durable_preflight_contract": preflight_contract,
+        "durable_enable_contract": preflight_contract["durable_enable_contract"],
         "overwrite_policy": "requires_explicit_review",
         "preflight_required": [
             "asset_exists_check",
@@ -699,6 +719,7 @@ def build_durable_authoring_contract(
         else [
             "implement a durable executor separate from temporary smoke",
             "keep the Section 39 durable executor skeleton disabled until readiness passes",
+            "satisfy the Section 51 durable authoring enable contract",
             "satisfy the Section 38 durable executor readiness checklist",
             "promote the Section 37 save gate and rollback contracts into a durable executor gate",
             "add durable overwrite/rename policy application and rollback boundary",
@@ -725,6 +746,7 @@ def build_authoring_executor_contract(
         },
         "durable_authoring": durable_authoring_contract,
         "durable_preflight": durable_authoring_contract["durable_preflight_contract"],
+        "durable_enable_contract": durable_authoring_contract["durable_preflight_contract"]["durable_enable_contract"],
         "durable_save_gate": durable_authoring_contract["durable_preflight_contract"]["durable_save_gate_contract"],
         "durable_rollback_policy": durable_authoring_contract["durable_preflight_contract"]["durable_rollback_policy_contract"],
         "durable_executor_readiness": durable_authoring_contract["durable_preflight_contract"][
@@ -1353,10 +1375,11 @@ def contract_specificity_gaps(
                 "key": "contract_durable_executor_not_enabled",
                 "label": "Durable authoring executor contract missing",
                 "reason": (
-                    "The request asks for a saved or durable Blueprint asset, but Section 39 only permits "
-                    "dry-run durable preflight, read-only live asset-exists checking, overwrite/rename decision "
-                    "classification, save-gate/rollback policy drafting, executor-readiness checking, a disabled durable "
-                    "executor skeleton, and temporary-smoke execution with save=false until durable save execution is explicitly enabled."
+                    "The request asks for a saved or durable Blueprint asset, but Section 51 only separates "
+                    "the durable enable conditions. Dry-run durable preflight, read-only live asset-exists checking, "
+                    "target allowlist, overwrite/rename decision classification, save-gate/rollback policy drafting, "
+                    "executor-readiness checking, ownership-marker readiness, a disabled durable executor skeleton, "
+                    "and temporary-smoke execution with save=false are allowed; durable save execution remains disabled."
                 ),
                 "required_before_authoring": durable_authoring_contract["required_reinforcement"],
             }
@@ -3111,6 +3134,7 @@ def build_job_manifest(
         "parent_class_contract": parent_class_contract,
         "durable_authoring_contract": durable_authoring_contract,
         "durable_preflight_contract": durable_authoring_contract["durable_preflight_contract"],
+        "durable_enable_contract": durable_authoring_contract["durable_preflight_contract"]["durable_enable_contract"],
         "durable_save_gate_contract": durable_authoring_contract["durable_preflight_contract"]["durable_save_gate_contract"],
         "durable_rollback_policy_contract": durable_authoring_contract["durable_preflight_contract"][
             "durable_rollback_policy_contract"
@@ -3207,6 +3231,9 @@ def summarize_manifests(manifests: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
     status_counts = Counter(manifest["status"] for manifest in manifests)
     executable_manifests = [manifest for manifest in manifests if manifest["executable"]]
     non_executable_manifests = [manifest for manifest in manifests if not manifest["executable"]]
+    enable_summary = durable_enable.summarize_enable_contracts(
+        [manifest.get("durable_enable_contract", {}) for manifest in manifests]
+    )
     return {
         "manifest_count": len(manifests),
         "executable_manifest_count": len(executable_manifests),
@@ -3287,6 +3314,21 @@ def summarize_manifests(manifests: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
             manifest.get("durable_executor_skeleton_contract", {}).get("allowed_live_command_count", 0)
             for manifest in manifests
         ),
+        "durable_enable_contract_summary": enable_summary,
+        "durable_enable_contract_request_count": enable_summary["durable_requested_manifest_count"],
+        "durable_enable_contract_satisfied_count": enable_summary["enable_contract_satisfied_count"],
+        "durable_enable_executor_may_open_count": enable_summary["durable_executor_may_open_count"],
+        "durable_enable_authoring_allowed_count": enable_summary["durable_authoring_allowed_count"],
+        "durable_enable_forbidden_command_allowed_count": enable_summary["forbidden_command_allowed_count"],
+        "durable_enable_failed_required_gate_count": enable_summary["failed_required_gate_count"],
+        "durable_enable_target_package_allowlist_passed_count": enable_summary[
+            "target_package_allowlist_passed_count"
+        ],
+        "durable_enable_overwrite_rename_decision_passed_count": enable_summary[
+            "overwrite_rename_decision_passed_count"
+        ],
+        "durable_enable_rollback_readiness_passed_count": enable_summary["rollback_readiness_passed_count"],
+        "durable_enable_ownership_marker_passed_count": enable_summary["ownership_marker_passed_count"],
         "non_safe_authoring_command_count": sum(1 for manifest in non_executable_manifests if manifest_has_authoring_commands(manifest)),
         "executable_manifest_ids": [manifest["id"] for manifest in executable_manifests],
         "non_executable_manifest_ids": [manifest["id"] for manifest in non_executable_manifests],
@@ -3368,6 +3410,15 @@ def render_markdown(report: Dict[str, Any]) -> str:
         f"- Durable executor skeleton enabled: `{summary['durable_executor_skeleton_enabled_count']}`",
         f"- Durable executor skeleton executable: `{summary['durable_executor_skeleton_executable_count']}`",
         f"- Durable executor skeleton command count: `{summary['durable_executor_skeleton_command_count']}`",
+        f"- Durable enable contract requests: `{summary['durable_enable_contract_request_count']}`",
+        f"- Durable enable contract satisfied: `{summary['durable_enable_contract_satisfied_count']}`",
+        f"- Durable enable executor may open: `{summary['durable_enable_executor_may_open_count']}`",
+        f"- Durable enable forbidden command allowed: `{summary['durable_enable_forbidden_command_allowed_count']}`",
+        f"- Durable enable failed required gates: `{summary['durable_enable_failed_required_gate_count']}`",
+        f"- Durable enable target allowlist passed: `{summary['durable_enable_target_package_allowlist_passed_count']}`",
+        f"- Durable enable overwrite/rename passed: `{summary['durable_enable_overwrite_rename_decision_passed_count']}`",
+        f"- Durable enable rollback readiness passed: `{summary['durable_enable_rollback_readiness_passed_count']}`",
+        f"- Durable enable ownership marker passed: `{summary['durable_enable_ownership_marker_passed_count']}`",
         "",
         "## Status Counts",
         "",
@@ -3396,6 +3447,9 @@ def render_markdown(report: Dict[str, Any]) -> str:
                 f"- Durable save gate allowed: `{manifest['durable_save_gate_contract']['save_allowed']}`",
                 f"- Durable rollback ready: `{manifest['durable_rollback_policy_contract']['rollback_policy_ready']}`",
                 f"- Durable executor ready: `{manifest['durable_executor_readiness_contract']['durable_executor_ready']}`",
+                f"- Durable enable satisfied: `{manifest['durable_enable_contract']['enable_contract_satisfied']}`",
+                f"- Durable enable executor may open: `{manifest['durable_enable_contract']['durable_executor_may_open']}`",
+                f"- Durable enable failed gates: `{', '.join(manifest['durable_enable_contract']['failed_required_gate_ids']) or 'none'}`",
                 f"- Durable executor skeleton enabled: `{manifest['durable_executor_skeleton_contract']['executor_enabled']}`",
                 f"- Durable executor skeleton executable: `{manifest['durable_executor_skeleton_contract']['can_execute']}`",
                 "",

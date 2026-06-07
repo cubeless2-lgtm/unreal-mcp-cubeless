@@ -23,6 +23,9 @@ Blueprint authoring manifest and live UnrealMCP commands.
 9. Section 46-48 durable gate coverage must prove durable requests are limited
    to read-only live preflight and expose zero save/delete/rename/authoring
    command allowance.
+10. Section 51 durable enable coverage must prove target allowlist,
+    overwrite/rename decision, rollback readiness, and ownership marker gates
+    stay separated and do not open durable executor execution.
 
 ## Execution Boundary
 
@@ -39,6 +42,7 @@ temporary manifests. It must block:
 - any compile request with `save=true`
 - any durable gate that unexpectedly enables saved asset authoring, save,
   delete, rename, overwrite, or replacement behavior
+- any Section 51 enable contract that reports `durable_executor_may_open=true`
 
 ## Validation
 
@@ -47,6 +51,11 @@ temporary manifests. It must block:
 - Offline tests must prove the durable gate count: 1 durable requested manifest,
   1 read-only live preflight allowed manifest, and 0 durable executor/save/delete
   command allowance.
+- Offline tests must prove the Section 51 enable contract count: 1 durable
+  requested manifest, 0 enable-contract-satisfied manifests, 0 durable executor
+  may-open manifests, 0 forbidden command allowance, and independent gate counts
+  for target allowlist, overwrite/rename, rollback readiness, and ownership
+  marker.
 - The planner-driven live smoke must report the executor version and executor
   executable count.
 - The planner-driven live smoke may perform only the read-only durable

@@ -1,6 +1,6 @@
 # BP Authoring Job Contract Policy
 
-This policy defines the Section 12 through Section 39 contract between a
+This policy defines the Section 12 through Section 51 contract between a
 planner verdict and live Blueprint authoring execution.
 
 ## Required Manifest Fields
@@ -30,6 +30,7 @@ Every user request must be converted into a structured manifest with:
 - temporary smoke executor contract
 - durable authoring executor contract
 - durable preflight dry-run contract
+- durable authoring enable contract
 - blocked or review reasons
 
 ## Execution Rule
@@ -182,6 +183,12 @@ record the future executor shape, required input contracts, planned output
 fields, forbidden commands, and disabled reasons. The skeleton has
 `executor_enabled=false`, `can_execute=false`, `command_plan=[]`, and
 `allowed_live_command_count=0`.
+
+Section 51 adds a durable authoring enable contract. Durable requests now
+separate target package allowlist, overwrite-or-rename decision, rollback
+readiness, and executor-created ownership marker gates. The contract reports
+`enable_contract_satisfied=false`, `durable_executor_may_open=false`, and keeps
+`save=true`, `save_asset`, `delete_asset`, and `rename_asset` forbidden.
 
 ## Section 13 Executable Templates
 
@@ -823,6 +830,29 @@ enable durable authoring. A later section must explicitly set an enable flag,
 make readiness pass, add command-plan tests, and prove rollback before any live
 durable save command may run.
 
+## Section 51 Durable Authoring Enable Contract
+
+Durable preflight now embeds `durable_enable_contract`, also exposed at the
+manifest top level and inside `authoring_executor_contract`.
+
+The enable contract boundary is:
+
+- enable schema: `section_51_durable_authoring_enable_contract_v1`
+- contract scope: `offline_enable_conditions_only`
+- required gates: target package allowlist, overwrite-or-rename decision,
+  rollback readiness, executor-created ownership marker
+- durable executor may open: `false`
+- durable authoring allowed: `false`
+- `save=true`, `save_asset`, `delete_asset`, and `rename_asset` allowed:
+  `false`
+
+For the default durable request, the target package allowlist gate passes
+because `/Game/Blueprints` is allowlisted. The overwrite/rename, rollback
+readiness, and ownership marker gates fail, so the disabled skeleton remains
+closed. Even a future offline contract with every Section 51 gate satisfied
+would still need a later explicit durable release before live durable authoring
+could run.
+
 ## Live Smoke Rule
 
 The planner-driven live smoke must execute the manifest, not the raw user
@@ -844,11 +874,11 @@ A planner-safe request with a non-allowlisted parent class must also remain
 dry-run until the parent class receives Section 31 reinforcement.
 
 A planner-safe request that asks for a saved or durable asset must also remain
-dry-run until Section 39 durable preflight and later durable executor
-reinforcement exist. A read-only asset-exists result, parsed overwrite/rename
-decision, draft save gate, or readiness checklist entry alone must not enable
-durable save or overwrite behavior. A disabled durable executor skeleton alone
-also must not enable durable save, delete, rename, or overwrite behavior.
+dry-run until Section 51 durable enable gates and a later durable executor
+release are both proven. A read-only asset-exists result, parsed
+overwrite/rename decision, draft save gate, readiness checklist entry, or
+disabled durable executor skeleton alone must not enable durable save, delete,
+rename, overwrite, or replacement behavior.
 
 ## Validation
 

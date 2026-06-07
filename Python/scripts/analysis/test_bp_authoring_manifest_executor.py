@@ -44,6 +44,9 @@ def main() -> int:
         "schema": executor.DURABLE_GATE_SCHEMA,
         "durable_requested_manifest_count": 1,
         "read_only_live_preflight_allowed_count": 1,
+        "durable_enable_contract_satisfied_count": 0,
+        "durable_enable_executor_may_open_count": 0,
+        "durable_enable_failed_required_gate_count": 3,
         "durable_executor_enabled_count": 0,
         "durable_executor_executable_count": 0,
         "durable_executor_command_count": 0,
@@ -92,6 +95,14 @@ def main() -> int:
     assert durable_gate["status"] == "blocked_save_authoring_read_only_preflight_allowed"
     assert durable_gate["read_only_live_preflight_allowed"] is True
     assert durable_gate["durable_authoring_allowed"] is False
+    assert durable_gate["durable_enable_contract_schema"] == "section_51_durable_authoring_enable_contract_v1"
+    assert durable_gate["durable_enable_contract_satisfied"] is False
+    assert durable_gate["durable_enable_executor_may_open"] is False
+    assert durable_gate["durable_enable_failed_required_gate_ids"] == [
+        "overwrite_rename_decision",
+        "rollback_readiness",
+        "executor_created_ownership_marker",
+    ]
     assert durable_gate["durable_executor_enabled"] is False
     assert durable_gate["durable_executor_can_execute"] is False
     assert durable_gate["save_allowed"] is False
@@ -99,6 +110,7 @@ def main() -> int:
     assert durable_gate["allowed_live_authoring_command_count"] == 0
     assert durable_gate["target_asset_path"] == "/Game/Blueprints/BP_PlannerDurable"
     assert "save_asset" in durable_gate["forbidden_commands"]
+    assert "durable_enable_contract_not_satisfied" in durable_gate["blocked_by"]
     assert "explicit_durable_executor_enable_flag" in durable_gate["blocked_by"]
 
     live_preflight_summary = executor.summarize_durable_live_preflight(

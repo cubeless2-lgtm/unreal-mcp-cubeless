@@ -104,6 +104,16 @@ def main() -> int:
         assert report["summary"]["durable_executor_skeleton_enabled_count"] == 0
         assert report["summary"]["durable_executor_skeleton_executable_count"] == 0
         assert report["summary"]["durable_executor_skeleton_command_count"] == 0
+        assert report["summary"]["durable_enable_contract_request_count"] == 1
+        assert report["summary"]["durable_enable_contract_satisfied_count"] == 0
+        assert report["summary"]["durable_enable_executor_may_open_count"] == 0
+        assert report["summary"]["durable_enable_authoring_allowed_count"] == 0
+        assert report["summary"]["durable_enable_forbidden_command_allowed_count"] == 0
+        assert report["summary"]["durable_enable_failed_required_gate_count"] == 3
+        assert report["summary"]["durable_enable_target_package_allowlist_passed_count"] == 1
+        assert report["summary"]["durable_enable_overwrite_rename_decision_passed_count"] == 0
+        assert report["summary"]["durable_enable_rollback_readiness_passed_count"] == 0
+        assert report["summary"]["durable_enable_ownership_marker_passed_count"] == 0
         for manifest in report["manifests"]:
             if manifest["executable"]:
                 assert compile_steps(manifest)
@@ -132,6 +142,11 @@ def main() -> int:
         assert safe_actor["durable_save_gate_contract"]["save_allowed"] is False
         assert safe_actor["durable_rollback_policy_contract"]["schema"] == "section_37_durable_rollback_policy_contract_v1"
         assert safe_actor["durable_rollback_policy_contract"]["requested"] is False
+        assert safe_actor["durable_enable_contract"]["schema"] == "section_51_durable_authoring_enable_contract_v1"
+        assert safe_actor["durable_enable_contract"]["requested"] is False
+        assert safe_actor["durable_enable_contract"]["enable_contract_satisfied"] is False
+        assert safe_actor["durable_enable_contract"]["durable_executor_may_open"] is False
+        assert safe_actor["durable_enable_contract"]["failed_required_gate_ids"] == []
         assert safe_actor["durable_executor_readiness_contract"]["schema"] == "section_38_durable_executor_readiness_contract_v1"
         assert safe_actor["durable_executor_readiness_contract"]["requested"] is False
         assert safe_actor["durable_executor_readiness_contract"]["durable_executor_ready"] is False
@@ -311,6 +326,8 @@ def main() -> int:
         readiness_contract = durable_save["durable_executor_readiness_contract"]
         skeleton_contract = durable_save["durable_executor_skeleton_contract"]
         assert save_gate_contract == preflight_contract["durable_save_gate_contract"]
+        assert durable_save["durable_enable_contract"] == preflight_contract["durable_enable_contract"]
+        assert durable_save["durable_enable_contract"] == durable_save["authoring_executor_contract"]["durable_enable_contract"]
         assert rollback_policy_contract == preflight_contract["durable_rollback_policy_contract"]
         assert readiness_contract == preflight_contract["durable_executor_readiness_contract"]
         assert skeleton_contract == preflight_contract["durable_executor_skeleton_contract"]
@@ -332,6 +349,29 @@ def main() -> int:
         assert "asset_exists_result_missing" in save_gate_contract["blocked_by"]
         assert "overwrite_rename_decision_missing" in save_gate_contract["blocked_by"]
         assert "rollback_policy_not_ready" in save_gate_contract["blocked_by"]
+        enable_contract = durable_save["durable_enable_contract"]
+        assert enable_contract["schema"] == "section_51_durable_authoring_enable_contract_v1"
+        assert enable_contract["requested"] is True
+        assert enable_contract["enable_contract_satisfied"] is False
+        assert enable_contract["durable_executor_may_open"] is False
+        assert enable_contract["durable_authoring_allowed"] is False
+        assert enable_contract["save_true_allowed"] is False
+        assert enable_contract["save_asset_allowed"] is False
+        assert enable_contract["delete_asset_allowed"] is False
+        assert enable_contract["rename_asset_allowed"] is False
+        assert "save_asset" in enable_contract["forbidden_commands"]
+        assert "delete_asset" in enable_contract["forbidden_commands"]
+        assert "rename_asset" in enable_contract["forbidden_commands"]
+        assert enable_contract["failed_required_gate_ids"] == [
+            "overwrite_rename_decision",
+            "rollback_readiness",
+            "executor_created_ownership_marker",
+        ]
+        enable_gates = {gate["id"]: gate for gate in enable_contract["gates"]}
+        assert enable_gates["target_package_allowlist"]["passed"] is True
+        assert enable_gates["overwrite_rename_decision"]["passed"] is False
+        assert enable_gates["rollback_readiness"]["passed"] is False
+        assert enable_gates["executor_created_ownership_marker"]["passed"] is False
         assert rollback_policy_contract["schema"] == "section_37_durable_rollback_policy_contract_v1"
         assert rollback_policy_contract["requested"] is True
         assert rollback_policy_contract["policy_mode"] == "draft_only"
@@ -372,9 +412,13 @@ def main() -> int:
         assert skeleton_contract["rename_commands_allowed"] is False
         assert skeleton_contract["allowed_live_command_count"] == 0
         assert "section_39_durable_preflight_contract_v1" in skeleton_contract["input_contracts"]
+        assert "section_51_durable_authoring_enable_contract_v1" in skeleton_contract["input_contracts"]
         assert "section_37_durable_save_gate_contract_v1" in skeleton_contract["input_contracts"]
         assert "section_38_durable_executor_readiness_contract_v1" in skeleton_contract["input_contracts"]
         assert "durable_executor_skeleton_disabled" in skeleton_contract["disabled_by"]
+        assert "overwrite_rename_decision" in skeleton_contract["disabled_by"]
+        assert "rollback_readiness" in skeleton_contract["disabled_by"]
+        assert "executor_created_ownership_marker" in skeleton_contract["disabled_by"]
         assert "explicit_durable_executor_enable_flag" in skeleton_contract["disabled_by"]
         assert "create_blueprint" in skeleton_contract["forbidden_commands"]
         assert "save_asset" in skeleton_contract["forbidden_commands"]
