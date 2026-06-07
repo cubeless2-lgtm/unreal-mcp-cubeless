@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_112_v54"
+        assert report["verdict"]["release_boundary_version"] == "section_113_v55"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -107,6 +107,7 @@ def main() -> int:
         assert report["verdict"]["section_110_durable_executor_activation_readiness_status"] == "passed"
         assert report["verdict"]["section_111_durable_executor_open_status"] == "passed"
         assert report["verdict"]["section_112_durable_executor_authoring_enable_status"] == "passed"
+        assert report["verdict"]["section_113_durable_executor_authoring_command_status"] == "passed"
         assert report["verdict"]["final_durable_release_ready"] is False
         assert report["verdict"]["main_push_requested"] is False
         assert report["verdict"]["mvp_decision_status"] == "temporary_mvp_ready_durable_not_enabled"
@@ -1872,6 +1873,54 @@ def main() -> int:
         assert executor_authoring_enable_row["actual"]["cleanup_allowed_count"] == 0
         assert executor_authoring_enable_row["actual"]["live_command_dispatched_count"] == 0
         assert executor_authoring_enable_row["actual"]["live_command_executed_count"] == 0
+        executor_authoring_command_row = find_row(
+            report, "durable_executor_authoring_command_contract"
+        )
+        assert executor_authoring_command_row["status"] == "passed"
+        assert executor_authoring_command_row["actual"]["durable_requested_executor_authoring_command_count"] == 1
+        assert executor_authoring_command_row["actual"]["authoring_command_contract_defined_count"] == 1
+        assert executor_authoring_command_row["actual"]["authoring_enable_contract_ready_count"] == 1
+        assert executor_authoring_command_row["actual"]["authoring_enable_inputs_satisfied_count"] == 0
+        assert executor_authoring_command_row["actual"]["authoring_enable_record_valid_count"] == 0
+        assert executor_authoring_command_row["actual"]["allowed_authoring_enable_observed_count"] == 0
+        assert executor_authoring_command_row["actual"]["no_forbidden_authoring_enable_claims_count"] == 0
+        assert executor_authoring_command_row["actual"]["target_package_allowlist_reconfirmed_count"] == 0
+        assert executor_authoring_command_row["actual"]["overwrite_rename_decision_reconfirmed_count"] == 0
+        assert executor_authoring_command_row["actual"]["rollback_readiness_reconfirmed_count"] == 0
+        assert executor_authoring_command_row["actual"]["ownership_marker_reconfirmed_count"] == 0
+        assert executor_authoring_command_row["actual"]["authoring_command_inputs_satisfied_count"] == 0
+        assert executor_authoring_command_row["actual"]["authoring_command_record_present_count"] == 0
+        assert executor_authoring_command_row["actual"]["record_schema_matches_count"] == 0
+        assert executor_authoring_command_row["actual"]["command_scope_matches_count"] == 0
+        assert executor_authoring_command_row["actual"]["explicit_authoring_command_authorized_count"] == 0
+        assert executor_authoring_command_row["actual"]["command_status_passed_count"] == 0
+        assert executor_authoring_command_row["actual"]["no_save_delete_rename_acknowledged_count"] == 0
+        assert executor_authoring_command_row["actual"]["explicit_durable_mvp_request_reconfirmed_count"] == 0
+        assert executor_authoring_command_row["actual"]["planned_authoring_command_count"] == 0
+        assert executor_authoring_command_row["actual"]["allowed_authoring_command_count"] == 0
+        assert executor_authoring_command_row["actual"]["forbidden_authoring_command_count"] == 0
+        assert executor_authoring_command_row["actual"]["unknown_authoring_command_count"] == 0
+        assert executor_authoring_command_row["actual"]["authoring_command_record_valid_count"] == 0
+        assert executor_authoring_command_row["actual"]["authoring_command_record_rejected_count"] == 0
+        assert executor_authoring_command_row["actual"]["unsafe_authoring_command_record_count"] == 0
+        assert executor_authoring_command_row["actual"]["missing_authoring_command_prerequisite_count"] == 17
+        assert executor_authoring_command_row["actual"]["durable_authoring_command_contract_started_count"] == 0
+        assert executor_authoring_command_row["actual"]["durable_authoring_command_contract_accepted_count"] == 0
+        assert executor_authoring_command_row["actual"]["durable_authoring_command_allowed_count"] == 0
+        assert executor_authoring_command_row["actual"]["durable_authoring_command_dispatched_count"] == 0
+        assert executor_authoring_command_row["actual"]["durable_authoring_command_executed_count"] == 0
+        assert executor_authoring_command_row["actual"]["durable_authoring_enabled_count"] == 0
+        assert executor_authoring_command_row["actual"]["durable_authoring_allowed_count"] == 0
+        assert executor_authoring_command_row["actual"]["code_change_performed_count"] == 0
+        assert executor_authoring_command_row["actual"]["executor_code_modified_count"] == 0
+        assert executor_authoring_command_row["actual"]["unreal_asset_modified_count"] == 0
+        assert executor_authoring_command_row["actual"]["live_bridge_probe_started_count"] == 0
+        assert executor_authoring_command_row["actual"]["asset_write_performed_count"] == 0
+        assert executor_authoring_command_row["actual"]["package_dirty_marked_count"] == 0
+        assert executor_authoring_command_row["actual"]["save_delete_rename_allowed_count"] == 0
+        assert executor_authoring_command_row["actual"]["cleanup_allowed_count"] == 0
+        assert executor_authoring_command_row["actual"]["live_command_dispatched_count"] == 0
+        assert executor_authoring_command_row["actual"]["live_command_executed_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
