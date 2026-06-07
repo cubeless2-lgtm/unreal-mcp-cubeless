@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_82_v24"
+        assert report["verdict"]["release_boundary_version"] == "section_83_v25"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -77,6 +77,7 @@ def main() -> int:
         assert report["verdict"]["section_80_canary_live_command_execution_evidence_admission_status"] == "passed"
         assert report["verdict"]["section_81_canary_release_promotion_decision_status"] == "passed"
         assert report["verdict"]["section_82_canary_executor_activation_status"] == "passed"
+        assert report["verdict"]["section_83_canary_executor_open_status"] == "passed"
         assert report["verdict"]["final_durable_release_ready"] is False
         assert report["verdict"]["main_push_requested"] is False
         assert report["verdict"]["mvp_decision_status"] == "temporary_mvp_ready_durable_not_enabled"
@@ -654,6 +655,34 @@ def main() -> int:
         assert executor_activation_row["actual"]["live_command_executed_count"] == 0
         assert executor_activation_row["actual"]["reported_allowed_evidence_command_count"] == 0
         assert executor_activation_row["actual"]["reported_forbidden_evidence_command_count"] == 0
+        executor_open_row = find_row(report, "durable_canary_executor_open_contract")
+        assert executor_open_row["status"] == "passed"
+        assert executor_open_row["actual"]["durable_requested_canary_executor_open_count"] == 1
+        assert executor_open_row["actual"]["open_contract_defined_count"] == 1
+        assert executor_open_row["actual"]["activation_contract_ready_count"] == 1
+        assert executor_open_row["actual"]["activation_inputs_satisfied_count"] == 0
+        assert executor_open_row["actual"]["activation_record_valid_count"] == 0
+        assert executor_open_row["actual"]["open_inputs_satisfied_count"] == 0
+        assert executor_open_row["actual"]["open_record_present_count"] == 0
+        assert executor_open_row["actual"]["record_schema_matches_count"] == 0
+        assert executor_open_row["actual"]["open_scope_matches_count"] == 0
+        assert executor_open_row["actual"]["explicit_open_authorized_count"] == 0
+        assert executor_open_row["actual"]["no_save_delete_rename_acknowledged_count"] == 0
+        assert executor_open_row["actual"]["open_record_valid_count"] == 0
+        assert executor_open_row["actual"]["open_record_rejected_count"] == 0
+        assert executor_open_row["actual"]["unsafe_open_record_count"] == 0
+        assert executor_open_row["actual"]["missing_open_prerequisite_count"] == 8
+        assert executor_open_row["actual"]["durable_executor_open_allowed_count"] == 0
+        assert executor_open_row["actual"]["durable_executor_opened_count"] == 0
+        assert executor_open_row["actual"]["durable_authoring_allowed_count"] == 0
+        assert executor_open_row["actual"]["save_delete_rename_allowed_count"] == 0
+        assert executor_open_row["actual"]["cleanup_allowed_count"] == 0
+        assert executor_open_row["actual"]["live_command_dispatch_allowed_count"] == 0
+        assert executor_open_row["actual"]["live_command_plan_emitted_count"] == 0
+        assert executor_open_row["actual"]["live_command_execution_allowed_count"] == 0
+        assert executor_open_row["actual"]["live_command_executed_count"] == 0
+        assert executor_open_row["actual"]["reported_allowed_evidence_command_count"] == 0
+        assert executor_open_row["actual"]["reported_forbidden_evidence_command_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
