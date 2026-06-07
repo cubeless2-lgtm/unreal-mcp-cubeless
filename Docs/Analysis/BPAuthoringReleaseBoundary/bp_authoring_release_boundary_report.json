@@ -1,7 +1,7 @@
 {
-  "schema": "section_72_bp_authoring_release_boundary_v14",
+  "schema": "section_73_bp_authoring_release_boundary_v15",
   "analysis_kind": "bp_authoring_release_boundary",
-  "generated_at": "2026-06-07T09:10:54.053258+00:00",
+  "generated_at": "2026-06-07T09:18:36.817822+00:00",
   "repo_root": "D:\\Git\\unreal-mcp-cubeless",
   "project_root": "D:\\Git\\CubelessStylized",
   "report_inputs": {
@@ -991,6 +991,66 @@
       ]
     },
     {
+      "id": "durable_canary_read_only_retry_result_admission_contract",
+      "label": "Section 73 durable canary read-only retry result admission contract",
+      "status": "passed",
+      "blocking": true,
+      "expected": {
+        "summary_status": "passed",
+        "durable_requested_canary_read_only_retry_result_admission_count": 1,
+        "retry_result_admission_contract_defined_count": 1,
+        "live_read_only_retry_result_present_count": 0,
+        "result_schema_matches_count": 0,
+        "explicit_live_read_only_retry_authorized_count": 0,
+        "read_only_command_matches_count": 0,
+        "result_status_passed_count": 0,
+        "read_only_result_count": 0,
+        "asset_exists_check_performed_count": 0,
+        "read_only_result_admitted_count": 0,
+        "missing_admission_prerequisite_count": 2,
+        "rejected_retry_result_count": 0,
+        "unsafe_retry_result_count": 0,
+        "canary_execution_allowed_after_retry_result_count": 0,
+        "durable_executor_may_open_after_retry_result_count": 0,
+        "authoring_command_allowed_count": 0,
+        "save_delete_rename_allowed_count": 0,
+        "cleanup_allowed_count": 0,
+        "live_authoring_command_count": 0,
+        "live_save_delete_rename_command_count": 0,
+        "live_cleanup_command_count": 0,
+        "live_canary_execution_command_count": 0
+      },
+      "actual": {
+        "summary_status": "passed",
+        "durable_requested_canary_read_only_retry_result_admission_count": 1,
+        "retry_result_admission_contract_defined_count": 1,
+        "live_read_only_retry_result_present_count": 0,
+        "result_schema_matches_count": 0,
+        "explicit_live_read_only_retry_authorized_count": 0,
+        "read_only_command_matches_count": 0,
+        "result_status_passed_count": 0,
+        "read_only_result_count": 0,
+        "asset_exists_check_performed_count": 0,
+        "read_only_result_admitted_count": 0,
+        "missing_admission_prerequisite_count": 2,
+        "rejected_retry_result_count": 0,
+        "unsafe_retry_result_count": 0,
+        "canary_execution_allowed_after_retry_result_count": 0,
+        "durable_executor_may_open_after_retry_result_count": 0,
+        "authoring_command_allowed_count": 0,
+        "save_delete_rename_allowed_count": 0,
+        "cleanup_allowed_count": 0,
+        "live_authoring_command_count": 0,
+        "live_save_delete_rename_command_count": 0,
+        "live_cleanup_command_count": 0,
+        "live_canary_execution_command_count": 0
+      },
+      "notes": [
+        "No live retry result is admitted by the offline release boundary.",
+        "A future result must be explicitly authorized, schema-matched, read-only, and free of authoring commands."
+      ]
+    },
+    {
       "id": "planner_driven_live_smoke_report",
       "label": "Planner-driven live smoke report",
       "status": "passed",
@@ -1143,7 +1203,7 @@
   ],
   "verdict": {
     "status": "passed",
-    "release_boundary_version": "section_72_v14",
+    "release_boundary_version": "section_73_v15",
     "mvp_decision_status": "temporary_mvp_ready_durable_not_enabled",
     "temporary_blueprint_authoring_mvp_ready": true,
     "durable_blueprint_authoring_mvp_ready": false,
@@ -1165,9 +1225,10 @@
     "section_70_durable_release_decision_status": "passed",
     "section_71_bridge_recovery_readiness_status": "passed",
     "section_72_canary_read_only_retry_envelope_status": "passed",
+    "section_73_canary_read_only_retry_result_admission_status": "passed",
     "final_durable_release_ready": false,
     "main_push_requested": false,
-    "current_authoring_ceiling": "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_section_64_canary_command_allowlist_contract_section_65_canary_creation_boundary_contract_section_66_ownership_marker_proof_contract_section_67_rollback_cleanup_proof_contract_section_68_save_gate_final_review_contract_section_69_canary_rehearsal_readiness_contract_section_70_durable_release_decision_contract_section_71_bridge_recovery_readiness_contract_and_section_72_canary_read_only_retry_envelope_contract",
+    "current_authoring_ceiling": "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_section_64_canary_command_allowlist_contract_section_65_canary_creation_boundary_contract_section_66_ownership_marker_proof_contract_section_67_rollback_cleanup_proof_contract_section_68_save_gate_final_review_contract_section_69_canary_rehearsal_readiness_contract_section_70_durable_release_decision_contract_section_71_bridge_recovery_readiness_contract_section_72_canary_read_only_retry_envelope_contract_and_section_73_canary_read_only_retry_result_admission_contract",
     "cxx_changes_required": false
   },
   "next_reinforcement_candidates": [

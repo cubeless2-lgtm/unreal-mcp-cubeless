@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_72_v14"
+        assert report["verdict"]["release_boundary_version"] == "section_73_v15"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -67,6 +67,7 @@ def main() -> int:
         assert report["verdict"]["section_70_durable_release_decision_status"] == "passed"
         assert report["verdict"]["section_71_bridge_recovery_readiness_status"] == "passed"
         assert report["verdict"]["section_72_canary_read_only_retry_envelope_status"] == "passed"
+        assert report["verdict"]["section_73_canary_read_only_retry_result_admission_status"] == "passed"
         assert report["verdict"]["final_durable_release_ready"] is False
         assert report["verdict"]["main_push_requested"] is False
         assert report["verdict"]["mvp_decision_status"] == "temporary_mvp_ready_durable_not_enabled"
@@ -309,6 +310,33 @@ def main() -> int:
         assert retry_envelope_row["actual"]["live_authoring_command_count"] == 0
         assert retry_envelope_row["actual"]["live_save_or_delete_command_count"] == 0
         assert retry_envelope_row["actual"]["live_cleanup_command_count"] == 0
+        result_admission_row = find_row(report, "durable_canary_read_only_retry_result_admission_contract")
+        assert result_admission_row["status"] == "passed"
+        assert (
+            result_admission_row["actual"]["durable_requested_canary_read_only_retry_result_admission_count"]
+            == 1
+        )
+        assert result_admission_row["actual"]["retry_result_admission_contract_defined_count"] == 1
+        assert result_admission_row["actual"]["live_read_only_retry_result_present_count"] == 0
+        assert result_admission_row["actual"]["result_schema_matches_count"] == 0
+        assert result_admission_row["actual"]["explicit_live_read_only_retry_authorized_count"] == 0
+        assert result_admission_row["actual"]["read_only_command_matches_count"] == 0
+        assert result_admission_row["actual"]["result_status_passed_count"] == 0
+        assert result_admission_row["actual"]["read_only_result_count"] == 0
+        assert result_admission_row["actual"]["asset_exists_check_performed_count"] == 0
+        assert result_admission_row["actual"]["read_only_result_admitted_count"] == 0
+        assert result_admission_row["actual"]["missing_admission_prerequisite_count"] == 2
+        assert result_admission_row["actual"]["rejected_retry_result_count"] == 0
+        assert result_admission_row["actual"]["unsafe_retry_result_count"] == 0
+        assert result_admission_row["actual"]["canary_execution_allowed_after_retry_result_count"] == 0
+        assert result_admission_row["actual"]["durable_executor_may_open_after_retry_result_count"] == 0
+        assert result_admission_row["actual"]["authoring_command_allowed_count"] == 0
+        assert result_admission_row["actual"]["save_delete_rename_allowed_count"] == 0
+        assert result_admission_row["actual"]["cleanup_allowed_count"] == 0
+        assert result_admission_row["actual"]["live_authoring_command_count"] == 0
+        assert result_admission_row["actual"]["live_save_delete_rename_command_count"] == 0
+        assert result_admission_row["actual"]["live_cleanup_command_count"] == 0
+        assert result_admission_row["actual"]["live_canary_execution_command_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
