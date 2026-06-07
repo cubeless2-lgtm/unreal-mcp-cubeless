@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_83_v25"
+        assert report["verdict"]["release_boundary_version"] == "section_84_v26"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -78,6 +78,7 @@ def main() -> int:
         assert report["verdict"]["section_81_canary_release_promotion_decision_status"] == "passed"
         assert report["verdict"]["section_82_canary_executor_activation_status"] == "passed"
         assert report["verdict"]["section_83_canary_executor_open_status"] == "passed"
+        assert report["verdict"]["section_84_canary_authoring_enable_status"] == "passed"
         assert report["verdict"]["final_durable_release_ready"] is False
         assert report["verdict"]["main_push_requested"] is False
         assert report["verdict"]["mvp_decision_status"] == "temporary_mvp_ready_durable_not_enabled"
@@ -683,6 +684,38 @@ def main() -> int:
         assert executor_open_row["actual"]["live_command_executed_count"] == 0
         assert executor_open_row["actual"]["reported_allowed_evidence_command_count"] == 0
         assert executor_open_row["actual"]["reported_forbidden_evidence_command_count"] == 0
+        authoring_enable_row = find_row(report, "durable_canary_authoring_enable_contract")
+        assert authoring_enable_row["status"] == "passed"
+        assert authoring_enable_row["actual"]["durable_requested_canary_authoring_enable_count"] == 1
+        assert authoring_enable_row["actual"]["authoring_enable_contract_defined_count"] == 1
+        assert authoring_enable_row["actual"]["executor_open_contract_ready_count"] == 1
+        assert authoring_enable_row["actual"]["open_inputs_satisfied_count"] == 0
+        assert authoring_enable_row["actual"]["open_record_valid_count"] == 0
+        assert authoring_enable_row["actual"]["authoring_enable_inputs_satisfied_count"] == 0
+        assert authoring_enable_row["actual"]["authoring_enable_record_present_count"] == 0
+        assert authoring_enable_row["actual"]["record_schema_matches_count"] == 0
+        assert authoring_enable_row["actual"]["enable_scope_matches_count"] == 0
+        assert authoring_enable_row["actual"]["explicit_authoring_enable_authorized_count"] == 0
+        assert authoring_enable_row["actual"]["no_save_delete_rename_acknowledged_count"] == 0
+        assert authoring_enable_row["actual"]["target_package_allowlist_reconfirmed_count"] == 0
+        assert authoring_enable_row["actual"]["overwrite_rename_decision_reconfirmed_count"] == 0
+        assert authoring_enable_row["actual"]["rollback_readiness_reconfirmed_count"] == 0
+        assert authoring_enable_row["actual"]["ownership_marker_reconfirmed_count"] == 0
+        assert authoring_enable_row["actual"]["authoring_enable_record_valid_count"] == 0
+        assert authoring_enable_row["actual"]["authoring_enable_record_rejected_count"] == 0
+        assert authoring_enable_row["actual"]["unsafe_authoring_enable_record_count"] == 0
+        assert authoring_enable_row["actual"]["missing_authoring_enable_prerequisite_count"] == 12
+        assert authoring_enable_row["actual"]["durable_authoring_enable_allowed_count"] == 0
+        assert authoring_enable_row["actual"]["durable_authoring_enabled_count"] == 0
+        assert authoring_enable_row["actual"]["durable_authoring_allowed_count"] == 0
+        assert authoring_enable_row["actual"]["save_delete_rename_allowed_count"] == 0
+        assert authoring_enable_row["actual"]["cleanup_allowed_count"] == 0
+        assert authoring_enable_row["actual"]["live_command_dispatch_allowed_count"] == 0
+        assert authoring_enable_row["actual"]["live_command_plan_emitted_count"] == 0
+        assert authoring_enable_row["actual"]["live_command_execution_allowed_count"] == 0
+        assert authoring_enable_row["actual"]["live_command_executed_count"] == 0
+        assert authoring_enable_row["actual"]["reported_allowed_evidence_command_count"] == 0
+        assert authoring_enable_row["actual"]["reported_forbidden_evidence_command_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
