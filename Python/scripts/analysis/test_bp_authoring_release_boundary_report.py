@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_145_v87"
+        assert report["verdict"]["release_boundary_version"] == "section_146_v88"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -217,6 +217,12 @@ def main() -> int:
         assert (
             report["verdict"][
                 "section_145_durable_executor_authoring_command_after_enable_after_open_after_activation_readiness_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_146_durable_executor_authoring_command_dispatch_after_command_after_enable_after_open_after_activation_readiness_status"
             ]
             == "passed"
         )
@@ -4344,6 +4350,89 @@ def main() -> int:
                 "actual"
             ]
             == expected_command_after_enable_after_open_after_activation_readiness_actual
+        )
+        executor_authoring_command_dispatch_after_command_after_enable_after_open_after_activation_readiness_row = find_row(
+            report,
+            "durable_executor_authoring_command_dispatch_after_command_after_enable_after_open_after_activation_readiness_contract",
+        )
+        assert (
+            executor_authoring_command_dispatch_after_command_after_enable_after_open_after_activation_readiness_row[
+                "status"
+            ]
+            == "passed"
+        )
+        expected_command_dispatch_after_command_after_enable_after_open_after_activation_readiness_actual = {
+            "summary_status": "passed",
+            "durable_requested_executor_authoring_command_dispatch_after_command_after_enable_after_open_after_activation_readiness_count": 1,
+            "dispatch_contract_defined_count": 1,
+            "authoring_command_contract_ready_count": 1,
+            "authoring_command_inputs_satisfied_count": 0,
+            "authoring_command_record_valid_count": 0,
+            "planned_authoring_commands_present_count": 0,
+            "allowed_authoring_commands_present_count": 0,
+            "dispatch_inputs_satisfied_count": 0,
+            "dispatch_record_present_count": 0,
+            "record_schema_matches_count": 0,
+            "dispatch_scope_matches_count": 0,
+            "explicit_dispatch_authorized_count": 0,
+            "dispatch_status_passed_count": 0,
+            "no_save_delete_rename_acknowledged_count": 0,
+            "explicit_durable_mvp_request_reconfirmed_count": 0,
+            "allowed_dispatch_observed_count": 0,
+            "no_forbidden_dispatch_claims_count": 0,
+            "dispatch_record_valid_count": 0,
+            "dispatch_record_rejected_count": 0,
+            "unsafe_dispatch_record_count": 0,
+            "missing_dispatch_prerequisite_count": 14,
+            "reported_allowed_dispatch_count": 0,
+            "reported_forbidden_dispatch_count": 0,
+            "durable_authoring_command_dispatch_started_count": 0,
+            "durable_authoring_command_dispatch_accepted_count": 0,
+            "durable_authoring_command_dispatch_allowed_count": 0,
+            "durable_authoring_command_dispatched_count": 0,
+            "durable_authoring_command_execution_contract_started_count": 0,
+            "durable_authoring_command_executed_count": 0,
+            "durable_authoring_command_contract_started_count": 0,
+            "durable_authoring_command_contract_accepted_count": 0,
+            "durable_authoring_command_allowed_count": 0,
+            "durable_authoring_enabled_count": 0,
+            "durable_authoring_allowed_count": 0,
+            "code_change_performed_count": 0,
+            "executor_code_modified_count": 0,
+            "unreal_asset_modified_count": 0,
+            "live_bridge_probe_started_count": 0,
+            "asset_write_performed_count": 0,
+            "package_dirty_marked_count": 0,
+            "save_delete_rename_allowed_count": 0,
+            "cleanup_allowed_count": 0,
+            "live_command_dispatched_count": 0,
+            "live_command_executed_count": 0,
+            "reported_dispatch_gate_count": 0,
+            "reported_authoring_command_revalidated_count": 0,
+            "reported_no_live_dispatch_performed_count": 0,
+            "reported_no_execution_authorized_count": 0,
+            "reported_no_asset_write_dispatch_count": 0,
+            "reported_no_save_delete_rename_dispatch_count": 0,
+            "reported_authoring_command_dispatch_count": 0,
+            "reported_authoring_command_execution_count": 0,
+            "reported_live_dispatch_count": 0,
+            "reported_live_execution_count": 0,
+            "reported_code_change_count": 0,
+            "reported_executor_code_modified_count": 0,
+            "reported_unreal_asset_change_count": 0,
+            "reported_live_probe_count": 0,
+            "reported_durable_authoring_count": 0,
+            "reported_asset_write_count": 0,
+            "reported_package_dirty_count": 0,
+            "reported_save_count": 0,
+            "reported_delete_rename_count": 0,
+            "reported_cleanup_count": 0,
+        }
+        assert (
+            executor_authoring_command_dispatch_after_command_after_enable_after_open_after_activation_readiness_row[
+                "actual"
+            ]
+            == expected_command_dispatch_after_command_after_enable_after_open_after_activation_readiness_actual
         )
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
