@@ -1067,6 +1067,12 @@ and records that durable authoring remains disabled. Job manifests continue to
 carry the Section 51-58 contracts, but Section 59 does not add any authoring,
 save, delete, cleanup, or canary execution command.
 
+## Section 60 MVP Decision Contract
+
+Section 60 is a release decision contract. It marks the temporary planner-safe
+Actor Blueprint authoring scope as MVP-ready and marks durable Blueprint
+authoring as not ready and not enabled. It does not add any manifest command.
+
 ## Live Smoke Rule
 
 The planner-driven live smoke must execute the manifest, not the raw user

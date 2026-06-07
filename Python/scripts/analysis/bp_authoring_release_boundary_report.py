@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 import bp_authoring_job_contract as job_contract
+import bp_authoring_durable_mvp_decision_contract as mvp_decision
 import bp_authoring_manifest_executor as manifest_executor
 
 
@@ -613,6 +614,31 @@ def build_section_51_58_consolidation_row(
     )
 
 
+def build_mvp_decision_row(decision_contract: Dict[str, Any]) -> Dict[str, Any]:
+    expected = {
+        "schema": mvp_decision.MVP_DECISION_SCHEMA,
+        "decision_status": "temporary_mvp_ready_durable_not_enabled",
+        "temporary_blueprint_authoring_mvp_ready": True,
+        "durable_blueprint_authoring_mvp_ready": False,
+        "durable_authoring_enabled": False,
+        "durable_save_allowed": False,
+        "durable_cleanup_allowed": False,
+        "durable_canary_live_execution_allowed": False,
+    }
+    actual = {key: decision_contract.get(key) for key in expected}
+    return row(
+        "section_60_mvp_decision_contract",
+        "Section 60 MVP decision contract",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "Temporary planner-safe Blueprint authoring is the MVP-ready scope.",
+            "Durable Blueprint authoring remains contracts-only and disabled.",
+        ),
+    )
+
+
 def build_planner_live_rows(planner_report_path: Path, planner_report: Optional[Dict[str, Any]]) -> List[Dict[str, Any]]:
     if planner_report is None:
         return [missing_row("planner_driven_live_smoke_report", "Planner-driven live smoke report", planner_report_path)]
@@ -803,6 +829,16 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     planner_report = read_json(planner_report_path)
     quality_report = read_json(quality_report_path)
     lyra_report = read_json(lyra_report_path)
+    preliminary_verdict = {
+        "status": "passed",
+        "release_boundary_version": "section_59_v2",
+        "durable_authoring_enabled": False,
+    }
+    decision_contract = mvp_decision.build_mvp_decision_contract(
+        contract_summary,
+        executor_summary,
+        preliminary_verdict,
+    )
 
     matrix = [
         build_contract_matrix_row(contract_summary),
@@ -818,6 +854,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         build_durable_canary_live_preflight_row(contract_summary, executor_summary),
         build_durable_canary_recovery_row(contract_summary, executor_summary),
         build_section_51_58_consolidation_row(contract_summary, executor_summary),
+        build_mvp_decision_row(decision_contract),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -839,6 +876,11 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
             "release_boundary_version": "section_59_v2",
+            "mvp_decision_status": decision_contract["decision_status"],
+            "temporary_blueprint_authoring_mvp_ready": decision_contract[
+                "temporary_blueprint_authoring_mvp_ready"
+            ],
+            "durable_blueprint_authoring_mvp_ready": decision_contract["durable_blueprint_authoring_mvp_ready"],
             "failed_blocking_count": len(failed_blocking),
             "failed_blocking_ids": [item["id"] for item in failed_blocking],
             "ready_for_main_push": not failed_blocking,
@@ -851,7 +893,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
-            "MVP decision contract after Section 59 release boundary v2",
+            "durable executor implementation review only after explicit durable MVP request",
             "component default/type readback expansion for broader Blueprint classes",
             "function call diagnostics and graph layout repair suggestions",
             "UMG/CommonUI authoring classifier and non-executable manifest coverage",

@@ -1,7 +1,7 @@
 {
   "schema": "section_59_bp_authoring_release_boundary_v2",
   "analysis_kind": "bp_authoring_release_boundary",
-  "generated_at": "2026-06-07T08:03:01.627685+00:00",
+  "generated_at": "2026-06-07T08:05:34.871679+00:00",
   "repo_root": "D:\\Git\\unreal-mcp-cubeless",
   "project_root": "D:\\Git\\CubelessStylized",
   "report_inputs": {
@@ -475,6 +475,36 @@
       ]
     },
     {
+      "id": "section_60_mvp_decision_contract",
+      "label": "Section 60 MVP decision contract",
+      "status": "passed",
+      "blocking": true,
+      "expected": {
+        "schema": "section_60_bp_authoring_mvp_decision_contract_v1",
+        "decision_status": "temporary_mvp_ready_durable_not_enabled",
+        "temporary_blueprint_authoring_mvp_ready": true,
+        "durable_blueprint_authoring_mvp_ready": false,
+        "durable_authoring_enabled": false,
+        "durable_save_allowed": false,
+        "durable_cleanup_allowed": false,
+        "durable_canary_live_execution_allowed": false
+      },
+      "actual": {
+        "schema": "section_60_bp_authoring_mvp_decision_contract_v1",
+        "decision_status": "temporary_mvp_ready_durable_not_enabled",
+        "temporary_blueprint_authoring_mvp_ready": true,
+        "durable_blueprint_authoring_mvp_ready": false,
+        "durable_authoring_enabled": false,
+        "durable_save_allowed": false,
+        "durable_cleanup_allowed": false,
+        "durable_canary_live_execution_allowed": false
+      },
+      "notes": [
+        "Temporary planner-safe Blueprint authoring is the MVP-ready scope.",
+        "Durable Blueprint authoring remains contracts-only and disabled."
+      ]
+    },
+    {
       "id": "planner_driven_live_smoke_report",
       "label": "Planner-driven live smoke report",
       "status": "passed",
@@ -628,6 +658,9 @@
   "verdict": {
     "status": "passed",
     "release_boundary_version": "section_59_v2",
+    "mvp_decision_status": "temporary_mvp_ready_durable_not_enabled",
+    "temporary_blueprint_authoring_mvp_ready": true,
+    "durable_blueprint_authoring_mvp_ready": false,
     "failed_blocking_count": 0,
     "failed_blocking_ids": [],
     "ready_for_main_push": true,
@@ -638,7 +671,7 @@
     "cxx_changes_required": false
   },
   "next_reinforcement_candidates": [
-    "MVP decision contract after Section 59 release boundary v2",
+    "durable executor implementation review only after explicit durable MVP request",
     "component default/type readback expansion for broader Blueprint classes",
     "function call diagnostics and graph layout repair suggestions",
     "UMG/CommonUI authoring classifier and non-executable manifest coverage"

@@ -31,6 +31,9 @@ def main() -> int:
         assert report["verdict"]["status"] == "passed"
         assert report["verdict"]["release_boundary_version"] == "section_59_v2"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
+        assert report["verdict"]["mvp_decision_status"] == "temporary_mvp_ready_durable_not_enabled"
+        assert report["verdict"]["temporary_blueprint_authoring_mvp_ready"] is True
+        assert report["verdict"]["durable_blueprint_authoring_mvp_ready"] is False
         assert report["verdict"]["ready_for_main_push"] is True
         assert report["verdict"]["durable_authoring_enabled"] is False
         assert find_row(report, "job_contract_default_request_set")["status"] == "passed"
@@ -98,6 +101,11 @@ def main() -> int:
         assert consolidation_row["actual"]["durable_authoring_enabled"] is False
         assert consolidation_row["actual"]["section_51_58_blocking_contracts_ready"] is True
         assert consolidation_row["actual"]["durable_canary_recovery_cleanup_allowed_count"] == 0
+        mvp_row = find_row(report, "section_60_mvp_decision_contract")
+        assert mvp_row["status"] == "passed"
+        assert mvp_row["actual"]["temporary_blueprint_authoring_mvp_ready"] is True
+        assert mvp_row["actual"]["durable_blueprint_authoring_mvp_ready"] is False
+        assert mvp_row["actual"]["durable_authoring_enabled"] is False
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False

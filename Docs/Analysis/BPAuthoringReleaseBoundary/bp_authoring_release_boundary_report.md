@@ -1,6 +1,6 @@
 # BP Authoring Release Boundary
 
-- Generated UTC: `2026-06-07T08:03:01.627685+00:00`
+- Generated UTC: `2026-06-07T08:05:34.871679+00:00`
 - Schema: `section_59_bp_authoring_release_boundary_v2`
 - Status: `passed`
 - Ready for main push: `True`
@@ -23,6 +23,7 @@
 - `passed` `durable_canary_live_preflight_contract` blocking=`True` - Section 57 durable canary live preflight
 - `passed` `durable_canary_recovery_matrix` blocking=`True` - Section 58 durable canary recovery matrix
 - `passed` `section_51_58_release_boundary_v2_consolidation` blocking=`True` - Section 59 release boundary v2 consolidation
+- `passed` `section_60_mvp_decision_contract` blocking=`True` - Section 60 MVP decision contract
 - `passed` `planner_driven_live_smoke_report` blocking=`True` - Planner-driven live smoke report
 - `passed` `planner_live_cleanup_and_log_boundary` blocking=`True` - Planner live cleanup and log boundary
 - `passed` `durable_read_only_live_preflight` blocking=`True` - Durable read-only live preflight boundary
@@ -39,7 +40,7 @@ This boundary permits temporary planner-safe manifest execution only. Section 51
 
 ## Next Reinforcement Candidates
 
-- MVP decision contract after Section 59 release boundary v2
+- durable executor implementation review only after explicit durable MVP request
 - component default/type readback expansion for broader Blueprint classes
 - function call diagnostics and graph layout repair suggestions
 - UMG/CommonUI authoring classifier and non-executable manifest coverage

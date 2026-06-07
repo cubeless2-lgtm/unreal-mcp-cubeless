@@ -292,6 +292,22 @@ Section 51-58. The consolidation row must prove:
 
 This is a reporting boundary only. It does not enable durable authoring.
 
+## Section 60 - MVP Decision Contract
+
+Section 60 adds `section_60_bp_authoring_mvp_decision_contract_v1`.
+
+The decision is:
+
+- temporary Blueprint authoring MVP ready: `true`
+- MVP scope: planner-safe Actor Blueprint temporary smoke
+- durable Blueprint authoring MVP ready: `false`
+- durable authoring enabled: `false`
+- durable save/delete/rename/cleanup allowed: `false`
+- durable canary live execution allowed: `false`
+
+Durable authoring remains contracts-only until a later explicit durable MVP
+request implements and verifies a real durable executor.
+
 ## Decision
 
 Section 46-48 improves durable safety visibility, Section 51 separates the
@@ -302,4 +318,5 @@ Section 56 adds scoped approval only. Section 57 adds read-only canary live
 preflight only. Section 58 adds recovery scenarios only. These sections do not
 enable durable Blueprint creation, saving, delete, rename, cleanup, or live
 canary execution. Section 59 consolidates that boundary in the v2 release
-report.
+report. Section 60 marks the temporary authoring MVP ready while keeping durable
+authoring outside the MVP.

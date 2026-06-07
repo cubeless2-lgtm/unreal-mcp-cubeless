@@ -45,6 +45,8 @@ Blueprint authoring manifest and live UnrealMCP commands.
     defined while cleanup, delete, save, and authoring commands remain disabled.
 18. Section 59 release boundary v2 coverage must consolidate Section 51-58 as
     blocking-safe while still reporting durable authoring disabled.
+19. Section 60 MVP decision coverage must mark temporary authoring MVP-ready
+    while keeping durable authoring not enabled.
 
 ## Execution Boundary
 
@@ -116,6 +118,8 @@ temporary manifests. It must block:
   allowance, and 0 live cleanup/delete/save/authoring command counts.
 - Offline tests must prove the Section 59 release boundary v2 row reports
   Section 51-58 blocking contracts ready and durable authoring still disabled.
+- Offline tests must prove the Section 60 MVP decision reports temporary MVP
+  ready, durable MVP not ready, and durable save/delete/cleanup still disabled.
 - The planner-driven live smoke must report the executor version and executor
   executable count.
 - The planner-driven live smoke may perform only the read-only durable
