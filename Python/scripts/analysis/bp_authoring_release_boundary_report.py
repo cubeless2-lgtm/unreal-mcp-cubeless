@@ -75,6 +75,7 @@ import bp_authoring_durable_executor_authoring_completion_application_after_acti
 import bp_authoring_durable_executor_authoring_completion_result_after_activation_readiness_contract as durable_executor_authoring_command_completion_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness
 import bp_authoring_durable_executor_authoring_result_readback_after_activation_readiness_contract as durable_executor_authoring_command_result_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness
 import bp_authoring_durable_executor_authoring_final_no_save_after_activation_readiness_contract as durable_executor_authoring_final_no_save_release_after_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness
+import bp_authoring_durable_executor_authoring_final_readiness_after_activation_readiness_contract as durable_executor_authoring_final_release_readiness_after_no_save_release_after_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness
 import bp_authoring_durable_executor_authoring_enable_contract as durable_executor_authoring_enable
 import bp_authoring_durable_executor_authoring_enable_after_open_contract as durable_executor_authoring_enable_after_open
 import bp_authoring_durable_executor_authoring_activation_readiness_contract as durable_executor_authoring_activation_readiness
@@ -112,7 +113,7 @@ import bp_authoring_durable_save_gate_final_review_contract as save_gate_final_r
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_153_bp_authoring_release_boundary_v95"
+REPORT_SCHEMA = "section_154_bp_authoring_release_boundary_v96"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -10383,6 +10384,113 @@ def build_durable_executor_authoring_final_no_save_release_after_readback_after_
     )
 
 
+def build_durable_executor_authoring_final_release_readiness_after_no_save_release_after_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_row(
+    contract_summary: Dict[str, Any],
+    executor_summary: Dict[str, Any],
+    project_root: Path,
+    planner_report: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    final_no_save_release_row = (
+        build_durable_executor_authoring_final_no_save_release_after_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        )
+    )
+    final_no_save_release_summary = dict(final_no_save_release_row["actual"])
+    final_no_save_release_summary["status"] = final_no_save_release_summary.pop(
+        "summary_status"
+    )
+    contract = durable_executor_authoring_final_release_readiness_after_no_save_release_after_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness.build_durable_executor_authoring_final_release_readiness_after_no_save_release_after_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_contract(
+        requested=True,
+        final_no_save_release_after_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_summary=final_no_save_release_summary,
+    )
+    summary = durable_executor_authoring_final_release_readiness_after_no_save_release_after_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness.summarize_durable_executor_authoring_final_release_readiness_after_no_save_release_after_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness(
+        [contract]
+    )
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_executor_authoring_final_release_readiness_after_no_save_release_after_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_count": 1,
+        "final_release_readiness_contract_defined_count": 1,
+        "final_no_save_release_contract_ready_count": 1,
+        "final_no_save_release_inputs_satisfied_count": 0,
+        "final_no_save_release_record_valid_count": 0,
+        "allowed_final_no_save_release_observed_count": 0,
+        "no_forbidden_final_no_save_releases_count": 0,
+        "final_release_readiness_inputs_satisfied_count": 0,
+        "final_release_readiness_record_present_count": 0,
+        "record_schema_matches_count": 0,
+        "readiness_scope_matches_count": 0,
+        "explicit_readiness_authorized_count": 0,
+        "readiness_status_passed_count": 0,
+        "no_save_delete_rename_acknowledged_count": 0,
+        "explicit_durable_mvp_request_reconfirmed_count": 0,
+        "allowed_final_release_readiness_observed_count": 0,
+        "no_forbidden_final_release_readiness_claims_count": 0,
+        "final_release_readiness_record_valid_count": 0,
+        "final_release_readiness_record_rejected_count": 0,
+        "unsafe_final_release_readiness_record_count": 0,
+        "missing_final_release_readiness_prerequisite_count": 14,
+        "reported_allowed_final_release_readiness_count": 0,
+        "reported_forbidden_final_release_readiness_count": 0,
+        "durable_authoring_final_release_readiness_started_count": 0,
+        "durable_authoring_final_release_ready_count": 0,
+        "durable_authoring_release_review_started_count": 0,
+        "durable_authoring_final_no_save_release_accepted_count": 0,
+        "durable_authoring_command_result_readback_accepted_count": 0,
+        "durable_authoring_command_completion_result_accepted_count": 0,
+        "durable_authoring_command_completed_count": 0,
+        "asset_write_performed_count": 0,
+        "package_dirty_marked_count": 0,
+        "durable_authoring_enabled_count": 0,
+        "durable_authoring_allowed_count": 0,
+        "code_change_performed_count": 0,
+        "executor_code_modified_count": 0,
+        "unreal_asset_modified_count": 0,
+        "live_bridge_probe_started_count": 0,
+        "save_delete_rename_allowed_count": 0,
+        "cleanup_allowed_count": 0,
+        "live_command_dispatched_count": 0,
+        "live_command_executed_count": 0,
+        "reported_final_release_readiness_gate_count": 0,
+        "reported_final_no_save_release_revalidated_count": 0,
+        "reported_durable_authoring_still_disabled_count": 0,
+        "reported_no_completion_readiness_count": 0,
+        "reported_no_write_readiness_count": 0,
+        "reported_no_save_readiness_count": 0,
+        "reported_no_code_change_readiness_count": 0,
+        "reported_no_live_command_readiness_count": 0,
+        "reported_final_no_save_release_count": 0,
+        "reported_command_result_readback_count": 0,
+        "reported_completion_result_acceptance_count": 0,
+        "reported_completion_count": 0,
+        "reported_asset_write_count": 0,
+        "reported_package_dirty_count": 0,
+        "reported_save_count": 0,
+        "reported_delete_rename_count": 0,
+        "reported_cleanup_count": 0,
+        "reported_durable_authoring_count": 0,
+        "reported_code_change_count": 0,
+        "reported_live_command_count": 0,
+    }
+    actual = {
+        key: summary.get(key) if key != "summary_status" else summary.get("status")
+        for key in expected
+    }
+    return row(
+        "durable_executor_authoring_final_release_readiness_after_no_save_release_after_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_contract",
+        "Section 154 durable executor authoring final release readiness-after-no-save-release-after-readback-after-result-after-application-after-decision-after-evidence-after-execution-after-dispatch-after-command-after-enable-after-open-after-activation-readiness contract",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "The durable executor authoring final release readiness-after-no-save-release-after-readback-after-result-after-application-after-decision-after-evidence-after-execution-after-dispatch-after-command-after-enable-after-open-after-activation-readiness contract is defined, but no final no-save release record or readiness record is present.",
+            "Release review, final readiness, completion acceptance, asset writes, dirty marking, save, delete/rename, cleanup, code changes, and live command execution remain blocked.",
+        ),
+    )
+
+
 def build_section_51_58_consolidation_row(
     contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -10654,7 +10762,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     lyra_report = read_json(lyra_report_path)
     preliminary_verdict = {
         "status": "passed",
-        "release_boundary_version": "section_153_v95",
+        "release_boundary_version": "section_154_v96",
         "durable_authoring_enabled": False,
     }
     decision_contract = mvp_decision.build_mvp_decision_contract(
@@ -11175,6 +11283,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             project_root,
             planner_report,
         ),
+        build_durable_executor_authoring_final_release_readiness_after_no_save_release_after_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        ),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -11195,7 +11309,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
-            "release_boundary_version": "section_153_v95",
+            "release_boundary_version": "section_154_v96",
             "mvp_decision_status": decision_contract["decision_status"],
             "temporary_blueprint_authoring_mvp_ready": decision_contract[
                 "temporary_blueprint_authoring_mvp_ready"
@@ -11462,6 +11576,9 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "section_153_durable_executor_authoring_final_no_save_release_after_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_status": (
                 "passed" if not failed_blocking else "failed"
             ),
+            "section_154_durable_executor_authoring_final_release_readiness_after_no_save_release_after_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
             "final_durable_release_ready": False,
             "main_push_requested": False,
             "current_authoring_ceiling": (
@@ -11490,11 +11607,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
                 "_and_section_151_durable_executor_authoring_command_completion_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_contract"
                 "_and_section_152_durable_executor_authoring_command_result_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_contract"
                 "_and_section_153_durable_executor_authoring_final_no_save_release_after_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_contract"
+                "_and_section_154_durable_executor_authoring_final_release_readiness_after_no_save_release_after_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_contract"
             ),
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
-            "durable executor authoring final release readiness contract only after durable executor authoring final no-save release-after-readback-after-result-after-application-after-decision-after-evidence-after-execution-after-dispatch-after-command-after-enable-after-open-after-activation-readiness record",
+            "durable executor authoring release review contract only after durable executor authoring final release readiness-after-no-save-release-after-readback-after-result-after-application-after-decision-after-evidence-after-execution-after-dispatch-after-command-after-enable-after-open-after-activation-readiness record",
             "component default/type readback expansion for broader Blueprint classes",
             "function call diagnostics and graph layout repair suggestions",
         ],
