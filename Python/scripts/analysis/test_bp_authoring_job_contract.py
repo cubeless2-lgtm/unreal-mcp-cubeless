@@ -114,6 +114,13 @@ def main() -> int:
         assert report["summary"]["durable_dry_run_executor_may_execute_count"] == 0
         assert report["summary"]["durable_dry_run_live_command_count"] == 0
         assert report["summary"]["durable_dry_run_forbidden_command_allowed_count"] == 0
+        assert report["summary"]["durable_save_simulation_request_count"] == 1
+        assert report["summary"]["durable_save_simulation_evaluated_count"] == 1
+        assert report["summary"]["durable_save_simulation_conditions_satisfied_count"] == 0
+        assert report["summary"]["durable_save_simulation_save_true_allowed_count"] == 0
+        assert report["summary"]["durable_save_simulation_save_asset_allowed_count"] == 0
+        assert report["summary"]["durable_save_simulation_compile_save_command_allowed_count"] == 0
+        assert report["summary"]["durable_save_simulation_live_command_count"] == 0
         assert report["summary"]["durable_enable_contract_request_count"] == 1
         assert report["summary"]["durable_enable_contract_satisfied_count"] == 0
         assert report["summary"]["durable_enable_executor_may_open_count"] == 0
@@ -164,6 +171,9 @@ def main() -> int:
         assert safe_actor["durable_dry_run_plan_contract"]["requested"] is False
         assert safe_actor["durable_dry_run_plan_contract"]["dry_run_plan_created"] is False
         assert safe_actor["durable_dry_run_plan_contract"]["durable_executor_may_execute"] is False
+        assert safe_actor["durable_save_validation_simulation_contract"]["schema"] == "section_54_durable_save_validation_simulator_v1"
+        assert safe_actor["durable_save_validation_simulation_contract"]["requested"] is False
+        assert safe_actor["durable_save_validation_simulation_contract"]["save_true_allowed"] is False
         assert safe_actor["durable_executor_readiness_contract"]["schema"] == "section_38_durable_executor_readiness_contract_v1"
         assert safe_actor["durable_executor_readiness_contract"]["requested"] is False
         assert safe_actor["durable_executor_readiness_contract"]["durable_executor_ready"] is False
@@ -349,6 +359,14 @@ def main() -> int:
         assert durable_save["durable_enable_contract"] == durable_save["authoring_executor_contract"]["durable_enable_contract"]
         assert durable_save["durable_dry_run_plan_contract"] == preflight_contract["durable_dry_run_plan_contract"]
         assert durable_save["durable_dry_run_plan_contract"] == durable_save["authoring_executor_contract"]["durable_dry_run_plan"]
+        assert (
+            durable_save["durable_save_validation_simulation_contract"]
+            == preflight_contract["durable_save_validation_simulation_contract"]
+        )
+        assert (
+            durable_save["durable_save_validation_simulation_contract"]
+            == durable_save["authoring_executor_contract"]["durable_save_validation_simulation"]
+        )
         assert rollback_policy_contract == preflight_contract["durable_rollback_policy_contract"]
         assert readiness_contract == preflight_contract["durable_executor_readiness_contract"]
         assert skeleton_contract == preflight_contract["durable_executor_skeleton_contract"]
@@ -413,6 +431,16 @@ def main() -> int:
         assert dry_run_plan["delete_allowed"] is False
         assert dry_run_plan["rename_allowed"] is False
         assert "save_asset" in dry_run_plan["forbidden_commands"]
+        save_simulation = durable_save["durable_save_validation_simulation_contract"]
+        assert save_simulation["schema"] == "section_54_durable_save_validation_simulator_v1"
+        assert save_simulation["requested"] is True
+        assert save_simulation["simulation_evaluated"] is True
+        assert save_simulation["future_save_conditions_satisfied"] is False
+        assert save_simulation["save_true_allowed"] is False
+        assert save_simulation["save_asset_allowed"] is False
+        assert save_simulation["compile_save_command_allowed"] is False
+        assert save_simulation["live_command_count"] == 0
+        assert "section_54_simulator_does_not_enable_save" in save_simulation["blocked_by"]
         assert rollback_policy_contract["schema"] == "section_37_durable_rollback_policy_contract_v1"
         assert rollback_policy_contract["requested"] is True
         assert rollback_policy_contract["policy_mode"] == "draft_only"

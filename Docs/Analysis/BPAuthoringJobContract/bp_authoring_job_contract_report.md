@@ -1,7 +1,7 @@
 # BP Authoring Job Contract
 
-- Generated UTC: `2026-06-07T07:12:25.078191+00:00`
-- Manifest version: `section_53_bp_authoring_job_contract_v31`
+- Generated UTC: `2026-06-07T07:21:22.774055+00:00`
+- Manifest version: `section_54_bp_authoring_job_contract_v32`
 - Temp package path: `/Game/_MCP_Temp/PlannerDrivenSmoke`
 - Manifests: `19`
 - Executable manifests: `12`
@@ -39,6 +39,12 @@
 - Durable dry-run plan valid: `1`
 - Durable dry-run executor may execute: `0`
 - Durable dry-run live command count: `0`
+- Durable save simulation requests: `1`
+- Durable save simulation evaluated: `1`
+- Durable save simulation conditions satisfied: `0`
+- Durable save simulation save=true allowed: `0`
+- Durable save simulation save_asset allowed: `0`
+- Durable save simulation live command count: `0`
 - Durable enable contract requests: `1`
 - Durable enable contract satisfied: `0`
 - Durable enable executor may open: `0`
@@ -77,6 +83,8 @@
 - Durable ownership delete without marker: `False`
 - Durable dry-run plan valid: `False`
 - Durable dry-run executor may execute: `False`
+- Durable save simulation status: `not_requested`
+- Durable save simulation save=true allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -163,6 +171,8 @@ Structural validation plan:
 - Durable ownership delete without marker: `False`
 - Durable dry-run plan valid: `False`
 - Durable dry-run executor may execute: `False`
+- Durable save simulation status: `not_requested`
+- Durable save simulation save=true allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -261,6 +271,8 @@ Structural validation plan:
 - Durable ownership delete without marker: `False`
 - Durable dry-run plan valid: `False`
 - Durable dry-run executor may execute: `False`
+- Durable save simulation status: `not_requested`
+- Durable save simulation save=true allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -350,6 +362,8 @@ Structural validation plan:
 - Durable ownership delete without marker: `False`
 - Durable dry-run plan valid: `False`
 - Durable dry-run executor may execute: `False`
+- Durable save simulation status: `not_requested`
+- Durable save simulation save=true allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -436,6 +450,8 @@ Structural validation plan:
 - Durable ownership delete without marker: `False`
 - Durable dry-run plan valid: `False`
 - Durable dry-run executor may execute: `False`
+- Durable save simulation status: `not_requested`
+- Durable save simulation save=true allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -512,6 +528,8 @@ Blocked/review reasons:
 - Durable ownership delete without marker: `False`
 - Durable dry-run plan valid: `False`
 - Durable dry-run executor may execute: `False`
+- Durable save simulation status: `not_requested`
+- Durable save simulation save=true allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -588,6 +606,8 @@ Blocked/review reasons:
 - Durable ownership delete without marker: `False`
 - Durable dry-run plan valid: `True`
 - Durable dry-run executor may execute: `False`
+- Durable save simulation status: `blocked`
+- Durable save simulation save=true allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -664,6 +684,8 @@ Blocked/review reasons:
 - Durable ownership delete without marker: `False`
 - Durable dry-run plan valid: `False`
 - Durable dry-run executor may execute: `False`
+- Durable save simulation status: `not_requested`
+- Durable save simulation save=true allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -748,6 +770,8 @@ Structural validation plan:
 - Durable ownership delete without marker: `False`
 - Durable dry-run plan valid: `False`
 - Durable dry-run executor may execute: `False`
+- Durable save simulation status: `not_requested`
+- Durable save simulation save=true allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -848,6 +872,8 @@ Structural validation plan:
 - Durable ownership delete without marker: `False`
 - Durable dry-run plan valid: `False`
 - Durable dry-run executor may execute: `False`
+- Durable save simulation status: `not_requested`
+- Durable save simulation save=true allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -949,6 +975,8 @@ Structural validation plan:
 - Durable ownership delete without marker: `False`
 - Durable dry-run plan valid: `False`
 - Durable dry-run executor may execute: `False`
+- Durable save simulation status: `not_requested`
+- Durable save simulation save=true allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1090,6 +1118,8 @@ Structural validation plan:
 - Durable ownership delete without marker: `False`
 - Durable dry-run plan valid: `False`
 - Durable dry-run executor may execute: `False`
+- Durable save simulation status: `not_requested`
+- Durable save simulation save=true allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1170,6 +1200,8 @@ Structural validation plan:
 - Durable ownership delete without marker: `False`
 - Durable dry-run plan valid: `False`
 - Durable dry-run executor may execute: `False`
+- Durable save simulation status: `not_requested`
+- Durable save simulation save=true allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1280,6 +1312,8 @@ Structural validation plan:
 - Durable ownership delete without marker: `False`
 - Durable dry-run plan valid: `False`
 - Durable dry-run executor may execute: `False`
+- Durable save simulation status: `not_requested`
+- Durable save simulation save=true allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1438,6 +1472,8 @@ Structural validation plan:
 - Durable ownership delete without marker: `False`
 - Durable dry-run plan valid: `False`
 - Durable dry-run executor may execute: `False`
+- Durable save simulation status: `not_requested`
+- Durable save simulation save=true allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1574,6 +1610,8 @@ Structural validation plan:
 - Durable ownership delete without marker: `False`
 - Durable dry-run plan valid: `False`
 - Durable dry-run executor may execute: `False`
+- Durable save simulation status: `not_requested`
+- Durable save simulation save=true allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1650,6 +1688,8 @@ Blocked/review reasons:
 - Durable ownership delete without marker: `False`
 - Durable dry-run plan valid: `False`
 - Durable dry-run executor may execute: `False`
+- Durable save simulation status: `not_requested`
+- Durable save simulation save=true allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1726,6 +1766,8 @@ Blocked/review reasons:
 - Durable ownership delete without marker: `False`
 - Durable dry-run plan valid: `False`
 - Durable dry-run executor may execute: `False`
+- Durable save simulation status: `not_requested`
+- Durable save simulation save=true allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1803,6 +1845,8 @@ Blocked/review reasons:
 - Durable ownership delete without marker: `False`
 - Durable dry-run plan valid: `False`
 - Durable dry-run executor may execute: `False`
+- Durable save simulation status: `not_requested`
+- Durable save simulation save=true allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`

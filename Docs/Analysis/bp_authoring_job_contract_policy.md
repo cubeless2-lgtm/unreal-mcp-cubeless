@@ -202,6 +202,11 @@ validation, save gate, and rollback authorization. The plan has
 `execution_command_plan=[]`, `live_command_count=0`, and
 `durable_executor_may_execute=false`.
 
+Section 54 adds a durable save validation simulator. Durable requests may now
+evaluate save prerequisites in a report-only contract, but the simulator keeps
+`save_true_allowed=false`, `save_asset_allowed=false`,
+`compile_save_command_allowed=false`, and `live_command_count=0`.
+
 ## Section 13 Executable Templates
 
 The current executable manifest templates cover:
@@ -909,6 +914,27 @@ show the sequence a future executor would need, but it must not contain
 `create_blueprint`, `save_asset`, `delete_asset`, `rename_asset`, or
 `compile_and_validate_blueprint(save=true)`.
 
+## Section 54 Durable Save Validation Simulator
+
+Durable preflight now embeds `durable_save_validation_simulation_contract`, also
+exposed at the manifest top level and inside `authoring_executor_contract`.
+
+The simulator boundary is:
+
+- simulator schema: `section_54_durable_save_validation_simulator_v1`
+- simulation evaluated: `true` for durable requests with a target path
+- future save conditions satisfied: `false` until every required check passes
+- save true allowed: `false`
+- save asset allowed: `false`
+- compile-save command allowed: `false`
+- live command count: `0`
+
+The simulator evaluates target allowlist, read-only asset-exists result
+availability, overwrite/rename decision, ownership marker, rollback readiness,
+dry-run plan validity, enable contract satisfaction, compile-save validation,
+and explicit durable executor enable flag. It must report missing conditions
+without generating a live durable save command.
+
 ## Live Smoke Rule
 
 The planner-driven live smoke must execute the manifest, not the raw user
@@ -931,12 +957,12 @@ dry-run until the parent class receives Section 31 reinforcement.
 
 A planner-safe request that asks for a saved or durable asset must also remain
 dry-run until Section 51 durable enable gates, Section 52 ownership marker
-policy, Section 53 dry-run plan, and a later durable executor release are all
-proven. A read-only
+policy, Section 53 dry-run plan, Section 54 save simulator, and a later durable
+executor release are all proven. A read-only
 asset-exists result, parsed overwrite/rename decision, draft save gate,
 readiness checklist entry, disabled durable executor skeleton, or ownership
-marker/dry-run contract alone must not enable durable save, delete, rename,
-overwrite, or replacement behavior.
+marker/dry-run/save-simulation contract alone must not enable durable save,
+delete, rename, overwrite, or replacement behavior.
 
 ## Validation
 

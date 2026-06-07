@@ -127,9 +127,38 @@ The dry-run `execution_command_plan` must remain empty. A dry-run plan is
 evidence for review only, not permission to create, save, delete, rename, or
 overwrite assets.
 
+## Section 54 - Durable Save Validation Simulator
+
+Section 54 evaluates durable save prerequisites without running a save. The
+simulator checks:
+
+- target package allowlist
+- read-only asset-exists result availability
+- overwrite-or-rename decision
+- ownership marker policy
+- rollback readiness
+- dry-run plan validity
+- enable contract satisfaction
+- compile/save validation enablement
+- explicit durable executor enable flag
+
+The release boundary must prove:
+
+- durable save simulation requests: `1`
+- simulation evaluated: `1`
+- future save conditions satisfied: `0`
+- `save=true` allowed: `0`
+- `save_asset` allowed: `0`
+- compile-save command allowed: `0`
+- live command count: `0`
+
+The simulator may explain why a future save is blocked, but it must not promote
+that explanation into live durable execution.
+
 ## Decision
 
 Section 46-48 improves durable safety visibility, Section 51 separates the
 future durable enable gates, and Section 52 defines the ownership marker needed
-for future rollback. Section 53 adds a no-command dry-run plan. These sections
-do not enable durable Blueprint creation, saving, delete, or rename.
+for future rollback. Section 53 adds a no-command dry-run plan. Section 54 adds
+a no-command save validation simulator. These sections do not enable durable
+Blueprint creation, saving, delete, or rename.

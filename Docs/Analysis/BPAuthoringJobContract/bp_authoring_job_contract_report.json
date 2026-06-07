@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-06-07T07:12:25.078191+00:00",
+  "generated_at": "2026-06-07T07:21:22.774055+00:00",
   "analysis_kind": "bp_authoring_job_contract",
-  "manifest_version": "section_53_bp_authoring_job_contract_v31",
+  "manifest_version": "section_54_bp_authoring_job_contract_v32",
   "output_dir": "D:\\Git\\unreal-mcp-cubeless\\Docs\\Analysis\\BPAuthoringJobContract",
   "temp_package_path": "/Game/_MCP_Temp/PlannerDrivenSmoke",
   "summary": {
@@ -57,6 +57,25 @@
     "durable_dry_run_executor_may_execute_count": 0,
     "durable_dry_run_live_command_count": 0,
     "durable_dry_run_forbidden_command_allowed_count": 0,
+    "durable_save_simulation_summary": {
+      "schema": "section_54_durable_save_validation_simulator_summary_v1",
+      "status": "passed",
+      "durable_requested_simulation_count": 1,
+      "simulation_evaluated_count": 1,
+      "future_save_conditions_satisfied_count": 0,
+      "save_true_allowed_count": 0,
+      "save_asset_allowed_count": 0,
+      "compile_save_command_allowed_count": 0,
+      "live_command_count": 0,
+      "forbidden_command_allowed_count": 0
+    },
+    "durable_save_simulation_request_count": 1,
+    "durable_save_simulation_evaluated_count": 1,
+    "durable_save_simulation_conditions_satisfied_count": 0,
+    "durable_save_simulation_save_true_allowed_count": 0,
+    "durable_save_simulation_save_asset_allowed_count": 0,
+    "durable_save_simulation_compile_save_command_allowed_count": 0,
+    "durable_save_simulation_live_command_count": 0,
     "durable_enable_contract_summary": {
       "schema": "section_51_durable_authoring_enable_contract_summary_v1",
       "status": "passed",
@@ -108,7 +127,7 @@
   },
   "manifests": [
     {
-      "manifest_version": "section_53_bp_authoring_job_contract_v31",
+      "manifest_version": "section_54_bp_authoring_job_contract_v32",
       "analysis_kind": "bp_authoring_job_contract",
       "id": "safe_actor_shell",
       "request_original": "Create an Actor Blueprint shell with a Static Mesh Component, exposed health variable, BeginPlay event, and branch.",
@@ -456,6 +475,24 @@
             "blocked_by": [],
             "required_reinforcement": []
           },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
           "durable_save_gate_contract": {
             "id": "durable_save_gate",
             "schema": "section_37_durable_save_gate_contract_v1",
@@ -792,6 +829,24 @@
           "blocked_by": [],
           "required_reinforcement": []
         },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
         "overwrite_policy": "requires_explicit_review",
         "preflight_required": [
           "asset_exists_check",
@@ -996,6 +1051,24 @@
             "duplicate_asset",
             "replace_existing_asset"
           ],
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
           "blocked_by": [],
           "required_reinforcement": []
         },
@@ -1332,6 +1405,24 @@
           "duplicate_asset",
           "replace_existing_asset"
         ],
+        "blocked_by": [],
+        "required_reinforcement": []
+      },
+      "durable_save_validation_simulation_contract": {
+        "id": "durable_save_validation_simulator",
+        "schema": "section_54_durable_save_validation_simulator_v1",
+        "requested": false,
+        "target_asset_path": "",
+        "simulation_evaluated": false,
+        "simulation_status": "not_requested",
+        "checks": [],
+        "failed_check_ids": [],
+        "future_save_conditions_satisfied": false,
+        "save_true_allowed": false,
+        "save_asset_allowed": false,
+        "compile_save_command_allowed": false,
+        "live_command_count": 0,
+        "durable_authoring_allowed": false,
         "blocked_by": [],
         "required_reinforcement": []
       },
@@ -1725,6 +1816,24 @@
               "blocked_by": [],
               "required_reinforcement": []
             },
+            "durable_save_validation_simulation_contract": {
+              "id": "durable_save_validation_simulator",
+              "schema": "section_54_durable_save_validation_simulator_v1",
+              "requested": false,
+              "target_asset_path": "",
+              "simulation_evaluated": false,
+              "simulation_status": "not_requested",
+              "checks": [],
+              "failed_check_ids": [],
+              "future_save_conditions_satisfied": false,
+              "save_true_allowed": false,
+              "save_asset_allowed": false,
+              "compile_save_command_allowed": false,
+              "live_command_count": 0,
+              "durable_authoring_allowed": false,
+              "blocked_by": [],
+              "required_reinforcement": []
+            },
             "durable_save_gate_contract": {
               "id": "durable_save_gate",
               "schema": "section_37_durable_save_gate_contract_v1",
@@ -2061,6 +2170,24 @@
             "blocked_by": [],
             "required_reinforcement": []
           },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
           "overwrite_policy": "requires_explicit_review",
           "preflight_required": [
             "asset_exists_check",
@@ -2265,6 +2392,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -2601,6 +2746,24 @@
             "duplicate_asset",
             "replace_existing_asset"
           ],
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
+        "durable_save_validation_simulation": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
           "blocked_by": [],
           "required_reinforcement": []
         },
@@ -3201,7 +3364,7 @@
       "structural_assertion_count": 7
     },
     {
-      "manifest_version": "section_53_bp_authoring_job_contract_v31",
+      "manifest_version": "section_54_bp_authoring_job_contract_v32",
       "analysis_kind": "bp_authoring_job_contract",
       "id": "safe_function_call_defaults",
       "request_original": "Create an Actor Blueprint shell with a Static Mesh Component using the Engine cube mesh, float speed variable default 450, BeginPlay branch, and PrintString function call.",
@@ -3549,6 +3712,24 @@
             "blocked_by": [],
             "required_reinforcement": []
           },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
           "durable_save_gate_contract": {
             "id": "durable_save_gate",
             "schema": "section_37_durable_save_gate_contract_v1",
@@ -3885,6 +4066,24 @@
           "blocked_by": [],
           "required_reinforcement": []
         },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
         "overwrite_policy": "requires_explicit_review",
         "preflight_required": [
           "asset_exists_check",
@@ -4089,6 +4288,24 @@
             "duplicate_asset",
             "replace_existing_asset"
           ],
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
           "blocked_by": [],
           "required_reinforcement": []
         },
@@ -4425,6 +4642,24 @@
           "duplicate_asset",
           "replace_existing_asset"
         ],
+        "blocked_by": [],
+        "required_reinforcement": []
+      },
+      "durable_save_validation_simulation_contract": {
+        "id": "durable_save_validation_simulator",
+        "schema": "section_54_durable_save_validation_simulator_v1",
+        "requested": false,
+        "target_asset_path": "",
+        "simulation_evaluated": false,
+        "simulation_status": "not_requested",
+        "checks": [],
+        "failed_check_ids": [],
+        "future_save_conditions_satisfied": false,
+        "save_true_allowed": false,
+        "save_asset_allowed": false,
+        "compile_save_command_allowed": false,
+        "live_command_count": 0,
+        "durable_authoring_allowed": false,
         "blocked_by": [],
         "required_reinforcement": []
       },
@@ -4818,6 +5053,24 @@
               "blocked_by": [],
               "required_reinforcement": []
             },
+            "durable_save_validation_simulation_contract": {
+              "id": "durable_save_validation_simulator",
+              "schema": "section_54_durable_save_validation_simulator_v1",
+              "requested": false,
+              "target_asset_path": "",
+              "simulation_evaluated": false,
+              "simulation_status": "not_requested",
+              "checks": [],
+              "failed_check_ids": [],
+              "future_save_conditions_satisfied": false,
+              "save_true_allowed": false,
+              "save_asset_allowed": false,
+              "compile_save_command_allowed": false,
+              "live_command_count": 0,
+              "durable_authoring_allowed": false,
+              "blocked_by": [],
+              "required_reinforcement": []
+            },
             "durable_save_gate_contract": {
               "id": "durable_save_gate",
               "schema": "section_37_durable_save_gate_contract_v1",
@@ -5154,6 +5407,24 @@
             "blocked_by": [],
             "required_reinforcement": []
           },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
           "overwrite_policy": "requires_explicit_review",
           "preflight_required": [
             "asset_exists_check",
@@ -5358,6 +5629,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -5694,6 +5983,24 @@
             "duplicate_asset",
             "replace_existing_asset"
           ],
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
+        "durable_save_validation_simulation": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
           "blocked_by": [],
           "required_reinforcement": []
         },
@@ -6584,7 +6891,7 @@
       "structural_assertion_count": 14
     },
     {
-      "manifest_version": "section_53_bp_authoring_job_contract_v31",
+      "manifest_version": "section_54_bp_authoring_job_contract_v32",
       "analysis_kind": "bp_authoring_job_contract",
       "id": "safe_component_hierarchy",
       "request_original": "Create an Actor Blueprint shell with a Scene Component root named PlannerSmokeRoot and a child Static Mesh Component named PlannerSmokeMesh attached to PlannerSmokeRoot, plus BeginPlay branch.",
@@ -6913,6 +7220,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -7252,6 +7577,24 @@
           "blocked_by": [],
           "required_reinforcement": []
         },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
         "overwrite_policy": "requires_explicit_review",
         "preflight_required": [
           "asset_exists_check",
@@ -7456,6 +7799,24 @@
             "duplicate_asset",
             "replace_existing_asset"
           ],
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
           "blocked_by": [],
           "required_reinforcement": []
         },
@@ -7792,6 +8153,24 @@
           "duplicate_asset",
           "replace_existing_asset"
         ],
+        "blocked_by": [],
+        "required_reinforcement": []
+      },
+      "durable_save_validation_simulation_contract": {
+        "id": "durable_save_validation_simulator",
+        "schema": "section_54_durable_save_validation_simulator_v1",
+        "requested": false,
+        "target_asset_path": "",
+        "simulation_evaluated": false,
+        "simulation_status": "not_requested",
+        "checks": [],
+        "failed_check_ids": [],
+        "future_save_conditions_satisfied": false,
+        "save_true_allowed": false,
+        "save_asset_allowed": false,
+        "compile_save_command_allowed": false,
+        "live_command_count": 0,
+        "durable_authoring_allowed": false,
         "blocked_by": [],
         "required_reinforcement": []
       },
@@ -8185,6 +8564,24 @@
               "blocked_by": [],
               "required_reinforcement": []
             },
+            "durable_save_validation_simulation_contract": {
+              "id": "durable_save_validation_simulator",
+              "schema": "section_54_durable_save_validation_simulator_v1",
+              "requested": false,
+              "target_asset_path": "",
+              "simulation_evaluated": false,
+              "simulation_status": "not_requested",
+              "checks": [],
+              "failed_check_ids": [],
+              "future_save_conditions_satisfied": false,
+              "save_true_allowed": false,
+              "save_asset_allowed": false,
+              "compile_save_command_allowed": false,
+              "live_command_count": 0,
+              "durable_authoring_allowed": false,
+              "blocked_by": [],
+              "required_reinforcement": []
+            },
             "durable_save_gate_contract": {
               "id": "durable_save_gate",
               "schema": "section_37_durable_save_gate_contract_v1",
@@ -8521,6 +8918,24 @@
             "blocked_by": [],
             "required_reinforcement": []
           },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
           "overwrite_policy": "requires_explicit_review",
           "preflight_required": [
             "asset_exists_check",
@@ -8725,6 +9140,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -9061,6 +9494,24 @@
             "duplicate_asset",
             "replace_existing_asset"
           ],
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
+        "durable_save_validation_simulation": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
           "blocked_by": [],
           "required_reinforcement": []
         },
@@ -9746,7 +10197,7 @@
       "structural_assertion_count": 7
     },
     {
-      "manifest_version": "section_53_bp_authoring_job_contract_v31",
+      "manifest_version": "section_54_bp_authoring_job_contract_v32",
       "analysis_kind": "bp_authoring_job_contract",
       "id": "safe_component_property_defaults",
       "request_original": "Create an Actor Blueprint shell with a Static Mesh Component visibility false and BeginPlay branch.",
@@ -10075,6 +10526,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -10414,6 +10883,24 @@
           "blocked_by": [],
           "required_reinforcement": []
         },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
         "overwrite_policy": "requires_explicit_review",
         "preflight_required": [
           "asset_exists_check",
@@ -10618,6 +11105,24 @@
             "duplicate_asset",
             "replace_existing_asset"
           ],
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
           "blocked_by": [],
           "required_reinforcement": []
         },
@@ -10954,6 +11459,24 @@
           "duplicate_asset",
           "replace_existing_asset"
         ],
+        "blocked_by": [],
+        "required_reinforcement": []
+      },
+      "durable_save_validation_simulation_contract": {
+        "id": "durable_save_validation_simulator",
+        "schema": "section_54_durable_save_validation_simulator_v1",
+        "requested": false,
+        "target_asset_path": "",
+        "simulation_evaluated": false,
+        "simulation_status": "not_requested",
+        "checks": [],
+        "failed_check_ids": [],
+        "future_save_conditions_satisfied": false,
+        "save_true_allowed": false,
+        "save_asset_allowed": false,
+        "compile_save_command_allowed": false,
+        "live_command_count": 0,
+        "durable_authoring_allowed": false,
         "blocked_by": [],
         "required_reinforcement": []
       },
@@ -11347,6 +11870,24 @@
               "blocked_by": [],
               "required_reinforcement": []
             },
+            "durable_save_validation_simulation_contract": {
+              "id": "durable_save_validation_simulator",
+              "schema": "section_54_durable_save_validation_simulator_v1",
+              "requested": false,
+              "target_asset_path": "",
+              "simulation_evaluated": false,
+              "simulation_status": "not_requested",
+              "checks": [],
+              "failed_check_ids": [],
+              "future_save_conditions_satisfied": false,
+              "save_true_allowed": false,
+              "save_asset_allowed": false,
+              "compile_save_command_allowed": false,
+              "live_command_count": 0,
+              "durable_authoring_allowed": false,
+              "blocked_by": [],
+              "required_reinforcement": []
+            },
             "durable_save_gate_contract": {
               "id": "durable_save_gate",
               "schema": "section_37_durable_save_gate_contract_v1",
@@ -11683,6 +12224,24 @@
             "blocked_by": [],
             "required_reinforcement": []
           },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
           "overwrite_policy": "requires_explicit_review",
           "preflight_required": [
             "asset_exists_check",
@@ -11887,6 +12446,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -12223,6 +12800,24 @@
             "duplicate_asset",
             "replace_existing_asset"
           ],
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
+        "durable_save_validation_simulation": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
           "blocked_by": [],
           "required_reinforcement": []
         },
@@ -12838,7 +13433,7 @@
       "structural_assertion_count": 7
     },
     {
-      "manifest_version": "section_53_bp_authoring_job_contract_v31",
+      "manifest_version": "section_54_bp_authoring_job_contract_v32",
       "analysis_kind": "bp_authoring_job_contract",
       "id": "review_component_property_unsupported",
       "request_original": "Create an Actor Blueprint shell with a Static Mesh Component component property CastShadow false.",
@@ -13144,6 +13739,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -13483,6 +14096,24 @@
           "blocked_by": [],
           "required_reinforcement": []
         },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
         "overwrite_policy": "requires_explicit_review",
         "preflight_required": [
           "asset_exists_check",
@@ -13687,6 +14318,24 @@
             "duplicate_asset",
             "replace_existing_asset"
           ],
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
           "blocked_by": [],
           "required_reinforcement": []
         },
@@ -14023,6 +14672,24 @@
           "duplicate_asset",
           "replace_existing_asset"
         ],
+        "blocked_by": [],
+        "required_reinforcement": []
+      },
+      "durable_save_validation_simulation_contract": {
+        "id": "durable_save_validation_simulator",
+        "schema": "section_54_durable_save_validation_simulator_v1",
+        "requested": false,
+        "target_asset_path": "",
+        "simulation_evaluated": false,
+        "simulation_status": "not_requested",
+        "checks": [],
+        "failed_check_ids": [],
+        "future_save_conditions_satisfied": false,
+        "save_true_allowed": false,
+        "save_asset_allowed": false,
+        "compile_save_command_allowed": false,
+        "live_command_count": 0,
+        "durable_authoring_allowed": false,
         "blocked_by": [],
         "required_reinforcement": []
       },
@@ -14416,6 +15083,24 @@
               "blocked_by": [],
               "required_reinforcement": []
             },
+            "durable_save_validation_simulation_contract": {
+              "id": "durable_save_validation_simulator",
+              "schema": "section_54_durable_save_validation_simulator_v1",
+              "requested": false,
+              "target_asset_path": "",
+              "simulation_evaluated": false,
+              "simulation_status": "not_requested",
+              "checks": [],
+              "failed_check_ids": [],
+              "future_save_conditions_satisfied": false,
+              "save_true_allowed": false,
+              "save_asset_allowed": false,
+              "compile_save_command_allowed": false,
+              "live_command_count": 0,
+              "durable_authoring_allowed": false,
+              "blocked_by": [],
+              "required_reinforcement": []
+            },
             "durable_save_gate_contract": {
               "id": "durable_save_gate",
               "schema": "section_37_durable_save_gate_contract_v1",
@@ -14752,6 +15437,24 @@
             "blocked_by": [],
             "required_reinforcement": []
           },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
           "overwrite_policy": "requires_explicit_review",
           "preflight_required": [
             "asset_exists_check",
@@ -14956,6 +15659,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -15295,6 +16016,24 @@
           "blocked_by": [],
           "required_reinforcement": []
         },
+        "durable_save_validation_simulation": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
         "durable_save_gate": {
           "id": "durable_save_gate",
           "schema": "section_37_durable_save_gate_contract_v1",
@@ -15575,7 +16314,7 @@
       "structural_assertion_count": 0
     },
     {
-      "manifest_version": "section_53_bp_authoring_job_contract_v31",
+      "manifest_version": "section_54_bp_authoring_job_contract_v32",
       "analysis_kind": "bp_authoring_job_contract",
       "id": "review_parent_class_unsupported",
       "request_original": "Create a Character Blueprint shell with a Static Mesh Component and BeginPlay branch.",
@@ -15908,6 +16647,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -16247,6 +17004,24 @@
           "blocked_by": [],
           "required_reinforcement": []
         },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
         "overwrite_policy": "requires_explicit_review",
         "preflight_required": [
           "asset_exists_check",
@@ -16451,6 +17226,24 @@
             "duplicate_asset",
             "replace_existing_asset"
           ],
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
           "blocked_by": [],
           "required_reinforcement": []
         },
@@ -16787,6 +17580,24 @@
           "duplicate_asset",
           "replace_existing_asset"
         ],
+        "blocked_by": [],
+        "required_reinforcement": []
+      },
+      "durable_save_validation_simulation_contract": {
+        "id": "durable_save_validation_simulator",
+        "schema": "section_54_durable_save_validation_simulator_v1",
+        "requested": false,
+        "target_asset_path": "",
+        "simulation_evaluated": false,
+        "simulation_status": "not_requested",
+        "checks": [],
+        "failed_check_ids": [],
+        "future_save_conditions_satisfied": false,
+        "save_true_allowed": false,
+        "save_asset_allowed": false,
+        "compile_save_command_allowed": false,
+        "live_command_count": 0,
+        "durable_authoring_allowed": false,
         "blocked_by": [],
         "required_reinforcement": []
       },
@@ -17180,6 +17991,24 @@
               "blocked_by": [],
               "required_reinforcement": []
             },
+            "durable_save_validation_simulation_contract": {
+              "id": "durable_save_validation_simulator",
+              "schema": "section_54_durable_save_validation_simulator_v1",
+              "requested": false,
+              "target_asset_path": "",
+              "simulation_evaluated": false,
+              "simulation_status": "not_requested",
+              "checks": [],
+              "failed_check_ids": [],
+              "future_save_conditions_satisfied": false,
+              "save_true_allowed": false,
+              "save_asset_allowed": false,
+              "compile_save_command_allowed": false,
+              "live_command_count": 0,
+              "durable_authoring_allowed": false,
+              "blocked_by": [],
+              "required_reinforcement": []
+            },
             "durable_save_gate_contract": {
               "id": "durable_save_gate",
               "schema": "section_37_durable_save_gate_contract_v1",
@@ -17516,6 +18345,24 @@
             "blocked_by": [],
             "required_reinforcement": []
           },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
           "overwrite_policy": "requires_explicit_review",
           "preflight_required": [
             "asset_exists_check",
@@ -17720,6 +18567,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -18059,6 +18924,24 @@
           "blocked_by": [],
           "required_reinforcement": []
         },
+        "durable_save_validation_simulation": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
         "durable_save_gate": {
           "id": "durable_save_gate",
           "schema": "section_37_durable_save_gate_contract_v1",
@@ -18340,7 +19223,7 @@
       "structural_assertion_count": 0
     },
     {
-      "manifest_version": "section_53_bp_authoring_job_contract_v31",
+      "manifest_version": "section_54_bp_authoring_job_contract_v32",
       "analysis_kind": "bp_authoring_job_contract",
       "id": "review_durable_authoring_save_requested",
       "request_original": "Create and save a durable Actor Blueprint named BP_PlannerDurable in /Game/Blueprints with a Static Mesh Component and BeginPlay branch.",
@@ -18785,6 +19668,138 @@
             "required_reinforcement": [
               "keep Section 53 as a no-command dry-run plan",
               "satisfy enable, save simulation, canary approval, and rollback recovery sections before live durable execution"
+            ]
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": true,
+            "target_asset_path": "/Game/Blueprints/BP_PlannerDurable",
+            "simulation_evaluated": true,
+            "simulation_status": "blocked",
+            "checks": [
+              {
+                "id": "target_package_allowlisted",
+                "label": "Target package path is allowlisted",
+                "required": true,
+                "passed": true,
+                "evidence": {
+                  "target_package_path": "/Game/Blueprints"
+                }
+              },
+              {
+                "id": "read_only_asset_exists_result_available",
+                "label": "Read-only asset-exists result is available to the save gate",
+                "required": true,
+                "passed": false,
+                "evidence": {
+                  "asset_exists": null
+                }
+              },
+              {
+                "id": "overwrite_or_rename_decision_present",
+                "label": "Overwrite-or-rename decision is present and conflict-free",
+                "required": true,
+                "passed": false,
+                "evidence": {
+                  "id": "durable_overwrite_rename_decision",
+                  "schema": "section_36_overwrite_rename_decision_contract_v1",
+                  "decision_required": true,
+                  "decision_present": false,
+                  "decision": "missing",
+                  "target_asset_path": "/Game/Blueprints/BP_PlannerDurable",
+                  "overwrite_requested": false,
+                  "rename_if_exists_requested": false,
+                  "decision_conflict": false,
+                  "overwrite_allowed": false,
+                  "rename_if_exists_allowed": false,
+                  "executor_may_resolve_conflict": false,
+                  "required_reinforcement": [
+                    "choose exactly one durable conflict policy: overwrite_existing or rename_if_exists"
+                  ]
+                }
+              },
+              {
+                "id": "ownership_marker_policy_ready",
+                "label": "Executor-created ownership marker policy is ready",
+                "required": true,
+                "passed": true,
+                "evidence": {
+                  "marker_schema": "section_52_durable_ownership_marker_contract_v1"
+                }
+              },
+              {
+                "id": "rollback_policy_ready",
+                "label": "Rollback policy is ready",
+                "required": true,
+                "passed": false,
+                "evidence": {
+                  "rollback_allowed": false
+                }
+              },
+              {
+                "id": "dry_run_plan_valid",
+                "label": "Section 53 dry-run plan is valid and has no live commands",
+                "required": true,
+                "passed": true,
+                "evidence": {
+                  "plan_step_count": 6
+                }
+              },
+              {
+                "id": "enable_contract_satisfied",
+                "label": "Section 51 enable contract is satisfied",
+                "required": true,
+                "passed": false,
+                "evidence": {
+                  "failed_required_gate_ids": [
+                    "overwrite_rename_decision",
+                    "rollback_readiness"
+                  ]
+                }
+              },
+              {
+                "id": "compile_save_validation_enabled",
+                "label": "Durable compile/save validation is enabled for simulation",
+                "required": true,
+                "passed": false,
+                "evidence": {}
+              },
+              {
+                "id": "explicit_durable_executor_enable_flag",
+                "label": "Explicit durable executor enable flag is set",
+                "required": true,
+                "passed": false,
+                "evidence": {}
+              }
+            ],
+            "failed_check_ids": [
+              "read_only_asset_exists_result_available",
+              "overwrite_or_rename_decision_present",
+              "rollback_policy_ready",
+              "enable_contract_satisfied",
+              "compile_save_validation_enabled",
+              "explicit_durable_executor_enable_flag"
+            ],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
+            "blocked_by": [
+              "compile_save_validation_enabled",
+              "enable_contract_satisfied",
+              "explicit_durable_executor_enable_flag",
+              "overwrite_or_rename_decision_present",
+              "read_only_asset_exists_result_available",
+              "rollback_policy_ready",
+              "section_54_simulator_does_not_enable_save"
+            ],
+            "required_reinforcement": [
+              "provide read-only asset-exists result to the durable save gate",
+              "satisfy conflict, rollback, enable, compile-save validation, and explicit enable checks",
+              "keep simulator no-command until a later durable canary release"
             ]
           },
           "durable_save_gate_contract": {
@@ -19274,6 +20289,138 @@
             "satisfy enable, save simulation, canary approval, and rollback recovery sections before live durable execution"
           ]
         },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": true,
+          "target_asset_path": "/Game/Blueprints/BP_PlannerDurable",
+          "simulation_evaluated": true,
+          "simulation_status": "blocked",
+          "checks": [
+            {
+              "id": "target_package_allowlisted",
+              "label": "Target package path is allowlisted",
+              "required": true,
+              "passed": true,
+              "evidence": {
+                "target_package_path": "/Game/Blueprints"
+              }
+            },
+            {
+              "id": "read_only_asset_exists_result_available",
+              "label": "Read-only asset-exists result is available to the save gate",
+              "required": true,
+              "passed": false,
+              "evidence": {
+                "asset_exists": null
+              }
+            },
+            {
+              "id": "overwrite_or_rename_decision_present",
+              "label": "Overwrite-or-rename decision is present and conflict-free",
+              "required": true,
+              "passed": false,
+              "evidence": {
+                "id": "durable_overwrite_rename_decision",
+                "schema": "section_36_overwrite_rename_decision_contract_v1",
+                "decision_required": true,
+                "decision_present": false,
+                "decision": "missing",
+                "target_asset_path": "/Game/Blueprints/BP_PlannerDurable",
+                "overwrite_requested": false,
+                "rename_if_exists_requested": false,
+                "decision_conflict": false,
+                "overwrite_allowed": false,
+                "rename_if_exists_allowed": false,
+                "executor_may_resolve_conflict": false,
+                "required_reinforcement": [
+                  "choose exactly one durable conflict policy: overwrite_existing or rename_if_exists"
+                ]
+              }
+            },
+            {
+              "id": "ownership_marker_policy_ready",
+              "label": "Executor-created ownership marker policy is ready",
+              "required": true,
+              "passed": true,
+              "evidence": {
+                "marker_schema": "section_52_durable_ownership_marker_contract_v1"
+              }
+            },
+            {
+              "id": "rollback_policy_ready",
+              "label": "Rollback policy is ready",
+              "required": true,
+              "passed": false,
+              "evidence": {
+                "rollback_allowed": false
+              }
+            },
+            {
+              "id": "dry_run_plan_valid",
+              "label": "Section 53 dry-run plan is valid and has no live commands",
+              "required": true,
+              "passed": true,
+              "evidence": {
+                "plan_step_count": 6
+              }
+            },
+            {
+              "id": "enable_contract_satisfied",
+              "label": "Section 51 enable contract is satisfied",
+              "required": true,
+              "passed": false,
+              "evidence": {
+                "failed_required_gate_ids": [
+                  "overwrite_rename_decision",
+                  "rollback_readiness"
+                ]
+              }
+            },
+            {
+              "id": "compile_save_validation_enabled",
+              "label": "Durable compile/save validation is enabled for simulation",
+              "required": true,
+              "passed": false,
+              "evidence": {}
+            },
+            {
+              "id": "explicit_durable_executor_enable_flag",
+              "label": "Explicit durable executor enable flag is set",
+              "required": true,
+              "passed": false,
+              "evidence": {}
+            }
+          ],
+          "failed_check_ids": [
+            "read_only_asset_exists_result_available",
+            "overwrite_or_rename_decision_present",
+            "rollback_policy_ready",
+            "enable_contract_satisfied",
+            "compile_save_validation_enabled",
+            "explicit_durable_executor_enable_flag"
+          ],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
+          "blocked_by": [
+            "compile_save_validation_enabled",
+            "enable_contract_satisfied",
+            "explicit_durable_executor_enable_flag",
+            "overwrite_or_rename_decision_present",
+            "read_only_asset_exists_result_available",
+            "rollback_policy_ready",
+            "section_54_simulator_does_not_enable_save"
+          ],
+          "required_reinforcement": [
+            "provide read-only asset-exists result to the durable save gate",
+            "satisfy conflict, rollback, enable, compile-save validation, and explicit enable checks",
+            "keep simulator no-command until a later durable canary release"
+          ]
+        },
         "overwrite_policy": "requires_explicit_review",
         "preflight_required": [
           "asset_exists_check",
@@ -19603,6 +20750,138 @@
           "required_reinforcement": [
             "keep Section 53 as a no-command dry-run plan",
             "satisfy enable, save simulation, canary approval, and rollback recovery sections before live durable execution"
+          ]
+        },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": true,
+          "target_asset_path": "/Game/Blueprints/BP_PlannerDurable",
+          "simulation_evaluated": true,
+          "simulation_status": "blocked",
+          "checks": [
+            {
+              "id": "target_package_allowlisted",
+              "label": "Target package path is allowlisted",
+              "required": true,
+              "passed": true,
+              "evidence": {
+                "target_package_path": "/Game/Blueprints"
+              }
+            },
+            {
+              "id": "read_only_asset_exists_result_available",
+              "label": "Read-only asset-exists result is available to the save gate",
+              "required": true,
+              "passed": false,
+              "evidence": {
+                "asset_exists": null
+              }
+            },
+            {
+              "id": "overwrite_or_rename_decision_present",
+              "label": "Overwrite-or-rename decision is present and conflict-free",
+              "required": true,
+              "passed": false,
+              "evidence": {
+                "id": "durable_overwrite_rename_decision",
+                "schema": "section_36_overwrite_rename_decision_contract_v1",
+                "decision_required": true,
+                "decision_present": false,
+                "decision": "missing",
+                "target_asset_path": "/Game/Blueprints/BP_PlannerDurable",
+                "overwrite_requested": false,
+                "rename_if_exists_requested": false,
+                "decision_conflict": false,
+                "overwrite_allowed": false,
+                "rename_if_exists_allowed": false,
+                "executor_may_resolve_conflict": false,
+                "required_reinforcement": [
+                  "choose exactly one durable conflict policy: overwrite_existing or rename_if_exists"
+                ]
+              }
+            },
+            {
+              "id": "ownership_marker_policy_ready",
+              "label": "Executor-created ownership marker policy is ready",
+              "required": true,
+              "passed": true,
+              "evidence": {
+                "marker_schema": "section_52_durable_ownership_marker_contract_v1"
+              }
+            },
+            {
+              "id": "rollback_policy_ready",
+              "label": "Rollback policy is ready",
+              "required": true,
+              "passed": false,
+              "evidence": {
+                "rollback_allowed": false
+              }
+            },
+            {
+              "id": "dry_run_plan_valid",
+              "label": "Section 53 dry-run plan is valid and has no live commands",
+              "required": true,
+              "passed": true,
+              "evidence": {
+                "plan_step_count": 6
+              }
+            },
+            {
+              "id": "enable_contract_satisfied",
+              "label": "Section 51 enable contract is satisfied",
+              "required": true,
+              "passed": false,
+              "evidence": {
+                "failed_required_gate_ids": [
+                  "overwrite_rename_decision",
+                  "rollback_readiness"
+                ]
+              }
+            },
+            {
+              "id": "compile_save_validation_enabled",
+              "label": "Durable compile/save validation is enabled for simulation",
+              "required": true,
+              "passed": false,
+              "evidence": {}
+            },
+            {
+              "id": "explicit_durable_executor_enable_flag",
+              "label": "Explicit durable executor enable flag is set",
+              "required": true,
+              "passed": false,
+              "evidence": {}
+            }
+          ],
+          "failed_check_ids": [
+            "read_only_asset_exists_result_available",
+            "overwrite_or_rename_decision_present",
+            "rollback_policy_ready",
+            "enable_contract_satisfied",
+            "compile_save_validation_enabled",
+            "explicit_durable_executor_enable_flag"
+          ],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
+          "blocked_by": [
+            "compile_save_validation_enabled",
+            "enable_contract_satisfied",
+            "explicit_durable_executor_enable_flag",
+            "overwrite_or_rename_decision_present",
+            "read_only_asset_exists_result_available",
+            "rollback_policy_ready",
+            "section_54_simulator_does_not_enable_save"
+          ],
+          "required_reinforcement": [
+            "provide read-only asset-exists result to the durable save gate",
+            "satisfy conflict, rollback, enable, compile-save validation, and explicit enable checks",
+            "keep simulator no-command until a later durable canary release"
           ]
         },
         "durable_save_gate_contract": {
@@ -20090,6 +21369,138 @@
         "required_reinforcement": [
           "keep Section 53 as a no-command dry-run plan",
           "satisfy enable, save simulation, canary approval, and rollback recovery sections before live durable execution"
+        ]
+      },
+      "durable_save_validation_simulation_contract": {
+        "id": "durable_save_validation_simulator",
+        "schema": "section_54_durable_save_validation_simulator_v1",
+        "requested": true,
+        "target_asset_path": "/Game/Blueprints/BP_PlannerDurable",
+        "simulation_evaluated": true,
+        "simulation_status": "blocked",
+        "checks": [
+          {
+            "id": "target_package_allowlisted",
+            "label": "Target package path is allowlisted",
+            "required": true,
+            "passed": true,
+            "evidence": {
+              "target_package_path": "/Game/Blueprints"
+            }
+          },
+          {
+            "id": "read_only_asset_exists_result_available",
+            "label": "Read-only asset-exists result is available to the save gate",
+            "required": true,
+            "passed": false,
+            "evidence": {
+              "asset_exists": null
+            }
+          },
+          {
+            "id": "overwrite_or_rename_decision_present",
+            "label": "Overwrite-or-rename decision is present and conflict-free",
+            "required": true,
+            "passed": false,
+            "evidence": {
+              "id": "durable_overwrite_rename_decision",
+              "schema": "section_36_overwrite_rename_decision_contract_v1",
+              "decision_required": true,
+              "decision_present": false,
+              "decision": "missing",
+              "target_asset_path": "/Game/Blueprints/BP_PlannerDurable",
+              "overwrite_requested": false,
+              "rename_if_exists_requested": false,
+              "decision_conflict": false,
+              "overwrite_allowed": false,
+              "rename_if_exists_allowed": false,
+              "executor_may_resolve_conflict": false,
+              "required_reinforcement": [
+                "choose exactly one durable conflict policy: overwrite_existing or rename_if_exists"
+              ]
+            }
+          },
+          {
+            "id": "ownership_marker_policy_ready",
+            "label": "Executor-created ownership marker policy is ready",
+            "required": true,
+            "passed": true,
+            "evidence": {
+              "marker_schema": "section_52_durable_ownership_marker_contract_v1"
+            }
+          },
+          {
+            "id": "rollback_policy_ready",
+            "label": "Rollback policy is ready",
+            "required": true,
+            "passed": false,
+            "evidence": {
+              "rollback_allowed": false
+            }
+          },
+          {
+            "id": "dry_run_plan_valid",
+            "label": "Section 53 dry-run plan is valid and has no live commands",
+            "required": true,
+            "passed": true,
+            "evidence": {
+              "plan_step_count": 6
+            }
+          },
+          {
+            "id": "enable_contract_satisfied",
+            "label": "Section 51 enable contract is satisfied",
+            "required": true,
+            "passed": false,
+            "evidence": {
+              "failed_required_gate_ids": [
+                "overwrite_rename_decision",
+                "rollback_readiness"
+              ]
+            }
+          },
+          {
+            "id": "compile_save_validation_enabled",
+            "label": "Durable compile/save validation is enabled for simulation",
+            "required": true,
+            "passed": false,
+            "evidence": {}
+          },
+          {
+            "id": "explicit_durable_executor_enable_flag",
+            "label": "Explicit durable executor enable flag is set",
+            "required": true,
+            "passed": false,
+            "evidence": {}
+          }
+        ],
+        "failed_check_ids": [
+          "read_only_asset_exists_result_available",
+          "overwrite_or_rename_decision_present",
+          "rollback_policy_ready",
+          "enable_contract_satisfied",
+          "compile_save_validation_enabled",
+          "explicit_durable_executor_enable_flag"
+        ],
+        "future_save_conditions_satisfied": false,
+        "save_true_allowed": false,
+        "save_asset_allowed": false,
+        "compile_save_command_allowed": false,
+        "live_command_count": 0,
+        "durable_authoring_allowed": false,
+        "blocked_by": [
+          "compile_save_validation_enabled",
+          "enable_contract_satisfied",
+          "explicit_durable_executor_enable_flag",
+          "overwrite_or_rename_decision_present",
+          "read_only_asset_exists_result_available",
+          "rollback_policy_ready",
+          "section_54_simulator_does_not_enable_save"
+        ],
+        "required_reinforcement": [
+          "provide read-only asset-exists result to the durable save gate",
+          "satisfy conflict, rollback, enable, compile-save validation, and explicit enable checks",
+          "keep simulator no-command until a later durable canary release"
         ]
       },
       "durable_save_gate_contract": {
@@ -20630,6 +22041,138 @@
                 "satisfy enable, save simulation, canary approval, and rollback recovery sections before live durable execution"
               ]
             },
+            "durable_save_validation_simulation_contract": {
+              "id": "durable_save_validation_simulator",
+              "schema": "section_54_durable_save_validation_simulator_v1",
+              "requested": true,
+              "target_asset_path": "/Game/Blueprints/BP_PlannerDurable",
+              "simulation_evaluated": true,
+              "simulation_status": "blocked",
+              "checks": [
+                {
+                  "id": "target_package_allowlisted",
+                  "label": "Target package path is allowlisted",
+                  "required": true,
+                  "passed": true,
+                  "evidence": {
+                    "target_package_path": "/Game/Blueprints"
+                  }
+                },
+                {
+                  "id": "read_only_asset_exists_result_available",
+                  "label": "Read-only asset-exists result is available to the save gate",
+                  "required": true,
+                  "passed": false,
+                  "evidence": {
+                    "asset_exists": null
+                  }
+                },
+                {
+                  "id": "overwrite_or_rename_decision_present",
+                  "label": "Overwrite-or-rename decision is present and conflict-free",
+                  "required": true,
+                  "passed": false,
+                  "evidence": {
+                    "id": "durable_overwrite_rename_decision",
+                    "schema": "section_36_overwrite_rename_decision_contract_v1",
+                    "decision_required": true,
+                    "decision_present": false,
+                    "decision": "missing",
+                    "target_asset_path": "/Game/Blueprints/BP_PlannerDurable",
+                    "overwrite_requested": false,
+                    "rename_if_exists_requested": false,
+                    "decision_conflict": false,
+                    "overwrite_allowed": false,
+                    "rename_if_exists_allowed": false,
+                    "executor_may_resolve_conflict": false,
+                    "required_reinforcement": [
+                      "choose exactly one durable conflict policy: overwrite_existing or rename_if_exists"
+                    ]
+                  }
+                },
+                {
+                  "id": "ownership_marker_policy_ready",
+                  "label": "Executor-created ownership marker policy is ready",
+                  "required": true,
+                  "passed": true,
+                  "evidence": {
+                    "marker_schema": "section_52_durable_ownership_marker_contract_v1"
+                  }
+                },
+                {
+                  "id": "rollback_policy_ready",
+                  "label": "Rollback policy is ready",
+                  "required": true,
+                  "passed": false,
+                  "evidence": {
+                    "rollback_allowed": false
+                  }
+                },
+                {
+                  "id": "dry_run_plan_valid",
+                  "label": "Section 53 dry-run plan is valid and has no live commands",
+                  "required": true,
+                  "passed": true,
+                  "evidence": {
+                    "plan_step_count": 6
+                  }
+                },
+                {
+                  "id": "enable_contract_satisfied",
+                  "label": "Section 51 enable contract is satisfied",
+                  "required": true,
+                  "passed": false,
+                  "evidence": {
+                    "failed_required_gate_ids": [
+                      "overwrite_rename_decision",
+                      "rollback_readiness"
+                    ]
+                  }
+                },
+                {
+                  "id": "compile_save_validation_enabled",
+                  "label": "Durable compile/save validation is enabled for simulation",
+                  "required": true,
+                  "passed": false,
+                  "evidence": {}
+                },
+                {
+                  "id": "explicit_durable_executor_enable_flag",
+                  "label": "Explicit durable executor enable flag is set",
+                  "required": true,
+                  "passed": false,
+                  "evidence": {}
+                }
+              ],
+              "failed_check_ids": [
+                "read_only_asset_exists_result_available",
+                "overwrite_or_rename_decision_present",
+                "rollback_policy_ready",
+                "enable_contract_satisfied",
+                "compile_save_validation_enabled",
+                "explicit_durable_executor_enable_flag"
+              ],
+              "future_save_conditions_satisfied": false,
+              "save_true_allowed": false,
+              "save_asset_allowed": false,
+              "compile_save_command_allowed": false,
+              "live_command_count": 0,
+              "durable_authoring_allowed": false,
+              "blocked_by": [
+                "compile_save_validation_enabled",
+                "enable_contract_satisfied",
+                "explicit_durable_executor_enable_flag",
+                "overwrite_or_rename_decision_present",
+                "read_only_asset_exists_result_available",
+                "rollback_policy_ready",
+                "section_54_simulator_does_not_enable_save"
+              ],
+              "required_reinforcement": [
+                "provide read-only asset-exists result to the durable save gate",
+                "satisfy conflict, rollback, enable, compile-save validation, and explicit enable checks",
+                "keep simulator no-command until a later durable canary release"
+              ]
+            },
             "durable_save_gate_contract": {
               "id": "durable_save_gate",
               "schema": "section_37_durable_save_gate_contract_v1",
@@ -21117,6 +22660,138 @@
               "satisfy enable, save simulation, canary approval, and rollback recovery sections before live durable execution"
             ]
           },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": true,
+            "target_asset_path": "/Game/Blueprints/BP_PlannerDurable",
+            "simulation_evaluated": true,
+            "simulation_status": "blocked",
+            "checks": [
+              {
+                "id": "target_package_allowlisted",
+                "label": "Target package path is allowlisted",
+                "required": true,
+                "passed": true,
+                "evidence": {
+                  "target_package_path": "/Game/Blueprints"
+                }
+              },
+              {
+                "id": "read_only_asset_exists_result_available",
+                "label": "Read-only asset-exists result is available to the save gate",
+                "required": true,
+                "passed": false,
+                "evidence": {
+                  "asset_exists": null
+                }
+              },
+              {
+                "id": "overwrite_or_rename_decision_present",
+                "label": "Overwrite-or-rename decision is present and conflict-free",
+                "required": true,
+                "passed": false,
+                "evidence": {
+                  "id": "durable_overwrite_rename_decision",
+                  "schema": "section_36_overwrite_rename_decision_contract_v1",
+                  "decision_required": true,
+                  "decision_present": false,
+                  "decision": "missing",
+                  "target_asset_path": "/Game/Blueprints/BP_PlannerDurable",
+                  "overwrite_requested": false,
+                  "rename_if_exists_requested": false,
+                  "decision_conflict": false,
+                  "overwrite_allowed": false,
+                  "rename_if_exists_allowed": false,
+                  "executor_may_resolve_conflict": false,
+                  "required_reinforcement": [
+                    "choose exactly one durable conflict policy: overwrite_existing or rename_if_exists"
+                  ]
+                }
+              },
+              {
+                "id": "ownership_marker_policy_ready",
+                "label": "Executor-created ownership marker policy is ready",
+                "required": true,
+                "passed": true,
+                "evidence": {
+                  "marker_schema": "section_52_durable_ownership_marker_contract_v1"
+                }
+              },
+              {
+                "id": "rollback_policy_ready",
+                "label": "Rollback policy is ready",
+                "required": true,
+                "passed": false,
+                "evidence": {
+                  "rollback_allowed": false
+                }
+              },
+              {
+                "id": "dry_run_plan_valid",
+                "label": "Section 53 dry-run plan is valid and has no live commands",
+                "required": true,
+                "passed": true,
+                "evidence": {
+                  "plan_step_count": 6
+                }
+              },
+              {
+                "id": "enable_contract_satisfied",
+                "label": "Section 51 enable contract is satisfied",
+                "required": true,
+                "passed": false,
+                "evidence": {
+                  "failed_required_gate_ids": [
+                    "overwrite_rename_decision",
+                    "rollback_readiness"
+                  ]
+                }
+              },
+              {
+                "id": "compile_save_validation_enabled",
+                "label": "Durable compile/save validation is enabled for simulation",
+                "required": true,
+                "passed": false,
+                "evidence": {}
+              },
+              {
+                "id": "explicit_durable_executor_enable_flag",
+                "label": "Explicit durable executor enable flag is set",
+                "required": true,
+                "passed": false,
+                "evidence": {}
+              }
+            ],
+            "failed_check_ids": [
+              "read_only_asset_exists_result_available",
+              "overwrite_or_rename_decision_present",
+              "rollback_policy_ready",
+              "enable_contract_satisfied",
+              "compile_save_validation_enabled",
+              "explicit_durable_executor_enable_flag"
+            ],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
+            "blocked_by": [
+              "compile_save_validation_enabled",
+              "enable_contract_satisfied",
+              "explicit_durable_executor_enable_flag",
+              "overwrite_or_rename_decision_present",
+              "read_only_asset_exists_result_available",
+              "rollback_policy_ready",
+              "section_54_simulator_does_not_enable_save"
+            ],
+            "required_reinforcement": [
+              "provide read-only asset-exists result to the durable save gate",
+              "satisfy conflict, rollback, enable, compile-save validation, and explicit enable checks",
+              "keep simulator no-command until a later durable canary release"
+            ]
+          },
           "overwrite_policy": "requires_explicit_review",
           "preflight_required": [
             "asset_exists_check",
@@ -21446,6 +23121,138 @@
             "required_reinforcement": [
               "keep Section 53 as a no-command dry-run plan",
               "satisfy enable, save simulation, canary approval, and rollback recovery sections before live durable execution"
+            ]
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": true,
+            "target_asset_path": "/Game/Blueprints/BP_PlannerDurable",
+            "simulation_evaluated": true,
+            "simulation_status": "blocked",
+            "checks": [
+              {
+                "id": "target_package_allowlisted",
+                "label": "Target package path is allowlisted",
+                "required": true,
+                "passed": true,
+                "evidence": {
+                  "target_package_path": "/Game/Blueprints"
+                }
+              },
+              {
+                "id": "read_only_asset_exists_result_available",
+                "label": "Read-only asset-exists result is available to the save gate",
+                "required": true,
+                "passed": false,
+                "evidence": {
+                  "asset_exists": null
+                }
+              },
+              {
+                "id": "overwrite_or_rename_decision_present",
+                "label": "Overwrite-or-rename decision is present and conflict-free",
+                "required": true,
+                "passed": false,
+                "evidence": {
+                  "id": "durable_overwrite_rename_decision",
+                  "schema": "section_36_overwrite_rename_decision_contract_v1",
+                  "decision_required": true,
+                  "decision_present": false,
+                  "decision": "missing",
+                  "target_asset_path": "/Game/Blueprints/BP_PlannerDurable",
+                  "overwrite_requested": false,
+                  "rename_if_exists_requested": false,
+                  "decision_conflict": false,
+                  "overwrite_allowed": false,
+                  "rename_if_exists_allowed": false,
+                  "executor_may_resolve_conflict": false,
+                  "required_reinforcement": [
+                    "choose exactly one durable conflict policy: overwrite_existing or rename_if_exists"
+                  ]
+                }
+              },
+              {
+                "id": "ownership_marker_policy_ready",
+                "label": "Executor-created ownership marker policy is ready",
+                "required": true,
+                "passed": true,
+                "evidence": {
+                  "marker_schema": "section_52_durable_ownership_marker_contract_v1"
+                }
+              },
+              {
+                "id": "rollback_policy_ready",
+                "label": "Rollback policy is ready",
+                "required": true,
+                "passed": false,
+                "evidence": {
+                  "rollback_allowed": false
+                }
+              },
+              {
+                "id": "dry_run_plan_valid",
+                "label": "Section 53 dry-run plan is valid and has no live commands",
+                "required": true,
+                "passed": true,
+                "evidence": {
+                  "plan_step_count": 6
+                }
+              },
+              {
+                "id": "enable_contract_satisfied",
+                "label": "Section 51 enable contract is satisfied",
+                "required": true,
+                "passed": false,
+                "evidence": {
+                  "failed_required_gate_ids": [
+                    "overwrite_rename_decision",
+                    "rollback_readiness"
+                  ]
+                }
+              },
+              {
+                "id": "compile_save_validation_enabled",
+                "label": "Durable compile/save validation is enabled for simulation",
+                "required": true,
+                "passed": false,
+                "evidence": {}
+              },
+              {
+                "id": "explicit_durable_executor_enable_flag",
+                "label": "Explicit durable executor enable flag is set",
+                "required": true,
+                "passed": false,
+                "evidence": {}
+              }
+            ],
+            "failed_check_ids": [
+              "read_only_asset_exists_result_available",
+              "overwrite_or_rename_decision_present",
+              "rollback_policy_ready",
+              "enable_contract_satisfied",
+              "compile_save_validation_enabled",
+              "explicit_durable_executor_enable_flag"
+            ],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
+            "blocked_by": [
+              "compile_save_validation_enabled",
+              "enable_contract_satisfied",
+              "explicit_durable_executor_enable_flag",
+              "overwrite_or_rename_decision_present",
+              "read_only_asset_exists_result_available",
+              "rollback_policy_ready",
+              "section_54_simulator_does_not_enable_save"
+            ],
+            "required_reinforcement": [
+              "provide read-only asset-exists result to the durable save gate",
+              "satisfy conflict, rollback, enable, compile-save validation, and explicit enable checks",
+              "keep simulator no-command until a later durable canary release"
             ]
           },
           "durable_save_gate_contract": {
@@ -21935,6 +23742,138 @@
             "satisfy enable, save simulation, canary approval, and rollback recovery sections before live durable execution"
           ]
         },
+        "durable_save_validation_simulation": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": true,
+          "target_asset_path": "/Game/Blueprints/BP_PlannerDurable",
+          "simulation_evaluated": true,
+          "simulation_status": "blocked",
+          "checks": [
+            {
+              "id": "target_package_allowlisted",
+              "label": "Target package path is allowlisted",
+              "required": true,
+              "passed": true,
+              "evidence": {
+                "target_package_path": "/Game/Blueprints"
+              }
+            },
+            {
+              "id": "read_only_asset_exists_result_available",
+              "label": "Read-only asset-exists result is available to the save gate",
+              "required": true,
+              "passed": false,
+              "evidence": {
+                "asset_exists": null
+              }
+            },
+            {
+              "id": "overwrite_or_rename_decision_present",
+              "label": "Overwrite-or-rename decision is present and conflict-free",
+              "required": true,
+              "passed": false,
+              "evidence": {
+                "id": "durable_overwrite_rename_decision",
+                "schema": "section_36_overwrite_rename_decision_contract_v1",
+                "decision_required": true,
+                "decision_present": false,
+                "decision": "missing",
+                "target_asset_path": "/Game/Blueprints/BP_PlannerDurable",
+                "overwrite_requested": false,
+                "rename_if_exists_requested": false,
+                "decision_conflict": false,
+                "overwrite_allowed": false,
+                "rename_if_exists_allowed": false,
+                "executor_may_resolve_conflict": false,
+                "required_reinforcement": [
+                  "choose exactly one durable conflict policy: overwrite_existing or rename_if_exists"
+                ]
+              }
+            },
+            {
+              "id": "ownership_marker_policy_ready",
+              "label": "Executor-created ownership marker policy is ready",
+              "required": true,
+              "passed": true,
+              "evidence": {
+                "marker_schema": "section_52_durable_ownership_marker_contract_v1"
+              }
+            },
+            {
+              "id": "rollback_policy_ready",
+              "label": "Rollback policy is ready",
+              "required": true,
+              "passed": false,
+              "evidence": {
+                "rollback_allowed": false
+              }
+            },
+            {
+              "id": "dry_run_plan_valid",
+              "label": "Section 53 dry-run plan is valid and has no live commands",
+              "required": true,
+              "passed": true,
+              "evidence": {
+                "plan_step_count": 6
+              }
+            },
+            {
+              "id": "enable_contract_satisfied",
+              "label": "Section 51 enable contract is satisfied",
+              "required": true,
+              "passed": false,
+              "evidence": {
+                "failed_required_gate_ids": [
+                  "overwrite_rename_decision",
+                  "rollback_readiness"
+                ]
+              }
+            },
+            {
+              "id": "compile_save_validation_enabled",
+              "label": "Durable compile/save validation is enabled for simulation",
+              "required": true,
+              "passed": false,
+              "evidence": {}
+            },
+            {
+              "id": "explicit_durable_executor_enable_flag",
+              "label": "Explicit durable executor enable flag is set",
+              "required": true,
+              "passed": false,
+              "evidence": {}
+            }
+          ],
+          "failed_check_ids": [
+            "read_only_asset_exists_result_available",
+            "overwrite_or_rename_decision_present",
+            "rollback_policy_ready",
+            "enable_contract_satisfied",
+            "compile_save_validation_enabled",
+            "explicit_durable_executor_enable_flag"
+          ],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
+          "blocked_by": [
+            "compile_save_validation_enabled",
+            "enable_contract_satisfied",
+            "explicit_durable_executor_enable_flag",
+            "overwrite_or_rename_decision_present",
+            "read_only_asset_exists_result_available",
+            "rollback_policy_ready",
+            "section_54_simulator_does_not_enable_save"
+          ],
+          "required_reinforcement": [
+            "provide read-only asset-exists result to the durable save gate",
+            "satisfy conflict, rollback, enable, compile-save validation, and explicit enable checks",
+            "keep simulator no-command until a later durable canary release"
+          ]
+        },
         "durable_save_gate": {
           "id": "durable_save_gate",
           "schema": "section_37_durable_save_gate_contract_v1",
@@ -22259,7 +24198,7 @@
       "structural_assertion_count": 0
     },
     {
-      "manifest_version": "section_53_bp_authoring_job_contract_v31",
+      "manifest_version": "section_54_bp_authoring_job_contract_v32",
       "analysis_kind": "bp_authoring_job_contract",
       "id": "safe_function_graph_authoring",
       "request_original": "Create an Actor Blueprint shell with a function graph named ComputePlannerValue, int input InputValue default 3, int output ResultValue default 7, and a return node.",
@@ -22568,6 +24507,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -22907,6 +24864,24 @@
           "blocked_by": [],
           "required_reinforcement": []
         },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
         "overwrite_policy": "requires_explicit_review",
         "preflight_required": [
           "asset_exists_check",
@@ -23111,6 +25086,24 @@
             "duplicate_asset",
             "replace_existing_asset"
           ],
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
           "blocked_by": [],
           "required_reinforcement": []
         },
@@ -23447,6 +25440,24 @@
           "duplicate_asset",
           "replace_existing_asset"
         ],
+        "blocked_by": [],
+        "required_reinforcement": []
+      },
+      "durable_save_validation_simulation_contract": {
+        "id": "durable_save_validation_simulator",
+        "schema": "section_54_durable_save_validation_simulator_v1",
+        "requested": false,
+        "target_asset_path": "",
+        "simulation_evaluated": false,
+        "simulation_status": "not_requested",
+        "checks": [],
+        "failed_check_ids": [],
+        "future_save_conditions_satisfied": false,
+        "save_true_allowed": false,
+        "save_asset_allowed": false,
+        "compile_save_command_allowed": false,
+        "live_command_count": 0,
+        "durable_authoring_allowed": false,
         "blocked_by": [],
         "required_reinforcement": []
       },
@@ -23840,6 +25851,24 @@
               "blocked_by": [],
               "required_reinforcement": []
             },
+            "durable_save_validation_simulation_contract": {
+              "id": "durable_save_validation_simulator",
+              "schema": "section_54_durable_save_validation_simulator_v1",
+              "requested": false,
+              "target_asset_path": "",
+              "simulation_evaluated": false,
+              "simulation_status": "not_requested",
+              "checks": [],
+              "failed_check_ids": [],
+              "future_save_conditions_satisfied": false,
+              "save_true_allowed": false,
+              "save_asset_allowed": false,
+              "compile_save_command_allowed": false,
+              "live_command_count": 0,
+              "durable_authoring_allowed": false,
+              "blocked_by": [],
+              "required_reinforcement": []
+            },
             "durable_save_gate_contract": {
               "id": "durable_save_gate",
               "schema": "section_37_durable_save_gate_contract_v1",
@@ -24176,6 +26205,24 @@
             "blocked_by": [],
             "required_reinforcement": []
           },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
           "overwrite_policy": "requires_explicit_review",
           "preflight_required": [
             "asset_exists_check",
@@ -24380,6 +26427,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -24716,6 +26781,24 @@
             "duplicate_asset",
             "replace_existing_asset"
           ],
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
+        "durable_save_validation_simulation": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
           "blocked_by": [],
           "required_reinforcement": []
         },
@@ -25151,7 +27234,7 @@
       "structural_assertion_count": 6
     },
     {
-      "manifest_version": "section_53_bp_authoring_job_contract_v31",
+      "manifest_version": "section_54_bp_authoring_job_contract_v32",
       "analysis_kind": "bp_authoring_job_contract",
       "id": "safe_function_graph_body_math",
       "request_original": "Create an Actor Blueprint shell with a function graph named ComputePlannerBody, double local variable LocalValue default 5, an add math node using LocalValue plus 2, double output ResultValue, connect the math result to the return node, and compile.",
@@ -25476,6 +27559,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -25815,6 +27916,24 @@
           "blocked_by": [],
           "required_reinforcement": []
         },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
         "overwrite_policy": "requires_explicit_review",
         "preflight_required": [
           "asset_exists_check",
@@ -26019,6 +28138,24 @@
             "duplicate_asset",
             "replace_existing_asset"
           ],
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
           "blocked_by": [],
           "required_reinforcement": []
         },
@@ -26355,6 +28492,24 @@
           "duplicate_asset",
           "replace_existing_asset"
         ],
+        "blocked_by": [],
+        "required_reinforcement": []
+      },
+      "durable_save_validation_simulation_contract": {
+        "id": "durable_save_validation_simulator",
+        "schema": "section_54_durable_save_validation_simulator_v1",
+        "requested": false,
+        "target_asset_path": "",
+        "simulation_evaluated": false,
+        "simulation_status": "not_requested",
+        "checks": [],
+        "failed_check_ids": [],
+        "future_save_conditions_satisfied": false,
+        "save_true_allowed": false,
+        "save_asset_allowed": false,
+        "compile_save_command_allowed": false,
+        "live_command_count": 0,
+        "durable_authoring_allowed": false,
         "blocked_by": [],
         "required_reinforcement": []
       },
@@ -26748,6 +28903,24 @@
               "blocked_by": [],
               "required_reinforcement": []
             },
+            "durable_save_validation_simulation_contract": {
+              "id": "durable_save_validation_simulator",
+              "schema": "section_54_durable_save_validation_simulator_v1",
+              "requested": false,
+              "target_asset_path": "",
+              "simulation_evaluated": false,
+              "simulation_status": "not_requested",
+              "checks": [],
+              "failed_check_ids": [],
+              "future_save_conditions_satisfied": false,
+              "save_true_allowed": false,
+              "save_asset_allowed": false,
+              "compile_save_command_allowed": false,
+              "live_command_count": 0,
+              "durable_authoring_allowed": false,
+              "blocked_by": [],
+              "required_reinforcement": []
+            },
             "durable_save_gate_contract": {
               "id": "durable_save_gate",
               "schema": "section_37_durable_save_gate_contract_v1",
@@ -27084,6 +29257,24 @@
             "blocked_by": [],
             "required_reinforcement": []
           },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
           "overwrite_policy": "requires_explicit_review",
           "preflight_required": [
             "asset_exists_check",
@@ -27288,6 +29479,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -27624,6 +29833,24 @@
             "duplicate_asset",
             "replace_existing_asset"
           ],
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
+        "durable_save_validation_simulation": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
           "blocked_by": [],
           "required_reinforcement": []
         },
@@ -28381,7 +30608,7 @@
       "structural_assertion_count": 14
     },
     {
-      "manifest_version": "section_53_bp_authoring_job_contract_v31",
+      "manifest_version": "section_54_bp_authoring_job_contract_v32",
       "analysis_kind": "bp_authoring_job_contract",
       "id": "safe_function_graph_local_set",
       "request_original": "Create an Actor Blueprint shell with a function graph named ComputePlannerLocalSet, double input InputValue default 3, double local variable AccumulatedValue default 0, add 2 to InputValue, set AccumulatedValue from the math result, then return AccumulatedValue as ResultValue.",
@@ -28706,6 +30933,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -29045,6 +31290,24 @@
           "blocked_by": [],
           "required_reinforcement": []
         },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
         "overwrite_policy": "requires_explicit_review",
         "preflight_required": [
           "asset_exists_check",
@@ -29249,6 +31512,24 @@
             "duplicate_asset",
             "replace_existing_asset"
           ],
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
           "blocked_by": [],
           "required_reinforcement": []
         },
@@ -29585,6 +31866,24 @@
           "duplicate_asset",
           "replace_existing_asset"
         ],
+        "blocked_by": [],
+        "required_reinforcement": []
+      },
+      "durable_save_validation_simulation_contract": {
+        "id": "durable_save_validation_simulator",
+        "schema": "section_54_durable_save_validation_simulator_v1",
+        "requested": false,
+        "target_asset_path": "",
+        "simulation_evaluated": false,
+        "simulation_status": "not_requested",
+        "checks": [],
+        "failed_check_ids": [],
+        "future_save_conditions_satisfied": false,
+        "save_true_allowed": false,
+        "save_asset_allowed": false,
+        "compile_save_command_allowed": false,
+        "live_command_count": 0,
+        "durable_authoring_allowed": false,
         "blocked_by": [],
         "required_reinforcement": []
       },
@@ -29978,6 +32277,24 @@
               "blocked_by": [],
               "required_reinforcement": []
             },
+            "durable_save_validation_simulation_contract": {
+              "id": "durable_save_validation_simulator",
+              "schema": "section_54_durable_save_validation_simulator_v1",
+              "requested": false,
+              "target_asset_path": "",
+              "simulation_evaluated": false,
+              "simulation_status": "not_requested",
+              "checks": [],
+              "failed_check_ids": [],
+              "future_save_conditions_satisfied": false,
+              "save_true_allowed": false,
+              "save_asset_allowed": false,
+              "compile_save_command_allowed": false,
+              "live_command_count": 0,
+              "durable_authoring_allowed": false,
+              "blocked_by": [],
+              "required_reinforcement": []
+            },
             "durable_save_gate_contract": {
               "id": "durable_save_gate",
               "schema": "section_37_durable_save_gate_contract_v1",
@@ -30314,6 +32631,24 @@
             "blocked_by": [],
             "required_reinforcement": []
           },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
           "overwrite_policy": "requires_explicit_review",
           "preflight_required": [
             "asset_exists_check",
@@ -30518,6 +32853,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -30854,6 +33207,24 @@
             "duplicate_asset",
             "replace_existing_asset"
           ],
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
+        "durable_save_validation_simulation": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
           "blocked_by": [],
           "required_reinforcement": []
         },
@@ -31600,7 +33971,7 @@
       "structural_assertion_count": 14
     },
     {
-      "manifest_version": "section_53_bp_authoring_job_contract_v31",
+      "manifest_version": "section_54_bp_authoring_job_contract_v32",
       "analysis_kind": "bp_authoring_job_contract",
       "id": "safe_function_graph_compare_branch",
       "request_original": "Create an Actor Blueprint shell with a function graph named ComputePlannerBranch, double input InputValue default 3, double output ResultValue default 0, double local variable BranchResult default 0, compare InputValue greater than 10, branch on the comparison, set BranchResult to 1 on then and -1 on else, then return BranchResult as ResultValue.",
@@ -31925,6 +34296,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -32264,6 +34653,24 @@
           "blocked_by": [],
           "required_reinforcement": []
         },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
         "overwrite_policy": "requires_explicit_review",
         "preflight_required": [
           "asset_exists_check",
@@ -32468,6 +34875,24 @@
             "duplicate_asset",
             "replace_existing_asset"
           ],
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
           "blocked_by": [],
           "required_reinforcement": []
         },
@@ -32804,6 +35229,24 @@
           "duplicate_asset",
           "replace_existing_asset"
         ],
+        "blocked_by": [],
+        "required_reinforcement": []
+      },
+      "durable_save_validation_simulation_contract": {
+        "id": "durable_save_validation_simulator",
+        "schema": "section_54_durable_save_validation_simulator_v1",
+        "requested": false,
+        "target_asset_path": "",
+        "simulation_evaluated": false,
+        "simulation_status": "not_requested",
+        "checks": [],
+        "failed_check_ids": [],
+        "future_save_conditions_satisfied": false,
+        "save_true_allowed": false,
+        "save_asset_allowed": false,
+        "compile_save_command_allowed": false,
+        "live_command_count": 0,
+        "durable_authoring_allowed": false,
         "blocked_by": [],
         "required_reinforcement": []
       },
@@ -33197,6 +35640,24 @@
               "blocked_by": [],
               "required_reinforcement": []
             },
+            "durable_save_validation_simulation_contract": {
+              "id": "durable_save_validation_simulator",
+              "schema": "section_54_durable_save_validation_simulator_v1",
+              "requested": false,
+              "target_asset_path": "",
+              "simulation_evaluated": false,
+              "simulation_status": "not_requested",
+              "checks": [],
+              "failed_check_ids": [],
+              "future_save_conditions_satisfied": false,
+              "save_true_allowed": false,
+              "save_asset_allowed": false,
+              "compile_save_command_allowed": false,
+              "live_command_count": 0,
+              "durable_authoring_allowed": false,
+              "blocked_by": [],
+              "required_reinforcement": []
+            },
             "durable_save_gate_contract": {
               "id": "durable_save_gate",
               "schema": "section_37_durable_save_gate_contract_v1",
@@ -33533,6 +35994,24 @@
             "blocked_by": [],
             "required_reinforcement": []
           },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
           "overwrite_policy": "requires_explicit_review",
           "preflight_required": [
             "asset_exists_check",
@@ -33737,6 +36216,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -34073,6 +36570,24 @@
             "duplicate_asset",
             "replace_existing_asset"
           ],
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
+        "durable_save_validation_simulation": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
           "blocked_by": [],
           "required_reinforcement": []
         },
@@ -35574,7 +38089,7 @@
       "structural_assertion_count": 34
     },
     {
-      "manifest_version": "section_53_bp_authoring_job_contract_v31",
+      "manifest_version": "section_54_bp_authoring_job_contract_v32",
       "analysis_kind": "bp_authoring_job_contract",
       "id": "safe_typed_variables_defaults",
       "request_original": "Create an Actor Blueprint shell with a Scene Component transform default, bool variable bPlannerEnabled default true, string variable PlannerLabel default Section22, and vector variable PlannerOffset default X=10 Y=20 Z=30.",
@@ -35880,6 +38395,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -36219,6 +38752,24 @@
           "blocked_by": [],
           "required_reinforcement": []
         },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
         "overwrite_policy": "requires_explicit_review",
         "preflight_required": [
           "asset_exists_check",
@@ -36423,6 +38974,24 @@
             "duplicate_asset",
             "replace_existing_asset"
           ],
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
           "blocked_by": [],
           "required_reinforcement": []
         },
@@ -36759,6 +39328,24 @@
           "duplicate_asset",
           "replace_existing_asset"
         ],
+        "blocked_by": [],
+        "required_reinforcement": []
+      },
+      "durable_save_validation_simulation_contract": {
+        "id": "durable_save_validation_simulator",
+        "schema": "section_54_durable_save_validation_simulator_v1",
+        "requested": false,
+        "target_asset_path": "",
+        "simulation_evaluated": false,
+        "simulation_status": "not_requested",
+        "checks": [],
+        "failed_check_ids": [],
+        "future_save_conditions_satisfied": false,
+        "save_true_allowed": false,
+        "save_asset_allowed": false,
+        "compile_save_command_allowed": false,
+        "live_command_count": 0,
+        "durable_authoring_allowed": false,
         "blocked_by": [],
         "required_reinforcement": []
       },
@@ -37152,6 +39739,24 @@
               "blocked_by": [],
               "required_reinforcement": []
             },
+            "durable_save_validation_simulation_contract": {
+              "id": "durable_save_validation_simulator",
+              "schema": "section_54_durable_save_validation_simulator_v1",
+              "requested": false,
+              "target_asset_path": "",
+              "simulation_evaluated": false,
+              "simulation_status": "not_requested",
+              "checks": [],
+              "failed_check_ids": [],
+              "future_save_conditions_satisfied": false,
+              "save_true_allowed": false,
+              "save_asset_allowed": false,
+              "compile_save_command_allowed": false,
+              "live_command_count": 0,
+              "durable_authoring_allowed": false,
+              "blocked_by": [],
+              "required_reinforcement": []
+            },
             "durable_save_gate_contract": {
               "id": "durable_save_gate",
               "schema": "section_37_durable_save_gate_contract_v1",
@@ -37488,6 +40093,24 @@
             "blocked_by": [],
             "required_reinforcement": []
           },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
           "overwrite_policy": "requires_explicit_review",
           "preflight_required": [
             "asset_exists_check",
@@ -37692,6 +40315,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -38028,6 +40669,24 @@
             "duplicate_asset",
             "replace_existing_asset"
           ],
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
+        "durable_save_validation_simulation": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
           "blocked_by": [],
           "required_reinforcement": []
         },
@@ -38453,7 +41112,7 @@
       "structural_assertion_count": 0
     },
     {
-      "manifest_version": "section_53_bp_authoring_job_contract_v31",
+      "manifest_version": "section_54_bp_authoring_job_contract_v32",
       "analysis_kind": "bp_authoring_job_contract",
       "id": "safe_event_sequence_flow",
       "request_original": "Create an Actor Blueprint shell with BeginPlay, a Sequence node with two outputs, and two PrintString calls for the first and second sequence outputs.",
@@ -38762,6 +41421,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -39101,6 +41778,24 @@
           "blocked_by": [],
           "required_reinforcement": []
         },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
         "overwrite_policy": "requires_explicit_review",
         "preflight_required": [
           "asset_exists_check",
@@ -39305,6 +42000,24 @@
             "duplicate_asset",
             "replace_existing_asset"
           ],
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
           "blocked_by": [],
           "required_reinforcement": []
         },
@@ -39641,6 +42354,24 @@
           "duplicate_asset",
           "replace_existing_asset"
         ],
+        "blocked_by": [],
+        "required_reinforcement": []
+      },
+      "durable_save_validation_simulation_contract": {
+        "id": "durable_save_validation_simulator",
+        "schema": "section_54_durable_save_validation_simulator_v1",
+        "requested": false,
+        "target_asset_path": "",
+        "simulation_evaluated": false,
+        "simulation_status": "not_requested",
+        "checks": [],
+        "failed_check_ids": [],
+        "future_save_conditions_satisfied": false,
+        "save_true_allowed": false,
+        "save_asset_allowed": false,
+        "compile_save_command_allowed": false,
+        "live_command_count": 0,
+        "durable_authoring_allowed": false,
         "blocked_by": [],
         "required_reinforcement": []
       },
@@ -40034,6 +42765,24 @@
               "blocked_by": [],
               "required_reinforcement": []
             },
+            "durable_save_validation_simulation_contract": {
+              "id": "durable_save_validation_simulator",
+              "schema": "section_54_durable_save_validation_simulator_v1",
+              "requested": false,
+              "target_asset_path": "",
+              "simulation_evaluated": false,
+              "simulation_status": "not_requested",
+              "checks": [],
+              "failed_check_ids": [],
+              "future_save_conditions_satisfied": false,
+              "save_true_allowed": false,
+              "save_asset_allowed": false,
+              "compile_save_command_allowed": false,
+              "live_command_count": 0,
+              "durable_authoring_allowed": false,
+              "blocked_by": [],
+              "required_reinforcement": []
+            },
             "durable_save_gate_contract": {
               "id": "durable_save_gate",
               "schema": "section_37_durable_save_gate_contract_v1",
@@ -40370,6 +43119,24 @@
             "blocked_by": [],
             "required_reinforcement": []
           },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
           "overwrite_policy": "requires_explicit_review",
           "preflight_required": [
             "asset_exists_check",
@@ -40574,6 +43341,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -40910,6 +43695,24 @@
             "duplicate_asset",
             "replace_existing_asset"
           ],
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
+        "durable_save_validation_simulation": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
           "blocked_by": [],
           "required_reinforcement": []
         },
@@ -42029,7 +44832,7 @@
       "structural_assertion_count": 22
     },
     {
-      "manifest_version": "section_53_bp_authoring_job_contract_v31",
+      "manifest_version": "section_54_bp_authoring_job_contract_v32",
       "analysis_kind": "bp_authoring_job_contract",
       "id": "safe_generated_function_invocation",
       "request_original": "Create an Actor Blueprint shell with BeginPlay, a function graph named ComputePlannerInvocation, double input AddendValue default 2, double local variable LocalValue default 5, an add math node returning ResultValue, then call the generated function from BeginPlay with AddendValue default 2 and store the ResultValue output in double variable LastInvocationResult default 0.",
@@ -42354,6 +45157,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -42693,6 +45514,24 @@
           "blocked_by": [],
           "required_reinforcement": []
         },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
         "overwrite_policy": "requires_explicit_review",
         "preflight_required": [
           "asset_exists_check",
@@ -42897,6 +45736,24 @@
             "duplicate_asset",
             "replace_existing_asset"
           ],
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
           "blocked_by": [],
           "required_reinforcement": []
         },
@@ -43233,6 +46090,24 @@
           "duplicate_asset",
           "replace_existing_asset"
         ],
+        "blocked_by": [],
+        "required_reinforcement": []
+      },
+      "durable_save_validation_simulation_contract": {
+        "id": "durable_save_validation_simulator",
+        "schema": "section_54_durable_save_validation_simulator_v1",
+        "requested": false,
+        "target_asset_path": "",
+        "simulation_evaluated": false,
+        "simulation_status": "not_requested",
+        "checks": [],
+        "failed_check_ids": [],
+        "future_save_conditions_satisfied": false,
+        "save_true_allowed": false,
+        "save_asset_allowed": false,
+        "compile_save_command_allowed": false,
+        "live_command_count": 0,
+        "durable_authoring_allowed": false,
         "blocked_by": [],
         "required_reinforcement": []
       },
@@ -43626,6 +46501,24 @@
               "blocked_by": [],
               "required_reinforcement": []
             },
+            "durable_save_validation_simulation_contract": {
+              "id": "durable_save_validation_simulator",
+              "schema": "section_54_durable_save_validation_simulator_v1",
+              "requested": false,
+              "target_asset_path": "",
+              "simulation_evaluated": false,
+              "simulation_status": "not_requested",
+              "checks": [],
+              "failed_check_ids": [],
+              "future_save_conditions_satisfied": false,
+              "save_true_allowed": false,
+              "save_asset_allowed": false,
+              "compile_save_command_allowed": false,
+              "live_command_count": 0,
+              "durable_authoring_allowed": false,
+              "blocked_by": [],
+              "required_reinforcement": []
+            },
             "durable_save_gate_contract": {
               "id": "durable_save_gate",
               "schema": "section_37_durable_save_gate_contract_v1",
@@ -43962,6 +46855,24 @@
             "blocked_by": [],
             "required_reinforcement": []
           },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
           "overwrite_policy": "requires_explicit_review",
           "preflight_required": [
             "asset_exists_check",
@@ -44166,6 +47077,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -44502,6 +47431,24 @@
             "duplicate_asset",
             "replace_existing_asset"
           ],
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
+        "durable_save_validation_simulation": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
           "blocked_by": [],
           "required_reinforcement": []
         },
@@ -46463,7 +49410,7 @@
       "structural_assertion_count": 44
     },
     {
-      "manifest_version": "section_53_bp_authoring_job_contract_v31",
+      "manifest_version": "section_54_bp_authoring_job_contract_v32",
       "analysis_kind": "bp_authoring_job_contract",
       "id": "safe_event_dispatcher",
       "request_original": "Create a Blueprint Event Dispatcher, call it, bind it to a compatible custom event, assign it, unbind it, and clear it.",
@@ -46746,6 +49693,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -47085,6 +50050,24 @@
           "blocked_by": [],
           "required_reinforcement": []
         },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
         "overwrite_policy": "requires_explicit_review",
         "preflight_required": [
           "asset_exists_check",
@@ -47289,6 +50272,24 @@
             "duplicate_asset",
             "replace_existing_asset"
           ],
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
           "blocked_by": [],
           "required_reinforcement": []
         },
@@ -47625,6 +50626,24 @@
           "duplicate_asset",
           "replace_existing_asset"
         ],
+        "blocked_by": [],
+        "required_reinforcement": []
+      },
+      "durable_save_validation_simulation_contract": {
+        "id": "durable_save_validation_simulator",
+        "schema": "section_54_durable_save_validation_simulator_v1",
+        "requested": false,
+        "target_asset_path": "",
+        "simulation_evaluated": false,
+        "simulation_status": "not_requested",
+        "checks": [],
+        "failed_check_ids": [],
+        "future_save_conditions_satisfied": false,
+        "save_true_allowed": false,
+        "save_asset_allowed": false,
+        "compile_save_command_allowed": false,
+        "live_command_count": 0,
+        "durable_authoring_allowed": false,
         "blocked_by": [],
         "required_reinforcement": []
       },
@@ -48018,6 +51037,24 @@
               "blocked_by": [],
               "required_reinforcement": []
             },
+            "durable_save_validation_simulation_contract": {
+              "id": "durable_save_validation_simulator",
+              "schema": "section_54_durable_save_validation_simulator_v1",
+              "requested": false,
+              "target_asset_path": "",
+              "simulation_evaluated": false,
+              "simulation_status": "not_requested",
+              "checks": [],
+              "failed_check_ids": [],
+              "future_save_conditions_satisfied": false,
+              "save_true_allowed": false,
+              "save_asset_allowed": false,
+              "compile_save_command_allowed": false,
+              "live_command_count": 0,
+              "durable_authoring_allowed": false,
+              "blocked_by": [],
+              "required_reinforcement": []
+            },
             "durable_save_gate_contract": {
               "id": "durable_save_gate",
               "schema": "section_37_durable_save_gate_contract_v1",
@@ -48354,6 +51391,24 @@
             "blocked_by": [],
             "required_reinforcement": []
           },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
           "overwrite_policy": "requires_explicit_review",
           "preflight_required": [
             "asset_exists_check",
@@ -48558,6 +51613,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -48894,6 +51967,24 @@
             "duplicate_asset",
             "replace_existing_asset"
           ],
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
+        "durable_save_validation_simulation": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
           "blocked_by": [],
           "required_reinforcement": []
         },
@@ -50398,7 +53489,7 @@
       "structural_assertion_count": 32
     },
     {
-      "manifest_version": "section_53_bp_authoring_job_contract_v31",
+      "manifest_version": "section_54_bp_authoring_job_contract_v32",
       "analysis_kind": "bp_authoring_job_contract",
       "id": "review_umg_button",
       "request_original": "Create a UMG button click event graph for a UserWidget.",
@@ -50675,6 +53766,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -51014,6 +54123,24 @@
           "blocked_by": [],
           "required_reinforcement": []
         },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
         "overwrite_policy": "requires_explicit_review",
         "preflight_required": [
           "asset_exists_check",
@@ -51218,6 +54345,24 @@
             "duplicate_asset",
             "replace_existing_asset"
           ],
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
           "blocked_by": [],
           "required_reinforcement": []
         },
@@ -51554,6 +54699,24 @@
           "duplicate_asset",
           "replace_existing_asset"
         ],
+        "blocked_by": [],
+        "required_reinforcement": []
+      },
+      "durable_save_validation_simulation_contract": {
+        "id": "durable_save_validation_simulator",
+        "schema": "section_54_durable_save_validation_simulator_v1",
+        "requested": false,
+        "target_asset_path": "",
+        "simulation_evaluated": false,
+        "simulation_status": "not_requested",
+        "checks": [],
+        "failed_check_ids": [],
+        "future_save_conditions_satisfied": false,
+        "save_true_allowed": false,
+        "save_asset_allowed": false,
+        "compile_save_command_allowed": false,
+        "live_command_count": 0,
+        "durable_authoring_allowed": false,
         "blocked_by": [],
         "required_reinforcement": []
       },
@@ -51947,6 +55110,24 @@
               "blocked_by": [],
               "required_reinforcement": []
             },
+            "durable_save_validation_simulation_contract": {
+              "id": "durable_save_validation_simulator",
+              "schema": "section_54_durable_save_validation_simulator_v1",
+              "requested": false,
+              "target_asset_path": "",
+              "simulation_evaluated": false,
+              "simulation_status": "not_requested",
+              "checks": [],
+              "failed_check_ids": [],
+              "future_save_conditions_satisfied": false,
+              "save_true_allowed": false,
+              "save_asset_allowed": false,
+              "compile_save_command_allowed": false,
+              "live_command_count": 0,
+              "durable_authoring_allowed": false,
+              "blocked_by": [],
+              "required_reinforcement": []
+            },
             "durable_save_gate_contract": {
               "id": "durable_save_gate",
               "schema": "section_37_durable_save_gate_contract_v1",
@@ -52283,6 +55464,24 @@
             "blocked_by": [],
             "required_reinforcement": []
           },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
           "overwrite_policy": "requires_explicit_review",
           "preflight_required": [
             "asset_exists_check",
@@ -52487,6 +55686,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -52826,6 +56043,24 @@
           "blocked_by": [],
           "required_reinforcement": []
         },
+        "durable_save_validation_simulation": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
         "durable_save_gate": {
           "id": "durable_save_gate",
           "schema": "section_37_durable_save_gate_contract_v1",
@@ -53107,7 +56342,7 @@
       "structural_assertion_count": 0
     },
     {
-      "manifest_version": "section_53_bp_authoring_job_contract_v31",
+      "manifest_version": "section_54_bp_authoring_job_contract_v32",
       "analysis_kind": "bp_authoring_job_contract",
       "id": "blocked_async_proxy",
       "request_original": "Convert a UBlueprintAsyncActionBase async action with callback exec pins, Activate(), Broadcast(), and cancellation cleanup.",
@@ -53374,6 +56609,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -53713,6 +56966,24 @@
           "blocked_by": [],
           "required_reinforcement": []
         },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
         "overwrite_policy": "requires_explicit_review",
         "preflight_required": [
           "asset_exists_check",
@@ -53917,6 +57188,24 @@
             "duplicate_asset",
             "replace_existing_asset"
           ],
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
           "blocked_by": [],
           "required_reinforcement": []
         },
@@ -54253,6 +57542,24 @@
           "duplicate_asset",
           "replace_existing_asset"
         ],
+        "blocked_by": [],
+        "required_reinforcement": []
+      },
+      "durable_save_validation_simulation_contract": {
+        "id": "durable_save_validation_simulator",
+        "schema": "section_54_durable_save_validation_simulator_v1",
+        "requested": false,
+        "target_asset_path": "",
+        "simulation_evaluated": false,
+        "simulation_status": "not_requested",
+        "checks": [],
+        "failed_check_ids": [],
+        "future_save_conditions_satisfied": false,
+        "save_true_allowed": false,
+        "save_asset_allowed": false,
+        "compile_save_command_allowed": false,
+        "live_command_count": 0,
+        "durable_authoring_allowed": false,
         "blocked_by": [],
         "required_reinforcement": []
       },
@@ -54646,6 +57953,24 @@
               "blocked_by": [],
               "required_reinforcement": []
             },
+            "durable_save_validation_simulation_contract": {
+              "id": "durable_save_validation_simulator",
+              "schema": "section_54_durable_save_validation_simulator_v1",
+              "requested": false,
+              "target_asset_path": "",
+              "simulation_evaluated": false,
+              "simulation_status": "not_requested",
+              "checks": [],
+              "failed_check_ids": [],
+              "future_save_conditions_satisfied": false,
+              "save_true_allowed": false,
+              "save_asset_allowed": false,
+              "compile_save_command_allowed": false,
+              "live_command_count": 0,
+              "durable_authoring_allowed": false,
+              "blocked_by": [],
+              "required_reinforcement": []
+            },
             "durable_save_gate_contract": {
               "id": "durable_save_gate",
               "schema": "section_37_durable_save_gate_contract_v1",
@@ -54982,6 +58307,24 @@
             "blocked_by": [],
             "required_reinforcement": []
           },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
           "overwrite_policy": "requires_explicit_review",
           "preflight_required": [
             "asset_exists_check",
@@ -55186,6 +58529,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -55525,6 +58886,24 @@
           "blocked_by": [],
           "required_reinforcement": []
         },
+        "durable_save_validation_simulation": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
         "durable_save_gate": {
           "id": "durable_save_gate",
           "schema": "section_37_durable_save_gate_contract_v1",
@@ -55798,7 +59177,7 @@
       "structural_assertion_count": 0
     },
     {
-      "manifest_version": "section_53_bp_authoring_job_contract_v31",
+      "manifest_version": "section_54_bp_authoring_job_contract_v32",
       "analysis_kind": "bp_authoring_job_contract",
       "id": "blocked_gas_replication",
       "request_original": "Build a Gameplay Ability with AbilityTask prediction and replicated Server RPC state changes.",
@@ -56081,6 +59460,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -56420,6 +59817,24 @@
           "blocked_by": [],
           "required_reinforcement": []
         },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
         "overwrite_policy": "requires_explicit_review",
         "preflight_required": [
           "asset_exists_check",
@@ -56624,6 +60039,24 @@
             "duplicate_asset",
             "replace_existing_asset"
           ],
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
           "blocked_by": [],
           "required_reinforcement": []
         },
@@ -56960,6 +60393,24 @@
           "duplicate_asset",
           "replace_existing_asset"
         ],
+        "blocked_by": [],
+        "required_reinforcement": []
+      },
+      "durable_save_validation_simulation_contract": {
+        "id": "durable_save_validation_simulator",
+        "schema": "section_54_durable_save_validation_simulator_v1",
+        "requested": false,
+        "target_asset_path": "",
+        "simulation_evaluated": false,
+        "simulation_status": "not_requested",
+        "checks": [],
+        "failed_check_ids": [],
+        "future_save_conditions_satisfied": false,
+        "save_true_allowed": false,
+        "save_asset_allowed": false,
+        "compile_save_command_allowed": false,
+        "live_command_count": 0,
+        "durable_authoring_allowed": false,
         "blocked_by": [],
         "required_reinforcement": []
       },
@@ -57353,6 +60804,24 @@
               "blocked_by": [],
               "required_reinforcement": []
             },
+            "durable_save_validation_simulation_contract": {
+              "id": "durable_save_validation_simulator",
+              "schema": "section_54_durable_save_validation_simulator_v1",
+              "requested": false,
+              "target_asset_path": "",
+              "simulation_evaluated": false,
+              "simulation_status": "not_requested",
+              "checks": [],
+              "failed_check_ids": [],
+              "future_save_conditions_satisfied": false,
+              "save_true_allowed": false,
+              "save_asset_allowed": false,
+              "compile_save_command_allowed": false,
+              "live_command_count": 0,
+              "durable_authoring_allowed": false,
+              "blocked_by": [],
+              "required_reinforcement": []
+            },
             "durable_save_gate_contract": {
               "id": "durable_save_gate",
               "schema": "section_37_durable_save_gate_contract_v1",
@@ -57689,6 +61158,24 @@
             "blocked_by": [],
             "required_reinforcement": []
           },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
           "overwrite_policy": "requires_explicit_review",
           "preflight_required": [
             "asset_exists_check",
@@ -57893,6 +61380,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -58232,6 +61737,24 @@
           "blocked_by": [],
           "required_reinforcement": []
         },
+        "durable_save_validation_simulation": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
         "durable_save_gate": {
           "id": "durable_save_gate",
           "schema": "section_37_durable_save_gate_contract_v1",
@@ -58519,7 +62042,7 @@
       "structural_assertion_count": 0
     },
     {
-      "manifest_version": "section_53_bp_authoring_job_contract_v31",
+      "manifest_version": "section_54_bp_authoring_job_contract_v32",
       "analysis_kind": "bp_authoring_job_contract",
       "id": "blocked_commonui",
       "request_original": "Create a CommonUI activatable widget tree with layer activation policy and back handling.",
@@ -58786,6 +62309,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -59125,6 +62666,24 @@
           "blocked_by": [],
           "required_reinforcement": []
         },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
         "overwrite_policy": "requires_explicit_review",
         "preflight_required": [
           "asset_exists_check",
@@ -59329,6 +62888,24 @@
             "duplicate_asset",
             "replace_existing_asset"
           ],
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
+        "durable_save_validation_simulation_contract": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
           "blocked_by": [],
           "required_reinforcement": []
         },
@@ -59665,6 +63242,24 @@
           "duplicate_asset",
           "replace_existing_asset"
         ],
+        "blocked_by": [],
+        "required_reinforcement": []
+      },
+      "durable_save_validation_simulation_contract": {
+        "id": "durable_save_validation_simulator",
+        "schema": "section_54_durable_save_validation_simulator_v1",
+        "requested": false,
+        "target_asset_path": "",
+        "simulation_evaluated": false,
+        "simulation_status": "not_requested",
+        "checks": [],
+        "failed_check_ids": [],
+        "future_save_conditions_satisfied": false,
+        "save_true_allowed": false,
+        "save_asset_allowed": false,
+        "compile_save_command_allowed": false,
+        "live_command_count": 0,
+        "durable_authoring_allowed": false,
         "blocked_by": [],
         "required_reinforcement": []
       },
@@ -60058,6 +63653,24 @@
               "blocked_by": [],
               "required_reinforcement": []
             },
+            "durable_save_validation_simulation_contract": {
+              "id": "durable_save_validation_simulator",
+              "schema": "section_54_durable_save_validation_simulator_v1",
+              "requested": false,
+              "target_asset_path": "",
+              "simulation_evaluated": false,
+              "simulation_status": "not_requested",
+              "checks": [],
+              "failed_check_ids": [],
+              "future_save_conditions_satisfied": false,
+              "save_true_allowed": false,
+              "save_asset_allowed": false,
+              "compile_save_command_allowed": false,
+              "live_command_count": 0,
+              "durable_authoring_allowed": false,
+              "blocked_by": [],
+              "required_reinforcement": []
+            },
             "durable_save_gate_contract": {
               "id": "durable_save_gate",
               "schema": "section_37_durable_save_gate_contract_v1",
@@ -60394,6 +64007,24 @@
             "blocked_by": [],
             "required_reinforcement": []
           },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
           "overwrite_policy": "requires_explicit_review",
           "preflight_required": [
             "asset_exists_check",
@@ -60598,6 +64229,24 @@
               "duplicate_asset",
               "replace_existing_asset"
             ],
+            "blocked_by": [],
+            "required_reinforcement": []
+          },
+          "durable_save_validation_simulation_contract": {
+            "id": "durable_save_validation_simulator",
+            "schema": "section_54_durable_save_validation_simulator_v1",
+            "requested": false,
+            "target_asset_path": "",
+            "simulation_evaluated": false,
+            "simulation_status": "not_requested",
+            "checks": [],
+            "failed_check_ids": [],
+            "future_save_conditions_satisfied": false,
+            "save_true_allowed": false,
+            "save_asset_allowed": false,
+            "compile_save_command_allowed": false,
+            "live_command_count": 0,
+            "durable_authoring_allowed": false,
             "blocked_by": [],
             "required_reinforcement": []
           },
@@ -60934,6 +64583,24 @@
             "duplicate_asset",
             "replace_existing_asset"
           ],
+          "blocked_by": [],
+          "required_reinforcement": []
+        },
+        "durable_save_validation_simulation": {
+          "id": "durable_save_validation_simulator",
+          "schema": "section_54_durable_save_validation_simulator_v1",
+          "requested": false,
+          "target_asset_path": "",
+          "simulation_evaluated": false,
+          "simulation_status": "not_requested",
+          "checks": [],
+          "failed_check_ids": [],
+          "future_save_conditions_satisfied": false,
+          "save_true_allowed": false,
+          "save_asset_allowed": false,
+          "compile_save_command_allowed": false,
+          "live_command_count": 0,
+          "durable_authoring_allowed": false,
           "blocked_by": [],
           "required_reinforcement": []
         },

@@ -291,6 +291,54 @@ def build_durable_dry_run_plan_row(contract_summary: Dict[str, Any], executor_su
     )
 
 
+def build_durable_save_simulator_row(contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]) -> Dict[str, Any]:
+    save_summary = contract_summary.get("durable_save_simulation_summary", {})
+    durable_gate_summary = executor_summary.get("durable_gate_summary", {})
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_simulation_count": 1,
+        "simulation_evaluated_count": 1,
+        "future_save_conditions_satisfied_count": 0,
+        "save_true_allowed_count": 0,
+        "save_asset_allowed_count": 0,
+        "compile_save_command_allowed_count": 0,
+        "live_command_count": 0,
+        "executor_gate_simulation_evaluated_count": 1,
+        "executor_gate_conditions_satisfied_count": 0,
+        "executor_gate_save_true_allowed_count": 0,
+        "executor_gate_save_asset_allowed_count": 0,
+        "executor_gate_live_command_count": 0,
+    }
+    actual = {
+        "summary_status": save_summary.get("status"),
+        "durable_requested_simulation_count": save_summary.get("durable_requested_simulation_count"),
+        "simulation_evaluated_count": save_summary.get("simulation_evaluated_count"),
+        "future_save_conditions_satisfied_count": save_summary.get("future_save_conditions_satisfied_count"),
+        "save_true_allowed_count": save_summary.get("save_true_allowed_count"),
+        "save_asset_allowed_count": save_summary.get("save_asset_allowed_count"),
+        "compile_save_command_allowed_count": save_summary.get("compile_save_command_allowed_count"),
+        "live_command_count": save_summary.get("live_command_count"),
+        "executor_gate_simulation_evaluated_count": durable_gate_summary.get("save_simulation_evaluated_count"),
+        "executor_gate_conditions_satisfied_count": durable_gate_summary.get(
+            "save_simulation_conditions_satisfied_count"
+        ),
+        "executor_gate_save_true_allowed_count": durable_gate_summary.get("save_simulation_save_true_allowed_count"),
+        "executor_gate_save_asset_allowed_count": durable_gate_summary.get("save_simulation_save_asset_allowed_count"),
+        "executor_gate_live_command_count": durable_gate_summary.get("save_simulation_live_command_count"),
+    }
+    return row(
+        "durable_save_validation_simulator",
+        "Section 54 durable save validation simulator",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "Simulator evaluates save prerequisites without save=true or save_asset.",
+            "Failed conditions must keep durable save closed.",
+        ),
+    )
+
+
 def build_planner_live_rows(planner_report_path: Path, planner_report: Optional[Dict[str, Any]]) -> List[Dict[str, Any]]:
     if planner_report is None:
         return [missing_row("planner_driven_live_smoke_report", "Planner-driven live smoke report", planner_report_path)]
@@ -461,6 +509,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         build_durable_enable_contract_row(contract_summary, executor_summary),
         build_durable_ownership_marker_row(contract_summary, executor_summary),
         build_durable_dry_run_plan_row(contract_summary, executor_summary),
+        build_durable_save_simulator_row(contract_summary, executor_summary),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -487,12 +536,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "durable_authoring_enabled": False,
             "durable_authoring_release_status": "not_enabled_read_only_preflight_only",
             "current_authoring_ceiling": (
-                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_and_section_53_dry_run_plan"
+                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_and_section_54_save_simulator"
             ),
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
-            "durable save validation simulator after Section 53 dry-run plan remains no-command",
+            "limited durable canary prep after Section 54 simulator remains no-command",
             "component default/type readback expansion for broader Blueprint classes",
             "function call diagnostics and graph layout repair suggestions",
             "UMG/CommonUI authoring classifier and non-executable manifest coverage",

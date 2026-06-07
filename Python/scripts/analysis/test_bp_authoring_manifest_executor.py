@@ -54,6 +54,11 @@ def main() -> int:
         "dry_run_plan_valid_count": 1,
         "dry_run_plan_executor_may_execute_count": 0,
         "dry_run_plan_live_command_count": 0,
+        "save_simulation_evaluated_count": 1,
+        "save_simulation_conditions_satisfied_count": 0,
+        "save_simulation_save_true_allowed_count": 0,
+        "save_simulation_save_asset_allowed_count": 0,
+        "save_simulation_live_command_count": 0,
         "durable_executor_enabled_count": 0,
         "durable_executor_executable_count": 0,
         "durable_executor_command_count": 0,
@@ -116,6 +121,11 @@ def main() -> int:
     assert durable_gate["dry_run_plan_valid"] is True
     assert durable_gate["dry_run_plan_executor_may_execute"] is False
     assert durable_gate["dry_run_plan_live_command_count"] == 0
+    assert durable_gate["save_simulation_evaluated"] is True
+    assert durable_gate["save_simulation_conditions_satisfied"] is False
+    assert durable_gate["save_simulation_save_true_allowed"] is False
+    assert durable_gate["save_simulation_save_asset_allowed"] is False
+    assert durable_gate["save_simulation_live_command_count"] == 0
     assert durable_gate["durable_executor_enabled"] is False
     assert durable_gate["durable_executor_can_execute"] is False
     assert durable_gate["save_allowed"] is False

@@ -30,6 +30,8 @@ Blueprint authoring manifest and live UnrealMCP commands.
     preexisting asset delete/overwrite/rename remain forbidden.
 12. Section 53 dry-run plan coverage must prove durable plans contain no live
     execution commands and cannot execute.
+13. Section 54 save simulator coverage must prove save prerequisites can be
+    evaluated without allowing `save=true`, `save_asset`, or live commands.
 
 ## Execution Boundary
 
@@ -51,6 +53,8 @@ temporary manifests. It must block:
   a preexisting asset
 - any Section 53 dry-run plan with a non-empty execution command plan or live
   command count
+- any Section 54 simulator that allows `save=true`, `save_asset`, compile-save,
+  or live command execution
 
 ## Validation
 
@@ -70,6 +74,9 @@ temporary manifests. It must block:
 - Offline tests must prove the Section 53 dry-run plan count: 1 durable plan
   created, 1 valid no-command plan, 0 executor may-execute plans, and 0 live
   commands.
+- Offline tests must prove the Section 54 simulator count: 1 simulation
+  evaluated, 0 future-save-ready simulations, 0 save=true allowance, 0
+  save_asset allowance, 0 compile-save command allowance, and 0 live commands.
 - The planner-driven live smoke must report the executor version and executor
   executable count.
 - The planner-driven live smoke may perform only the read-only durable

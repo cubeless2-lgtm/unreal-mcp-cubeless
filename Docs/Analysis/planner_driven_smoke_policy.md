@@ -76,4 +76,8 @@ job manifest until dedicated reinforcement exists.
   `execution_command_plan=[]`, `live_command_count=0`, and
   `durable_executor_may_execute=false` mean the smoke runner must not run
   durable executor commands.
+- Section 54 durable save simulator may be reported, but
+  `save_true_allowed=false`, `save_asset_allowed=false`, and
+  `live_command_count=0` mean the smoke runner must not run durable save
+  commands.
 - Section 11 does not require C++ changes.

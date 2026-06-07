@@ -23,11 +23,12 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 import bp_authoring_durable_enable_contract as durable_enable
 import bp_authoring_durable_dry_run_plan as durable_dry_run
 import bp_authoring_durable_ownership_contract as durable_ownership
+import bp_authoring_durable_save_simulator as durable_save_sim
 import bp_authoring_planner as planner
 import external_project_readiness_analyzer as base
 
 
-MANIFEST_VERSION = "section_53_bp_authoring_job_contract_v31"
+MANIFEST_VERSION = "section_54_bp_authoring_job_contract_v32"
 DEFAULT_TEMP_PACKAGE_PATH = "/Game/_MCP_Temp/PlannerDrivenSmoke"
 
 AUTHORING_COMMANDS = {
@@ -657,6 +658,22 @@ def build_durable_preflight_contract(
         readiness_contract=readiness_contract,
         executor_skeleton_contract=executor_skeleton_contract,
     )
+    save_validation_simulation_contract = durable_save_sim.build_save_validation_simulation(
+        requested=requested,
+        preflight_contract={
+            "target_package_path": package_path,
+            "target_asset_path": target_asset_path,
+            "package_path_allowed": package_path_allowed,
+            "asset_exists": None,
+            "overwrite_rename_decision_contract": overwrite_rename_decision_contract,
+        },
+        enable_contract=enable_contract,
+        ownership_marker_contract=ownership_marker_contract,
+        dry_run_plan_contract=dry_run_plan_contract,
+        save_gate_contract=save_gate_contract,
+        rollback_policy_contract=rollback_policy_contract,
+        readiness_contract=readiness_contract,
+    )
     save_gate_passed = False
     preflight_pass = (
         requested
@@ -687,6 +704,7 @@ def build_durable_preflight_contract(
         "durable_ownership_marker_contract": ownership_marker_contract,
         "durable_enable_contract": enable_contract,
         "durable_dry_run_plan_contract": dry_run_plan_contract,
+        "durable_save_validation_simulation_contract": save_validation_simulation_contract,
         "durable_save_gate_contract": save_gate_contract,
         "durable_rollback_policy_contract": rollback_policy_contract,
         "durable_executor_readiness_contract": readiness_contract,
@@ -741,6 +759,7 @@ def build_durable_authoring_contract(
         "durable_ownership_marker_contract": preflight_contract["durable_ownership_marker_contract"],
         "durable_enable_contract": preflight_contract["durable_enable_contract"],
         "durable_dry_run_plan_contract": preflight_contract["durable_dry_run_plan_contract"],
+        "durable_save_validation_simulation_contract": preflight_contract["durable_save_validation_simulation_contract"],
         "overwrite_policy": "requires_explicit_review",
         "preflight_required": [
             "asset_exists_check",
@@ -791,6 +810,9 @@ def build_authoring_executor_contract(
         "durable_enable_contract": durable_authoring_contract["durable_preflight_contract"]["durable_enable_contract"],
         "durable_dry_run_plan": durable_authoring_contract["durable_preflight_contract"][
             "durable_dry_run_plan_contract"
+        ],
+        "durable_save_validation_simulation": durable_authoring_contract["durable_preflight_contract"][
+            "durable_save_validation_simulation_contract"
         ],
         "durable_save_gate": durable_authoring_contract["durable_preflight_contract"]["durable_save_gate_contract"],
         "durable_rollback_policy": durable_authoring_contract["durable_preflight_contract"]["durable_rollback_policy_contract"],
@@ -3186,6 +3208,9 @@ def build_job_manifest(
         "durable_dry_run_plan_contract": durable_authoring_contract["durable_preflight_contract"][
             "durable_dry_run_plan_contract"
         ],
+        "durable_save_validation_simulation_contract": durable_authoring_contract["durable_preflight_contract"][
+            "durable_save_validation_simulation_contract"
+        ],
         "durable_save_gate_contract": durable_authoring_contract["durable_preflight_contract"]["durable_save_gate_contract"],
         "durable_rollback_policy_contract": durable_authoring_contract["durable_preflight_contract"][
             "durable_rollback_policy_contract"
@@ -3287,6 +3312,9 @@ def summarize_manifests(manifests: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
     )
     dry_run_summary = durable_dry_run.summarize_dry_run_plans(
         [manifest.get("durable_dry_run_plan_contract", {}) for manifest in manifests]
+    )
+    save_sim_summary = durable_save_sim.summarize_save_simulations(
+        [manifest.get("durable_save_validation_simulation_contract", {}) for manifest in manifests]
     )
     return {
         "manifest_count": len(manifests),
@@ -3393,6 +3421,18 @@ def summarize_manifests(manifests: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
         "durable_dry_run_executor_may_execute_count": dry_run_summary["durable_executor_may_execute_count"],
         "durable_dry_run_live_command_count": dry_run_summary["live_command_count"],
         "durable_dry_run_forbidden_command_allowed_count": dry_run_summary["forbidden_command_allowed_count"],
+        "durable_save_simulation_summary": save_sim_summary,
+        "durable_save_simulation_request_count": save_sim_summary["durable_requested_simulation_count"],
+        "durable_save_simulation_evaluated_count": save_sim_summary["simulation_evaluated_count"],
+        "durable_save_simulation_conditions_satisfied_count": save_sim_summary[
+            "future_save_conditions_satisfied_count"
+        ],
+        "durable_save_simulation_save_true_allowed_count": save_sim_summary["save_true_allowed_count"],
+        "durable_save_simulation_save_asset_allowed_count": save_sim_summary["save_asset_allowed_count"],
+        "durable_save_simulation_compile_save_command_allowed_count": save_sim_summary[
+            "compile_save_command_allowed_count"
+        ],
+        "durable_save_simulation_live_command_count": save_sim_summary["live_command_count"],
         "durable_enable_contract_summary": enable_summary,
         "durable_enable_contract_request_count": enable_summary["durable_requested_manifest_count"],
         "durable_enable_contract_satisfied_count": enable_summary["enable_contract_satisfied_count"],
@@ -3498,6 +3538,12 @@ def render_markdown(report: Dict[str, Any]) -> str:
         f"- Durable dry-run plan valid: `{summary['durable_dry_run_plan_valid_count']}`",
         f"- Durable dry-run executor may execute: `{summary['durable_dry_run_executor_may_execute_count']}`",
         f"- Durable dry-run live command count: `{summary['durable_dry_run_live_command_count']}`",
+        f"- Durable save simulation requests: `{summary['durable_save_simulation_request_count']}`",
+        f"- Durable save simulation evaluated: `{summary['durable_save_simulation_evaluated_count']}`",
+        f"- Durable save simulation conditions satisfied: `{summary['durable_save_simulation_conditions_satisfied_count']}`",
+        f"- Durable save simulation save=true allowed: `{summary['durable_save_simulation_save_true_allowed_count']}`",
+        f"- Durable save simulation save_asset allowed: `{summary['durable_save_simulation_save_asset_allowed_count']}`",
+        f"- Durable save simulation live command count: `{summary['durable_save_simulation_live_command_count']}`",
         f"- Durable enable contract requests: `{summary['durable_enable_contract_request_count']}`",
         f"- Durable enable contract satisfied: `{summary['durable_enable_contract_satisfied_count']}`",
         f"- Durable enable executor may open: `{summary['durable_enable_executor_may_open_count']}`",
@@ -3537,6 +3583,8 @@ def render_markdown(report: Dict[str, Any]) -> str:
                 f"- Durable ownership delete without marker: `{manifest['durable_ownership_marker_contract']['delete_without_marker_allowed']}`",
                 f"- Durable dry-run plan valid: `{manifest['durable_dry_run_plan_contract']['dry_run_plan_valid']}`",
                 f"- Durable dry-run executor may execute: `{manifest['durable_dry_run_plan_contract']['durable_executor_may_execute']}`",
+                f"- Durable save simulation status: `{manifest['durable_save_validation_simulation_contract']['simulation_status']}`",
+                f"- Durable save simulation save=true allowed: `{manifest['durable_save_validation_simulation_contract']['save_true_allowed']}`",
                 f"- Durable rollback ready: `{manifest['durable_rollback_policy_contract']['rollback_policy_ready']}`",
                 f"- Durable executor ready: `{manifest['durable_executor_readiness_contract']['durable_executor_ready']}`",
                 f"- Durable enable satisfied: `{manifest['durable_enable_contract']['enable_contract_satisfied']}`",

@@ -52,6 +52,13 @@ def main() -> int:
         assert dry_run_row["actual"]["dry_run_plan_valid_count"] == 1
         assert dry_run_row["actual"]["durable_executor_may_execute_count"] == 0
         assert dry_run_row["actual"]["live_command_count"] == 0
+        save_sim_row = find_row(report, "durable_save_validation_simulator")
+        assert save_sim_row["status"] == "passed"
+        assert save_sim_row["actual"]["simulation_evaluated_count"] == 1
+        assert save_sim_row["actual"]["future_save_conditions_satisfied_count"] == 0
+        assert save_sim_row["actual"]["save_true_allowed_count"] == 0
+        assert save_sim_row["actual"]["save_asset_allowed_count"] == 0
+        assert save_sim_row["actual"]["live_command_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         assert find_row(report, "durable_read_only_live_preflight")["status"] == "passed"
         assert find_row(report, "project_filesystem_side_effect_boundary")["status"] == "passed"
