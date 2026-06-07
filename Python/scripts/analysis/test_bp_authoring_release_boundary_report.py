@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_80_v22"
+        assert report["verdict"]["release_boundary_version"] == "section_81_v23"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -75,6 +75,7 @@ def main() -> int:
         assert report["verdict"]["section_78_canary_live_command_dispatch_release_status"] == "passed"
         assert report["verdict"]["section_79_canary_live_command_execution_release_status"] == "passed"
         assert report["verdict"]["section_80_canary_live_command_execution_evidence_admission_status"] == "passed"
+        assert report["verdict"]["section_81_canary_release_promotion_decision_status"] == "passed"
         assert report["verdict"]["final_durable_release_ready"] is False
         assert report["verdict"]["main_push_requested"] is False
         assert report["verdict"]["mvp_decision_status"] == "temporary_mvp_ready_durable_not_enabled"
@@ -593,6 +594,36 @@ def main() -> int:
         assert evidence_admission_row["actual"]["reported_live_save_command_count"] == 0
         assert evidence_admission_row["actual"]["reported_live_delete_rename_command_count"] == 0
         assert evidence_admission_row["actual"]["reported_live_cleanup_command_count"] == 0
+        promotion_decision_row = find_row(report, "durable_canary_release_promotion_decision_contract")
+        assert promotion_decision_row["status"] == "passed"
+        assert promotion_decision_row["actual"]["durable_requested_canary_release_promotion_decision_count"] == 1
+        assert promotion_decision_row["actual"]["promotion_decision_contract_defined_count"] == 1
+        assert promotion_decision_row["actual"]["evidence_admission_contract_ready_count"] == 1
+        assert promotion_decision_row["actual"]["execution_evidence_admitted_count"] == 0
+        assert promotion_decision_row["actual"]["allowed_evidence_command_observed_count"] == 0
+        assert promotion_decision_row["actual"]["no_forbidden_evidence_commands_count"] == 0
+        assert promotion_decision_row["actual"]["evidence_ready_for_promotion_count"] == 0
+        assert promotion_decision_row["actual"]["decision_record_present_count"] == 0
+        assert promotion_decision_row["actual"]["record_schema_matches_count"] == 0
+        assert promotion_decision_row["actual"]["promotion_scope_matches_count"] == 0
+        assert promotion_decision_row["actual"]["explicit_promotion_authorized_count"] == 0
+        assert promotion_decision_row["actual"]["no_save_delete_rename_acknowledged_count"] == 0
+        assert promotion_decision_row["actual"]["promotion_decision_record_valid_count"] == 0
+        assert promotion_decision_row["actual"]["promotion_decision_record_rejected_count"] == 0
+        assert promotion_decision_row["actual"]["unsafe_promotion_decision_record_count"] == 0
+        assert promotion_decision_row["actual"]["missing_promotion_prerequisite_count"] == 9
+        assert promotion_decision_row["actual"]["durable_release_promotion_allowed_count"] == 0
+        assert promotion_decision_row["actual"]["durable_release_promoted_count"] == 0
+        assert promotion_decision_row["actual"]["durable_executor_may_open_after_promotion_decision_count"] == 0
+        assert promotion_decision_row["actual"]["durable_authoring_allowed_count"] == 0
+        assert promotion_decision_row["actual"]["save_delete_rename_allowed_count"] == 0
+        assert promotion_decision_row["actual"]["cleanup_allowed_count"] == 0
+        assert promotion_decision_row["actual"]["live_command_dispatch_allowed_count"] == 0
+        assert promotion_decision_row["actual"]["live_command_plan_emitted_count"] == 0
+        assert promotion_decision_row["actual"]["live_command_execution_allowed_count"] == 0
+        assert promotion_decision_row["actual"]["live_command_executed_count"] == 0
+        assert promotion_decision_row["actual"]["reported_allowed_evidence_command_count"] == 0
+        assert promotion_decision_row["actual"]["reported_forbidden_evidence_command_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
