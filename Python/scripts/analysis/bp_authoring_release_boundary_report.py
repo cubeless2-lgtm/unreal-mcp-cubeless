@@ -56,6 +56,7 @@ import bp_authoring_durable_executor_authoring_command_execution_after_dispatch_
 import bp_authoring_durable_executor_authoring_command_execution_evidence_after_execution_contract as durable_executor_authoring_command_execution_evidence_after_execution
 import bp_authoring_durable_executor_authoring_command_completion_decision_after_evidence_contract as durable_executor_authoring_command_completion_decision_after_evidence
 import bp_authoring_durable_executor_authoring_command_completion_application_after_decision_contract as durable_executor_authoring_command_completion_application_after_decision
+import bp_authoring_durable_executor_authoring_command_completion_result_after_application_contract as durable_executor_authoring_command_completion_result_after_application
 import bp_authoring_durable_executor_authoring_enable_contract as durable_executor_authoring_enable
 import bp_authoring_durable_executor_authoring_enable_after_open_contract as durable_executor_authoring_enable_after_open
 import bp_authoring_durable_executor_authoring_activation_readiness_contract as durable_executor_authoring_activation_readiness
@@ -93,7 +94,7 @@ import bp_authoring_durable_save_gate_final_review_contract as save_gate_final_r
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_134_bp_authoring_release_boundary_v76"
+REPORT_SCHEMA = "section_135_bp_authoring_release_boundary_v77"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -8422,6 +8423,102 @@ def build_durable_executor_authoring_command_completion_application_after_decisi
     )
 
 
+def build_durable_executor_authoring_command_completion_result_after_application_row(
+    contract_summary: Dict[str, Any],
+    executor_summary: Dict[str, Any],
+    project_root: Path,
+    planner_report: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    application_row = build_durable_executor_authoring_command_completion_application_after_decision_row(
+        contract_summary,
+        executor_summary,
+        project_root,
+        planner_report,
+    )
+    application_summary = dict(application_row["actual"])
+    application_summary["status"] = application_summary.pop("summary_status")
+    contract = durable_executor_authoring_command_completion_result_after_application.build_durable_executor_authoring_command_completion_result_after_application_contract(
+        requested=True,
+        application_after_decision_summary=application_summary,
+    )
+    summary = durable_executor_authoring_command_completion_result_after_application.summarize_durable_executor_authoring_command_completion_results_after_application(
+        [contract]
+    )
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_executor_authoring_command_completion_result_after_application_count": 1,
+        "result_contract_defined_count": 1,
+        "application_contract_ready_count": 1,
+        "application_inputs_satisfied_count": 0,
+        "application_record_valid_count": 0,
+        "result_inputs_satisfied_count": 0,
+        "result_record_present_count": 0,
+        "record_schema_matches_count": 0,
+        "result_scope_matches_count": 0,
+        "explicit_result_authorized_count": 0,
+        "result_status_passed_count": 0,
+        "no_save_delete_rename_acknowledged_count": 0,
+        "explicit_durable_mvp_request_reconfirmed_count": 0,
+        "allowed_result_observed_count": 0,
+        "no_forbidden_results_count": 0,
+        "result_record_valid_count": 0,
+        "result_record_rejected_count": 0,
+        "unsafe_result_record_count": 0,
+        "missing_result_prerequisite_count": 12,
+        "reported_allowed_result_count": 0,
+        "reported_forbidden_result_count": 0,
+        "reported_allowed_evidence_command_count": 0,
+        "reported_forbidden_evidence_command_count": 0,
+        "durable_authoring_command_completion_result_accepted_count": 0,
+        "durable_authoring_command_completion_allowed_count": 0,
+        "durable_authoring_command_completed_count": 0,
+        "durable_authoring_command_application_allowed_count": 0,
+        "durable_authoring_command_application_applied_count": 0,
+        "asset_write_allowed_count": 0,
+        "asset_write_performed_count": 0,
+        "package_dirty_marked_count": 0,
+        "durable_authoring_command_dispatch_allowed_count": 0,
+        "durable_authoring_command_dispatched_count": 0,
+        "durable_authoring_command_execution_allowed_count": 0,
+        "durable_authoring_command_executed_count": 0,
+        "durable_authoring_enabled_count": 0,
+        "durable_authoring_allowed_count": 0,
+        "code_change_performed_count": 0,
+        "executor_code_modified_count": 0,
+        "unreal_asset_modified_count": 0,
+        "live_bridge_probe_started_count": 0,
+        "save_delete_rename_allowed_count": 0,
+        "cleanup_allowed_count": 0,
+        "live_command_dispatched_count": 0,
+        "live_command_executed_count": 0,
+        "reported_completion_noop_result_count": 0,
+        "reported_application_validation_result_count": 0,
+        "reported_completion_completed_result_count": 0,
+        "reported_asset_write_result_count": 0,
+        "reported_package_dirty_result_count": 0,
+        "reported_save_result_count": 0,
+        "reported_delete_rename_result_count": 0,
+        "reported_cleanup_result_count": 0,
+        "reported_code_change_result_count": 0,
+        "reported_live_command_result_count": 0,
+    }
+    actual = {
+        key: summary.get(key) if key != "summary_status" else summary.get("status")
+        for key in expected
+    }
+    return row(
+        "durable_executor_authoring_command_completion_result_after_application_contract",
+        "Section 135 durable executor authoring command completion result-after-application contract",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "The durable executor authoring command completion result-after-application contract is defined, but no application-after-decision record or result record is present.",
+            "Result acceptance, completion, asset writes, dirty marking, save, delete/rename, cleanup, code changes, and live command results remain blocked.",
+        ),
+    )
+
+
 def build_section_51_58_consolidation_row(
     contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -8693,7 +8790,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     lyra_report = read_json(lyra_report_path)
     preliminary_verdict = {
         "status": "passed",
-        "release_boundary_version": "section_134_v76",
+        "release_boundary_version": "section_135_v77",
         "durable_authoring_enabled": False,
     }
     decision_contract = mvp_decision.build_mvp_decision_contract(
@@ -9100,6 +9197,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             project_root,
             planner_report,
         ),
+        build_durable_executor_authoring_command_completion_result_after_application_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        ),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -9120,7 +9223,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
-            "release_boundary_version": "section_134_v76",
+            "release_boundary_version": "section_135_v77",
             "mvp_decision_status": decision_contract["decision_status"],
             "temporary_blueprint_authoring_mvp_ready": decision_contract[
                 "temporary_blueprint_authoring_mvp_ready"
@@ -9330,6 +9433,9 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "section_134_durable_executor_authoring_command_completion_application_after_decision_status": (
                 "passed" if not failed_blocking else "failed"
             ),
+            "section_135_durable_executor_authoring_command_completion_result_after_application_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
             "final_durable_release_ready": False,
             "main_push_requested": False,
             "current_authoring_ceiling": (
@@ -9339,11 +9445,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
                 "_and_section_132_durable_executor_authoring_command_execution_evidence_after_execution_contract"
                 "_and_section_133_durable_executor_authoring_command_completion_decision_after_evidence_contract"
                 "_and_section_134_durable_executor_authoring_command_completion_application_after_decision_contract"
+                "_and_section_135_durable_executor_authoring_command_completion_result_after_application_contract"
             ),
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
-            "durable executor authoring command completion result contract only after durable executor authoring command completion application-after-decision record",
+            "durable executor authoring command result readback contract only after durable executor authoring command completion result-after-application record",
             "component default/type readback expansion for broader Blueprint classes",
             "function call diagnostics and graph layout repair suggestions",
         ],
