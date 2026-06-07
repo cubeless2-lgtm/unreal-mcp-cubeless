@@ -90,4 +90,10 @@ job manifest until dedicated reinforcement exists.
   `save_true_allowed=false`, `save_asset_allowed=false`,
   `delete_asset_allowed=false`, and `live_command_count=0` mean the smoke runner
   must not run durable canary, save, or cleanup commands.
+- Section 57 durable canary live preflight may be reported and, in live mode,
+  may run only `unreal.EditorAssetLibrary.does_asset_exist` against the canary
+  asset path. `canary_execution_allowed_after_preflight=false`,
+  `authoring_command_allowed=false`, `save_or_delete_allowed=false`, and
+  `cleanup_command_allowed=false` mean the smoke runner must not run durable
+  canary execution, save, or cleanup commands.
 - Section 11 does not require C++ changes.

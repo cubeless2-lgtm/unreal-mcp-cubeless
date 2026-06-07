@@ -20,6 +20,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
+import bp_authoring_durable_canary_live_preflight_contract as durable_canary_live_preflight
 import bp_authoring_job_contract as job_contract
 import bp_authoring_manifest_executor as manifest_executor
 import bp_authoring_planner as planner
@@ -249,6 +250,47 @@ print({quality_gate.JSON_LOG_PREFIX!r} + json.dumps(data))
             "asset_exists": bool(live_data.get("asset_exists", False)),
             "target_asset_path": live_data.get("target_asset_path", target_asset_path),
             "preflight_pass": False,
+        }
+    )
+    return result
+
+
+def run_durable_canary_preflight_read_only_check(
+    host: str,
+    port: int,
+    manifest: Dict[str, Any],
+    stage_results: List[Dict[str, Any]],
+) -> Dict[str, Any]:
+    contract = manifest.get("durable_canary_live_preflight_contract", {})
+    canary_asset_path = contract.get("canary_asset_path", "")
+    result = durable_canary_live_preflight.build_not_requested_live_result(manifest["id"], contract)
+    if not contract.get("requested"):
+        result["status"] = "skipped"
+        result["reason"] = "durable canary live preflight was not requested"
+        return result
+    if not contract.get("read_only_live_preflight_allowed") or not canary_asset_path:
+        result["status"] = "failed"
+        result["reason"] = "durable canary preflight target is missing or not allowed for live read-only check"
+        return result
+
+    code = f"""
+import json
+import unreal
+canary_asset_path = {canary_asset_path!r}
+data = {{
+    "canary_asset_path": canary_asset_path,
+    "asset_exists": bool(unreal.EditorAssetLibrary.does_asset_exist(canary_asset_path)),
+}}
+print({quality_gate.JSON_LOG_PREFIX!r} + json.dumps(data))
+"""
+    live_data = execute_python_json(host, port, code, stage_results)
+    result.update(
+        {
+            "status": "passed",
+            "asset_exists_check_performed": True,
+            "asset_exists": bool(live_data.get("asset_exists", False)),
+            "canary_asset_path": live_data.get("canary_asset_path", canary_asset_path),
+            "canary_execution_allowed_after_preflight": False,
         }
     )
     return result
@@ -1625,9 +1667,14 @@ def run_live_smoke(
         "temp_package_path": temp_package_path,
         "safe_executions": [],
         "durable_preflight_live_results": [],
+        "durable_canary_preflight_live_results": [],
         "non_safe_authoring_attempted": False,
         "durable_authoring_attempted": False,
         "durable_live_save_or_delete_attempted": False,
+        "durable_canary_authoring_attempted": False,
+        "durable_canary_save_or_delete_attempted": False,
+        "durable_canary_cleanup_attempted": False,
+        "durable_canary_execution_attempted": False,
         "prevented_requests": [
             {
                 "id": manifest["id"],
@@ -1638,6 +1685,9 @@ def run_live_smoke(
                 "requires_review": manifest["planner"].get("requires_review", []),
                 "blocked_review_reasons": manifest.get("blocked_review_reasons", []),
                 "durable_preflight_contract": manifest.get("durable_preflight_contract", {}),
+                "durable_canary_live_preflight_contract": manifest.get(
+                    "durable_canary_live_preflight_contract", {}
+                ),
                 "durable_executor_skeleton_contract": manifest.get("durable_executor_skeleton_contract", {}),
             }
             for manifest in manifests
@@ -1651,6 +1701,11 @@ def run_live_smoke(
         live_result["durable_live_preflight_gate"] = manifest_executor.summarize_durable_live_preflight(
             manifests,
             live_result.get("durable_preflight_live_results", []),
+            live_requested=True,
+        )
+        live_result["durable_canary_live_preflight_gate"] = manifest_executor.summarize_durable_canary_live_preflight(
+            manifests,
+            live_result.get("durable_canary_preflight_live_results", []),
             live_requested=True,
         )
         return live_result
@@ -1703,6 +1758,42 @@ print({quality_gate.JSON_LOG_PREFIX!r} + json.dumps(data))
             )
             if preflight_result["status"] != "passed":
                 raise quality_gate.BridgeError(f"Durable preflight read-only check failed: {preflight_result}")
+            if manifest.get("durable_canary_live_preflight_contract", {}).get("requested"):
+                canary_preflight_result = run_durable_canary_preflight_read_only_check(
+                    host,
+                    port,
+                    manifest,
+                    stage_results,
+                )
+                live_result["durable_canary_preflight_live_results"].append(canary_preflight_result)
+                prevented_by_id[manifest["id"]]["durable_canary_preflight_live_result"] = canary_preflight_result
+                live_result["durable_canary_authoring_attempted"] = bool(
+                    live_result["durable_canary_authoring_attempted"]
+                    or canary_preflight_result.get("authoring_attempted")
+                )
+                live_result["durable_canary_save_or_delete_attempted"] = bool(
+                    live_result["durable_canary_save_or_delete_attempted"]
+                    or canary_preflight_result.get("save_or_delete_attempted")
+                )
+                live_result["durable_canary_cleanup_attempted"] = bool(
+                    live_result["durable_canary_cleanup_attempted"] or canary_preflight_result.get("cleanup_attempted")
+                )
+                live_result["durable_canary_execution_attempted"] = bool(
+                    live_result["durable_canary_execution_attempted"]
+                    or canary_preflight_result.get("canary_execution_attempted")
+                )
+                live_result["durable_authoring_attempted"] = bool(
+                    live_result["durable_authoring_attempted"] or canary_preflight_result.get("authoring_attempted")
+                )
+                live_result["durable_live_save_or_delete_attempted"] = bool(
+                    live_result["durable_live_save_or_delete_attempted"]
+                    or canary_preflight_result.get("save_or_delete_attempted")
+                    or canary_preflight_result.get("cleanup_attempted")
+                )
+                if canary_preflight_result["status"] != "passed":
+                    raise quality_gate.BridgeError(
+                        f"Durable canary preflight read-only check failed: {canary_preflight_result}"
+                    )
 
         for manifest in manifests:
             if manifest["status"] != planner.STATUS_SAFE or not manifest["executable"]:
@@ -1733,6 +1824,11 @@ print({quality_gate.JSON_LOG_PREFIX!r} + json.dumps(data))
         live_result.get("durable_preflight_live_results", []),
         live_requested=True,
     )
+    live_result["durable_canary_live_preflight_gate"] = manifest_executor.summarize_durable_canary_live_preflight(
+        manifests,
+        live_result.get("durable_canary_preflight_live_results", []),
+        live_requested=True,
+    )
     return live_result
 
 
@@ -1754,20 +1850,48 @@ def build_report(
             live_item = live_prevented_by_id.get(item["id"], {})
             if "durable_preflight_live_result" in live_item:
                 merged_item["durable_preflight_live_result"] = live_item["durable_preflight_live_result"]
+            if "durable_canary_preflight_live_result" in live_item:
+                merged_item["durable_canary_preflight_live_result"] = live_item[
+                    "durable_canary_preflight_live_result"
+                ]
             merged_prevented_requests.append(merged_item)
         live["prevented_requests"] = merged_prevented_requests
         live["non_safe_authoring_attempted"] = any(item.get("authoring_attempted") for item in merged_prevented_requests)
         live["durable_authoring_attempted"] = bool(
             live.get("durable_authoring_attempted")
             or any(item.get("authoring_attempted") for item in live.get("durable_preflight_live_results", []))
+            or any(item.get("authoring_attempted") for item in live.get("durable_canary_preflight_live_results", []))
         )
         live["durable_live_save_or_delete_attempted"] = bool(
             live.get("durable_live_save_or_delete_attempted")
             or any(item.get("save_or_delete_attempted") for item in live.get("durable_preflight_live_results", []))
+            or any(item.get("save_or_delete_attempted") for item in live.get("durable_canary_preflight_live_results", []))
+            or any(item.get("cleanup_attempted") for item in live.get("durable_canary_preflight_live_results", []))
+        )
+        live["durable_canary_authoring_attempted"] = bool(
+            live.get("durable_canary_authoring_attempted")
+            or any(item.get("authoring_attempted") for item in live.get("durable_canary_preflight_live_results", []))
+        )
+        live["durable_canary_save_or_delete_attempted"] = bool(
+            live.get("durable_canary_save_or_delete_attempted")
+            or any(item.get("save_or_delete_attempted") for item in live.get("durable_canary_preflight_live_results", []))
+        )
+        live["durable_canary_cleanup_attempted"] = bool(
+            live.get("durable_canary_cleanup_attempted")
+            or any(item.get("cleanup_attempted") for item in live.get("durable_canary_preflight_live_results", []))
+        )
+        live["durable_canary_execution_attempted"] = bool(
+            live.get("durable_canary_execution_attempted")
+            or any(item.get("canary_execution_attempted") for item in live.get("durable_canary_preflight_live_results", []))
         )
     live["durable_live_preflight_gate"] = manifest_executor.summarize_durable_live_preflight(
         manifests,
         live.get("durable_preflight_live_results", []),
+        live_requested=live_result is not None,
+    )
+    live["durable_canary_live_preflight_gate"] = manifest_executor.summarize_durable_canary_live_preflight(
+        manifests,
+        live.get("durable_canary_preflight_live_results", []),
         live_requested=live_result is not None,
     )
     return {
@@ -1838,12 +1962,21 @@ def render_markdown(report: Dict[str, Any]) -> str:
         lines.append(f"- Non-safe authoring attempted: `{live.get('non_safe_authoring_attempted')}`")
         lines.append(f"- Durable authoring attempted: `{live.get('durable_authoring_attempted')}`")
         lines.append(f"- Durable save/delete attempted: `{live.get('durable_live_save_or_delete_attempted')}`")
+        lines.append(f"- Durable canary execution attempted: `{live.get('durable_canary_execution_attempted')}`")
+        lines.append(f"- Durable canary cleanup attempted: `{live.get('durable_canary_cleanup_attempted')}`")
     live_preflight_gate = live.get("durable_live_preflight_gate", {})
     if live_preflight_gate:
         lines.append(f"- Durable live preflight gate: `{live_preflight_gate.get('status')}`")
         lines.append(
             f"- Durable live read-only results: `{live_preflight_gate.get('passed_read_only_result_count')}`/"
             f"`{live_preflight_gate.get('read_only_live_preflight_allowed_count')}`"
+        )
+    canary_preflight_gate = live.get("durable_canary_live_preflight_gate", {})
+    if canary_preflight_gate:
+        lines.append(f"- Durable canary live preflight gate: `{canary_preflight_gate.get('status')}`")
+        lines.append(
+            f"- Durable canary live read-only results: `{canary_preflight_gate.get('passed_read_only_result_count')}`/"
+            f"`{canary_preflight_gate.get('read_only_live_preflight_allowed_count')}`"
         )
     if live.get("reason"):
         lines.append(f"- Reason: {live['reason']}")
@@ -1858,6 +1991,18 @@ def render_markdown(report: Dict[str, Any]) -> str:
                 f"asset_exists=`{item['asset_exists']}` read_only=`{item['read_only']}` "
                 f"authoring_attempted=`{item['authoring_attempted']}` "
                 f"save_or_delete_attempted=`{item['save_or_delete_attempted']}`"
+            )
+    durable_canary_preflight_results = live.get("durable_canary_preflight_live_results", [])
+    if durable_canary_preflight_results:
+        lines.extend(["", "### Durable Canary Preflight Live Results", ""])
+        for item in durable_canary_preflight_results:
+            lines.append(
+                f"- `{item['manifest_id']}` status=`{item['status']}` target=`{item['canary_asset_path']}` "
+                f"asset_exists=`{item['asset_exists']}` read_only=`{item['read_only']}` "
+                f"authoring_attempted=`{item['authoring_attempted']}` "
+                f"save_or_delete_attempted=`{item['save_or_delete_attempted']}` "
+                f"cleanup_attempted=`{item['cleanup_attempted']}` "
+                f"canary_execution_attempted=`{item['canary_execution_attempted']}`"
             )
     if live.get("safe_executions"):
         lines.extend(["", "### Safe Executions", ""])

@@ -1,7 +1,7 @@
 {
   "schema": "section_49_50_bp_authoring_release_boundary_v1",
   "analysis_kind": "bp_authoring_release_boundary",
-  "generated_at": "2026-06-07T07:37:18.532252+00:00",
+  "generated_at": "2026-06-07T07:53:58.660669+00:00",
   "repo_root": "D:\\Git\\unreal-mcp-cubeless",
   "project_root": "D:\\Git\\CubelessStylized",
   "report_inputs": {
@@ -359,6 +359,46 @@
       ]
     },
     {
+      "id": "durable_canary_live_preflight_contract",
+      "label": "Section 57 durable canary live preflight",
+      "status": "passed",
+      "blocking": true,
+      "expected": {
+        "summary_status": "passed",
+        "durable_requested_canary_live_preflight_count": 1,
+        "read_only_live_preflight_allowed_count": 1,
+        "canary_execution_allowed_after_preflight_count": 0,
+        "authoring_command_allowed_count": 0,
+        "save_or_delete_allowed_count": 0,
+        "cleanup_command_allowed_count": 0,
+        "live_authoring_command_count": 0,
+        "live_save_or_delete_command_count": 0,
+        "live_cleanup_command_count": 0,
+        "executor_gate_read_only_allowed_count": 1,
+        "executor_gate_execution_allowed_count": 0,
+        "executor_gate_save_or_delete_allowed_count": 0
+      },
+      "actual": {
+        "summary_status": "passed",
+        "durable_requested_canary_live_preflight_count": 1,
+        "read_only_live_preflight_allowed_count": 1,
+        "canary_execution_allowed_after_preflight_count": 0,
+        "authoring_command_allowed_count": 0,
+        "save_or_delete_allowed_count": 0,
+        "cleanup_command_allowed_count": 0,
+        "live_authoring_command_count": 0,
+        "live_save_or_delete_command_count": 0,
+        "live_cleanup_command_count": 0,
+        "executor_gate_read_only_allowed_count": 1,
+        "executor_gate_execution_allowed_count": 0,
+        "executor_gate_save_or_delete_allowed_count": 0
+      },
+      "notes": [
+        "Canary live preflight may only run a read-only asset-exists check.",
+        "The contract still denies canary execution, save, delete, and cleanup commands."
+      ]
+    },
+    {
       "id": "planner_driven_live_smoke_report",
       "label": "Planner-driven live smoke report",
       "status": "passed",
@@ -386,13 +426,17 @@
         "generated_leftovers": 0,
         "new_log_errors": 0,
         "durable_authoring_attempted": false,
-        "durable_live_save_or_delete_attempted": false
+        "durable_live_save_or_delete_attempted": false,
+        "durable_canary_execution_attempted": false,
+        "durable_canary_cleanup_attempted": false
       },
       "actual": {
         "generated_leftovers": 0,
         "new_log_errors": 0,
         "durable_authoring_attempted": false,
-        "durable_live_save_or_delete_attempted": false
+        "durable_live_save_or_delete_attempted": false,
+        "durable_canary_execution_attempted": false,
+        "durable_canary_cleanup_attempted": false
       },
       "notes": []
     },
@@ -418,6 +462,38 @@
         "preflight_pass_count": 0
       },
       "notes": []
+    },
+    {
+      "id": "durable_canary_read_only_live_preflight",
+      "label": "Durable canary read-only live preflight boundary",
+      "status": "failed",
+      "blocking": false,
+      "expected": {
+        "status": "passed",
+        "live_result_count": 1,
+        "passed_read_only_result_count": 1,
+        "authoring_attempted_count": 0,
+        "save_or_delete_attempted_count": 0,
+        "cleanup_attempted_count": 0,
+        "canary_execution_attempted_count": 0,
+        "canary_execution_allowed_after_preflight_count": 0,
+        "read_only_only": true
+      },
+      "actual": {
+        "status": null,
+        "live_result_count": null,
+        "passed_read_only_result_count": null,
+        "authoring_attempted_count": null,
+        "save_or_delete_attempted_count": null,
+        "cleanup_attempted_count": null,
+        "canary_execution_attempted_count": null,
+        "canary_execution_allowed_after_preflight_count": null,
+        "read_only_only": null
+      },
+      "notes": [
+        "Section 57 contract is blocking in offline release rows.",
+        "This live row becomes passed after the next reachable UnrealMCP read-only canary preflight run."
+      ]
     },
     {
       "id": "bp_authoring_quality_gate_live_report",
@@ -480,11 +556,11 @@
     "ready_for_main_push": true,
     "durable_authoring_enabled": false,
     "durable_authoring_release_status": "not_enabled_read_only_preflight_only",
-    "current_authoring_ceiling": "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_and_section_56_canary_approval_gate",
+    "current_authoring_ceiling": "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_and_section_57_canary_live_preflight",
     "cxx_changes_required": false
   },
   "next_reinforcement_candidates": [
-    "live durable canary preflight boundary after Section 56 approval remains non-saving",
+    "durable canary rollback recovery matrix after Section 57 read-only preflight",
     "component default/type readback expansion for broader Blueprint classes",
     "function call diagnostics and graph layout repair suggestions",
     "UMG/CommonUI authoring classifier and non-executable manifest coverage"

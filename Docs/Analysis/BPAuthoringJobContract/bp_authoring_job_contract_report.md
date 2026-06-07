@@ -1,7 +1,7 @@
 # BP Authoring Job Contract
 
-- Generated UTC: `2026-06-07T07:37:18.356091+00:00`
-- Manifest version: `section_56_bp_authoring_job_contract_v34`
+- Generated UTC: `2026-06-07T07:53:58.466472+00:00`
+- Manifest version: `section_57_bp_authoring_job_contract_v35`
 - Temp package path: `/Game/_MCP_Temp/PlannerDrivenSmoke`
 - Manifests: `19`
 - Executable manifests: `12`
@@ -52,6 +52,8 @@
 - Durable canary approval gates passed: `1`
 - Durable canary executor may open: `0`
 - Durable canary approval live execution allowed: `0`
+- Durable canary live preflight read-only allowed: `1`
+- Durable canary live preflight execution allowed: `0`
 - Durable enable contract requests: `1`
 - Durable enable contract satisfied: `0`
 - Durable enable executor may open: `0`
@@ -96,6 +98,8 @@
 - Durable canary live allowed: `False`
 - Durable canary approval passed: `False`
 - Durable canary approval live allowed: `False`
+- Durable canary live preflight read-only allowed: `False`
+- Durable canary live preflight execution allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -188,6 +192,8 @@ Structural validation plan:
 - Durable canary live allowed: `False`
 - Durable canary approval passed: `False`
 - Durable canary approval live allowed: `False`
+- Durable canary live preflight read-only allowed: `False`
+- Durable canary live preflight execution allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -292,6 +298,8 @@ Structural validation plan:
 - Durable canary live allowed: `False`
 - Durable canary approval passed: `False`
 - Durable canary approval live allowed: `False`
+- Durable canary live preflight read-only allowed: `False`
+- Durable canary live preflight execution allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -387,6 +395,8 @@ Structural validation plan:
 - Durable canary live allowed: `False`
 - Durable canary approval passed: `False`
 - Durable canary approval live allowed: `False`
+- Durable canary live preflight read-only allowed: `False`
+- Durable canary live preflight execution allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -479,6 +489,8 @@ Structural validation plan:
 - Durable canary live allowed: `False`
 - Durable canary approval passed: `False`
 - Durable canary approval live allowed: `False`
+- Durable canary live preflight read-only allowed: `False`
+- Durable canary live preflight execution allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -561,6 +573,8 @@ Blocked/review reasons:
 - Durable canary live allowed: `False`
 - Durable canary approval passed: `False`
 - Durable canary approval live allowed: `False`
+- Durable canary live preflight read-only allowed: `False`
+- Durable canary live preflight execution allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -643,6 +657,8 @@ Blocked/review reasons:
 - Durable canary live allowed: `False`
 - Durable canary approval passed: `True`
 - Durable canary approval live allowed: `False`
+- Durable canary live preflight read-only allowed: `True`
+- Durable canary live preflight execution allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -725,6 +741,8 @@ Blocked/review reasons:
 - Durable canary live allowed: `False`
 - Durable canary approval passed: `False`
 - Durable canary approval live allowed: `False`
+- Durable canary live preflight read-only allowed: `False`
+- Durable canary live preflight execution allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -815,6 +833,8 @@ Structural validation plan:
 - Durable canary live allowed: `False`
 - Durable canary approval passed: `False`
 - Durable canary approval live allowed: `False`
+- Durable canary live preflight read-only allowed: `False`
+- Durable canary live preflight execution allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -921,6 +941,8 @@ Structural validation plan:
 - Durable canary live allowed: `False`
 - Durable canary approval passed: `False`
 - Durable canary approval live allowed: `False`
+- Durable canary live preflight read-only allowed: `False`
+- Durable canary live preflight execution allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1028,6 +1050,8 @@ Structural validation plan:
 - Durable canary live allowed: `False`
 - Durable canary approval passed: `False`
 - Durable canary approval live allowed: `False`
+- Durable canary live preflight read-only allowed: `False`
+- Durable canary live preflight execution allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1175,6 +1199,8 @@ Structural validation plan:
 - Durable canary live allowed: `False`
 - Durable canary approval passed: `False`
 - Durable canary approval live allowed: `False`
+- Durable canary live preflight read-only allowed: `False`
+- Durable canary live preflight execution allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1261,6 +1287,8 @@ Structural validation plan:
 - Durable canary live allowed: `False`
 - Durable canary approval passed: `False`
 - Durable canary approval live allowed: `False`
+- Durable canary live preflight read-only allowed: `False`
+- Durable canary live preflight execution allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1377,6 +1405,8 @@ Structural validation plan:
 - Durable canary live allowed: `False`
 - Durable canary approval passed: `False`
 - Durable canary approval live allowed: `False`
+- Durable canary live preflight read-only allowed: `False`
+- Durable canary live preflight execution allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1541,6 +1571,8 @@ Structural validation plan:
 - Durable canary live allowed: `False`
 - Durable canary approval passed: `False`
 - Durable canary approval live allowed: `False`
+- Durable canary live preflight read-only allowed: `False`
+- Durable canary live preflight execution allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1683,6 +1715,8 @@ Structural validation plan:
 - Durable canary live allowed: `False`
 - Durable canary approval passed: `False`
 - Durable canary approval live allowed: `False`
+- Durable canary live preflight read-only allowed: `False`
+- Durable canary live preflight execution allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1765,6 +1799,8 @@ Blocked/review reasons:
 - Durable canary live allowed: `False`
 - Durable canary approval passed: `False`
 - Durable canary approval live allowed: `False`
+- Durable canary live preflight read-only allowed: `False`
+- Durable canary live preflight execution allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1847,6 +1883,8 @@ Blocked/review reasons:
 - Durable canary live allowed: `False`
 - Durable canary approval passed: `False`
 - Durable canary approval live allowed: `False`
+- Durable canary live preflight read-only allowed: `False`
+- Durable canary live preflight execution allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1930,6 +1968,8 @@ Blocked/review reasons:
 - Durable canary live allowed: `False`
 - Durable canary approval passed: `False`
 - Durable canary approval live allowed: `False`
+- Durable canary live preflight read-only allowed: `False`
+- Durable canary live preflight execution allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`

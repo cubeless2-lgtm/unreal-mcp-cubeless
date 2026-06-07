@@ -220,11 +220,46 @@ If the approval record is missing or points outside the canary target, the gate
 must fail. If it passes, it still only permits a later section to consider a
 read-only canary preflight; it does not create a command plan.
 
+## Section 57 - Durable Canary Live Preflight
+
+Section 57 allows only a read-only live preflight for the Section 55 canary
+target after the Section 56 approval gate passes. The live operation is limited
+to `unreal.EditorAssetLibrary.does_asset_exist` on
+`/Game/_MCP_Temp/DurableCanary/<BlueprintName>_Canary`.
+
+The live preflight boundary is:
+
+- canary live preflight schema:
+  `section_57_durable_canary_live_preflight_contract_v1`
+- result schema: `section_57_durable_canary_live_preflight_result_v1`
+- read-only live preflight allowed: `true`
+- canary execution allowed after preflight: `false`
+- authoring command allowed: `false`
+- save/delete command allowed: `false`
+- cleanup command allowed: `false`
+- live authoring/save/delete/cleanup command counts: `0`
+
+The release boundary must prove:
+
+- durable canary live preflight requests: `1`
+- read-only live preflight allowed: `1`
+- canary execution allowed after preflight: `0`
+- authoring command allowed: `0`
+- save/delete command allowed: `0`
+- cleanup command allowed: `0`
+- live authoring/save/delete/cleanup command counts: `0`
+
+The planner-driven live smoke may run the read-only canary asset-exists check,
+but the result must report `authoring_attempted=false`,
+`save_or_delete_attempted=false`, `cleanup_attempted=false`, and
+`canary_execution_attempted=false`.
+
 ## Decision
 
 Section 46-48 improves durable safety visibility, Section 51 separates the
 future durable enable gates, and Section 52 defines the ownership marker needed
 for future rollback. Section 53 adds a no-command dry-run plan. Section 54 adds
 a no-command save validation simulator. Section 55 adds canary prep only.
-Section 56 adds scoped approval only. These sections do not enable durable
-Blueprint creation, saving, delete, rename, or live canary execution.
+Section 56 adds scoped approval only. Section 57 adds read-only canary live
+preflight only. These sections do not enable durable Blueprint creation,
+saving, delete, rename, cleanup, or live canary execution.

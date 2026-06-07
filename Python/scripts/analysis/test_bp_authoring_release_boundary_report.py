@@ -76,7 +76,20 @@ def main() -> int:
         assert canary_approval_row["actual"]["canary_executor_may_open_count"] == 0
         assert canary_approval_row["actual"]["canary_live_execution_allowed_count"] == 0
         assert canary_approval_row["actual"]["live_command_count"] == 0
+        canary_live_preflight_row = find_row(report, "durable_canary_live_preflight_contract")
+        assert canary_live_preflight_row["status"] == "passed"
+        assert canary_live_preflight_row["actual"]["durable_requested_canary_live_preflight_count"] == 1
+        assert canary_live_preflight_row["actual"]["read_only_live_preflight_allowed_count"] == 1
+        assert canary_live_preflight_row["actual"]["canary_execution_allowed_after_preflight_count"] == 0
+        assert canary_live_preflight_row["actual"]["live_save_or_delete_command_count"] == 0
+        assert canary_live_preflight_row["actual"]["live_cleanup_command_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
+        canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
+        assert canary_live_report_row["blocking"] is False
+        if canary_live_report_row["status"] == "passed":
+            assert canary_live_report_row["actual"]["passed_read_only_result_count"] == 1
+        else:
+            assert canary_live_report_row["actual"]["passed_read_only_result_count"] in (None, 0)
         assert find_row(report, "durable_read_only_live_preflight")["status"] == "passed"
         assert find_row(report, "project_filesystem_side_effect_boundary")["status"] == "passed"
         output_dir = Path(temp_dir) / "out"

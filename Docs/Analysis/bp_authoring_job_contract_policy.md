@@ -1,6 +1,6 @@
 # BP Authoring Job Contract Policy
 
-This policy defines the Section 12 through Section 56 contract between a
+This policy defines the Section 12 through Section 57 contract between a
 planner verdict and live Blueprint authoring execution.
 
 ## Required Manifest Fields
@@ -33,6 +33,7 @@ Every user request must be converted into a structured manifest with:
 - durable authoring enable contract
 - durable canary preparation contract
 - durable canary approval gate contract
+- durable canary live preflight contract
 - blocked or review reasons
 
 ## Execution Rule
@@ -221,6 +222,13 @@ keeps `canary_executor_may_open=false`,
 `canary_live_execution_allowed=false`, `save_true_allowed=false`,
 `save_asset_allowed=false`, `delete_asset_allowed=false`, and
 `live_command_count=0`.
+
+Section 57 adds a durable canary live preflight contract. Durable requests may
+now allow a read-only canary `does_asset_exist` check, but the contract keeps
+`canary_execution_allowed_after_preflight=false`,
+`authoring_command_allowed=false`, `save_or_delete_allowed=false`,
+`cleanup_command_allowed=false`, and all live author/save/delete/cleanup command
+counts at `0`.
 
 ## Section 13 Executable Templates
 
@@ -999,6 +1007,30 @@ A missing, malformed, or differently scoped approval record must keep the gate
 failed. A passing Section 56 gate still does not authorize live execution; it
 only makes the future canary approval dependency explicit.
 
+## Section 57 Durable Canary Live Preflight Contract
+
+Durable preflight now embeds `durable_canary_live_preflight_contract`, also
+exposed at the manifest top level and inside `authoring_executor_contract`.
+
+The live preflight boundary is:
+
+- canary live preflight schema:
+  `section_57_durable_canary_live_preflight_contract_v1`
+- canary live result schema:
+  `section_57_durable_canary_live_preflight_result_v1`
+- canary asset path: `/Game/_MCP_Temp/DurableCanary/<BlueprintName>_Canary`
+- read-only live command: `unreal.EditorAssetLibrary.does_asset_exist`
+- read-only live preflight allowed: `true`
+- canary execution allowed after preflight: `false`
+- authoring command allowed: `false`
+- save or delete allowed: `false`
+- cleanup command allowed: `false`
+- live authoring/save-delete/cleanup command counts: `0`
+
+The live smoke may record whether the canary asset already exists, but that
+result is evidence only. It must not create, save, delete, cleanup, rename,
+overwrite, replace, or execute a canary asset.
+
 ## Live Smoke Rule
 
 The planner-driven live smoke must execute the manifest, not the raw user
@@ -1022,13 +1054,13 @@ dry-run until the parent class receives Section 31 reinforcement.
 A planner-safe request that asks for a saved or durable asset must also remain
 dry-run until Section 51 durable enable gates, Section 52 ownership marker
 policy, Section 53 dry-run plan, Section 54 save simulator, Section 55 canary
-prep, Section 56 canary approval gate, and a later durable executor release are
-all proven. A read-only
+prep, Section 56 canary approval gate, Section 57 canary live preflight, and a
+later durable executor release are all proven. A read-only
 asset-exists result, parsed overwrite/rename decision, draft save gate,
 readiness checklist entry, disabled durable executor skeleton, or ownership
-marker/dry-run/save-simulation/canary-prep/canary-approval contract alone must
-not enable durable save, delete, rename, overwrite, replacement behavior, or
-live canary execution.
+marker/dry-run/save-simulation/canary-prep/canary-approval/canary-preflight
+contract alone must not enable durable save, delete, cleanup, rename,
+overwrite, replacement behavior, or live canary execution.
 
 ## Validation
 

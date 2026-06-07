@@ -447,12 +447,71 @@ def build_durable_canary_approval_row(
     )
 
 
+def build_durable_canary_live_preflight_row(
+    contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
+) -> Dict[str, Any]:
+    live_summary = contract_summary.get("durable_canary_live_preflight_summary", {})
+    durable_gate_summary = executor_summary.get("durable_gate_summary", {})
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_canary_live_preflight_count": 1,
+        "read_only_live_preflight_allowed_count": 1,
+        "canary_execution_allowed_after_preflight_count": 0,
+        "authoring_command_allowed_count": 0,
+        "save_or_delete_allowed_count": 0,
+        "cleanup_command_allowed_count": 0,
+        "live_authoring_command_count": 0,
+        "live_save_or_delete_command_count": 0,
+        "live_cleanup_command_count": 0,
+        "executor_gate_read_only_allowed_count": 1,
+        "executor_gate_execution_allowed_count": 0,
+        "executor_gate_save_or_delete_allowed_count": 0,
+    }
+    actual = {
+        "summary_status": live_summary.get("status"),
+        "durable_requested_canary_live_preflight_count": live_summary.get(
+            "durable_requested_canary_live_preflight_count"
+        ),
+        "read_only_live_preflight_allowed_count": live_summary.get("read_only_live_preflight_allowed_count"),
+        "canary_execution_allowed_after_preflight_count": live_summary.get(
+            "canary_execution_allowed_after_preflight_count"
+        ),
+        "authoring_command_allowed_count": live_summary.get("authoring_command_allowed_count"),
+        "save_or_delete_allowed_count": live_summary.get("save_or_delete_allowed_count"),
+        "cleanup_command_allowed_count": live_summary.get("cleanup_command_allowed_count"),
+        "live_authoring_command_count": live_summary.get("live_authoring_command_count"),
+        "live_save_or_delete_command_count": live_summary.get("live_save_or_delete_command_count"),
+        "live_cleanup_command_count": live_summary.get("live_cleanup_command_count"),
+        "executor_gate_read_only_allowed_count": durable_gate_summary.get(
+            "canary_live_preflight_read_only_allowed_count"
+        ),
+        "executor_gate_execution_allowed_count": durable_gate_summary.get(
+            "canary_live_preflight_execution_allowed_count"
+        ),
+        "executor_gate_save_or_delete_allowed_count": durable_gate_summary.get(
+            "canary_live_preflight_save_or_delete_allowed_count"
+        ),
+    }
+    return row(
+        "durable_canary_live_preflight_contract",
+        "Section 57 durable canary live preflight",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "Canary live preflight may only run a read-only asset-exists check.",
+            "The contract still denies canary execution, save, delete, and cleanup commands.",
+        ),
+    )
+
+
 def build_planner_live_rows(planner_report_path: Path, planner_report: Optional[Dict[str, Any]]) -> List[Dict[str, Any]]:
     if planner_report is None:
         return [missing_row("planner_driven_live_smoke_report", "Planner-driven live smoke report", planner_report_path)]
     verdict = planner_report.get("verdict", {})
     live_gate = planner_report.get("live_gate", {})
     preflight_gate = live_gate.get("durable_live_preflight_gate", {})
+    canary_preflight_gate = live_gate.get("durable_canary_live_preflight_gate", {})
     smoke_expected = {
         "verdict_status": "passed",
         "safe_requests_queued": 12,
@@ -470,12 +529,16 @@ def build_planner_live_rows(planner_report_path: Path, planner_report: Optional[
         "new_log_errors": 0,
         "durable_authoring_attempted": False,
         "durable_live_save_or_delete_attempted": False,
+        "durable_canary_execution_attempted": False,
+        "durable_canary_cleanup_attempted": False,
     }
     cleanup_actual = {
         "generated_leftovers": len(live_gate.get("generated_leftovers", [])),
         "new_log_errors": len(live_gate.get("new_log_errors", [])),
         "durable_authoring_attempted": live_gate.get("durable_authoring_attempted"),
         "durable_live_save_or_delete_attempted": live_gate.get("durable_live_save_or_delete_attempted"),
+        "durable_canary_execution_attempted": bool(live_gate.get("durable_canary_execution_attempted")),
+        "durable_canary_cleanup_attempted": bool(live_gate.get("durable_canary_cleanup_attempted")),
     }
     preflight_expected = {
         "status": "passed",
@@ -486,6 +549,18 @@ def build_planner_live_rows(planner_report_path: Path, planner_report: Optional[
         "preflight_pass_count": 0,
     }
     preflight_actual = {key: preflight_gate.get(key) for key in preflight_expected}
+    canary_preflight_expected = {
+        "status": "passed",
+        "live_result_count": 1,
+        "passed_read_only_result_count": 1,
+        "authoring_attempted_count": 0,
+        "save_or_delete_attempted_count": 0,
+        "cleanup_attempted_count": 0,
+        "canary_execution_attempted_count": 0,
+        "canary_execution_allowed_after_preflight_count": 0,
+        "read_only_only": True,
+    }
+    canary_preflight_actual = {key: canary_preflight_gate.get(key) for key in canary_preflight_expected}
     return [
         row(
             "planner_driven_live_smoke_report",
@@ -507,6 +582,18 @@ def build_planner_live_rows(planner_report_path: Path, planner_report: Optional[
             passed=preflight_actual == preflight_expected,
             expected=preflight_expected,
             actual=preflight_actual,
+        ),
+        row(
+            "durable_canary_read_only_live_preflight",
+            "Durable canary read-only live preflight boundary",
+            passed=canary_preflight_actual == canary_preflight_expected,
+            expected=canary_preflight_expected,
+            actual=canary_preflight_actual,
+            blocking=False,
+            notes=(
+                "Section 57 contract is blocking in offline release rows.",
+                "This live row becomes passed after the next reachable UnrealMCP read-only canary preflight run.",
+            ),
         ),
     ]
 
@@ -620,6 +707,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         build_durable_save_simulator_row(contract_summary, executor_summary),
         build_durable_canary_prep_row(contract_summary, executor_summary),
         build_durable_canary_approval_row(contract_summary, executor_summary),
+        build_durable_canary_live_preflight_row(contract_summary, executor_summary),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -646,12 +734,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "durable_authoring_enabled": False,
             "durable_authoring_release_status": "not_enabled_read_only_preflight_only",
             "current_authoring_ceiling": (
-                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_and_section_56_canary_approval_gate"
+                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_and_section_57_canary_live_preflight"
             ),
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
-            "live durable canary preflight boundary after Section 56 approval remains non-saving",
+            "durable canary rollback recovery matrix after Section 57 read-only preflight",
             "component default/type readback expansion for broader Blueprint classes",
             "function call diagnostics and graph layout repair suggestions",
             "UMG/CommonUI authoring classifier and non-executable manifest coverage",

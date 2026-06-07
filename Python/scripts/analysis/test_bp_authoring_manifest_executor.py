@@ -75,6 +75,14 @@ def main() -> int:
         "canary_approval_save_asset_allowed_count": 0,
         "canary_approval_delete_asset_allowed_count": 0,
         "canary_approval_live_command_count": 0,
+        "canary_live_preflight_read_only_allowed_count": 1,
+        "canary_live_preflight_execution_allowed_count": 0,
+        "canary_live_preflight_authoring_allowed_count": 0,
+        "canary_live_preflight_save_or_delete_allowed_count": 0,
+        "canary_live_preflight_cleanup_allowed_count": 0,
+        "canary_live_preflight_authoring_command_count": 0,
+        "canary_live_preflight_save_or_delete_command_count": 0,
+        "canary_live_preflight_cleanup_command_count": 0,
         "durable_executor_enabled_count": 0,
         "durable_executor_executable_count": 0,
         "durable_executor_command_count": 0,
@@ -158,6 +166,14 @@ def main() -> int:
     assert durable_gate["canary_approval_save_asset_allowed"] is False
     assert durable_gate["canary_approval_delete_asset_allowed"] is False
     assert durable_gate["canary_approval_live_command_count"] == 0
+    assert durable_gate["canary_live_preflight_read_only_allowed"] is True
+    assert durable_gate["canary_live_preflight_execution_allowed"] is False
+    assert durable_gate["canary_live_preflight_authoring_allowed"] is False
+    assert durable_gate["canary_live_preflight_save_or_delete_allowed"] is False
+    assert durable_gate["canary_live_preflight_cleanup_allowed"] is False
+    assert durable_gate["canary_live_preflight_authoring_command_count"] == 0
+    assert durable_gate["canary_live_preflight_save_or_delete_command_count"] == 0
+    assert durable_gate["canary_live_preflight_cleanup_command_count"] == 0
     assert durable_gate["durable_executor_enabled"] is False
     assert durable_gate["durable_executor_can_execute"] is False
     assert durable_gate["save_allowed"] is False

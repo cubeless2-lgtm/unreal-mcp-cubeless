@@ -13,6 +13,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Tuple
 
+import bp_authoring_durable_canary_live_preflight_contract as durable_canary_live_preflight
 import bp_authoring_job_contract as job_contract
 import bp_authoring_planner as planner
 
@@ -376,6 +377,10 @@ def build_durable_executor_gate(manifest: Dict[str, Any], command_plan: Sequence
         "durable_canary_approval_gate_contract",
         preflight.get("durable_canary_approval_gate_contract", {}),
     )
+    canary_live_preflight = manifest.get(
+        "durable_canary_live_preflight_contract",
+        preflight.get("durable_canary_live_preflight_contract", {}),
+    )
     readiness = manifest.get(
         "durable_executor_readiness_contract",
         preflight.get("durable_executor_readiness_contract", {}),
@@ -424,6 +429,13 @@ def build_durable_executor_gate(manifest: Dict[str, Any], command_plan: Sequence
         or canary_approval.get("save_asset_allowed")
         or canary_approval.get("delete_asset_allowed")
         or canary_approval.get("live_command_count", 0) > 0
+        or canary_live_preflight.get("canary_execution_allowed_after_preflight")
+        or canary_live_preflight.get("authoring_command_allowed")
+        or canary_live_preflight.get("save_or_delete_allowed")
+        or canary_live_preflight.get("cleanup_command_allowed")
+        or canary_live_preflight.get("live_authoring_command_count", 0) > 0
+        or canary_live_preflight.get("live_save_or_delete_command_count", 0) > 0
+        or canary_live_preflight.get("live_cleanup_command_count", 0) > 0
         or any(item.get("save_requested") for item in command_plan)
         or any(item.get("command") in FORBIDDEN_LIVE_COMMANDS for item in command_plan)
     )
@@ -451,6 +463,7 @@ def build_durable_executor_gate(manifest: Dict[str, Any], command_plan: Sequence
     required_before_execution.update(save_simulation.get("required_reinforcement", []))
     required_before_execution.update(canary_prep.get("required_reinforcement", []))
     required_before_execution.update(canary_approval.get("required_reinforcement", []))
+    required_before_execution.update(canary_live_preflight.get("required_reinforcement", []))
     required_before_execution.update(save_gate.get("required_reinforcement", []))
     required_before_execution.update(rollback.get("required_reinforcement", []))
     required_before_execution.update(enable_contract.get("required_reinforcement", []))
@@ -509,6 +522,24 @@ def build_durable_executor_gate(manifest: Dict[str, Any], command_plan: Sequence
         "canary_approval_save_asset_allowed": bool(canary_approval.get("save_asset_allowed")),
         "canary_approval_delete_asset_allowed": bool(canary_approval.get("delete_asset_allowed")),
         "canary_approval_live_command_count": int(canary_approval.get("live_command_count", 0)),
+        "canary_live_preflight_read_only_allowed": bool(
+            canary_live_preflight.get("read_only_live_preflight_allowed")
+        ),
+        "canary_live_preflight_execution_allowed": bool(
+            canary_live_preflight.get("canary_execution_allowed_after_preflight")
+        ),
+        "canary_live_preflight_authoring_allowed": bool(canary_live_preflight.get("authoring_command_allowed")),
+        "canary_live_preflight_save_or_delete_allowed": bool(canary_live_preflight.get("save_or_delete_allowed")),
+        "canary_live_preflight_cleanup_allowed": bool(canary_live_preflight.get("cleanup_command_allowed")),
+        "canary_live_preflight_authoring_command_count": int(
+            canary_live_preflight.get("live_authoring_command_count", 0)
+        ),
+        "canary_live_preflight_save_or_delete_command_count": int(
+            canary_live_preflight.get("live_save_or_delete_command_count", 0)
+        ),
+        "canary_live_preflight_cleanup_command_count": int(
+            canary_live_preflight.get("live_cleanup_command_count", 0)
+        ),
         "durable_executor_enabled": executor_enabled,
         "durable_executor_can_execute": executor_can_execute,
         "durable_executor_command_count": len(skeleton_command_plan),
@@ -582,6 +613,13 @@ def build_executor_policy(manifest: Dict[str, Any], temp_package_path: str) -> D
         or durable_gate["canary_approval_save_asset_allowed"]
         or durable_gate["canary_approval_delete_asset_allowed"]
         or durable_gate["canary_approval_live_command_count"] > 0
+        or durable_gate["canary_live_preflight_execution_allowed"]
+        or durable_gate["canary_live_preflight_authoring_allowed"]
+        or durable_gate["canary_live_preflight_save_or_delete_allowed"]
+        or durable_gate["canary_live_preflight_cleanup_allowed"]
+        or durable_gate["canary_live_preflight_authoring_command_count"] > 0
+        or durable_gate["canary_live_preflight_save_or_delete_command_count"] > 0
+        or durable_gate["canary_live_preflight_cleanup_command_count"] > 0
         or durable_gate["contract_save_allowed"]
         or durable_gate["save_or_delete_commands_allowed"]
         or durable_gate["allowed_live_authoring_command_count"]
@@ -875,6 +913,30 @@ def summarize_executor_policies(manifests: Sequence[Dict[str, Any]], temp_packag
         "canary_approval_live_command_count": sum(
             gate["canary_approval_live_command_count"] for gate in durable_gates
         ),
+        "canary_live_preflight_read_only_allowed_count": sum(
+            1 for gate in durable_gates if gate["canary_live_preflight_read_only_allowed"]
+        ),
+        "canary_live_preflight_execution_allowed_count": sum(
+            1 for gate in durable_gates if gate["canary_live_preflight_execution_allowed"]
+        ),
+        "canary_live_preflight_authoring_allowed_count": sum(
+            1 for gate in durable_gates if gate["canary_live_preflight_authoring_allowed"]
+        ),
+        "canary_live_preflight_save_or_delete_allowed_count": sum(
+            1 for gate in durable_gates if gate["canary_live_preflight_save_or_delete_allowed"]
+        ),
+        "canary_live_preflight_cleanup_allowed_count": sum(
+            1 for gate in durable_gates if gate["canary_live_preflight_cleanup_allowed"]
+        ),
+        "canary_live_preflight_authoring_command_count": sum(
+            gate["canary_live_preflight_authoring_command_count"] for gate in durable_gates
+        ),
+        "canary_live_preflight_save_or_delete_command_count": sum(
+            gate["canary_live_preflight_save_or_delete_command_count"] for gate in durable_gates
+        ),
+        "canary_live_preflight_cleanup_command_count": sum(
+            gate["canary_live_preflight_cleanup_command_count"] for gate in durable_gates
+        ),
         "durable_executor_enabled_count": sum(1 for gate in durable_gates if gate["durable_executor_enabled"]),
         "durable_executor_executable_count": sum(1 for gate in durable_gates if gate["durable_executor_can_execute"]),
         "durable_executor_command_count": sum(gate["durable_executor_command_count"] for gate in durable_gates),
@@ -906,6 +968,13 @@ def summarize_executor_policies(manifests: Sequence[Dict[str, Any]], temp_packag
             and sum(1 for gate in durable_gates if gate["canary_approval_save_asset_allowed"]) == 0
             and sum(1 for gate in durable_gates if gate["canary_approval_delete_asset_allowed"]) == 0
             and sum(gate["canary_approval_live_command_count"] for gate in durable_gates) == 0
+            and sum(1 for gate in durable_gates if gate["canary_live_preflight_execution_allowed"]) == 0
+            and sum(1 for gate in durable_gates if gate["canary_live_preflight_authoring_allowed"]) == 0
+            and sum(1 for gate in durable_gates if gate["canary_live_preflight_save_or_delete_allowed"]) == 0
+            and sum(1 for gate in durable_gates if gate["canary_live_preflight_cleanup_allowed"]) == 0
+            and sum(gate["canary_live_preflight_authoring_command_count"] for gate in durable_gates) == 0
+            and sum(gate["canary_live_preflight_save_or_delete_command_count"] for gate in durable_gates) == 0
+            and sum(gate["canary_live_preflight_cleanup_command_count"] for gate in durable_gates) == 0
             and sum(1 for gate in durable_gates if gate["durable_executor_enabled"]) == 0
             and sum(1 for gate in durable_gates if gate["durable_executor_can_execute"]) == 0
             and sum(gate["allowed_live_authoring_command_count"] for gate in durable_gates) == 0
@@ -995,3 +1064,15 @@ def summarize_durable_live_preflight(
         "unexpected_live_result_manifest_ids": sorted(result_manifest_ids - allowed_manifest_ids),
         "read_only_only": True,
     }
+
+
+def summarize_durable_canary_live_preflight(
+    manifests: Sequence[Dict[str, Any]],
+    live_preflight_results: Sequence[Dict[str, Any]],
+    live_requested: bool,
+) -> Dict[str, Any]:
+    return durable_canary_live_preflight.summarize_canary_live_preflight_results(
+        manifests,
+        live_preflight_results,
+        live_requested,
+    )

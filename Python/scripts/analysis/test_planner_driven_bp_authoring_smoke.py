@@ -93,6 +93,15 @@ def main() -> int:
         assert report["authoring_job_contract"]["durable_canary_approval_save_asset_allowed_count"] == 0
         assert report["authoring_job_contract"]["durable_canary_approval_delete_asset_allowed_count"] == 0
         assert report["authoring_job_contract"]["durable_canary_approval_live_command_count"] == 0
+        assert report["authoring_job_contract"]["durable_canary_live_preflight_request_count"] == 1
+        assert report["authoring_job_contract"]["durable_canary_live_preflight_read_only_allowed_count"] == 1
+        assert report["authoring_job_contract"]["durable_canary_live_preflight_execution_allowed_count"] == 0
+        assert report["authoring_job_contract"]["durable_canary_live_preflight_authoring_command_allowed_count"] == 0
+        assert report["authoring_job_contract"]["durable_canary_live_preflight_save_or_delete_allowed_count"] == 0
+        assert report["authoring_job_contract"]["durable_canary_live_preflight_cleanup_command_allowed_count"] == 0
+        assert report["authoring_job_contract"]["durable_canary_live_preflight_authoring_command_count"] == 0
+        assert report["authoring_job_contract"]["durable_canary_live_preflight_save_or_delete_command_count"] == 0
+        assert report["authoring_job_contract"]["durable_canary_live_preflight_cleanup_command_count"] == 0
         assert report["authoring_job_contract"]["durable_enable_contract_request_count"] == 1
         assert report["authoring_job_contract"]["durable_enable_contract_satisfied_count"] == 0
         assert report["authoring_job_contract"]["durable_enable_executor_may_open_count"] == 0
@@ -151,6 +160,24 @@ def main() -> int:
         assert report["manifest_executor"]["durable_gate_summary"]["canary_approval_save_asset_allowed_count"] == 0
         assert report["manifest_executor"]["durable_gate_summary"]["canary_approval_delete_asset_allowed_count"] == 0
         assert report["manifest_executor"]["durable_gate_summary"]["canary_approval_live_command_count"] == 0
+        assert report["manifest_executor"]["durable_gate_summary"]["canary_live_preflight_read_only_allowed_count"] == 1
+        assert report["manifest_executor"]["durable_gate_summary"]["canary_live_preflight_execution_allowed_count"] == 0
+        assert report["manifest_executor"]["durable_gate_summary"]["canary_live_preflight_authoring_allowed_count"] == 0
+        assert (
+            report["manifest_executor"]["durable_gate_summary"][
+                "canary_live_preflight_save_or_delete_allowed_count"
+            ]
+            == 0
+        )
+        assert report["manifest_executor"]["durable_gate_summary"]["canary_live_preflight_cleanup_allowed_count"] == 0
+        assert report["manifest_executor"]["durable_gate_summary"]["canary_live_preflight_authoring_command_count"] == 0
+        assert (
+            report["manifest_executor"]["durable_gate_summary"][
+                "canary_live_preflight_save_or_delete_command_count"
+            ]
+            == 0
+        )
+        assert report["manifest_executor"]["durable_gate_summary"]["canary_live_preflight_cleanup_command_count"] == 0
         assert report["manifest_executor"]["durable_gate_summary"]["durable_executor_enabled_count"] == 0
         assert report["manifest_executor"]["durable_gate_summary"]["durable_executor_executable_count"] == 0
         assert report["manifest_executor"]["durable_gate_summary"]["allowed_live_authoring_command_count"] == 0
@@ -169,6 +196,13 @@ def main() -> int:
         assert report["live_gate"]["status"] == "not_requested"
         assert report["live_gate"]["durable_live_preflight_gate"]["status"] == "not_requested"
         assert report["live_gate"]["durable_live_preflight_gate"]["durable_preflight_requested_manifest_count"] == 1
+        assert report["live_gate"]["durable_canary_live_preflight_gate"]["status"] == "not_requested"
+        assert (
+            report["live_gate"]["durable_canary_live_preflight_gate"][
+                "durable_canary_preflight_requested_manifest_count"
+            ]
+            == 1
+        )
 
         safe_ids = {item["id"] for item in report["planner_gate"]["authoring_queue"]}
         assert safe_ids == {
@@ -261,6 +295,18 @@ def main() -> int:
             ]
             is False
         )
+        assert (
+            durable_save["durable_preflight_contract"]["durable_canary_live_preflight_contract"][
+                "read_only_live_preflight_allowed"
+            ]
+            is True
+        )
+        assert (
+            durable_save["durable_preflight_contract"]["durable_canary_live_preflight_contract"][
+                "canary_execution_allowed_after_preflight"
+            ]
+            is False
+        )
         assert durable_save["durable_preflight_contract"]["durable_save_gate_contract"]["save_allowed"] is False
         assert "rollback_policy_not_ready" in durable_save["durable_preflight_contract"]["durable_save_gate_contract"]["blocked_by"]
         assert durable_save["durable_preflight_contract"]["durable_executor_readiness_contract"]["durable_executor_ready"] is False
@@ -292,6 +338,9 @@ def main() -> int:
         assert durable_executor_policy["durable_executor_gate"]["canary_approval_gate_passed"] is True
         assert durable_executor_policy["durable_executor_gate"]["canary_approval_executor_may_open"] is False
         assert durable_executor_policy["durable_executor_gate"]["canary_approval_live_execution_allowed"] is False
+        assert durable_executor_policy["durable_executor_gate"]["canary_live_preflight_read_only_allowed"] is True
+        assert durable_executor_policy["durable_executor_gate"]["canary_live_preflight_execution_allowed"] is False
+        assert durable_executor_policy["durable_executor_gate"]["canary_live_preflight_save_or_delete_allowed"] is False
         assert durable_executor_policy["durable_executor_gate"]["save_allowed"] is False
         assert durable_executor_policy["durable_executor_gate"]["save_or_delete_commands_allowed"] is False
         assert any(
@@ -339,6 +388,11 @@ def main() -> int:
             if "does_asset_exist(target_asset_path)" in code:
                 return {
                     "target_asset_path": "/Game/Blueprints/BP_PlannerDurable",
+                    "asset_exists": False,
+                }
+            if "does_asset_exist(canary_asset_path)" in code:
+                return {
+                    "canary_asset_path": "/Game/_MCP_Temp/DurableCanary/BP_PlannerDurable_Canary",
                     "asset_exists": False,
                 }
             return {
@@ -391,10 +445,20 @@ def main() -> int:
         assert live_result["non_safe_authoring_attempted"] is False
         assert live_result["durable_authoring_attempted"] is False
         assert live_result["durable_live_save_or_delete_attempted"] is False
+        assert live_result["durable_canary_authoring_attempted"] is False
+        assert live_result["durable_canary_save_or_delete_attempted"] is False
+        assert live_result["durable_canary_cleanup_attempted"] is False
+        assert live_result["durable_canary_execution_attempted"] is False
         assert live_result["durable_live_preflight_gate"]["status"] == "passed"
         assert live_result["durable_live_preflight_gate"]["passed_read_only_result_count"] == 1
         assert live_result["durable_live_preflight_gate"]["authoring_attempted_count"] == 0
         assert live_result["durable_live_preflight_gate"]["save_or_delete_attempted_count"] == 0
+        assert live_result["durable_canary_live_preflight_gate"]["status"] == "passed"
+        assert live_result["durable_canary_live_preflight_gate"]["passed_read_only_result_count"] == 1
+        assert live_result["durable_canary_live_preflight_gate"]["authoring_attempted_count"] == 0
+        assert live_result["durable_canary_live_preflight_gate"]["save_or_delete_attempted_count"] == 0
+        assert live_result["durable_canary_live_preflight_gate"]["cleanup_attempted_count"] == 0
+        assert live_result["durable_canary_live_preflight_gate"]["canary_execution_attempted_count"] == 0
         assert len(live_result["durable_preflight_live_results"]) == 1
         durable_live_result = live_result["durable_preflight_live_results"][0]
         assert durable_live_result["schema"] == "section_35_durable_preflight_live_result_v1"
@@ -407,6 +471,20 @@ def main() -> int:
         assert durable_live_result["asset_exists_check_performed"] is True
         assert durable_live_result["asset_exists"] is False
         assert durable_live_result["preflight_pass"] is False
+        assert len(live_result["durable_canary_preflight_live_results"]) == 1
+        canary_live_result = live_result["durable_canary_preflight_live_results"][0]
+        assert canary_live_result["schema"] == "section_57_durable_canary_live_preflight_result_v1"
+        assert canary_live_result["manifest_id"] == "review_durable_authoring_save_requested"
+        assert canary_live_result["canary_asset_path"] == "/Game/_MCP_Temp/DurableCanary/BP_PlannerDurable_Canary"
+        assert canary_live_result["status"] == "passed"
+        assert canary_live_result["read_only"] is True
+        assert canary_live_result["authoring_attempted"] is False
+        assert canary_live_result["save_or_delete_attempted"] is False
+        assert canary_live_result["cleanup_attempted"] is False
+        assert canary_live_result["canary_execution_attempted"] is False
+        assert canary_live_result["asset_exists_check_performed"] is True
+        assert canary_live_result["asset_exists"] is False
+        assert canary_live_result["canary_execution_allowed_after_preflight"] is False
         assert executed_plan_ids == [
             "safe_actor_shell",
             "safe_function_call_defaults",
@@ -428,6 +506,7 @@ def main() -> int:
         assert live_durable_save["durable_preflight_contract"]["target_asset_path"] == "/Game/Blueprints/BP_PlannerDurable"
         assert live_durable_save["durable_preflight_contract"]["preflight_pass"] is False
         assert live_durable_save["durable_preflight_live_result"] == durable_live_result
+        assert live_durable_save["durable_canary_preflight_live_result"] == canary_live_result
         live_report = smoke.build_report(smoke.REQUESTS, output_dir, live_result)
         report_durable_save = next(
             item
@@ -435,11 +514,16 @@ def main() -> int:
             if item["id"] == "review_durable_authoring_save_requested"
         )
         assert report_durable_save["durable_preflight_live_result"] == durable_live_result
+        assert report_durable_save["durable_canary_preflight_live_result"] == canary_live_result
         assert live_report["live_gate"]["non_safe_authoring_attempted"] is False
         assert live_report["live_gate"]["durable_authoring_attempted"] is False
         assert live_report["live_gate"]["durable_live_save_or_delete_attempted"] is False
+        assert live_report["live_gate"]["durable_canary_execution_attempted"] is False
+        assert live_report["live_gate"]["durable_canary_cleanup_attempted"] is False
         assert live_report["live_gate"]["durable_live_preflight_gate"]["status"] == "passed"
         assert live_report["live_gate"]["durable_live_preflight_gate"]["read_only_only"] is True
+        assert live_report["live_gate"]["durable_canary_live_preflight_gate"]["status"] == "passed"
+        assert live_report["live_gate"]["durable_canary_live_preflight_gate"]["read_only_only"] is True
         assert live_report["verdict"]["executor_version"] == smoke.manifest_executor.EXECUTOR_VERSION
         assert live_report["verdict"]["executor_executable_manifests"] == 12
 
