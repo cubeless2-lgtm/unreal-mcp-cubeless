@@ -20,6 +20,7 @@ import bp_authoring_durable_bridge_recovery_readiness_contract as bridge_recover
 import bp_authoring_durable_canary_command_allowlist_contract as canary_command_allowlist
 import bp_authoring_durable_canary_creation_boundary_contract as canary_creation_boundary
 import bp_authoring_durable_canary_live_command_dispatch_release_contract as live_command_dispatch_release
+import bp_authoring_durable_canary_live_command_execution_release_contract as live_command_execution_release
 import bp_authoring_durable_canary_live_runner_envelope_contract as live_runner_envelope
 import bp_authoring_durable_canary_live_runner_start_contract as live_runner_start
 import bp_authoring_durable_canary_read_only_retry_envelope_contract as canary_read_only_retry
@@ -37,7 +38,7 @@ import bp_authoring_durable_save_gate_final_review_contract as save_gate_final_r
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_78_bp_authoring_release_boundary_v20"
+REPORT_SCHEMA = "section_79_bp_authoring_release_boundary_v21"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -2072,6 +2073,122 @@ def build_canary_live_command_dispatch_release_row(
     )
 
 
+def build_canary_live_command_execution_release_row(
+    contract_summary: Dict[str, Any],
+    executor_summary: Dict[str, Any],
+    project_root: Path,
+    planner_report: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    dispatch_release_row = build_canary_live_command_dispatch_release_row(
+        contract_summary,
+        executor_summary,
+        project_root,
+        planner_report,
+    )
+    dispatch_release_summary = dict(dispatch_release_row["actual"])
+    dispatch_release_summary["status"] = dispatch_release_summary.pop("summary_status")
+    contract = live_command_execution_release.build_canary_live_command_execution_release_contract(
+        requested=True,
+        dispatch_release_summary=dispatch_release_summary,
+    )
+    summary = live_command_execution_release.summarize_canary_live_command_execution_releases([contract])
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_canary_live_command_execution_release_count": 1,
+        "execution_release_contract_defined_count": 1,
+        "dispatch_release_contract_ready_count": 1,
+        "dispatch_inputs_satisfied_count": 0,
+        "dispatch_release_record_valid_count": 0,
+        "execution_inputs_satisfied_count": 0,
+        "execution_record_present_count": 0,
+        "record_schema_matches_count": 0,
+        "execution_scope_matches_count": 0,
+        "explicit_execution_authorized_count": 0,
+        "no_save_delete_rename_acknowledged_count": 0,
+        "execution_release_record_valid_count": 0,
+        "execution_release_record_rejected_count": 0,
+        "unsafe_execution_release_record_count": 0,
+        "missing_execution_prerequisite_count": 8,
+        "live_command_execution_release_allowed_count": 0,
+        "live_command_dispatch_allowed_count": 0,
+        "live_command_plan_emitted_count": 0,
+        "live_command_execution_allowed_count": 0,
+        "live_command_executed_count": 0,
+        "live_canary_rehearsal_performed_count": 0,
+        "canary_creation_allowed_count": 0,
+        "canary_save_allowed_count": 0,
+        "canary_cleanup_allowed_count": 0,
+        "durable_executor_may_open_after_execution_release_count": 0,
+        "durable_authoring_allowed_count": 0,
+        "save_delete_rename_allowed_count": 0,
+        "cleanup_allowed_count": 0,
+        "live_creation_command_count": 0,
+        "live_compile_command_count": 0,
+        "live_marker_write_command_count": 0,
+        "live_marker_readback_command_count": 0,
+        "live_save_command_count": 0,
+        "live_delete_rename_command_count": 0,
+        "live_cleanup_command_count": 0,
+    }
+    actual = {
+        "summary_status": summary.get("status"),
+        "durable_requested_canary_live_command_execution_release_count": summary.get(
+            "durable_requested_canary_live_command_execution_release_count"
+        ),
+        "execution_release_contract_defined_count": summary.get(
+            "execution_release_contract_defined_count"
+        ),
+        "dispatch_release_contract_ready_count": summary.get("dispatch_release_contract_ready_count"),
+        "dispatch_inputs_satisfied_count": summary.get("dispatch_inputs_satisfied_count"),
+        "dispatch_release_record_valid_count": summary.get("dispatch_release_record_valid_count"),
+        "execution_inputs_satisfied_count": summary.get("execution_inputs_satisfied_count"),
+        "execution_record_present_count": summary.get("execution_record_present_count"),
+        "record_schema_matches_count": summary.get("record_schema_matches_count"),
+        "execution_scope_matches_count": summary.get("execution_scope_matches_count"),
+        "explicit_execution_authorized_count": summary.get("explicit_execution_authorized_count"),
+        "no_save_delete_rename_acknowledged_count": summary.get("no_save_delete_rename_acknowledged_count"),
+        "execution_release_record_valid_count": summary.get("execution_release_record_valid_count"),
+        "execution_release_record_rejected_count": summary.get("execution_release_record_rejected_count"),
+        "unsafe_execution_release_record_count": summary.get("unsafe_execution_release_record_count"),
+        "missing_execution_prerequisite_count": summary.get("missing_execution_prerequisite_count"),
+        "live_command_execution_release_allowed_count": summary.get(
+            "live_command_execution_release_allowed_count"
+        ),
+        "live_command_dispatch_allowed_count": summary.get("live_command_dispatch_allowed_count"),
+        "live_command_plan_emitted_count": summary.get("live_command_plan_emitted_count"),
+        "live_command_execution_allowed_count": summary.get("live_command_execution_allowed_count"),
+        "live_command_executed_count": summary.get("live_command_executed_count"),
+        "live_canary_rehearsal_performed_count": summary.get("live_canary_rehearsal_performed_count"),
+        "canary_creation_allowed_count": summary.get("canary_creation_allowed_count"),
+        "canary_save_allowed_count": summary.get("canary_save_allowed_count"),
+        "canary_cleanup_allowed_count": summary.get("canary_cleanup_allowed_count"),
+        "durable_executor_may_open_after_execution_release_count": summary.get(
+            "durable_executor_may_open_after_execution_release_count"
+        ),
+        "durable_authoring_allowed_count": summary.get("durable_authoring_allowed_count"),
+        "save_delete_rename_allowed_count": summary.get("save_delete_rename_allowed_count"),
+        "cleanup_allowed_count": summary.get("cleanup_allowed_count"),
+        "live_creation_command_count": summary.get("live_creation_command_count"),
+        "live_compile_command_count": summary.get("live_compile_command_count"),
+        "live_marker_write_command_count": summary.get("live_marker_write_command_count"),
+        "live_marker_readback_command_count": summary.get("live_marker_readback_command_count"),
+        "live_save_command_count": summary.get("live_save_command_count"),
+        "live_delete_rename_command_count": summary.get("live_delete_rename_command_count"),
+        "live_cleanup_command_count": summary.get("live_cleanup_command_count"),
+    }
+    return row(
+        "durable_canary_live_command_execution_release_contract",
+        "Section 79 durable canary live command execution release contract",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "The command execution release contract is defined, but no execution release record is present.",
+            "No command plan is emitted and no live command is executed by this contract.",
+        ),
+    )
+
+
 def build_section_51_58_consolidation_row(
     contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -2343,7 +2460,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     lyra_report = read_json(lyra_report_path)
     preliminary_verdict = {
         "status": "passed",
-        "release_boundary_version": "section_78_v20",
+        "release_boundary_version": "section_79_v21",
         "durable_authoring_enabled": False,
     }
     decision_contract = mvp_decision.build_mvp_decision_contract(
@@ -2414,6 +2531,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             project_root,
             planner_report,
         ),
+        build_canary_live_command_execution_release_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        ),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -2434,7 +2557,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
-            "release_boundary_version": "section_78_v20",
+            "release_boundary_version": "section_79_v21",
             "mvp_decision_status": decision_contract["decision_status"],
             "temporary_blueprint_authoring_mvp_ready": decision_contract[
                 "temporary_blueprint_authoring_mvp_ready"
@@ -2476,10 +2599,13 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "section_78_canary_live_command_dispatch_release_status": (
                 "passed" if not failed_blocking else "failed"
             ),
+            "section_79_canary_live_command_execution_release_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
             "final_durable_release_ready": False,
             "main_push_requested": False,
             "current_authoring_ceiling": (
-                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_section_64_canary_command_allowlist_contract_section_65_canary_creation_boundary_contract_section_66_ownership_marker_proof_contract_section_67_rollback_cleanup_proof_contract_section_68_save_gate_final_review_contract_section_69_canary_rehearsal_readiness_contract_section_70_durable_release_decision_contract_section_71_bridge_recovery_readiness_contract_section_72_canary_read_only_retry_envelope_contract_section_73_canary_read_only_retry_result_admission_contract_section_74_canary_rehearsal_promotion_barrier_contract_section_75_canary_rehearsal_execution_release_contract_section_76_canary_live_runner_envelope_contract_section_77_canary_live_runner_start_contract_and_section_78_canary_live_command_dispatch_release_contract"
+                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_section_64_canary_command_allowlist_contract_section_65_canary_creation_boundary_contract_section_66_ownership_marker_proof_contract_section_67_rollback_cleanup_proof_contract_section_68_save_gate_final_review_contract_section_69_canary_rehearsal_readiness_contract_section_70_durable_release_decision_contract_section_71_bridge_recovery_readiness_contract_section_72_canary_read_only_retry_envelope_contract_section_73_canary_read_only_retry_result_admission_contract_section_74_canary_rehearsal_promotion_barrier_contract_section_75_canary_rehearsal_execution_release_contract_section_76_canary_live_runner_envelope_contract_section_77_canary_live_runner_start_contract_section_78_canary_live_command_dispatch_release_contract_and_section_79_canary_live_command_execution_release_contract"
             ),
             "cxx_changes_required": False,
         },
