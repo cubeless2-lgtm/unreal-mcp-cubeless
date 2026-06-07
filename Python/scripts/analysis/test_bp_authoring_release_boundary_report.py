@@ -24,12 +24,36 @@ def find_row(report: dict, row_id: str) -> dict:
 def main() -> int:
     repo_root = SCRIPT_DIR.parents[2]
     with tempfile.TemporaryDirectory(prefix="mcp_release_boundary_fixture_") as temp_dir:
-        project_root = Path(temp_dir)
+        fixture_root = Path(temp_dir)
+        project_root = fixture_root / "CubelessStylized"
+        project_root.mkdir()
+        sibling_python = fixture_root / "unreal-mcp-cubeless" / "Python"
+        sibling_python.mkdir(parents=True)
+        (sibling_python / "unreal_mcp_server.py").write_text("# fixture\n", encoding="utf-8")
+        (project_root / ".mcp.json").write_text(
+            """{
+  "mcpServers": {
+    "unrealMCP": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "../unreal-mcp-cubeless/Python",
+        "run",
+        "--python",
+        "3.11",
+        "unreal_mcp_server.py"
+      ]
+    }
+  }
+}
+""",
+            encoding="utf-8",
+        )
         (project_root / "Content" / "_MCP_Temp" / "PlannerDrivenSmoke").mkdir(parents=True)
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_70_v12"
+        assert report["verdict"]["release_boundary_version"] == "section_71_v13"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -41,6 +65,7 @@ def main() -> int:
         assert report["verdict"]["section_68_save_gate_final_review_status"] == "passed"
         assert report["verdict"]["section_69_canary_rehearsal_readiness_status"] == "passed"
         assert report["verdict"]["section_70_durable_release_decision_status"] == "passed"
+        assert report["verdict"]["section_71_bridge_recovery_readiness_status"] == "passed"
         assert report["verdict"]["final_durable_release_ready"] is False
         assert report["verdict"]["main_push_requested"] is False
         assert report["verdict"]["mvp_decision_status"] == "temporary_mvp_ready_durable_not_enabled"
@@ -252,6 +277,19 @@ def main() -> int:
         assert release_decision_row["actual"]["allowed_live_authoring_command_count"] == 0
         assert release_decision_row["actual"]["preflight_pass_count"] == 0
         assert release_decision_row["actual"]["final_durable_release_ready_count"] == 0
+        bridge_recovery_row = find_row(report, "durable_bridge_recovery_readiness_contract")
+        assert bridge_recovery_row["status"] == "passed"
+        assert bridge_recovery_row["actual"]["durable_requested_bridge_recovery_readiness_count"] == 1
+        assert bridge_recovery_row["actual"]["local_recovery_inputs_ready_count"] == 1
+        assert bridge_recovery_row["actual"]["missing_recovery_input_count"] == 0
+        assert bridge_recovery_row["actual"]["bridge_socket_probe_performed_count"] == 0
+        assert bridge_recovery_row["actual"]["bridge_reachable_count"] == 0
+        assert bridge_recovery_row["actual"]["read_only_canary_retry_allowed_after_recovery_count"] == 0
+        assert bridge_recovery_row["actual"]["durable_executor_may_open_after_recovery_count"] == 0
+        assert bridge_recovery_row["actual"]["durable_authoring_allowed_count"] == 0
+        assert bridge_recovery_row["actual"]["save_delete_rename_allowed_count"] == 0
+        assert bridge_recovery_row["actual"]["live_authoring_command_count"] == 0
+        assert bridge_recovery_row["actual"]["live_save_or_delete_command_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
