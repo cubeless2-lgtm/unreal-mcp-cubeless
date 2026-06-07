@@ -1,0 +1,543 @@
+#!/usr/bin/env python
+"""
+Section 94 durable canary authoring final release readiness contract.
+
+This contract validates a future final-readiness record after the final
+no-save release record is valid. It does not enable durable authoring and does
+not accept completion, writes, saves, delete/rename, cleanup, or implementation
+review without an explicit durable MVP request.
+"""
+
+from __future__ import annotations
+
+from typing import Any, Dict, Sequence
+
+
+CANARY_DURABLE_AUTHORING_FINAL_RELEASE_READINESS_SCHEMA = (
+    "section_94_durable_canary_authoring_final_release_readiness_contract_v1"
+)
+CANARY_DURABLE_AUTHORING_FINAL_RELEASE_READINESS_RECORD_SCHEMA = (
+    "section_94_durable_canary_authoring_final_release_readiness_record_v1"
+)
+CANARY_DURABLE_AUTHORING_FINAL_RELEASE_READINESS_SUMMARY_SCHEMA = (
+    "section_94_durable_canary_authoring_final_release_readiness_summary_v1"
+)
+EXPECTED_FINAL_RELEASE_READINESS_SCOPE = "durable_canary_authoring_final_release_readiness_only"
+
+
+def _attempted(value: Any) -> bool:
+    return value is True or value == 1
+
+
+def _count(value: Any) -> int:
+    if value is True:
+        return 1
+    if value in (False, None, ""):
+        return 0
+    try:
+        return max(0, int(value))
+    except (TypeError, ValueError):
+        return 0
+
+
+def build_canary_durable_authoring_final_release_readiness_contract(
+    requested: bool,
+    final_no_save_release_summary: Dict[str, Any],
+    readiness_record: Dict[str, Any] | None = None,
+) -> Dict[str, Any]:
+    readiness_record = readiness_record or {}
+    readiness_record_present = bool(readiness_record)
+    final_no_save_release_contract_ready = bool(
+        requested
+        and final_no_save_release_summary.get("status") == "passed"
+        and final_no_save_release_summary.get("final_no_save_release_contract_defined_count") == 1
+        and final_no_save_release_summary.get("final_no_save_release_record_rejected_count") == 0
+        and final_no_save_release_summary.get("unsafe_final_no_save_release_record_count") == 0
+        and final_no_save_release_summary.get("reported_forbidden_final_no_save_release_count") == 0
+        and final_no_save_release_summary.get("durable_authoring_final_no_save_release_accepted_count") == 0
+        and final_no_save_release_summary.get("durable_authoring_command_result_readback_accepted_count") == 0
+        and final_no_save_release_summary.get("durable_authoring_command_completed_count") == 0
+        and final_no_save_release_summary.get("asset_write_performed_count") == 0
+        and final_no_save_release_summary.get("package_dirty_marked_count") == 0
+        and final_no_save_release_summary.get("durable_authoring_enabled_count") == 0
+        and final_no_save_release_summary.get("durable_authoring_allowed_count") == 0
+        and final_no_save_release_summary.get("save_delete_rename_allowed_count") == 0
+        and final_no_save_release_summary.get("cleanup_allowed_count") == 0
+        and final_no_save_release_summary.get("live_command_dispatched_count") == 0
+        and final_no_save_release_summary.get("live_command_executed_count") == 0
+    )
+    final_no_save_release_inputs_satisfied = bool(
+        final_no_save_release_summary.get("final_no_save_release_inputs_satisfied_count") == 1
+    )
+    final_no_save_release_record_valid = bool(
+        final_no_save_release_summary.get("final_no_save_release_record_valid_count") == 1
+    )
+    allowed_final_no_save_release_observed = bool(
+        final_no_save_release_summary.get("allowed_final_no_save_release_observed_count") == 1
+    )
+    no_forbidden_final_no_save_releases = bool(
+        final_no_save_release_summary.get("no_forbidden_final_no_save_releases_count") == 1
+    )
+    final_release_readiness_inputs_satisfied = bool(
+        final_no_save_release_inputs_satisfied
+        and final_no_save_release_record_valid
+        and allowed_final_no_save_release_observed
+        and no_forbidden_final_no_save_releases
+    )
+    record_schema_matches = bool(
+        readiness_record_present
+        and readiness_record.get("schema")
+        == CANARY_DURABLE_AUTHORING_FINAL_RELEASE_READINESS_RECORD_SCHEMA
+    )
+    readiness_scope_matches = bool(
+        readiness_record_present
+        and readiness_record.get("readiness_scope")
+        == EXPECTED_FINAL_RELEASE_READINESS_SCOPE
+    )
+    explicit_readiness_authorized = bool(
+        readiness_record_present
+        and readiness_record.get("explicit_durable_authoring_final_release_readiness_authorized")
+        is True
+    )
+    readiness_status_passed = bool(
+        readiness_record_present and readiness_record.get("status") == "passed"
+    )
+    no_save_delete_rename_acknowledged = bool(
+        readiness_record_present
+        and readiness_record.get("operator_reconfirmed_no_save_delete_rename") is True
+    )
+    explicit_durable_mvp_request_reconfirmed = bool(
+        readiness_record_present
+        and readiness_record.get("explicit_durable_mvp_request_reconfirmed") is True
+    )
+    reported_release_readiness_review_count = _count(
+        readiness_record.get("reported_release_readiness_review_count")
+    )
+    reported_no_save_contract_revalidated_count = _count(
+        readiness_record.get("reported_no_save_contract_revalidated_count")
+    )
+    reported_no_write_contract_revalidated_count = _count(
+        readiness_record.get("reported_no_write_contract_revalidated_count")
+    )
+    reported_completion_acceptance_readiness_count = _count(
+        readiness_record.get("reported_completion_acceptance_readiness_count")
+    )
+    reported_asset_write_readiness_count = _count(
+        readiness_record.get("reported_asset_write_readiness_count")
+    )
+    reported_package_dirty_readiness_count = _count(
+        readiness_record.get("reported_package_dirty_readiness_count")
+    )
+    reported_save_readiness_count = _count(readiness_record.get("reported_save_readiness_count"))
+    reported_delete_rename_readiness_count = _count(
+        readiness_record.get("reported_delete_rename_readiness_count")
+    )
+    reported_cleanup_readiness_count = _count(
+        readiness_record.get("reported_cleanup_readiness_count")
+    )
+    reported_durable_authoring_readiness_count = _count(
+        readiness_record.get("reported_durable_authoring_readiness_count")
+    )
+    reported_allowed_final_release_readiness_count = (
+        reported_release_readiness_review_count
+        + reported_no_save_contract_revalidated_count
+        + reported_no_write_contract_revalidated_count
+    )
+    reported_forbidden_final_release_readiness_count = (
+        reported_completion_acceptance_readiness_count
+        + reported_asset_write_readiness_count
+        + reported_package_dirty_readiness_count
+        + reported_save_readiness_count
+        + reported_delete_rename_readiness_count
+        + reported_cleanup_readiness_count
+        + reported_durable_authoring_readiness_count
+    )
+    allowed_final_release_readiness_observed = bool(
+        readiness_record_present and reported_allowed_final_release_readiness_count > 0
+    )
+    no_forbidden_final_release_readiness_claims = bool(
+        readiness_record_present and reported_forbidden_final_release_readiness_count == 0
+    )
+    unsafe_final_release_readiness_record_count = (
+        sum(
+            int(_attempted(readiness_record.get(key)))
+            for key in (
+                "durable_authoring_final_release_readiness_accepted",
+                "durable_authoring_final_no_save_release_accepted",
+                "durable_authoring_command_result_readback_accepted",
+                "durable_authoring_command_completed",
+                "durable_authoring_command_completion_result_accepted",
+                "asset_write_performed",
+                "package_dirty_marked",
+                "save_asset_executed",
+                "delete_asset_authorized",
+                "rename_asset_authorized",
+                "cleanup_authorized",
+                "durable_authoring_enabled",
+                "durable_authoring_allowed",
+                "live_command_dispatched",
+                "live_command_executed",
+                "durable_executor_implementation_review_started",
+            )
+        )
+        + reported_forbidden_final_release_readiness_count
+    )
+    final_release_readiness_contract_defined = bool(
+        requested and final_no_save_release_contract_ready
+    )
+    final_release_readiness_record_valid = bool(
+        final_release_readiness_contract_defined
+        and final_release_readiness_inputs_satisfied
+        and record_schema_matches
+        and readiness_scope_matches
+        and explicit_readiness_authorized
+        and readiness_status_passed
+        and no_save_delete_rename_acknowledged
+        and explicit_durable_mvp_request_reconfirmed
+        and allowed_final_release_readiness_observed
+        and no_forbidden_final_release_readiness_claims
+        and unsafe_final_release_readiness_record_count == 0
+    )
+    missing = []
+    if requested:
+        if not final_no_save_release_inputs_satisfied:
+            missing.append("section_93_final_no_save_release_inputs_satisfied")
+        if not final_no_save_release_record_valid:
+            missing.append("section_93_final_no_save_release_record_valid")
+        if not allowed_final_no_save_release_observed:
+            missing.append("section_93_allowed_final_no_save_release_observed")
+        if not no_forbidden_final_no_save_releases:
+            missing.append("section_93_no_forbidden_final_no_save_releases")
+        if not readiness_record_present:
+            missing.append("durable_authoring_final_release_readiness_record_present")
+        if not record_schema_matches:
+            missing.append("durable_authoring_final_release_readiness_record_schema")
+        if not readiness_scope_matches:
+            missing.append("durable_canary_authoring_final_release_readiness_only_scope")
+        if not explicit_readiness_authorized:
+            missing.append("explicit_durable_authoring_final_release_readiness_authorization")
+        if not readiness_status_passed:
+            missing.append("durable_authoring_final_release_readiness_status_passed")
+        if not no_save_delete_rename_acknowledged:
+            missing.append("operator_reconfirmed_no_save_delete_rename")
+        if not explicit_durable_mvp_request_reconfirmed:
+            missing.append("explicit_durable_mvp_request_reconfirmed")
+        if not allowed_final_release_readiness_observed:
+            missing.append("allowed_durable_authoring_final_release_readiness_observed")
+        if not no_forbidden_final_release_readiness_claims:
+            missing.append("no_forbidden_durable_authoring_final_release_readiness_claims")
+        missing.append("separate_durable_executor_implementation_review_contract")
+    final_release_readiness_record_rejected = bool(
+        readiness_record_present and not final_release_readiness_record_valid
+    )
+    return {
+        "id": "durable_canary_authoring_final_release_readiness",
+        "schema": CANARY_DURABLE_AUTHORING_FINAL_RELEASE_READINESS_SCHEMA,
+        "requested": requested,
+        "final_release_readiness_contract_defined": final_release_readiness_contract_defined,
+        "required_final_release_readiness_record_schema": (
+            CANARY_DURABLE_AUTHORING_FINAL_RELEASE_READINESS_RECORD_SCHEMA
+            if requested
+            else ""
+        ),
+        "expected_final_release_readiness_scope": (
+            EXPECTED_FINAL_RELEASE_READINESS_SCOPE if requested else ""
+        ),
+        "final_no_save_release_contract_ready": final_no_save_release_contract_ready,
+        "final_no_save_release_inputs_satisfied": final_no_save_release_inputs_satisfied,
+        "final_no_save_release_record_valid": final_no_save_release_record_valid,
+        "allowed_final_no_save_release_observed": allowed_final_no_save_release_observed,
+        "no_forbidden_final_no_save_releases": no_forbidden_final_no_save_releases,
+        "final_release_readiness_inputs_satisfied": final_release_readiness_inputs_satisfied,
+        "final_release_readiness_record_present": readiness_record_present,
+        "record_schema_matches": record_schema_matches,
+        "readiness_scope_matches": readiness_scope_matches,
+        "explicit_readiness_authorized": explicit_readiness_authorized,
+        "readiness_status_passed": readiness_status_passed,
+        "no_save_delete_rename_acknowledged": no_save_delete_rename_acknowledged,
+        "explicit_durable_mvp_request_reconfirmed": explicit_durable_mvp_request_reconfirmed,
+        "reported_allowed_final_release_readiness_count": (
+            reported_allowed_final_release_readiness_count
+        ),
+        "reported_forbidden_final_release_readiness_count": (
+            reported_forbidden_final_release_readiness_count
+        ),
+        "allowed_final_release_readiness_observed": allowed_final_release_readiness_observed,
+        "no_forbidden_final_release_readiness_claims": (
+            no_forbidden_final_release_readiness_claims
+        ),
+        "final_release_readiness_record_valid": final_release_readiness_record_valid,
+        "final_release_readiness_record_rejected": final_release_readiness_record_rejected,
+        "unsafe_final_release_readiness_record_count": unsafe_final_release_readiness_record_count,
+        "missing_final_release_readiness_prerequisites": missing,
+        "missing_final_release_readiness_prerequisite_count": len(missing),
+        "durable_authoring_final_release_readiness_accepted": False,
+        "durable_authoring_final_no_save_release_accepted": False,
+        "durable_authoring_command_result_readback_accepted": False,
+        "durable_authoring_command_completed": False,
+        "asset_write_performed": False,
+        "package_dirty_marked": False,
+        "durable_authoring_enabled": False,
+        "durable_authoring_allowed": False,
+        "save_delete_rename_allowed": False,
+        "cleanup_allowed": False,
+        "live_command_dispatched": False,
+        "live_command_executed": False,
+        "durable_executor_implementation_review_started": False,
+        "reported_release_readiness_review_count": reported_release_readiness_review_count,
+        "reported_no_save_contract_revalidated_count": reported_no_save_contract_revalidated_count,
+        "reported_no_write_contract_revalidated_count": reported_no_write_contract_revalidated_count,
+        "reported_completion_acceptance_readiness_count": (
+            reported_completion_acceptance_readiness_count
+        ),
+        "reported_asset_write_readiness_count": reported_asset_write_readiness_count,
+        "reported_package_dirty_readiness_count": reported_package_dirty_readiness_count,
+        "reported_save_readiness_count": reported_save_readiness_count,
+        "reported_delete_rename_readiness_count": reported_delete_rename_readiness_count,
+        "reported_cleanup_readiness_count": reported_cleanup_readiness_count,
+        "reported_durable_authoring_readiness_count": reported_durable_authoring_readiness_count,
+    }
+
+
+def summarize_canary_durable_authoring_final_release_readiness(
+    contracts: Sequence[Dict[str, Any]]
+) -> Dict[str, Any]:
+    requested = [contract for contract in contracts if contract.get("requested")]
+    rejected_count = sum(
+        1 for contract in requested if contract.get("final_release_readiness_record_rejected")
+    )
+    unsafe_count = sum(
+        contract.get("unsafe_final_release_readiness_record_count", 0)
+        for contract in requested
+    )
+    forbidden_readiness_count = sum(
+        contract.get("reported_forbidden_final_release_readiness_count", 0)
+        for contract in requested
+    )
+    status = "not_requested"
+    if requested:
+        status = (
+            "passed"
+            if sum(
+                1
+                for contract in requested
+                if contract.get("final_release_readiness_contract_defined")
+            )
+            == len(requested)
+            and rejected_count == 0
+            and unsafe_count == 0
+            and forbidden_readiness_count == 0
+            and sum(
+                1
+                for contract in requested
+                if contract.get("durable_authoring_final_release_readiness_accepted")
+            )
+            == 0
+            and sum(
+                1
+                for contract in requested
+                if contract.get("durable_authoring_final_no_save_release_accepted")
+            )
+            == 0
+            and sum(
+                1
+                for contract in requested
+                if contract.get("durable_authoring_command_result_readback_accepted")
+            )
+            == 0
+            and sum(
+                1 for contract in requested if contract.get("durable_authoring_command_completed")
+            )
+            == 0
+            and sum(1 for contract in requested if contract.get("asset_write_performed")) == 0
+            and sum(1 for contract in requested if contract.get("package_dirty_marked")) == 0
+            and sum(1 for contract in requested if contract.get("durable_authoring_enabled")) == 0
+            and sum(1 for contract in requested if contract.get("durable_authoring_allowed")) == 0
+            and sum(1 for contract in requested if contract.get("save_delete_rename_allowed")) == 0
+            and sum(1 for contract in requested if contract.get("cleanup_allowed")) == 0
+            and sum(1 for contract in requested if contract.get("live_command_dispatched")) == 0
+            and sum(1 for contract in requested if contract.get("live_command_executed")) == 0
+            and sum(
+                1
+                for contract in requested
+                if contract.get("durable_executor_implementation_review_started")
+            )
+            == 0
+            else "failed"
+        )
+    return {
+        "schema": CANARY_DURABLE_AUTHORING_FINAL_RELEASE_READINESS_SUMMARY_SCHEMA,
+        "status": status,
+        "durable_requested_canary_authoring_final_release_readiness_count": len(requested),
+        "final_release_readiness_contract_defined_count": sum(
+            1
+            for contract in requested
+            if contract.get("final_release_readiness_contract_defined")
+        ),
+        "final_no_save_release_contract_ready_count": sum(
+            1
+            for contract in requested
+            if contract.get("final_no_save_release_contract_ready")
+        ),
+        "final_no_save_release_inputs_satisfied_count": sum(
+            1
+            for contract in requested
+            if contract.get("final_no_save_release_inputs_satisfied")
+        ),
+        "final_no_save_release_record_valid_count": sum(
+            1
+            for contract in requested
+            if contract.get("final_no_save_release_record_valid")
+        ),
+        "allowed_final_no_save_release_observed_count": sum(
+            1
+            for contract in requested
+            if contract.get("allowed_final_no_save_release_observed")
+        ),
+        "no_forbidden_final_no_save_releases_count": sum(
+            1
+            for contract in requested
+            if contract.get("no_forbidden_final_no_save_releases")
+        ),
+        "final_release_readiness_inputs_satisfied_count": sum(
+            1
+            for contract in requested
+            if contract.get("final_release_readiness_inputs_satisfied")
+        ),
+        "final_release_readiness_record_present_count": sum(
+            1
+            for contract in requested
+            if contract.get("final_release_readiness_record_present")
+        ),
+        "record_schema_matches_count": sum(
+            1 for contract in requested if contract.get("record_schema_matches")
+        ),
+        "readiness_scope_matches_count": sum(
+            1 for contract in requested if contract.get("readiness_scope_matches")
+        ),
+        "explicit_readiness_authorized_count": sum(
+            1 for contract in requested if contract.get("explicit_readiness_authorized")
+        ),
+        "readiness_status_passed_count": sum(
+            1 for contract in requested if contract.get("readiness_status_passed")
+        ),
+        "no_save_delete_rename_acknowledged_count": sum(
+            1 for contract in requested if contract.get("no_save_delete_rename_acknowledged")
+        ),
+        "explicit_durable_mvp_request_reconfirmed_count": sum(
+            1
+            for contract in requested
+            if contract.get("explicit_durable_mvp_request_reconfirmed")
+        ),
+        "allowed_final_release_readiness_observed_count": sum(
+            1
+            for contract in requested
+            if contract.get("allowed_final_release_readiness_observed")
+        ),
+        "no_forbidden_final_release_readiness_claims_count": sum(
+            1
+            for contract in requested
+            if contract.get("no_forbidden_final_release_readiness_claims")
+        ),
+        "final_release_readiness_record_valid_count": sum(
+            1
+            for contract in requested
+            if contract.get("final_release_readiness_record_valid")
+        ),
+        "final_release_readiness_record_rejected_count": rejected_count,
+        "unsafe_final_release_readiness_record_count": unsafe_count,
+        "missing_final_release_readiness_prerequisite_count": sum(
+            contract.get("missing_final_release_readiness_prerequisite_count", 0)
+            for contract in requested
+        ),
+        "reported_allowed_final_release_readiness_count": sum(
+            contract.get("reported_allowed_final_release_readiness_count", 0)
+            for contract in requested
+        ),
+        "reported_forbidden_final_release_readiness_count": forbidden_readiness_count,
+        "durable_authoring_final_release_readiness_accepted_count": sum(
+            1
+            for contract in requested
+            if contract.get("durable_authoring_final_release_readiness_accepted")
+        ),
+        "durable_authoring_final_no_save_release_accepted_count": sum(
+            1
+            for contract in requested
+            if contract.get("durable_authoring_final_no_save_release_accepted")
+        ),
+        "durable_authoring_command_result_readback_accepted_count": sum(
+            1
+            for contract in requested
+            if contract.get("durable_authoring_command_result_readback_accepted")
+        ),
+        "durable_authoring_command_completed_count": sum(
+            1 for contract in requested if contract.get("durable_authoring_command_completed")
+        ),
+        "asset_write_performed_count": sum(
+            1 for contract in requested if contract.get("asset_write_performed")
+        ),
+        "package_dirty_marked_count": sum(
+            1 for contract in requested if contract.get("package_dirty_marked")
+        ),
+        "durable_authoring_enabled_count": sum(
+            1 for contract in requested if contract.get("durable_authoring_enabled")
+        ),
+        "durable_authoring_allowed_count": sum(
+            1 for contract in requested if contract.get("durable_authoring_allowed")
+        ),
+        "save_delete_rename_allowed_count": sum(
+            1 for contract in requested if contract.get("save_delete_rename_allowed")
+        ),
+        "cleanup_allowed_count": sum(
+            1 for contract in requested if contract.get("cleanup_allowed")
+        ),
+        "live_command_dispatched_count": sum(
+            1 for contract in requested if contract.get("live_command_dispatched")
+        ),
+        "live_command_executed_count": sum(
+            1 for contract in requested if contract.get("live_command_executed")
+        ),
+        "durable_executor_implementation_review_started_count": sum(
+            1
+            for contract in requested
+            if contract.get("durable_executor_implementation_review_started")
+        ),
+        "reported_release_readiness_review_count": sum(
+            contract.get("reported_release_readiness_review_count", 0)
+            for contract in requested
+        ),
+        "reported_no_save_contract_revalidated_count": sum(
+            contract.get("reported_no_save_contract_revalidated_count", 0)
+            for contract in requested
+        ),
+        "reported_no_write_contract_revalidated_count": sum(
+            contract.get("reported_no_write_contract_revalidated_count", 0)
+            for contract in requested
+        ),
+        "reported_completion_acceptance_readiness_count": sum(
+            contract.get("reported_completion_acceptance_readiness_count", 0)
+            for contract in requested
+        ),
+        "reported_asset_write_readiness_count": sum(
+            contract.get("reported_asset_write_readiness_count", 0)
+            for contract in requested
+        ),
+        "reported_package_dirty_readiness_count": sum(
+            contract.get("reported_package_dirty_readiness_count", 0)
+            for contract in requested
+        ),
+        "reported_save_readiness_count": sum(
+            contract.get("reported_save_readiness_count", 0) for contract in requested
+        ),
+        "reported_delete_rename_readiness_count": sum(
+            contract.get("reported_delete_rename_readiness_count", 0)
+            for contract in requested
+        ),
+        "reported_cleanup_readiness_count": sum(
+            contract.get("reported_cleanup_readiness_count", 0) for contract in requested
+        ),
+        "reported_durable_authoring_readiness_count": sum(
+            contract.get("reported_durable_authoring_readiness_count", 0)
+            for contract in requested
+        ),
+    }

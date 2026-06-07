@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_93_v35"
+        assert report["verdict"]["release_boundary_version"] == "section_94_v36"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -88,6 +88,7 @@ def main() -> int:
         assert report["verdict"]["section_91_canary_authoring_command_completion_result_status"] == "passed"
         assert report["verdict"]["section_92_canary_authoring_command_result_readback_status"] == "passed"
         assert report["verdict"]["section_93_canary_authoring_final_no_save_release_status"] == "passed"
+        assert report["verdict"]["section_94_canary_authoring_final_release_readiness_status"] == "passed"
         assert report["verdict"]["final_durable_release_ready"] is False
         assert report["verdict"]["main_push_requested"] is False
         assert report["verdict"]["mvp_decision_status"] == "temporary_mvp_ready_durable_not_enabled"
@@ -1065,6 +1066,44 @@ def main() -> int:
         assert final_release_row["actual"]["cleanup_allowed_count"] == 0
         assert final_release_row["actual"]["live_command_dispatched_count"] == 0
         assert final_release_row["actual"]["live_command_executed_count"] == 0
+        readiness_row = find_row(report, "durable_canary_authoring_final_release_readiness_contract")
+        assert readiness_row["status"] == "passed"
+        assert readiness_row["actual"]["durable_requested_canary_authoring_final_release_readiness_count"] == 1
+        assert readiness_row["actual"]["final_release_readiness_contract_defined_count"] == 1
+        assert readiness_row["actual"]["final_no_save_release_contract_ready_count"] == 1
+        assert readiness_row["actual"]["final_no_save_release_inputs_satisfied_count"] == 0
+        assert readiness_row["actual"]["final_no_save_release_record_valid_count"] == 0
+        assert readiness_row["actual"]["allowed_final_no_save_release_observed_count"] == 0
+        assert readiness_row["actual"]["no_forbidden_final_no_save_releases_count"] == 0
+        assert readiness_row["actual"]["final_release_readiness_inputs_satisfied_count"] == 0
+        assert readiness_row["actual"]["final_release_readiness_record_present_count"] == 0
+        assert readiness_row["actual"]["record_schema_matches_count"] == 0
+        assert readiness_row["actual"]["readiness_scope_matches_count"] == 0
+        assert readiness_row["actual"]["explicit_readiness_authorized_count"] == 0
+        assert readiness_row["actual"]["readiness_status_passed_count"] == 0
+        assert readiness_row["actual"]["no_save_delete_rename_acknowledged_count"] == 0
+        assert readiness_row["actual"]["explicit_durable_mvp_request_reconfirmed_count"] == 0
+        assert readiness_row["actual"]["allowed_final_release_readiness_observed_count"] == 0
+        assert readiness_row["actual"]["no_forbidden_final_release_readiness_claims_count"] == 0
+        assert readiness_row["actual"]["final_release_readiness_record_valid_count"] == 0
+        assert readiness_row["actual"]["final_release_readiness_record_rejected_count"] == 0
+        assert readiness_row["actual"]["unsafe_final_release_readiness_record_count"] == 0
+        assert readiness_row["actual"]["missing_final_release_readiness_prerequisite_count"] == 14
+        assert readiness_row["actual"]["reported_allowed_final_release_readiness_count"] == 0
+        assert readiness_row["actual"]["reported_forbidden_final_release_readiness_count"] == 0
+        assert readiness_row["actual"]["durable_authoring_final_release_readiness_accepted_count"] == 0
+        assert readiness_row["actual"]["durable_authoring_final_no_save_release_accepted_count"] == 0
+        assert readiness_row["actual"]["durable_authoring_command_result_readback_accepted_count"] == 0
+        assert readiness_row["actual"]["durable_authoring_command_completed_count"] == 0
+        assert readiness_row["actual"]["asset_write_performed_count"] == 0
+        assert readiness_row["actual"]["package_dirty_marked_count"] == 0
+        assert readiness_row["actual"]["durable_authoring_enabled_count"] == 0
+        assert readiness_row["actual"]["durable_authoring_allowed_count"] == 0
+        assert readiness_row["actual"]["save_delete_rename_allowed_count"] == 0
+        assert readiness_row["actual"]["cleanup_allowed_count"] == 0
+        assert readiness_row["actual"]["live_command_dispatched_count"] == 0
+        assert readiness_row["actual"]["live_command_executed_count"] == 0
+        assert readiness_row["actual"]["durable_executor_implementation_review_started_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False

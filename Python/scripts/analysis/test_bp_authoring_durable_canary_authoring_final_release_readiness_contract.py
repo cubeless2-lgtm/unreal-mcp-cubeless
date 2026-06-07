@@ -1,0 +1,209 @@
+#!/usr/bin/env python
+"""Offline smoke tests for bp_authoring_durable_canary_authoring_final_release_readiness_contract.py."""
+
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(SCRIPT_DIR))
+
+import bp_authoring_durable_canary_authoring_final_no_save_release_contract as final_release  # noqa: E402
+import bp_authoring_durable_canary_authoring_final_release_readiness_contract as readiness  # noqa: E402
+
+
+def build_current_final_no_save_release_summary() -> dict:
+    return {
+        "schema": final_release.CANARY_DURABLE_AUTHORING_FINAL_NO_SAVE_RELEASE_SUMMARY_SCHEMA,
+        "status": "passed",
+        "durable_requested_canary_authoring_final_no_save_release_count": 1,
+        "final_no_save_release_contract_defined_count": 1,
+        "readback_contract_ready_count": 1,
+        "readback_inputs_satisfied_count": 0,
+        "readback_record_valid_count": 0,
+        "allowed_readback_observed_count": 0,
+        "no_forbidden_readbacks_count": 0,
+        "final_no_save_release_inputs_satisfied_count": 0,
+        "final_no_save_release_record_present_count": 0,
+        "record_schema_matches_count": 0,
+        "final_no_save_release_scope_matches_count": 0,
+        "explicit_final_no_save_release_authorized_count": 0,
+        "final_no_save_release_status_passed_count": 0,
+        "no_save_delete_rename_acknowledged_count": 0,
+        "allowed_final_no_save_release_observed_count": 0,
+        "no_forbidden_final_no_save_releases_count": 0,
+        "final_no_save_release_record_valid_count": 0,
+        "final_no_save_release_record_rejected_count": 0,
+        "unsafe_final_no_save_release_record_count": 0,
+        "missing_final_no_save_release_prerequisite_count": 13,
+        "reported_allowed_final_no_save_release_count": 0,
+        "reported_forbidden_final_no_save_release_count": 0,
+        "durable_authoring_final_no_save_release_accepted_count": 0,
+        "durable_authoring_command_result_readback_accepted_count": 0,
+        "durable_authoring_command_completed_count": 0,
+        "asset_write_performed_count": 0,
+        "package_dirty_marked_count": 0,
+        "durable_authoring_enabled_count": 0,
+        "durable_authoring_allowed_count": 0,
+        "save_delete_rename_allowed_count": 0,
+        "cleanup_allowed_count": 0,
+        "live_command_dispatched_count": 0,
+        "live_command_executed_count": 0,
+    }
+
+
+def build_readiness_record(**overrides: object) -> dict:
+    record = {
+        "schema": readiness.CANARY_DURABLE_AUTHORING_FINAL_RELEASE_READINESS_RECORD_SCHEMA,
+        "readiness_scope": readiness.EXPECTED_FINAL_RELEASE_READINESS_SCOPE,
+        "explicit_durable_authoring_final_release_readiness_authorized": True,
+        "status": "passed",
+        "operator_reconfirmed_no_save_delete_rename": True,
+        "explicit_durable_mvp_request_reconfirmed": True,
+        "durable_authoring_final_release_readiness_accepted": False,
+        "durable_authoring_final_no_save_release_accepted": False,
+        "durable_authoring_command_result_readback_accepted": False,
+        "durable_authoring_command_completed": False,
+        "durable_authoring_command_completion_result_accepted": False,
+        "asset_write_performed": False,
+        "package_dirty_marked": False,
+        "save_asset_executed": False,
+        "delete_asset_authorized": False,
+        "rename_asset_authorized": False,
+        "cleanup_authorized": False,
+        "durable_authoring_enabled": False,
+        "durable_authoring_allowed": False,
+        "live_command_dispatched": False,
+        "live_command_executed": False,
+        "durable_executor_implementation_review_started": False,
+        "reported_release_readiness_review_count": 1,
+        "reported_no_save_contract_revalidated_count": 1,
+        "reported_no_write_contract_revalidated_count": 1,
+        "reported_completion_acceptance_readiness_count": 0,
+        "reported_asset_write_readiness_count": 0,
+        "reported_package_dirty_readiness_count": 0,
+        "reported_save_readiness_count": 0,
+        "reported_delete_rename_readiness_count": 0,
+        "reported_cleanup_readiness_count": 0,
+        "reported_durable_authoring_readiness_count": 0,
+    }
+    record.update(overrides)
+    return record
+
+
+def main() -> int:
+    current_summary = build_current_final_no_save_release_summary()
+    contract = readiness.build_canary_durable_authoring_final_release_readiness_contract(
+        True,
+        current_summary,
+    )
+    assert contract["schema"] == readiness.CANARY_DURABLE_AUTHORING_FINAL_RELEASE_READINESS_SCHEMA
+    assert contract["requested"] is True
+    assert contract["final_release_readiness_contract_defined"] is True
+    assert contract["final_no_save_release_contract_ready"] is True
+    assert contract["final_no_save_release_inputs_satisfied"] is False
+    assert contract["final_no_save_release_record_valid"] is False
+    assert contract["allowed_final_no_save_release_observed"] is False
+    assert contract["no_forbidden_final_no_save_releases"] is False
+    assert contract["final_release_readiness_inputs_satisfied"] is False
+    assert contract["final_release_readiness_record_present"] is False
+    assert contract["final_release_readiness_record_valid"] is False
+    assert contract["final_release_readiness_record_rejected"] is False
+    assert contract["unsafe_final_release_readiness_record_count"] == 0
+    assert contract["missing_final_release_readiness_prerequisite_count"] == 14
+    assert "section_93_final_no_save_release_inputs_satisfied" in contract[
+        "missing_final_release_readiness_prerequisites"
+    ]
+    assert "section_93_final_no_save_release_record_valid" in contract[
+        "missing_final_release_readiness_prerequisites"
+    ]
+    assert "section_93_allowed_final_no_save_release_observed" in contract[
+        "missing_final_release_readiness_prerequisites"
+    ]
+    assert "section_93_no_forbidden_final_no_save_releases" in contract[
+        "missing_final_release_readiness_prerequisites"
+    ]
+    assert "durable_authoring_final_release_readiness_record_present" in contract[
+        "missing_final_release_readiness_prerequisites"
+    ]
+    assert "explicit_durable_mvp_request_reconfirmed" in contract[
+        "missing_final_release_readiness_prerequisites"
+    ]
+    assert "separate_durable_executor_implementation_review_contract" in contract[
+        "missing_final_release_readiness_prerequisites"
+    ]
+    assert contract["durable_authoring_final_release_readiness_accepted"] is False
+    assert contract["durable_authoring_final_no_save_release_accepted"] is False
+    assert contract["durable_authoring_command_result_readback_accepted"] is False
+    assert contract["durable_authoring_command_completed"] is False
+    assert contract["asset_write_performed"] is False
+    assert contract["save_delete_rename_allowed"] is False
+    assert contract["durable_executor_implementation_review_started"] is False
+
+    summary = readiness.summarize_canary_durable_authoring_final_release_readiness([contract])
+    assert summary["status"] == "passed"
+    assert summary["durable_requested_canary_authoring_final_release_readiness_count"] == 1
+    assert summary["final_release_readiness_contract_defined_count"] == 1
+    assert summary["final_no_save_release_contract_ready_count"] == 1
+    assert summary["final_release_readiness_record_valid_count"] == 0
+    assert summary["final_release_readiness_record_rejected_count"] == 0
+    assert summary["unsafe_final_release_readiness_record_count"] == 0
+    assert summary["missing_final_release_readiness_prerequisite_count"] == 14
+    assert summary["durable_authoring_final_release_readiness_accepted_count"] == 0
+    assert summary["durable_authoring_final_no_save_release_accepted_count"] == 0
+    assert summary["durable_authoring_command_result_readback_accepted_count"] == 0
+    assert summary["durable_authoring_command_completed_count"] == 0
+    assert summary["asset_write_performed_count"] == 0
+    assert summary["save_delete_rename_allowed_count"] == 0
+    assert summary["durable_executor_implementation_review_started_count"] == 0
+
+    future_summary = {
+        **current_summary,
+        "final_no_save_release_inputs_satisfied_count": 1,
+        "final_no_save_release_record_valid_count": 1,
+        "allowed_final_no_save_release_observed_count": 1,
+        "no_forbidden_final_no_save_releases_count": 1,
+    }
+    future_contract = readiness.build_canary_durable_authoring_final_release_readiness_contract(
+        True,
+        future_summary,
+        build_readiness_record(),
+    )
+    assert future_contract["final_release_readiness_record_valid"] is True
+    assert future_contract["missing_final_release_readiness_prerequisite_count"] == 1
+    assert future_contract["missing_final_release_readiness_prerequisites"] == [
+        "separate_durable_executor_implementation_review_contract"
+    ]
+    assert future_contract["reported_allowed_final_release_readiness_count"] == 3
+    assert future_contract["reported_forbidden_final_release_readiness_count"] == 0
+    assert future_contract["durable_authoring_final_release_readiness_accepted"] is False
+    assert future_contract["durable_authoring_final_no_save_release_accepted"] is False
+    assert future_contract["asset_write_performed"] is False
+    assert future_contract["save_delete_rename_allowed"] is False
+    assert future_contract["durable_executor_implementation_review_started"] is False
+
+    unsafe_contract = readiness.build_canary_durable_authoring_final_release_readiness_contract(
+        True,
+        future_summary,
+        build_readiness_record(durable_executor_implementation_review_started=True),
+    )
+    assert unsafe_contract["final_release_readiness_record_valid"] is False
+    assert unsafe_contract["final_release_readiness_record_rejected"] is True
+    assert unsafe_contract["unsafe_final_release_readiness_record_count"] == 1
+    unsafe_summary = readiness.summarize_canary_durable_authoring_final_release_readiness(
+        [unsafe_contract]
+    )
+    assert unsafe_summary["status"] == "failed"
+    assert unsafe_summary["final_release_readiness_record_rejected_count"] == 1
+    assert unsafe_summary["unsafe_final_release_readiness_record_count"] == 1
+    assert unsafe_summary["durable_authoring_final_release_readiness_accepted_count"] == 0
+    assert unsafe_summary["durable_executor_implementation_review_started_count"] == 0
+
+    print("BP authoring durable canary authoring final release readiness contract smoke passed")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
