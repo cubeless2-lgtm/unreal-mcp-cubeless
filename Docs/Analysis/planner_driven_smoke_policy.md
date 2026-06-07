@@ -8,18 +8,20 @@ request and live UnrealMCP asset-authoring commands.
 1. Classify every request with `bp_authoring_planner.py`.
 2. Convert the planner result into a Section 12 job manifest with
    `bp_authoring_job_contract.py`.
-3. Put only executable temporary-smoke `safe_to_author` manifests into the live
-   authoring queue.
-4. Record `requires_review` and `blocked_until_reinforced` manifests as prevented
+3. Build a Section 40 executor policy with
+   `bp_authoring_manifest_executor.py`.
+4. Put only executor-approved temporary-smoke `safe_to_author` manifests into
+   the live authoring queue.
+5. Record `requires_review` and `blocked_until_reinforced` manifests as prevented
    dry-run entries with `authoring_attempted=false`.
-5. Preserve any durable preflight dry-run contract on prevented durable requests
+6. Preserve any durable preflight dry-run contract on prevented durable requests
    without executing durable authoring commands.
-6. In live mode, run only the read-only
+7. In live mode, run only the read-only
    `unreal.EditorAssetLibrary.does_asset_exist` durable preflight check for
    prevented durable requests that declare a target asset path.
-7. Run live authoring only under `/Game/_MCP_Temp/PlannerDrivenSmoke` unless a
+8. Run live authoring only under `/Game/_MCP_Temp/PlannerDrivenSmoke` unless a
    caller explicitly supplies another temporary package path.
-8. Compile without saving, re-read, inspect, and delete every generated
+9. Compile without saving, re-read, inspect, and delete every generated
    temporary Blueprint.
 
 ## Refusal Boundary

@@ -34,6 +34,7 @@ AUTHORING_COMMANDS = {
     "add_blueprint_variable",
     "add_blueprint_event_node",
     "add_blueprint_branch_node",
+    "add_blueprint_sequence_node",
     "add_blueprint_call_function_node",
     "resolve_blueprint_graph",
     "add_blueprint_function_parameter",

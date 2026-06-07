@@ -1,6 +1,6 @@
 # BP Authoring Quality Gate
 
-- Generated UTC: `2026-06-07T04:32:27.448760+00:00`
+- Generated UTC: `2026-06-07T05:27:34.820704+00:00`
 - Verdict: `existing_bp_authoring_quality_gate_passed`
 - C++ changes required for this gate: `False`
 - Temp package root: `/Game/_MCP_Temp/BPAuthoringQualityGate`
@@ -36,8 +36,8 @@
 ## Live Gate
 
 - Status: `passed`
-- Blueprint: `MCP_BPQualityGate_64273358`
-- Asset path: `/Game/_MCP_Temp/BPAuthoringQualityGate/MCP_BPQualityGate_64273358`
+- Blueprint: `MCP_BPQualityGate_3d7f9765`
+- Asset path: `/Game/_MCP_Temp/BPAuthoringQualityGate/MCP_BPQualityGate_3d7f9765`
 - Compile validation pass: `True`
 - Compile errors: `0`
 - Inspected node count: `12`

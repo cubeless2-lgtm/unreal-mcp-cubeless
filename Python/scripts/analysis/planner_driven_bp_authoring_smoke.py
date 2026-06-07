@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 import bp_authoring_job_contract as job_contract
+import bp_authoring_manifest_executor as manifest_executor
 import bp_authoring_planner as planner
 import bp_authoring_quality_gate as quality_gate
 import external_project_readiness_analyzer as base
@@ -30,16 +31,7 @@ DEFAULT_TEMP_PACKAGE_PATH = "/Game/_MCP_Temp/PlannerDrivenSmoke"
 DEFAULT_HOST = quality_gate.DEFAULT_HOST
 DEFAULT_PORT = quality_gate.DEFAULT_PORT
 
-MANIFEST_EXECUTION_SECTIONS: Tuple[str, ...] = (
-    "component_list",
-    "component_default_steps",
-    "variables_defaults",
-    "event_graph_steps",
-    "function_graph_steps",
-    "generated_function_invocation_steps",
-    "dispatcher_lifecycle_steps",
-    "validation_plan",
-)
+MANIFEST_EXECUTION_SECTIONS: Tuple[str, ...] = manifest_executor.EXECUTION_SECTIONS
 
 
 REQUESTS: Tuple[Tuple[str, str], ...] = (
@@ -1174,92 +1166,54 @@ def execute_manifest_sections(
     manifest: Dict[str, Any],
     stage_results: List[Dict[str, Any]],
 ) -> Dict[str, Any]:
-    node_results: Dict[str, Dict[str, Any]] = {}
-    section_results: List[Dict[str, Any]] = []
-    for section in MANIFEST_EXECUTION_SECTIONS:
-        for step in manifest.get(section, []):
-            try:
-                execute_manifest_step(
-                    host,
-                    port,
-                    blueprint_name,
-                    manifest["temp_package_path"],
-                    step,
-                    stage_results,
-                    node_results,
-                    section_results,
-                )
-            except Exception as exc:
-                diagnostic = build_failure_diagnostic(
-                    manifest,
-                    blueprint_name,
-                    section,
-                    step,
-                    node_results,
-                    stage_results,
-                    exc,
-                    phase="manifest_step",
-                )
-                section_results.append(
-                    {
-                        "id": step.get("id"),
-                        "operation": step.get("operation", "command"),
-                        "command": step.get("command", ""),
-                        "status": "failed",
-                        "failure_diagnostics": diagnostic,
-                    }
-                )
-                raise ManifestStepFailure(diagnostic) from exc
+    def run_step(
+        section: str,
+        step: Dict[str, Any],
+        node_results: Dict[str, Dict[str, Any]],
+        section_results: List[Dict[str, Any]],
+    ) -> Optional[Dict[str, Any]]:
+        return execute_manifest_step(
+            host,
+            port,
+            blueprint_name,
+            manifest["temp_package_path"],
+            step,
+            stage_results,
+            node_results,
+            section_results,
+        )
 
-    validation = node_results.get("compile_validate", {})
-    event_nodes = node_results.get("event_nodes", {})
-    function_nodes = node_results.get("function_nodes", {})
-    graphs = node_results.get("graphs", {})
-    structural_results = []
-    for step in manifest.get("structural_validation_plan", []):
-        try:
-            structural_results.append(execute_structural_validation_step(node_results, step))
-        except Exception as exc:
-            diagnostic = build_failure_diagnostic(
-                manifest,
-                blueprint_name,
-                "structural_validation_plan",
-                step,
-                node_results,
-                stage_results,
-                exc,
-                phase="structural_validation",
-            )
-            structural_results.append(
-                {
-                    "id": step.get("id"),
-                    "operation": step.get("operation", ""),
-                    "source_step": step.get("source_step", ""),
-                    "status": "failed",
-                    "failure_diagnostics": diagnostic,
-                }
-            )
-            raise ManifestStepFailure(diagnostic) from exc
-    return {
-        "manifest_id": manifest["id"],
-        "blueprint_name": blueprint_name,
-        "section_results": section_results,
-        "structural_results": structural_results,
-        "validation": validation,
-        "node_count": len(event_nodes.get("nodes", [])),
-        "function_node_count": len(function_nodes.get("nodes", [])),
-        "graph_count": len(graphs.get("graphs", [])),
-        "structural_assertion_count": len(structural_results),
-        "layout_assertion_count": sum(1 for result in structural_results if result.get("operation") == "assert_node_layout"),
-        "layout_spacing_assertion_count": sum(
-            1 for result in structural_results if result.get("operation") == "assert_layout_spacing"
+    def run_structural_step(step: Dict[str, Any], node_results: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
+        return execute_structural_validation_step(node_results, step)
+
+    def build_diagnostic(
+        section: str,
+        step: Dict[str, Any],
+        node_results: Dict[str, Dict[str, Any]],
+        exc: Exception,
+        phase: str,
+    ) -> Dict[str, Any]:
+        return build_failure_diagnostic(
+            manifest,
+            blueprint_name,
+            section,
+            step,
+            node_results,
+            stage_results,
+            exc,
+            phase=phase,
+        )
+
+    return manifest_executor.execute_manifest(
+        manifest,
+        blueprint_name,
+        manifest["temp_package_path"],
+        manifest_executor.ManifestExecutorCallbacks(
+            execute_step=run_step,
+            execute_structural_step=run_structural_step,
+            build_failure_diagnostic=build_diagnostic,
         ),
-        "failed_structural_assertion_count": 0,
-        "dataflow_verified": any(
-            result.get("operation") == "assert_pin_link" and result.get("link_kind") == "data"
-            for result in structural_results
-        ),
-    }
+    )
 
 
 def add_common_blueprint_shell(
@@ -1555,6 +1509,7 @@ def run_safe_manifest(
         "plan_id": manifest["id"],
         "manifest_id": manifest["id"],
         "manifest_version": manifest["manifest_version"],
+        "executor_version": manifest_executor.EXECUTOR_VERSION,
         "status": "failed",
         "blueprint_name": blueprint_name,
         "asset_path": asset_path,
@@ -1563,6 +1518,13 @@ def run_safe_manifest(
         "inspection": {},
     }
     try:
+        executor_policy = manifest_executor.build_executor_policy(manifest, temp_package_path)
+        result["executor_policy"] = executor_policy
+        if not executor_policy["can_execute"]:
+            raise manifest_executor.ManifestExecutorFailure(
+                manifest_executor.build_policy_failure_diagnostic(manifest, executor_policy),
+                executor_policy,
+            )
         cleanup_generated_asset(host, port, asset_path, stage_results)
         require_success(
             host,
@@ -1593,10 +1555,14 @@ def run_safe_manifest(
         if not result["inspection"].get("asset_exists"):
             raise quality_gate.BridgeError(f"Generated asset missing after authoring: {result['inspection']}")
         result["status"] = "passed"
-    except ManifestStepFailure as exc:
+    except (ManifestStepFailure, manifest_executor.ManifestExecutorFailure) as exc:
         result["status"] = "failed"
         result["error"] = str(exc)
         result["failure_diagnostics"] = exc.diagnostic
+        if getattr(exc, "policy", None):
+            result["executor_policy"] = exc.policy
+        if getattr(exc, "partial_result", None):
+            result["executor_partial_result"] = exc.partial_result
         result["diagnostics"] = {
             "stage_count": len(stage_results),
             "failed_step_id": exc.diagnostic.get("step_id", ""),
@@ -1612,9 +1578,21 @@ def run_safe_manifest(
                 result["cleanup"] = cleanup_generated_asset(host, port, asset_path, stage_results)
             except Exception as cleanup_exc:
                 result["cleanup"] = {"error": str(cleanup_exc)}
+                result["cleanup_failure_diagnostics"] = manifest_executor.build_cleanup_failure_diagnostic(
+                    manifest,
+                    blueprint_name,
+                    asset_path,
+                    result["cleanup"],
+                )
             if result["status"] == "passed" and not result["cleanup"].get("deleted"):
                 result["status"] = "failed"
                 result["error"] = f"Temporary Blueprint cleanup failed: {result['cleanup']}"
+                result["cleanup_failure_diagnostics"] = manifest_executor.build_cleanup_failure_diagnostic(
+                    manifest,
+                    blueprint_name,
+                    asset_path,
+                    result["cleanup"],
+                )
     return result
 
 
@@ -1670,6 +1648,11 @@ def run_live_smoke(
     if not bridge_available(host, port):
         live_result["status"] = "failed" if require_live else "skipped"
         live_result["reason"] = f"UnrealMCP bridge not reachable at {host}:{port}"
+        live_result["durable_live_preflight_gate"] = manifest_executor.summarize_durable_live_preflight(
+            manifests,
+            live_result.get("durable_preflight_live_results", []),
+            live_requested=True,
+        )
         return live_result
 
     stage_results: List[Dict[str, Any]] = []
@@ -1745,6 +1728,11 @@ print({quality_gate.JSON_LOG_PREFIX!r} + json.dumps(data))
         live_result["status"] = "failed"
         live_result["error"] = str(exc)
         live_result["new_log_errors"] = quality_gate.collect_new_log_errors(project_root, log_snapshot)
+    live_result["durable_live_preflight_gate"] = manifest_executor.summarize_durable_live_preflight(
+        manifests,
+        live_result.get("durable_preflight_live_results", []),
+        live_requested=True,
+    )
     return live_result
 
 
@@ -1756,6 +1744,7 @@ def build_report(
 ) -> Dict[str, Any]:
     manifests = build_manifests(requests, temp_package_path)
     gate_summary = summarize_planner_gate(manifests)
+    executor_summary = manifest_executor.summarize_executor_policies(manifests, temp_package_path)
     live = dict(live_result) if live_result is not None else {"status": "not_requested"}
     if live_result is not None:
         live_prevented_by_id = {item["id"]: item for item in live_result.get("prevented_requests", [])}
@@ -1776,12 +1765,18 @@ def build_report(
             live.get("durable_live_save_or_delete_attempted")
             or any(item.get("save_or_delete_attempted") for item in live.get("durable_preflight_live_results", []))
         )
+    live["durable_live_preflight_gate"] = manifest_executor.summarize_durable_live_preflight(
+        manifests,
+        live.get("durable_preflight_live_results", []),
+        live_requested=live_result is not None,
+    )
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "analysis_kind": "planner_driven_bp_authoring_smoke",
         "output_dir": str(output_dir),
         "temp_package_path": temp_package_path,
         "authoring_job_contract": job_contract.summarize_manifests(manifests),
+        "manifest_executor": executor_summary,
         "planner_gate": gate_summary,
         "plans": [manifest["planner"] for manifest in manifests],
         "authoring_manifests": manifests,
@@ -1790,6 +1785,8 @@ def build_report(
             "status": live.get("status", "not_requested"),
             "safe_requests_queued": gate_summary["safe_request_count"],
             "non_safe_requests_prevented": gate_summary["prevented_request_count"],
+            "executor_version": executor_summary["executor_version"],
+            "executor_executable_manifests": executor_summary["executable_by_executor_count"],
             "cxx_changes_required": False,
             "authoring_policy": "planner_gate_to_job_manifest_before_unrealmcp_asset_authoring",
         },
@@ -1812,8 +1809,11 @@ def render_markdown(report: Dict[str, Any]) -> str:
         f"- Temp package path: `{report['temp_package_path']}`",
         f"- Live status: `{live.get('status')}`",
         f"- Manifest version: `{report['authoring_manifests'][0]['manifest_version'] if report['authoring_manifests'] else 'none'}`",
+        f"- Executor version: `{report['manifest_executor']['executor_version']}`",
         f"- Safe requests queued: `{gate_summary['safe_request_count']}`",
         f"- Non-safe requests prevented: `{gate_summary['prevented_request_count']}`",
+        f"- Executor executable manifests: `{report['manifest_executor']['executable_by_executor_count']}`",
+        f"- Durable executor gate: `{report['manifest_executor']['durable_gate_summary']['status']}`",
         "",
         "## Planner Gate",
         "",
@@ -1838,6 +1838,13 @@ def render_markdown(report: Dict[str, Any]) -> str:
         lines.append(f"- Non-safe authoring attempted: `{live.get('non_safe_authoring_attempted')}`")
         lines.append(f"- Durable authoring attempted: `{live.get('durable_authoring_attempted')}`")
         lines.append(f"- Durable save/delete attempted: `{live.get('durable_live_save_or_delete_attempted')}`")
+    live_preflight_gate = live.get("durable_live_preflight_gate", {})
+    if live_preflight_gate:
+        lines.append(f"- Durable live preflight gate: `{live_preflight_gate.get('status')}`")
+        lines.append(
+            f"- Durable live read-only results: `{live_preflight_gate.get('passed_read_only_result_count')}`/"
+            f"`{live_preflight_gate.get('read_only_live_preflight_allowed_count')}`"
+        )
     if live.get("reason"):
         lines.append(f"- Reason: {live['reason']}")
     if live.get("error"):

@@ -58,6 +58,26 @@ def main() -> int:
         assert report["authoring_job_contract"]["durable_executor_skeleton_enabled_count"] == 0
         assert report["authoring_job_contract"]["durable_executor_skeleton_executable_count"] == 0
         assert report["authoring_job_contract"]["durable_executor_skeleton_command_count"] == 0
+        assert report["manifest_executor"]["executor_version"] == smoke.manifest_executor.EXECUTOR_VERSION
+        assert report["manifest_executor"]["executable_by_executor_count"] == 12
+        assert report["manifest_executor"]["blocked_by_executor_count"] == 7
+        assert report["manifest_executor"]["temporary_scope_only"] is True
+        assert report["manifest_executor"]["durable_authoring_allowed"] is False
+        assert report["manifest_executor"]["save_allowed"] is False
+        assert report["manifest_executor"]["save_step_count"] == 0
+        assert report["manifest_executor"]["unknown_command_count"] == 0
+        assert report["manifest_executor"]["forbidden_command_count"] == 0
+        assert report["manifest_executor"]["durable_gate_summary"]["status"] == "passed"
+        assert report["manifest_executor"]["durable_gate_summary"]["durable_requested_manifest_count"] == 1
+        assert report["manifest_executor"]["durable_gate_summary"]["read_only_live_preflight_allowed_count"] == 1
+        assert report["manifest_executor"]["durable_gate_summary"]["durable_executor_enabled_count"] == 0
+        assert report["manifest_executor"]["durable_gate_summary"]["durable_executor_executable_count"] == 0
+        assert report["manifest_executor"]["durable_gate_summary"]["allowed_live_authoring_command_count"] == 0
+        assert report["manifest_executor"]["durable_gate_summary"]["save_or_delete_commands_allowed_count"] == 0
+        assert report["manifest_executor"]["capability_summary"]["typed_defaults"]["ready_manifest_count"] == 5
+        assert report["manifest_executor"]["capability_summary"]["graph_layout_dataflow"]["ready_manifest_count"] == 11
+        assert report["manifest_executor"]["capability_summary"]["function_graph_executor"]["ready_manifest_count"] == 5
+        assert report["manifest_executor"]["capability_summary"]["dispatcher_lifecycle_executor"]["ready_manifest_count"] == 1
         assert report["planner_gate"]["safe_request_count"] == 12
         assert report["planner_gate"]["requires_review_request_count"] == 1
         assert report["planner_gate"]["blocked_until_reinforced_request_count"] == 3
@@ -66,6 +86,8 @@ def main() -> int:
         assert report["planner_gate"]["status_counts"][planner.STATUS_REVIEW] == 1
         assert report["planner_gate"]["status_counts"][planner.STATUS_BLOCKED] == 3
         assert report["live_gate"]["status"] == "not_requested"
+        assert report["live_gate"]["durable_live_preflight_gate"]["status"] == "not_requested"
+        assert report["live_gate"]["durable_live_preflight_gate"]["durable_preflight_requested_manifest_count"] == 1
 
         safe_ids = {item["id"] for item in report["planner_gate"]["authoring_queue"]}
         assert safe_ids == {
@@ -121,6 +143,15 @@ def main() -> int:
         assert durable_save["durable_executor_skeleton_contract"]["command_plan"] == []
         assert durable_save["durable_executor_skeleton_contract"]["allowed_live_command_count"] == 0
         assert "save_asset" in durable_save["durable_executor_skeleton_contract"]["forbidden_commands"]
+        durable_executor_policy = next(
+            policy
+            for policy in report["manifest_executor"]["policies"]
+            if policy["manifest_id"] == "review_durable_authoring_save_requested"
+        )
+        assert durable_executor_policy["durable_executor_gate"]["status"] == "blocked_save_authoring_read_only_preflight_allowed"
+        assert durable_executor_policy["durable_executor_gate"]["read_only_live_preflight_allowed"] is True
+        assert durable_executor_policy["durable_executor_gate"]["save_allowed"] is False
+        assert durable_executor_policy["durable_executor_gate"]["save_or_delete_commands_allowed"] is False
         assert any(
             item["key"] == "contract_durable_executor_not_enabled"
             for item in durable_save["blocked_review_reasons"]
@@ -180,6 +211,7 @@ def main() -> int:
                 "plan_id": manifest["id"],
                 "manifest_id": manifest["id"],
                 "status": "passed",
+                "executor_version": smoke.manifest_executor.EXECUTOR_VERSION,
                 "asset_path": f"{temp_package_path}/MCP_PlannerSmoke_{manifest['id']}_{run_id}",
                 "execution": {"validation": {"validation_pass": True, "compile_error_count": 0}},
                 "cleanup": {"deleted": True},
@@ -217,6 +249,10 @@ def main() -> int:
         assert live_result["non_safe_authoring_attempted"] is False
         assert live_result["durable_authoring_attempted"] is False
         assert live_result["durable_live_save_or_delete_attempted"] is False
+        assert live_result["durable_live_preflight_gate"]["status"] == "passed"
+        assert live_result["durable_live_preflight_gate"]["passed_read_only_result_count"] == 1
+        assert live_result["durable_live_preflight_gate"]["authoring_attempted_count"] == 0
+        assert live_result["durable_live_preflight_gate"]["save_or_delete_attempted_count"] == 0
         assert len(live_result["durable_preflight_live_results"]) == 1
         durable_live_result = live_result["durable_preflight_live_results"][0]
         assert durable_live_result["schema"] == "section_35_durable_preflight_live_result_v1"
@@ -260,6 +296,10 @@ def main() -> int:
         assert live_report["live_gate"]["non_safe_authoring_attempted"] is False
         assert live_report["live_gate"]["durable_authoring_attempted"] is False
         assert live_report["live_gate"]["durable_live_save_or_delete_attempted"] is False
+        assert live_report["live_gate"]["durable_live_preflight_gate"]["status"] == "passed"
+        assert live_report["live_gate"]["durable_live_preflight_gate"]["read_only_only"] is True
+        assert live_report["verdict"]["executor_version"] == smoke.manifest_executor.EXECUTOR_VERSION
+        assert live_report["verdict"]["executor_executable_manifests"] == 12
 
         failure_originals = {
             "require_success": smoke.require_success,
@@ -293,7 +333,12 @@ def main() -> int:
         assert failed_execution["status"] == "failed"
         assert failed_execution["cleanup"]["deleted"] is True
         failure_diagnostics = failed_execution["failure_diagnostics"]
-        assert failure_diagnostics["diagnostic_schema"] == "section_21_failure_diagnostics_v1"
+        assert failure_diagnostics["diagnostic_schema"] == smoke.manifest_executor.FAILURE_DIAGNOSTIC_SCHEMA
+        assert failure_diagnostics["legacy_diagnostic_schema"] == "section_21_failure_diagnostics_v1"
+        assert failure_diagnostics["executor_version"] == smoke.manifest_executor.EXECUTOR_VERSION
+        assert failure_diagnostics["failure_category"] == "manifest_step_failure"
+        assert failure_diagnostics["replay_safety"]["durable_side_effects_allowed"] is False
+        assert failure_diagnostics["replay_safety"]["safe_to_replay_authoring"] is False
         assert failure_diagnostics["phase"] == "manifest_step"
         assert failure_diagnostics["section"] == "variables_defaults"
         assert failure_diagnostics["step_id"] == "variable_health"

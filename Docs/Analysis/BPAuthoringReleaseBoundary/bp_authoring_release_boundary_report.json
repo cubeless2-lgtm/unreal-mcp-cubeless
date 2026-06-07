@@ -1,0 +1,272 @@
+{
+  "schema": "section_49_50_bp_authoring_release_boundary_v1",
+  "analysis_kind": "bp_authoring_release_boundary",
+  "generated_at": "2026-06-07T05:29:09.873612+00:00",
+  "repo_root": "D:\\Git\\unreal-mcp-cubeless",
+  "project_root": "D:\\Git\\CubelessStylized",
+  "report_inputs": {
+    "planner_driven_smoke": "D:\\Git\\unreal-mcp-cubeless\\Docs\\Analysis\\PlannerDrivenSmoke\\planner_driven_bp_authoring_smoke_report.json",
+    "bp_authoring_quality_gate": "D:\\Git\\unreal-mcp-cubeless\\Docs\\Analysis\\BPAuthoringQualityGate\\bp_authoring_quality_gate_report.json",
+    "lyra_combined_readiness": "D:\\Git\\unreal-mcp-cubeless\\Docs\\Analysis\\Lyra\\lyra_combined_readiness_report.json"
+  },
+  "regression_matrix": [
+    {
+      "id": "job_contract_default_request_set",
+      "label": "Section 12-39 job contract default request set",
+      "status": "passed",
+      "blocking": true,
+      "expected": {
+        "manifest_count": 19,
+        "executable_manifest_count": 12,
+        "non_executable_manifest_count": 7,
+        "non_safe_authoring_command_count": 0,
+        "durable_authoring_request_count": 1,
+        "durable_authoring_eligible_count": 0
+      },
+      "actual": {
+        "manifest_count": 19,
+        "executable_manifest_count": 12,
+        "non_executable_manifest_count": 7,
+        "non_safe_authoring_command_count": 0,
+        "durable_authoring_request_count": 1,
+        "durable_authoring_eligible_count": 0
+      },
+      "notes": []
+    },
+    {
+      "id": "manifest_executor_policy",
+      "label": "Section 40-41 temporary manifest executor policy",
+      "status": "passed",
+      "blocking": true,
+      "expected": {
+        "executable_by_executor_count": 12,
+        "blocked_by_executor_count": 7,
+        "save_step_count": 0,
+        "unknown_command_count": 0,
+        "forbidden_command_count": 0,
+        "durable_authoring_allowed": false,
+        "save_allowed": false
+      },
+      "actual": {
+        "executable_by_executor_count": 12,
+        "blocked_by_executor_count": 7,
+        "save_step_count": 0,
+        "unknown_command_count": 0,
+        "forbidden_command_count": 0,
+        "durable_authoring_allowed": false,
+        "save_allowed": false
+      },
+      "notes": []
+    },
+    {
+      "id": "executor_capability_matrix",
+      "label": "Section 42-45 executor capability matrix",
+      "status": "passed",
+      "blocking": true,
+      "expected": {
+        "typed_defaults": {
+          "requested": 5,
+          "ready": 5,
+          "missing": 0
+        },
+        "graph_layout_dataflow": {
+          "requested": 11,
+          "ready": 11,
+          "missing": 0
+        },
+        "function_graph_executor": {
+          "requested": 5,
+          "ready": 5,
+          "missing": 0
+        },
+        "dispatcher_lifecycle_executor": {
+          "requested": 1,
+          "ready": 1,
+          "missing": 0
+        }
+      },
+      "actual": {
+        "typed_defaults": {
+          "requested": 5,
+          "ready": 5,
+          "missing": 0
+        },
+        "graph_layout_dataflow": {
+          "requested": 11,
+          "ready": 11,
+          "missing": 0
+        },
+        "function_graph_executor": {
+          "requested": 5,
+          "ready": 5,
+          "missing": 0
+        },
+        "dispatcher_lifecycle_executor": {
+          "requested": 1,
+          "ready": 1,
+          "missing": 0
+        }
+      },
+      "notes": []
+    },
+    {
+      "id": "durable_executor_gate_matrix",
+      "label": "Section 46-48 durable executor gate matrix",
+      "status": "passed",
+      "blocking": true,
+      "expected": {
+        "status": "passed",
+        "durable_requested_manifest_count": 1,
+        "read_only_live_preflight_allowed_count": 1,
+        "durable_executor_enabled_count": 0,
+        "durable_executor_executable_count": 0,
+        "allowed_live_authoring_command_count": 0,
+        "contract_save_allowed_count": 0,
+        "save_or_delete_commands_allowed_count": 0,
+        "preflight_pass_count": 0
+      },
+      "actual": {
+        "status": "passed",
+        "durable_requested_manifest_count": 1,
+        "read_only_live_preflight_allowed_count": 1,
+        "durable_executor_enabled_count": 0,
+        "durable_executor_executable_count": 0,
+        "allowed_live_authoring_command_count": 0,
+        "contract_save_allowed_count": 0,
+        "save_or_delete_commands_allowed_count": 0,
+        "preflight_pass_count": 0
+      },
+      "notes": []
+    },
+    {
+      "id": "planner_driven_live_smoke_report",
+      "label": "Planner-driven live smoke report",
+      "status": "passed",
+      "blocking": true,
+      "expected": {
+        "verdict_status": "passed",
+        "safe_requests_queued": 12,
+        "non_safe_requests_prevented": 7,
+        "executor_executable_manifests": 12
+      },
+      "actual": {
+        "verdict_status": "passed",
+        "safe_requests_queued": 12,
+        "non_safe_requests_prevented": 7,
+        "executor_executable_manifests": 12
+      },
+      "notes": []
+    },
+    {
+      "id": "planner_live_cleanup_and_log_boundary",
+      "label": "Planner live cleanup and log boundary",
+      "status": "passed",
+      "blocking": true,
+      "expected": {
+        "generated_leftovers": 0,
+        "new_log_errors": 0,
+        "durable_authoring_attempted": false,
+        "durable_live_save_or_delete_attempted": false
+      },
+      "actual": {
+        "generated_leftovers": 0,
+        "new_log_errors": 0,
+        "durable_authoring_attempted": false,
+        "durable_live_save_or_delete_attempted": false
+      },
+      "notes": []
+    },
+    {
+      "id": "durable_read_only_live_preflight",
+      "label": "Durable read-only live preflight boundary",
+      "status": "passed",
+      "blocking": true,
+      "expected": {
+        "status": "passed",
+        "live_result_count": 1,
+        "passed_read_only_result_count": 1,
+        "authoring_attempted_count": 0,
+        "save_or_delete_attempted_count": 0,
+        "preflight_pass_count": 0
+      },
+      "actual": {
+        "status": "passed",
+        "live_result_count": 1,
+        "passed_read_only_result_count": 1,
+        "authoring_attempted_count": 0,
+        "save_or_delete_attempted_count": 0,
+        "preflight_pass_count": 0
+      },
+      "notes": []
+    },
+    {
+      "id": "bp_authoring_quality_gate_live_report",
+      "label": "BP authoring quality gate live report",
+      "status": "passed",
+      "blocking": true,
+      "expected": {
+        "verdict_status": "existing_bp_authoring_quality_gate_passed",
+        "live_status": "passed",
+        "cxx_changes_required_for_this_gate": false
+      },
+      "actual": {
+        "verdict_status": "existing_bp_authoring_quality_gate_passed",
+        "live_status": "passed",
+        "cxx_changes_required_for_this_gate": false
+      },
+      "notes": []
+    },
+    {
+      "id": "lyra_readiness_boundary",
+      "label": "Lyra readiness and authoring ceiling boundary",
+      "status": "passed",
+      "blocking": true,
+      "expected": {
+        "minimum_stable_scope": "readiness_classification_and_candidate_selection",
+        "ceiling_mentions_temporary_smoke": true,
+        "editor_open_required_now": false,
+        "not_ready_for_count_at_least": 1
+      },
+      "actual": {
+        "minimum_stable_scope": "readiness_classification_and_candidate_selection",
+        "ceiling_mentions_temporary_smoke": true,
+        "editor_open_required_now": false,
+        "not_ready_for_count": 7
+      },
+      "notes": []
+    },
+    {
+      "id": "project_filesystem_side_effect_boundary",
+      "label": "Project filesystem side-effect boundary",
+      "status": "passed",
+      "blocking": true,
+      "expected": {
+        "project_root_exists": true,
+        "generated_planner_smoke_leftovers": 0,
+        "durable_test_asset_exists": false
+      },
+      "actual": {
+        "project_root_exists": true,
+        "generated_planner_smoke_leftovers": 0,
+        "durable_test_asset_exists": false
+      },
+      "notes": []
+    }
+  ],
+  "verdict": {
+    "status": "passed",
+    "failed_blocking_count": 0,
+    "failed_blocking_ids": [],
+    "ready_for_main_push": true,
+    "durable_authoring_enabled": false,
+    "durable_authoring_release_status": "not_enabled_read_only_preflight_only",
+    "current_authoring_ceiling": "planner_safe_temporary_manifest_execution_with_structural_validation_and_durable_read_only_preflight",
+    "cxx_changes_required": false
+  },
+  "next_reinforcement_candidates": [
+    "durable executor enable contract with explicit save gate promotion",
+    "component default/type readback expansion for broader Blueprint classes",
+    "function call diagnostics and graph layout repair suggestions",
+    "UMG/CommonUI authoring classifier and non-executable manifest coverage"
+  ]
+}
