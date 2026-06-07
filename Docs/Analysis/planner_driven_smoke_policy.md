@@ -72,4 +72,8 @@ job manifest until dedicated reinforcement exists.
   `delete_without_marker_allowed=false`, `delete_preexisting_asset_allowed=false`,
   and `delete_allowed_now=false` mean the smoke runner must not run durable
   rollback/delete commands.
+- Section 53 durable dry-run plan may be reported, but
+  `execution_command_plan=[]`, `live_command_count=0`, and
+  `durable_executor_may_execute=false` mean the smoke runner must not run
+  durable executor commands.
 - Section 11 does not require C++ changes.

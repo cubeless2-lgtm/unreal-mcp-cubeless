@@ -28,6 +28,8 @@ Blueprint authoring manifest and live UnrealMCP commands.
     stay separated and do not open durable executor execution.
 11. Section 52 ownership marker coverage must prove delete without marker and
     preexisting asset delete/overwrite/rename remain forbidden.
+12. Section 53 dry-run plan coverage must prove durable plans contain no live
+    execution commands and cannot execute.
 
 ## Execution Boundary
 
@@ -47,6 +49,8 @@ temporary manifests. It must block:
 - any Section 51 enable contract that reports `durable_executor_may_open=true`
 - any ownership marker contract that allows delete without marker or delete of
   a preexisting asset
+- any Section 53 dry-run plan with a non-empty execution command plan or live
+  command count
 
 ## Validation
 
@@ -63,6 +67,9 @@ temporary manifests. It must block:
 - Offline tests must prove the Section 52 ownership marker count: 1 durable
   marker request, 1 marker policy ready request, 0 delete-without-marker
   allowance, and 0 preexisting asset delete allowance.
+- Offline tests must prove the Section 53 dry-run plan count: 1 durable plan
+  created, 1 valid no-command plan, 0 executor may-execute plans, and 0 live
+  commands.
 - The planner-driven live smoke must report the executor version and executor
   executable count.
 - The planner-driven live smoke may perform only the read-only durable

@@ -366,6 +366,7 @@ def build_durable_executor_gate(manifest: Dict[str, Any], command_plan: Sequence
     rollback = manifest.get("durable_rollback_policy_contract", preflight.get("durable_rollback_policy_contract", {}))
     ownership = manifest.get("durable_ownership_marker_contract", preflight.get("durable_ownership_marker_contract", {}))
     enable_contract = manifest.get("durable_enable_contract", preflight.get("durable_enable_contract", {}))
+    dry_run_plan = manifest.get("durable_dry_run_plan_contract", preflight.get("durable_dry_run_plan_contract", {}))
     readiness = manifest.get(
         "durable_executor_readiness_contract",
         preflight.get("durable_executor_readiness_contract", {}),
@@ -394,6 +395,10 @@ def build_durable_executor_gate(manifest: Dict[str, Any], command_plan: Sequence
         or ownership.get("delete_preexisting_asset_allowed")
         or ownership.get("overwrite_preexisting_asset_allowed")
         or ownership.get("rename_preexisting_asset_allowed")
+        or dry_run_plan.get("save_allowed")
+        or dry_run_plan.get("delete_allowed")
+        or dry_run_plan.get("rename_allowed")
+        or dry_run_plan.get("live_command_count", 0) > 0
         or any(item.get("save_requested") for item in command_plan)
         or any(item.get("command") in FORBIDDEN_LIVE_COMMANDS for item in command_plan)
     )
@@ -417,6 +422,7 @@ def build_durable_executor_gate(manifest: Dict[str, Any], command_plan: Sequence
     required_before_execution = set(manifest.get("required_reinforcement", []))
     required_before_execution.update(preflight.get("required_reinforcement", []))
     required_before_execution.update(ownership.get("required_reinforcement", []))
+    required_before_execution.update(dry_run_plan.get("required_reinforcement", []))
     required_before_execution.update(save_gate.get("required_reinforcement", []))
     required_before_execution.update(rollback.get("required_reinforcement", []))
     required_before_execution.update(enable_contract.get("required_reinforcement", []))
@@ -446,6 +452,10 @@ def build_durable_executor_gate(manifest: Dict[str, Any], command_plan: Sequence
         "ownership_marker_policy_ready": bool(ownership.get("ownership_marker_policy_ready")),
         "delete_without_ownership_marker_allowed": bool(ownership.get("delete_without_marker_allowed")),
         "delete_preexisting_asset_allowed": bool(ownership.get("delete_preexisting_asset_allowed")),
+        "dry_run_plan_created": bool(dry_run_plan.get("dry_run_plan_created")),
+        "dry_run_plan_valid": bool(dry_run_plan.get("dry_run_plan_valid")),
+        "dry_run_plan_live_command_count": int(dry_run_plan.get("live_command_count", 0)),
+        "dry_run_plan_executor_may_execute": bool(dry_run_plan.get("durable_executor_may_execute")),
         "durable_executor_enabled": executor_enabled,
         "durable_executor_can_execute": executor_can_execute,
         "durable_executor_command_count": len(skeleton_command_plan),
@@ -502,6 +512,8 @@ def build_executor_policy(manifest: Dict[str, Any], temp_package_path: str) -> D
         durable_gate["durable_executor_enabled"]
         or durable_gate["durable_executor_can_execute"]
         or durable_gate["durable_enable_executor_may_open"]
+        or durable_gate["dry_run_plan_executor_may_execute"]
+        or durable_gate["dry_run_plan_live_command_count"] > 0
         or durable_gate["contract_save_allowed"]
         or durable_gate["save_or_delete_commands_allowed"]
         or durable_gate["allowed_live_authoring_command_count"]
@@ -742,6 +754,12 @@ def summarize_executor_policies(manifests: Sequence[Dict[str, Any]], temp_packag
             1 for gate in durable_gates if gate["delete_without_ownership_marker_allowed"]
         ),
         "delete_preexisting_asset_allowed_count": sum(1 for gate in durable_gates if gate["delete_preexisting_asset_allowed"]),
+        "dry_run_plan_created_count": sum(1 for gate in durable_gates if gate["dry_run_plan_created"]),
+        "dry_run_plan_valid_count": sum(1 for gate in durable_gates if gate["dry_run_plan_valid"]),
+        "dry_run_plan_executor_may_execute_count": sum(
+            1 for gate in durable_gates if gate["dry_run_plan_executor_may_execute"]
+        ),
+        "dry_run_plan_live_command_count": sum(gate["dry_run_plan_live_command_count"] for gate in durable_gates),
         "durable_executor_enabled_count": sum(1 for gate in durable_gates if gate["durable_executor_enabled"]),
         "durable_executor_executable_count": sum(1 for gate in durable_gates if gate["durable_executor_can_execute"]),
         "durable_executor_command_count": sum(gate["durable_executor_command_count"] for gate in durable_gates),
@@ -756,6 +774,8 @@ def summarize_executor_policies(manifests: Sequence[Dict[str, Any]], temp_packag
             and sum(1 for gate in durable_gates if gate["durable_enable_executor_may_open"]) == 0
             and sum(1 for gate in durable_gates if gate["delete_without_ownership_marker_allowed"]) == 0
             and sum(1 for gate in durable_gates if gate["delete_preexisting_asset_allowed"]) == 0
+            and sum(1 for gate in durable_gates if gate["dry_run_plan_executor_may_execute"]) == 0
+            and sum(gate["dry_run_plan_live_command_count"] for gate in durable_gates) == 0
             and sum(1 for gate in durable_gates if gate["durable_executor_enabled"]) == 0
             and sum(1 for gate in durable_gates if gate["durable_executor_can_execute"]) == 0
             and sum(gate["allowed_live_authoring_command_count"] for gate in durable_gates) == 0

@@ -21,12 +21,13 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 import bp_authoring_durable_enable_contract as durable_enable
+import bp_authoring_durable_dry_run_plan as durable_dry_run
 import bp_authoring_durable_ownership_contract as durable_ownership
 import bp_authoring_planner as planner
 import external_project_readiness_analyzer as base
 
 
-MANIFEST_VERSION = "section_52_bp_authoring_job_contract_v30"
+MANIFEST_VERSION = "section_53_bp_authoring_job_contract_v31"
 DEFAULT_TEMP_PACKAGE_PATH = "/Game/_MCP_Temp/PlannerDrivenSmoke"
 
 AUTHORING_COMMANDS = {
@@ -641,6 +642,21 @@ def build_durable_preflight_contract(
         readiness_contract,
         enable_contract,
     )
+    dry_run_plan_contract = durable_dry_run.build_durable_dry_run_plan(
+        requested=requested,
+        preflight_contract={
+            "target_asset_path": target_asset_path,
+            "live_read_only_check_allowed": requested and bool(target_asset_path),
+            "asset_exists_check_command": "unreal.EditorAssetLibrary.does_asset_exist",
+            "overwrite_rename_decision_contract": overwrite_rename_decision_contract,
+        },
+        enable_contract=enable_contract,
+        ownership_marker_contract=ownership_marker_contract,
+        save_gate_contract=save_gate_contract,
+        rollback_policy_contract=rollback_policy_contract,
+        readiness_contract=readiness_contract,
+        executor_skeleton_contract=executor_skeleton_contract,
+    )
     save_gate_passed = False
     preflight_pass = (
         requested
@@ -670,6 +686,7 @@ def build_durable_preflight_contract(
         "overwrite_rename_decision_contract": overwrite_rename_decision_contract,
         "durable_ownership_marker_contract": ownership_marker_contract,
         "durable_enable_contract": enable_contract,
+        "durable_dry_run_plan_contract": dry_run_plan_contract,
         "durable_save_gate_contract": save_gate_contract,
         "durable_rollback_policy_contract": rollback_policy_contract,
         "durable_executor_readiness_contract": readiness_contract,
@@ -723,6 +740,7 @@ def build_durable_authoring_contract(
         "durable_preflight_contract": preflight_contract,
         "durable_ownership_marker_contract": preflight_contract["durable_ownership_marker_contract"],
         "durable_enable_contract": preflight_contract["durable_enable_contract"],
+        "durable_dry_run_plan_contract": preflight_contract["durable_dry_run_plan_contract"],
         "overwrite_policy": "requires_explicit_review",
         "preflight_required": [
             "asset_exists_check",
@@ -771,6 +789,9 @@ def build_authoring_executor_contract(
             "durable_ownership_marker_contract"
         ],
         "durable_enable_contract": durable_authoring_contract["durable_preflight_contract"]["durable_enable_contract"],
+        "durable_dry_run_plan": durable_authoring_contract["durable_preflight_contract"][
+            "durable_dry_run_plan_contract"
+        ],
         "durable_save_gate": durable_authoring_contract["durable_preflight_contract"]["durable_save_gate_contract"],
         "durable_rollback_policy": durable_authoring_contract["durable_preflight_contract"]["durable_rollback_policy_contract"],
         "durable_executor_readiness": durable_authoring_contract["durable_preflight_contract"][
@@ -3162,6 +3183,9 @@ def build_job_manifest(
             "durable_ownership_marker_contract"
         ],
         "durable_enable_contract": durable_authoring_contract["durable_preflight_contract"]["durable_enable_contract"],
+        "durable_dry_run_plan_contract": durable_authoring_contract["durable_preflight_contract"][
+            "durable_dry_run_plan_contract"
+        ],
         "durable_save_gate_contract": durable_authoring_contract["durable_preflight_contract"]["durable_save_gate_contract"],
         "durable_rollback_policy_contract": durable_authoring_contract["durable_preflight_contract"][
             "durable_rollback_policy_contract"
@@ -3261,6 +3285,9 @@ def summarize_manifests(manifests: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
     enable_summary = durable_enable.summarize_enable_contracts(
         [manifest.get("durable_enable_contract", {}) for manifest in manifests]
     )
+    dry_run_summary = durable_dry_run.summarize_dry_run_plans(
+        [manifest.get("durable_dry_run_plan_contract", {}) for manifest in manifests]
+    )
     return {
         "manifest_count": len(manifests),
         "executable_manifest_count": len(executable_manifests),
@@ -3359,6 +3386,13 @@ def summarize_manifests(manifests: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
             for manifest in manifests
             if manifest.get("durable_ownership_marker_contract", {}).get("delete_preexisting_asset_allowed")
         ),
+        "durable_dry_run_plan_summary": dry_run_summary,
+        "durable_dry_run_plan_request_count": dry_run_summary["durable_requested_plan_count"],
+        "durable_dry_run_plan_created_count": dry_run_summary["dry_run_plan_created_count"],
+        "durable_dry_run_plan_valid_count": dry_run_summary["dry_run_plan_valid_count"],
+        "durable_dry_run_executor_may_execute_count": dry_run_summary["durable_executor_may_execute_count"],
+        "durable_dry_run_live_command_count": dry_run_summary["live_command_count"],
+        "durable_dry_run_forbidden_command_allowed_count": dry_run_summary["forbidden_command_allowed_count"],
         "durable_enable_contract_summary": enable_summary,
         "durable_enable_contract_request_count": enable_summary["durable_requested_manifest_count"],
         "durable_enable_contract_satisfied_count": enable_summary["enable_contract_satisfied_count"],
@@ -3459,6 +3493,11 @@ def render_markdown(report: Dict[str, Any]) -> str:
         f"- Durable ownership marker policy ready: `{summary['durable_ownership_marker_policy_ready_count']}`",
         f"- Durable delete without marker allowed: `{summary['durable_ownership_delete_without_marker_allowed_count']}`",
         f"- Durable delete preexisting asset allowed: `{summary['durable_ownership_delete_preexisting_asset_allowed_count']}`",
+        f"- Durable dry-run plan requests: `{summary['durable_dry_run_plan_request_count']}`",
+        f"- Durable dry-run plan created: `{summary['durable_dry_run_plan_created_count']}`",
+        f"- Durable dry-run plan valid: `{summary['durable_dry_run_plan_valid_count']}`",
+        f"- Durable dry-run executor may execute: `{summary['durable_dry_run_executor_may_execute_count']}`",
+        f"- Durable dry-run live command count: `{summary['durable_dry_run_live_command_count']}`",
         f"- Durable enable contract requests: `{summary['durable_enable_contract_request_count']}`",
         f"- Durable enable contract satisfied: `{summary['durable_enable_contract_satisfied_count']}`",
         f"- Durable enable executor may open: `{summary['durable_enable_executor_may_open_count']}`",
@@ -3496,6 +3535,8 @@ def render_markdown(report: Dict[str, Any]) -> str:
                 f"- Durable save gate allowed: `{manifest['durable_save_gate_contract']['save_allowed']}`",
                 f"- Durable ownership marker ready: `{manifest['durable_ownership_marker_contract']['ownership_marker_policy_ready']}`",
                 f"- Durable ownership delete without marker: `{manifest['durable_ownership_marker_contract']['delete_without_marker_allowed']}`",
+                f"- Durable dry-run plan valid: `{manifest['durable_dry_run_plan_contract']['dry_run_plan_valid']}`",
+                f"- Durable dry-run executor may execute: `{manifest['durable_dry_run_plan_contract']['durable_executor_may_execute']}`",
                 f"- Durable rollback ready: `{manifest['durable_rollback_policy_contract']['rollback_policy_ready']}`",
                 f"- Durable executor ready: `{manifest['durable_executor_readiness_contract']['durable_executor_ready']}`",
                 f"- Durable enable satisfied: `{manifest['durable_enable_contract']['enable_contract_satisfied']}`",

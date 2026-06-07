@@ -108,6 +108,12 @@ def main() -> int:
         assert report["summary"]["durable_ownership_marker_policy_ready_count"] == 1
         assert report["summary"]["durable_ownership_delete_without_marker_allowed_count"] == 0
         assert report["summary"]["durable_ownership_delete_preexisting_asset_allowed_count"] == 0
+        assert report["summary"]["durable_dry_run_plan_request_count"] == 1
+        assert report["summary"]["durable_dry_run_plan_created_count"] == 1
+        assert report["summary"]["durable_dry_run_plan_valid_count"] == 1
+        assert report["summary"]["durable_dry_run_executor_may_execute_count"] == 0
+        assert report["summary"]["durable_dry_run_live_command_count"] == 0
+        assert report["summary"]["durable_dry_run_forbidden_command_allowed_count"] == 0
         assert report["summary"]["durable_enable_contract_request_count"] == 1
         assert report["summary"]["durable_enable_contract_satisfied_count"] == 0
         assert report["summary"]["durable_enable_executor_may_open_count"] == 0
@@ -154,6 +160,10 @@ def main() -> int:
         assert safe_actor["durable_enable_contract"]["enable_contract_satisfied"] is False
         assert safe_actor["durable_enable_contract"]["durable_executor_may_open"] is False
         assert safe_actor["durable_enable_contract"]["failed_required_gate_ids"] == []
+        assert safe_actor["durable_dry_run_plan_contract"]["schema"] == "section_53_durable_executor_dry_run_plan_v1"
+        assert safe_actor["durable_dry_run_plan_contract"]["requested"] is False
+        assert safe_actor["durable_dry_run_plan_contract"]["dry_run_plan_created"] is False
+        assert safe_actor["durable_dry_run_plan_contract"]["durable_executor_may_execute"] is False
         assert safe_actor["durable_executor_readiness_contract"]["schema"] == "section_38_durable_executor_readiness_contract_v1"
         assert safe_actor["durable_executor_readiness_contract"]["requested"] is False
         assert safe_actor["durable_executor_readiness_contract"]["durable_executor_ready"] is False
@@ -337,6 +347,8 @@ def main() -> int:
         assert durable_save["durable_ownership_marker_contract"] == durable_save["authoring_executor_contract"]["durable_ownership_marker"]
         assert durable_save["durable_enable_contract"] == preflight_contract["durable_enable_contract"]
         assert durable_save["durable_enable_contract"] == durable_save["authoring_executor_contract"]["durable_enable_contract"]
+        assert durable_save["durable_dry_run_plan_contract"] == preflight_contract["durable_dry_run_plan_contract"]
+        assert durable_save["durable_dry_run_plan_contract"] == durable_save["authoring_executor_contract"]["durable_dry_run_plan"]
         assert rollback_policy_contract == preflight_contract["durable_rollback_policy_contract"]
         assert readiness_contract == preflight_contract["durable_executor_readiness_contract"]
         assert skeleton_contract == preflight_contract["durable_executor_skeleton_contract"]
@@ -389,6 +401,18 @@ def main() -> int:
         assert enable_gates["overwrite_rename_decision"]["passed"] is False
         assert enable_gates["rollback_readiness"]["passed"] is False
         assert enable_gates["executor_created_ownership_marker"]["passed"] is True
+        dry_run_plan = durable_save["durable_dry_run_plan_contract"]
+        assert dry_run_plan["schema"] == "section_53_durable_executor_dry_run_plan_v1"
+        assert dry_run_plan["requested"] is True
+        assert dry_run_plan["dry_run_plan_created"] is True
+        assert dry_run_plan["dry_run_plan_valid"] is True
+        assert dry_run_plan["execution_command_plan"] == []
+        assert dry_run_plan["live_command_count"] == 0
+        assert dry_run_plan["durable_executor_may_execute"] is False
+        assert dry_run_plan["save_allowed"] is False
+        assert dry_run_plan["delete_allowed"] is False
+        assert dry_run_plan["rename_allowed"] is False
+        assert "save_asset" in dry_run_plan["forbidden_commands"]
         assert rollback_policy_contract["schema"] == "section_37_durable_rollback_policy_contract_v1"
         assert rollback_policy_contract["requested"] is True
         assert rollback_policy_contract["policy_mode"] == "draft_only"

@@ -46,6 +46,12 @@ def main() -> int:
         assert ownership_row["actual"]["durable_ownership_marker_policy_ready_count"] == 1
         assert ownership_row["actual"]["durable_ownership_delete_without_marker_allowed_count"] == 0
         assert ownership_row["actual"]["durable_ownership_delete_preexisting_asset_allowed_count"] == 0
+        dry_run_row = find_row(report, "durable_executor_dry_run_plan")
+        assert dry_run_row["status"] == "passed"
+        assert dry_run_row["actual"]["dry_run_plan_created_count"] == 1
+        assert dry_run_row["actual"]["dry_run_plan_valid_count"] == 1
+        assert dry_run_row["actual"]["durable_executor_may_execute_count"] == 0
+        assert dry_run_row["actual"]["live_command_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         assert find_row(report, "durable_read_only_live_preflight")["status"] == "passed"
         assert find_row(report, "project_filesystem_side_effect_boundary")["status"] == "passed"

@@ -50,6 +50,10 @@ def main() -> int:
         "ownership_marker_policy_ready_count": 1,
         "delete_without_ownership_marker_allowed_count": 0,
         "delete_preexisting_asset_allowed_count": 0,
+        "dry_run_plan_created_count": 1,
+        "dry_run_plan_valid_count": 1,
+        "dry_run_plan_executor_may_execute_count": 0,
+        "dry_run_plan_live_command_count": 0,
         "durable_executor_enabled_count": 0,
         "durable_executor_executable_count": 0,
         "durable_executor_command_count": 0,
@@ -108,6 +112,10 @@ def main() -> int:
     assert durable_gate["ownership_marker_policy_ready"] is True
     assert durable_gate["delete_without_ownership_marker_allowed"] is False
     assert durable_gate["delete_preexisting_asset_allowed"] is False
+    assert durable_gate["dry_run_plan_created"] is True
+    assert durable_gate["dry_run_plan_valid"] is True
+    assert durable_gate["dry_run_plan_executor_may_execute"] is False
+    assert durable_gate["dry_run_plan_live_command_count"] == 0
     assert durable_gate["durable_executor_enabled"] is False
     assert durable_gate["durable_executor_can_execute"] is False
     assert durable_gate["save_allowed"] is False

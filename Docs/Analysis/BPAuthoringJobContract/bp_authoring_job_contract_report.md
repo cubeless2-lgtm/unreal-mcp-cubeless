@@ -1,7 +1,7 @@
 # BP Authoring Job Contract
 
-- Generated UTC: `2026-06-07T07:04:42.226210+00:00`
-- Manifest version: `section_52_bp_authoring_job_contract_v30`
+- Generated UTC: `2026-06-07T07:12:25.078191+00:00`
+- Manifest version: `section_53_bp_authoring_job_contract_v31`
 - Temp package path: `/Game/_MCP_Temp/PlannerDrivenSmoke`
 - Manifests: `19`
 - Executable manifests: `12`
@@ -34,6 +34,11 @@
 - Durable ownership marker policy ready: `1`
 - Durable delete without marker allowed: `0`
 - Durable delete preexisting asset allowed: `0`
+- Durable dry-run plan requests: `1`
+- Durable dry-run plan created: `1`
+- Durable dry-run plan valid: `1`
+- Durable dry-run executor may execute: `0`
+- Durable dry-run live command count: `0`
 - Durable enable contract requests: `1`
 - Durable enable contract satisfied: `0`
 - Durable enable executor may open: `0`
@@ -70,6 +75,8 @@
 - Durable save gate allowed: `False`
 - Durable ownership marker ready: `False`
 - Durable ownership delete without marker: `False`
+- Durable dry-run plan valid: `False`
+- Durable dry-run executor may execute: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -154,6 +161,8 @@ Structural validation plan:
 - Durable save gate allowed: `False`
 - Durable ownership marker ready: `False`
 - Durable ownership delete without marker: `False`
+- Durable dry-run plan valid: `False`
+- Durable dry-run executor may execute: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -250,6 +259,8 @@ Structural validation plan:
 - Durable save gate allowed: `False`
 - Durable ownership marker ready: `False`
 - Durable ownership delete without marker: `False`
+- Durable dry-run plan valid: `False`
+- Durable dry-run executor may execute: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -337,6 +348,8 @@ Structural validation plan:
 - Durable save gate allowed: `False`
 - Durable ownership marker ready: `False`
 - Durable ownership delete without marker: `False`
+- Durable dry-run plan valid: `False`
+- Durable dry-run executor may execute: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -421,6 +434,8 @@ Structural validation plan:
 - Durable save gate allowed: `False`
 - Durable ownership marker ready: `False`
 - Durable ownership delete without marker: `False`
+- Durable dry-run plan valid: `False`
+- Durable dry-run executor may execute: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -495,6 +510,8 @@ Blocked/review reasons:
 - Durable save gate allowed: `False`
 - Durable ownership marker ready: `False`
 - Durable ownership delete without marker: `False`
+- Durable dry-run plan valid: `False`
+- Durable dry-run executor may execute: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -569,6 +586,8 @@ Blocked/review reasons:
 - Durable save gate allowed: `False`
 - Durable ownership marker ready: `True`
 - Durable ownership delete without marker: `False`
+- Durable dry-run plan valid: `True`
+- Durable dry-run executor may execute: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -643,6 +662,8 @@ Blocked/review reasons:
 - Durable save gate allowed: `False`
 - Durable ownership marker ready: `False`
 - Durable ownership delete without marker: `False`
+- Durable dry-run plan valid: `False`
+- Durable dry-run executor may execute: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -725,6 +746,8 @@ Structural validation plan:
 - Durable save gate allowed: `False`
 - Durable ownership marker ready: `False`
 - Durable ownership delete without marker: `False`
+- Durable dry-run plan valid: `False`
+- Durable dry-run executor may execute: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -823,6 +846,8 @@ Structural validation plan:
 - Durable save gate allowed: `False`
 - Durable ownership marker ready: `False`
 - Durable ownership delete without marker: `False`
+- Durable dry-run plan valid: `False`
+- Durable dry-run executor may execute: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -922,6 +947,8 @@ Structural validation plan:
 - Durable save gate allowed: `False`
 - Durable ownership marker ready: `False`
 - Durable ownership delete without marker: `False`
+- Durable dry-run plan valid: `False`
+- Durable dry-run executor may execute: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1061,6 +1088,8 @@ Structural validation plan:
 - Durable save gate allowed: `False`
 - Durable ownership marker ready: `False`
 - Durable ownership delete without marker: `False`
+- Durable dry-run plan valid: `False`
+- Durable dry-run executor may execute: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1139,6 +1168,8 @@ Structural validation plan:
 - Durable save gate allowed: `False`
 - Durable ownership marker ready: `False`
 - Durable ownership delete without marker: `False`
+- Durable dry-run plan valid: `False`
+- Durable dry-run executor may execute: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1247,6 +1278,8 @@ Structural validation plan:
 - Durable save gate allowed: `False`
 - Durable ownership marker ready: `False`
 - Durable ownership delete without marker: `False`
+- Durable dry-run plan valid: `False`
+- Durable dry-run executor may execute: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1403,6 +1436,8 @@ Structural validation plan:
 - Durable save gate allowed: `False`
 - Durable ownership marker ready: `False`
 - Durable ownership delete without marker: `False`
+- Durable dry-run plan valid: `False`
+- Durable dry-run executor may execute: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1537,6 +1572,8 @@ Structural validation plan:
 - Durable save gate allowed: `False`
 - Durable ownership marker ready: `False`
 - Durable ownership delete without marker: `False`
+- Durable dry-run plan valid: `False`
+- Durable dry-run executor may execute: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1611,6 +1648,8 @@ Blocked/review reasons:
 - Durable save gate allowed: `False`
 - Durable ownership marker ready: `False`
 - Durable ownership delete without marker: `False`
+- Durable dry-run plan valid: `False`
+- Durable dry-run executor may execute: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1685,6 +1724,8 @@ Blocked/review reasons:
 - Durable save gate allowed: `False`
 - Durable ownership marker ready: `False`
 - Durable ownership delete without marker: `False`
+- Durable dry-run plan valid: `False`
+- Durable dry-run executor may execute: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1760,6 +1801,8 @@ Blocked/review reasons:
 - Durable save gate allowed: `False`
 - Durable ownership marker ready: `False`
 - Durable ownership delete without marker: `False`
+- Durable dry-run plan valid: `False`
+- Durable dry-run executor may execute: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`

@@ -102,9 +102,34 @@ This section only authorizes a future rollback decision at contract level. It
 still reports `delete_allowed_now=false` and does not run live delete, save,
 rename, or overwrite commands.
 
+## Section 53 - Durable Executor Dry-Run Plan
+
+Section 53 records a future durable executor plan without allowing any live
+command execution. The plan may list report-only steps for:
+
+- read-only target preflight
+- conflict policy review
+- ownership marker preparation
+- compile validation draft
+- save gate review
+- rollback authorization draft
+
+The release boundary must prove:
+
+- durable dry-run plan requests: `1`
+- dry-run plan created: `1`
+- dry-run plan valid: `1`
+- durable executor may execute: `0`
+- live command count: `0`
+- forbidden command allowance: `0`
+
+The dry-run `execution_command_plan` must remain empty. A dry-run plan is
+evidence for review only, not permission to create, save, delete, rename, or
+overwrite assets.
+
 ## Decision
 
 Section 46-48 improves durable safety visibility, Section 51 separates the
 future durable enable gates, and Section 52 defines the ownership marker needed
-for future rollback. These sections do not enable durable Blueprint creation,
-saving, delete, or rename.
+for future rollback. Section 53 adds a no-command dry-run plan. These sections
+do not enable durable Blueprint creation, saving, delete, or rename.
