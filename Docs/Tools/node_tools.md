@@ -462,6 +462,212 @@ Add a variable to a Blueprint.
 }
 ```
 
+### add_blueprint_event_dispatcher
+
+Add an Event Dispatcher declaration to a Blueprint. This creates the multicast delegate variable and its delegate signature graph. Use `add_blueprint_event_dispatcher_call_node` to broadcast the dispatcher, `add_blueprint_event_dispatcher_bind_node` with `add_blueprint_custom_event_node` to bind it, and the unbind, clear, or assign node tools to manage its lifecycle.
+
+**Parameters:**
+- `blueprint_name` (string) - Name of the target Blueprint
+- `dispatcher_name` (string) - Name of the Event Dispatcher
+- `inputs` (array, optional) - Signature inputs; each item accepts `name` or `parameter_name`, plus `type` or `parameter_type`
+- `category` (string, optional) - Event Dispatcher category
+- `tooltip` (string, optional) - Tooltip metadata
+- `friendly_name` (string, optional) - Editor display name
+
+**Returns:**
+- Response containing the dispatcher name, multicast delegate pin type, signature graph metadata, and created inputs
+
+**Example:**
+```json
+{
+  "command": "add_blueprint_event_dispatcher",
+  "params": {
+    "blueprint_name": "MyActor",
+    "dispatcher_name": "OnScoreChanged",
+    "inputs": [
+      {"name": "Score", "type": "int"}
+    ],
+    "category": "Gameplay"
+  }
+}
+```
+
+### add_blueprint_event_dispatcher_call_node
+
+Add a call node for an existing Blueprint Event Dispatcher. This broadcasts the dispatcher in an event or function graph. Use `set_blueprint_pin_default` or `connect_blueprint_nodes` to provide signature inputs.
+
+**Parameters:**
+- `blueprint_name` (string) - Name of the target Blueprint
+- `dispatcher_name` (string) - Name of the Event Dispatcher to call
+- `node_position` (array, optional) - [X, Y] position in the graph
+- `graph_name` (string, optional) - Target graph name
+- `graph_id` (string, optional) - Target graph id
+- `graph_type` (string, optional) - Target graph type such as `event` or `function`
+- `create_graph_if_missing` (boolean, optional) - Create the target graph when supported
+
+**Returns:**
+- Response containing the node id, pins, dispatcher name, signature function, and graph metadata
+
+**Example:**
+```json
+{
+  "command": "add_blueprint_event_dispatcher_call_node",
+  "params": {
+    "blueprint_name": "MyActor",
+    "dispatcher_name": "OnScoreChanged",
+    "node_position": [600, 0],
+    "graph_type": "event"
+  }
+}
+```
+
+### add_blueprint_custom_event_node
+
+Add a custom event node to a Blueprint event graph. When `signature_source_dispatcher_name` is provided, the custom event copies the Event Dispatcher signature and exposes an `OutputDelegate` pin that can be connected into a bind node's `Delegate` pin.
+
+**Parameters:**
+- `blueprint_name` (string) - Name of the target Blueprint
+- `custom_event_name` (string) - Name of the custom event
+- `node_position` (array, optional) - [X, Y] position in the graph
+- `signature_source_dispatcher_name` (string, optional) - Event Dispatcher whose signature should be copied
+- `graph_name` (string, optional) - Target graph name
+- `graph_id` (string, optional) - Target graph id
+- `graph_type` (string, optional) - Must resolve to an event graph for custom event nodes
+- `create_graph_if_missing` (boolean, optional) - Create the target graph when supported
+
+**Returns:**
+- Response containing the node id, pins, custom event name, signature function, and graph metadata
+
+**Example:**
+```json
+{
+  "command": "add_blueprint_custom_event_node",
+  "params": {
+    "blueprint_name": "MyActor",
+    "custom_event_name": "HandleScoreChanged",
+    "signature_source_dispatcher_name": "OnScoreChanged",
+    "node_position": [600, 300],
+    "graph_type": "event"
+  }
+}
+```
+
+### add_blueprint_event_dispatcher_bind_node
+
+Add a bind node for an existing Blueprint Event Dispatcher. Connect a compatible custom event's `OutputDelegate` pin to this node's `Delegate` pin with `connect_blueprint_nodes`.
+
+**Parameters:**
+- `blueprint_name` (string) - Name of the target Blueprint
+- `dispatcher_name` (string) - Name of the Event Dispatcher to bind
+- `node_position` (array, optional) - [X, Y] position in the graph
+- `graph_name` (string, optional) - Target graph name
+- `graph_id` (string, optional) - Target graph id
+- `graph_type` (string, optional) - Target graph type such as `event` or `function`
+- `create_graph_if_missing` (boolean, optional) - Create the target graph when supported
+
+**Returns:**
+- Response containing the node id, pins, dispatcher name, signature function, and graph metadata
+
+**Example:**
+```json
+{
+  "command": "add_blueprint_event_dispatcher_bind_node",
+  "params": {
+    "blueprint_name": "MyActor",
+    "dispatcher_name": "OnScoreChanged",
+    "node_position": [360, 0],
+    "graph_type": "event"
+  }
+}
+```
+
+### add_blueprint_event_dispatcher_unbind_node
+
+Add an unbind node for an existing Blueprint Event Dispatcher. Connect the same compatible custom event `OutputDelegate` pin used for binding to this node's `Delegate` pin.
+
+**Parameters:**
+- `blueprint_name` (string) - Name of the target Blueprint
+- `dispatcher_name` (string) - Name of the Event Dispatcher to unbind
+- `node_position` (array, optional) - [X, Y] position in the graph
+- `graph_name` (string, optional) - Target graph name
+- `graph_id` (string, optional) - Target graph id
+- `graph_type` (string, optional) - Target graph type such as `event` or `function`
+- `create_graph_if_missing` (boolean, optional) - Create the target graph when supported
+
+**Returns:**
+- Response containing the node id, pins, dispatcher name, signature function, and graph metadata
+
+**Example:**
+```json
+{
+  "command": "add_blueprint_event_dispatcher_unbind_node",
+  "params": {
+    "blueprint_name": "MyActor",
+    "dispatcher_name": "OnScoreChanged",
+    "node_position": [820, 0],
+    "graph_type": "event"
+  }
+}
+```
+
+### add_blueprint_event_dispatcher_clear_node
+
+Add a clear node for an existing Blueprint Event Dispatcher. This removes all events bound to the dispatcher for the target context and does not need a `Delegate` pin connection.
+
+**Parameters:**
+- `blueprint_name` (string) - Name of the target Blueprint
+- `dispatcher_name` (string) - Name of the Event Dispatcher to clear
+- `node_position` (array, optional) - [X, Y] position in the graph
+- `graph_name` (string, optional) - Target graph name
+- `graph_id` (string, optional) - Target graph id
+- `graph_type` (string, optional) - Target graph type such as `event` or `function`
+- `create_graph_if_missing` (boolean, optional) - Create the target graph when supported
+
+**Returns:**
+- Response containing the node id, pins, dispatcher name, signature function, and graph metadata
+
+**Example:**
+```json
+{
+  "command": "add_blueprint_event_dispatcher_clear_node",
+  "params": {
+    "blueprint_name": "MyActor",
+    "dispatcher_name": "OnScoreChanged",
+    "node_position": [1060, 0],
+    "graph_type": "event"
+  }
+}
+```
+
+### add_blueprint_event_dispatcher_assign_node
+
+Add an assign node for an existing Blueprint Event Dispatcher. Assign nodes require an event graph and automatically create a signature-compatible custom event wired into the node's `Delegate` pin.
+
+**Parameters:**
+- `blueprint_name` (string) - Name of the target Blueprint
+- `dispatcher_name` (string) - Name of the Event Dispatcher to assign
+- `node_position` (array, optional) - [X, Y] position in the graph
+- `graph_name` (string, optional) - Target graph name
+- `graph_id` (string, optional) - Target graph id
+- `graph_type` (string, optional) - Must resolve to an event graph
+- `create_graph_if_missing` (boolean, optional) - Create the target graph when supported
+
+**Returns:**
+- Response containing the node id, pins, dispatcher name, signature function, and graph metadata
+
+**Example:**
+```json
+{
+  "command": "add_blueprint_event_dispatcher_assign_node",
+  "params": {
+    "blueprint_name": "MyActor",
+    "dispatcher_name": "OnScoreChanged",
+    "node_position": [360, 220],
+    "graph_type": "event"
+  }
+}
+```
+
 ### create_input_mapping
 
 Create an input mapping for the project.

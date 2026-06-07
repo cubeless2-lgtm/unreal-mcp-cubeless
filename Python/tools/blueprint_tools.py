@@ -68,6 +68,7 @@ def register_blueprint_tools(mcp: FastMCP):
         location: List[float] = [],
         rotation: List[float] = [],
         scale: List[float] = [],
+        parent_component_name: str = "",
         component_properties: Dict[str, Any] = {}
     ) -> Dict[str, Any]:
         """
@@ -80,6 +81,7 @@ def register_blueprint_tools(mcp: FastMCP):
             location: [X, Y, Z] coordinates for component's position
             rotation: [Pitch, Yaw, Roll] values for component's rotation
             scale: [X, Y, Z] values for component's scale
+            parent_component_name: Optional existing scene component to attach this component under
             component_properties: Additional properties to set on the component
         
         Returns:
@@ -97,6 +99,9 @@ def register_blueprint_tools(mcp: FastMCP):
                 "rotation": rotation or [0.0, 0.0, 0.0],
                 "scale": scale or [1.0, 1.0, 1.0]
             }
+
+            if parent_component_name:
+                params["parent_component_name"] = parent_component_name
             
             # Add component_properties if provided
             if component_properties and len(component_properties) > 0:
@@ -128,6 +133,49 @@ def register_blueprint_tools(mcp: FastMCP):
             
         except Exception as e:
             error_msg = f"Error adding component to blueprint: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def list_blueprint_components(
+        ctx: Context,
+        blueprint_name: str,
+        component_name: str = "",
+    ) -> Dict[str, Any]:
+        """
+        List Blueprint SimpleConstructionScript components and selected defaults.
+
+        Args:
+            blueprint_name: Name of the target Blueprint
+            component_name: Optional component name filter
+
+        Returns:
+            Component metadata including class, template path, relative transform, and static mesh when available.
+        """
+        from unreal_mcp_server import get_unreal_connection
+
+        try:
+            unreal = get_unreal_connection()
+            if not unreal:
+                logger.error("Failed to connect to Unreal Engine")
+                return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+            params = {"blueprint_name": blueprint_name}
+            if component_name:
+                params["component_name"] = component_name
+
+            logger.info(f"Listing blueprint components with params: {params}")
+            response = unreal.send_command("list_blueprint_components", params)
+
+            if not response:
+                logger.error("No response from Unreal Engine")
+                return {"success": False, "message": "No response from Unreal Engine"}
+
+            logger.info(f"List blueprint components response: {response}")
+            return response
+
+        except Exception as e:
+            error_msg = f"Error listing blueprint components: {e}"
             logger.error(error_msg)
             return {"success": False, "message": error_msg}
     
@@ -214,6 +262,43 @@ def register_blueprint_tools(mcp: FastMCP):
             
         except Exception as e:
             error_msg = f"Error setting component property: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def get_component_property(
+        ctx: Context,
+        blueprint_name: str,
+        component_name: str,
+        property_name: str,
+    ) -> Dict[str, Any]:
+        """Read a property from a Blueprint component template."""
+        from unreal_mcp_server import get_unreal_connection
+
+        try:
+            unreal = get_unreal_connection()
+            if not unreal:
+                logger.error("Failed to connect to Unreal Engine")
+                return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+            params = {
+                "blueprint_name": blueprint_name,
+                "component_name": component_name,
+                "property_name": property_name,
+            }
+
+            logger.info(f"Reading component property with params: {params}")
+            response = unreal.send_command("get_component_property", params)
+
+            if not response:
+                logger.error("No response from Unreal Engine")
+                return {"success": False, "message": "No response from Unreal Engine"}
+
+            logger.info(f"Get component property response: {response}")
+            return response
+
+        except Exception as e:
+            error_msg = f"Error reading component property: {e}"
             logger.error(error_msg)
             return {"success": False, "message": error_msg}
     

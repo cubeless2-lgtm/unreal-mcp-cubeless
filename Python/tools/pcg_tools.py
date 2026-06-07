@@ -104,7 +104,7 @@ for asset in assets:
             "asset_name": asset_name,
             "package_name": package_name,
             "class_name": class_name,
-            "object_path": f"{package_name}.{asset_name}",
+            "object_path": f"{{package_name}}.{{asset_name}}",
         }})
 RESULT = {{"success": True, "count": len(items), "assets": items}}
 """

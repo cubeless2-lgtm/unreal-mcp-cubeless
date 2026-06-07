@@ -574,7 +574,320 @@ def register_blueprint_node_tools(mcp: FastMCP):
             error_msg = f"Error adding self component reference node: {e}"
             logger.error(error_msg)
             return {"success": False, "message": error_msg}
-    
+
+    @mcp.tool()
+    def add_blueprint_event_dispatcher(
+        ctx: Context,
+        blueprint_name: str,
+        dispatcher_name: str,
+        inputs: Optional[List[Dict[str, Any]]] = None,
+        category: str = "",
+        tooltip: str = "",
+        friendly_name: str = "",
+    ) -> Dict[str, Any]:
+        """
+        Add an Event Dispatcher declaration to a Blueprint.
+
+        Args:
+            blueprint_name: Name of the target Blueprint
+            dispatcher_name: Name of the Event Dispatcher
+            inputs: Optional signature inputs. Each item accepts name/parameter_name and type/parameter_type.
+            category: Optional Blueprint category
+            tooltip: Optional Blueprint tooltip
+            friendly_name: Optional display name
+
+        Returns:
+            Response containing the dispatcher name, multicast delegate pin type, and signature graph
+        """
+        params: Dict[str, Any] = {
+            "blueprint_name": blueprint_name,
+            "dispatcher_name": dispatcher_name,
+        }
+        if inputs:
+            params["inputs"] = inputs
+        if category:
+            params["category"] = category
+        if tooltip:
+            params["tooltip"] = tooltip
+        if friendly_name:
+            params["friendly_name"] = friendly_name
+
+        try:
+            logger.info(f"Adding Event Dispatcher '{dispatcher_name}' to blueprint '{blueprint_name}'")
+            return send_node_command("add_blueprint_event_dispatcher", params)
+        except Exception as e:
+            error_msg = f"Error adding Event Dispatcher: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def add_blueprint_event_dispatcher_call_node(
+        ctx: Context,
+        blueprint_name: str,
+        dispatcher_name: str,
+        node_position = None,
+        graph_name: str = "",
+        graph_id: str = "",
+        graph_type: str = "",
+        create_graph_if_missing: bool = False,
+    ) -> Dict[str, Any]:
+        """
+        Add a call node for an existing Blueprint Event Dispatcher.
+
+        Args:
+            blueprint_name: Name of the target Blueprint
+            dispatcher_name: Name of the Event Dispatcher to call
+            node_position: Optional [X, Y] position in the graph
+            graph_name: Optional target graph name
+            graph_id: Optional target graph id
+            graph_type: Optional target graph type
+            create_graph_if_missing: Whether to create the target graph when allowed
+
+        Returns:
+            Response containing the node id, pins, dispatcher name, signature function, and graph metadata
+        """
+        if node_position is None:
+            node_position = [0, 0]
+
+        params: Dict[str, Any] = {
+            "blueprint_name": blueprint_name,
+            "dispatcher_name": dispatcher_name,
+            "node_position": node_position,
+        }
+        add_graph_selector(params, graph_name, graph_id, graph_type, create_graph_if_missing)
+
+        try:
+            logger.info(f"Adding Event Dispatcher call node '{dispatcher_name}' to blueprint '{blueprint_name}'")
+            return send_node_command("add_blueprint_event_dispatcher_call_node", params)
+        except Exception as e:
+            error_msg = f"Error adding Event Dispatcher call node: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def add_blueprint_custom_event_node(
+        ctx: Context,
+        blueprint_name: str,
+        custom_event_name: str,
+        node_position = None,
+        signature_source_dispatcher_name: str = "",
+        graph_name: str = "",
+        graph_id: str = "",
+        graph_type: str = "",
+        create_graph_if_missing: bool = False,
+    ) -> Dict[str, Any]:
+        """
+        Add a custom event node to a Blueprint event graph.
+
+        Args:
+            blueprint_name: Name of the target Blueprint
+            custom_event_name: Name of the custom event
+            node_position: Optional [X, Y] position in the graph
+            signature_source_dispatcher_name: Optional Event Dispatcher whose signature should be copied
+            graph_name: Optional target graph name
+            graph_id: Optional target graph id
+            graph_type: Optional target graph type; custom events require an event graph
+            create_graph_if_missing: Whether to create the target graph when supported
+
+        Returns:
+            Response containing the node id, pins, custom event name, signature function, and graph metadata
+        """
+        if node_position is None:
+            node_position = [0, 0]
+
+        params: Dict[str, Any] = {
+            "blueprint_name": blueprint_name,
+            "custom_event_name": custom_event_name,
+            "node_position": node_position,
+        }
+        if signature_source_dispatcher_name:
+            params["signature_source_dispatcher_name"] = signature_source_dispatcher_name
+        add_graph_selector(params, graph_name, graph_id, graph_type, create_graph_if_missing)
+
+        try:
+            logger.info(f"Adding custom event node '{custom_event_name}' to blueprint '{blueprint_name}'")
+            return send_node_command("add_blueprint_custom_event_node", params)
+        except Exception as e:
+            error_msg = f"Error adding custom event node: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def add_blueprint_event_dispatcher_bind_node(
+        ctx: Context,
+        blueprint_name: str,
+        dispatcher_name: str,
+        node_position = None,
+        graph_name: str = "",
+        graph_id: str = "",
+        graph_type: str = "",
+        create_graph_if_missing: bool = False,
+    ) -> Dict[str, Any]:
+        """
+        Add a bind node for an existing Blueprint Event Dispatcher.
+
+        Args:
+            blueprint_name: Name of the target Blueprint
+            dispatcher_name: Name of the Event Dispatcher to bind
+            node_position: Optional [X, Y] position in the graph
+            graph_name: Optional target graph name
+            graph_id: Optional target graph id
+            graph_type: Optional target graph type such as event or function
+            create_graph_if_missing: Whether to create the target graph when supported
+
+        Returns:
+            Response containing the node id, pins, dispatcher name, signature function, and graph metadata
+        """
+        if node_position is None:
+            node_position = [0, 0]
+
+        params: Dict[str, Any] = {
+            "blueprint_name": blueprint_name,
+            "dispatcher_name": dispatcher_name,
+            "node_position": node_position,
+        }
+        add_graph_selector(params, graph_name, graph_id, graph_type, create_graph_if_missing)
+
+        try:
+            logger.info(f"Adding Event Dispatcher bind node '{dispatcher_name}' to blueprint '{blueprint_name}'")
+            return send_node_command("add_blueprint_event_dispatcher_bind_node", params)
+        except Exception as e:
+            error_msg = f"Error adding Event Dispatcher bind node: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def add_blueprint_event_dispatcher_unbind_node(
+        ctx: Context,
+        blueprint_name: str,
+        dispatcher_name: str,
+        node_position = None,
+        graph_name: str = "",
+        graph_id: str = "",
+        graph_type: str = "",
+        create_graph_if_missing: bool = False,
+    ) -> Dict[str, Any]:
+        """
+        Add an unbind node for an existing Blueprint Event Dispatcher.
+
+        Args:
+            blueprint_name: Name of the target Blueprint
+            dispatcher_name: Name of the Event Dispatcher to unbind
+            node_position: Optional [X, Y] position in the graph
+            graph_name: Optional target graph name
+            graph_id: Optional target graph id
+            graph_type: Optional target graph type such as event or function
+            create_graph_if_missing: Whether to create the target graph when supported
+
+        Returns:
+            Response containing the node id, pins, dispatcher name, signature function, and graph metadata
+        """
+        if node_position is None:
+            node_position = [0, 0]
+
+        params: Dict[str, Any] = {
+            "blueprint_name": blueprint_name,
+            "dispatcher_name": dispatcher_name,
+            "node_position": node_position,
+        }
+        add_graph_selector(params, graph_name, graph_id, graph_type, create_graph_if_missing)
+
+        try:
+            logger.info(f"Adding Event Dispatcher unbind node '{dispatcher_name}' to blueprint '{blueprint_name}'")
+            return send_node_command("add_blueprint_event_dispatcher_unbind_node", params)
+        except Exception as e:
+            error_msg = f"Error adding Event Dispatcher unbind node: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def add_blueprint_event_dispatcher_clear_node(
+        ctx: Context,
+        blueprint_name: str,
+        dispatcher_name: str,
+        node_position = None,
+        graph_name: str = "",
+        graph_id: str = "",
+        graph_type: str = "",
+        create_graph_if_missing: bool = False,
+    ) -> Dict[str, Any]:
+        """
+        Add a clear node for an existing Blueprint Event Dispatcher.
+
+        Args:
+            blueprint_name: Name of the target Blueprint
+            dispatcher_name: Name of the Event Dispatcher to clear
+            node_position: Optional [X, Y] position in the graph
+            graph_name: Optional target graph name
+            graph_id: Optional target graph id
+            graph_type: Optional target graph type such as event or function
+            create_graph_if_missing: Whether to create the target graph when supported
+
+        Returns:
+            Response containing the node id, pins, dispatcher name, signature function, and graph metadata
+        """
+        if node_position is None:
+            node_position = [0, 0]
+
+        params: Dict[str, Any] = {
+            "blueprint_name": blueprint_name,
+            "dispatcher_name": dispatcher_name,
+            "node_position": node_position,
+        }
+        add_graph_selector(params, graph_name, graph_id, graph_type, create_graph_if_missing)
+
+        try:
+            logger.info(f"Adding Event Dispatcher clear node '{dispatcher_name}' to blueprint '{blueprint_name}'")
+            return send_node_command("add_blueprint_event_dispatcher_clear_node", params)
+        except Exception as e:
+            error_msg = f"Error adding Event Dispatcher clear node: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def add_blueprint_event_dispatcher_assign_node(
+        ctx: Context,
+        blueprint_name: str,
+        dispatcher_name: str,
+        node_position = None,
+        graph_name: str = "",
+        graph_id: str = "",
+        graph_type: str = "",
+        create_graph_if_missing: bool = False,
+    ) -> Dict[str, Any]:
+        """
+        Add an assign node for an existing Blueprint Event Dispatcher.
+
+        Args:
+            blueprint_name: Name of the target Blueprint
+            dispatcher_name: Name of the Event Dispatcher to assign
+            node_position: Optional [X, Y] position in the graph
+            graph_name: Optional target graph name
+            graph_id: Optional target graph id
+            graph_type: Optional target graph type; assign nodes require an event graph
+            create_graph_if_missing: Whether to create the target graph when supported
+
+        Returns:
+            Response containing the node id, pins, dispatcher name, signature function, and graph metadata
+        """
+        if node_position is None:
+            node_position = [0, 0]
+
+        params: Dict[str, Any] = {
+            "blueprint_name": blueprint_name,
+            "dispatcher_name": dispatcher_name,
+            "node_position": node_position,
+        }
+        add_graph_selector(params, graph_name, graph_id, graph_type, create_graph_if_missing)
+
+        try:
+            logger.info(f"Adding Event Dispatcher assign node '{dispatcher_name}' to blueprint '{blueprint_name}'")
+            return send_node_command("add_blueprint_event_dispatcher_assign_node", params)
+        except Exception as e:
+            error_msg = f"Error adding Event Dispatcher assign node: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
     @mcp.tool()
     def add_blueprint_self_reference(
         ctx: Context,

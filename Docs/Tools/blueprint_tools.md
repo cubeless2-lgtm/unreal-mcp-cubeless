@@ -43,10 +43,11 @@ Add a component to a Blueprint.
 - `location` (array, optional) - [X, Y, Z] coordinates for component's position, defaults to [0, 0, 0]
 - `rotation` (array, optional) - [Pitch, Yaw, Roll] values for component's rotation, defaults to [0, 0, 0]
 - `scale` (array, optional) - [X, Y, Z] values for component's scale, defaults to [1, 1, 1]
+- `parent_component_name` (string, optional) - Existing SceneComponent parent for SCS hierarchy attachment
 - `component_properties` (object, optional) - Additional properties to set on the component
 
 **Returns:**
-- Information about the added component including success status and message
+- Information about the added component including `component_name`, `component_type`, and `parent_component_name`
 
 **Example:**
 ```json
@@ -56,12 +57,38 @@ Add a component to a Blueprint.
     "blueprint_name": "MyActor",
     "component_type": "StaticMeshComponent",
     "component_name": "Mesh",
+    "parent_component_name": "Root",
     "location": [0, 0, 0],
     "rotation": [0, 0, 0],
     "scale": [1, 1, 1],
     "component_properties": {
       "bVisible": true
     }
+  }
+}
+```
+
+### list_blueprint_components
+
+List Blueprint SimpleConstructionScript components and selected component template defaults.
+
+**Parameters:**
+- `blueprint_name` (string) - The name of the Blueprint
+- `component_name` (string, optional) - Component name filter
+
+**Returns:**
+- `component_count` and `components`
+- Each component includes `component_name`, `component_class`, `component_class_path`, `template_path`, `parent_component_name`
+- Scene components include `relative_transform.location`, `relative_transform.rotation`, and `relative_transform.scale`
+- Static mesh components include `static_mesh`
+
+**Example:**
+```json
+{
+  "command": "list_blueprint_components",
+  "params": {
+    "blueprint_name": "MyActor",
+    "component_name": "Mesh"
   }
 }
 ```
@@ -112,6 +139,30 @@ Set a property on a component in a Blueprint.
     "component_name": "Mesh",
     "property_name": "StaticMesh",
     "property_value": "/Game/StarterContent/Shapes/Shape_Cube.Shape_Cube"
+  }
+}
+```
+
+### get_component_property
+
+Read a property from a Blueprint component template.
+
+**Parameters:**
+- `blueprint_name` (string) - The name of the Blueprint
+- `component_name` (string) - The name of the component
+- `property_name` (string) - The property to read
+
+**Returns:**
+- `component_name`, `component_class`, `property_name`, `property_type`, and `property_value`
+
+**Example:**
+```json
+{
+  "command": "get_component_property",
+  "params": {
+    "blueprint_name": "MyActor",
+    "component_name": "Mesh",
+    "property_name": "bVisible"
   }
 }
 ```
