@@ -278,6 +278,7 @@ from tools.pcg_tools import register_pcg_tools
 from tools.material_tools import register_material_tools
 from tools.texture_generation import register_texture_generation_tools
 from tools.ieta_tools import register_ieta_tools
+from tools.niagara_tools import register_niagara_tools
 
 # Register tools
 register_editor_tools(mcp)
@@ -290,6 +291,7 @@ register_pcg_tools(mcp)
 register_material_tools(mcp)
 register_texture_generation_tools(mcp)
 register_ieta_tools(mcp)
+register_niagara_tools(mcp)
 
 @mcp.prompt()
 def info():
@@ -326,7 +328,9 @@ def info():
     
     ## Blueprint Management
     - `create_blueprint(name, parent_class)` - Create new Blueprint classes
-    - `add_component_to_blueprint(blueprint_name, component_type, component_name)` - Add components
+    - `add_component_to_blueprint(blueprint_name, component_type, component_name, parent_component_name?)` - Add components
+    - `list_blueprint_components(blueprint_name, component_name="")` - List Blueprint SCS components and defaults
+    - `get_component_property(blueprint_name, component_name, property_name)` - Read component template properties
     - `set_static_mesh_properties(blueprint_name, component_name, static_mesh)` - Configure meshes
     - `set_physics_properties(blueprint_name, component_name)` - Configure physics
     - `compile_blueprint(blueprint_name)` - Compile Blueprint changes
@@ -377,6 +381,13 @@ def info():
     - `create_material_instance_with_texture(texture_asset_path, material_name, unreal_folder, base_material_path)` - Create a BaseColor material/material instance
     - `apply_material_to_mesh(target, material_asset_path, material_slot)` - Apply a material to selected/named mesh targets
     - `generate_and_apply_ai_texture(target, prompt, output_name, unreal_folder, uv_channel, size)` - Run the full BaseColor texture pipeline
+
+    ## Niagara Inspection and Validation
+    - `list_niagara_assets(root_path="/Game", include_scripts=False, include_parameter_collections=False)` - List Niagara Systems/Emitters and optional related assets
+    - `inspect_niagara_system(system_path)` - Read-only Niagara System summary with emitters, user parameters, scripts, and compile hints where Python reflection exposes them
+    - `list_niagara_components(selected_only=False)` - List Niagara components in the current editor level
+    - `duplicate_niagara_system_to_temp(system_path, temp_folder="/Game/_MCP_Temp")` - Duplicate a System into disposable MCP temp content for safe experiments
+    - `compile_and_save_niagara_system(system_path, save=False)` - Best-effort Niagara compile/wait/poll validation; save is limited to /Game/_MCP_Temp assets
     
     ## Best Practices
     
