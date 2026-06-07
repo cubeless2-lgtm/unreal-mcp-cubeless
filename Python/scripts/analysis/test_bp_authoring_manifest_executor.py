@@ -59,6 +59,12 @@ def main() -> int:
         "save_simulation_save_true_allowed_count": 0,
         "save_simulation_save_asset_allowed_count": 0,
         "save_simulation_live_command_count": 0,
+        "canary_prep_ready_count": 1,
+        "canary_live_execution_allowed_count": 0,
+        "canary_general_blueprints_package_allowed_count": 0,
+        "canary_save_true_allowed_count": 0,
+        "canary_save_asset_allowed_count": 0,
+        "canary_delete_asset_allowed_count": 0,
         "durable_executor_enabled_count": 0,
         "durable_executor_executable_count": 0,
         "durable_executor_command_count": 0,
@@ -126,6 +132,12 @@ def main() -> int:
     assert durable_gate["save_simulation_save_true_allowed"] is False
     assert durable_gate["save_simulation_save_asset_allowed"] is False
     assert durable_gate["save_simulation_live_command_count"] == 0
+    assert durable_gate["canary_prep_ready"] is True
+    assert durable_gate["canary_live_execution_allowed"] is False
+    assert durable_gate["canary_general_blueprints_package_allowed"] is False
+    assert durable_gate["canary_save_true_allowed"] is False
+    assert durable_gate["canary_save_asset_allowed"] is False
+    assert durable_gate["canary_delete_asset_allowed"] is False
     assert durable_gate["durable_executor_enabled"] is False
     assert durable_gate["durable_executor_can_execute"] is False
     assert durable_gate["save_allowed"] is False

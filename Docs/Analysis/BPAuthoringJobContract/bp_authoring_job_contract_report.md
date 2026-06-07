@@ -1,7 +1,7 @@
 # BP Authoring Job Contract
 
-- Generated UTC: `2026-06-07T07:21:22.774055+00:00`
-- Manifest version: `section_54_bp_authoring_job_contract_v32`
+- Generated UTC: `2026-06-07T07:30:25.607671+00:00`
+- Manifest version: `section_55_bp_authoring_job_contract_v33`
 - Temp package path: `/Game/_MCP_Temp/PlannerDrivenSmoke`
 - Manifests: `19`
 - Executable manifests: `12`
@@ -45,6 +45,10 @@
 - Durable save simulation save=true allowed: `0`
 - Durable save simulation save_asset allowed: `0`
 - Durable save simulation live command count: `0`
+- Durable canary prep requests: `1`
+- Durable canary prep ready: `1`
+- Durable canary live execution allowed: `0`
+- Durable canary general Blueprints package allowed: `0`
 - Durable enable contract requests: `1`
 - Durable enable contract satisfied: `0`
 - Durable enable executor may open: `0`
@@ -85,6 +89,8 @@
 - Durable dry-run executor may execute: `False`
 - Durable save simulation status: `not_requested`
 - Durable save simulation save=true allowed: `False`
+- Durable canary prep ready: `False`
+- Durable canary live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -173,6 +179,8 @@ Structural validation plan:
 - Durable dry-run executor may execute: `False`
 - Durable save simulation status: `not_requested`
 - Durable save simulation save=true allowed: `False`
+- Durable canary prep ready: `False`
+- Durable canary live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -273,6 +281,8 @@ Structural validation plan:
 - Durable dry-run executor may execute: `False`
 - Durable save simulation status: `not_requested`
 - Durable save simulation save=true allowed: `False`
+- Durable canary prep ready: `False`
+- Durable canary live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -364,6 +374,8 @@ Structural validation plan:
 - Durable dry-run executor may execute: `False`
 - Durable save simulation status: `not_requested`
 - Durable save simulation save=true allowed: `False`
+- Durable canary prep ready: `False`
+- Durable canary live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -452,6 +464,8 @@ Structural validation plan:
 - Durable dry-run executor may execute: `False`
 - Durable save simulation status: `not_requested`
 - Durable save simulation save=true allowed: `False`
+- Durable canary prep ready: `False`
+- Durable canary live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -530,6 +544,8 @@ Blocked/review reasons:
 - Durable dry-run executor may execute: `False`
 - Durable save simulation status: `not_requested`
 - Durable save simulation save=true allowed: `False`
+- Durable canary prep ready: `False`
+- Durable canary live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -608,6 +624,8 @@ Blocked/review reasons:
 - Durable dry-run executor may execute: `False`
 - Durable save simulation status: `blocked`
 - Durable save simulation save=true allowed: `False`
+- Durable canary prep ready: `True`
+- Durable canary live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -686,6 +704,8 @@ Blocked/review reasons:
 - Durable dry-run executor may execute: `False`
 - Durable save simulation status: `not_requested`
 - Durable save simulation save=true allowed: `False`
+- Durable canary prep ready: `False`
+- Durable canary live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -772,6 +792,8 @@ Structural validation plan:
 - Durable dry-run executor may execute: `False`
 - Durable save simulation status: `not_requested`
 - Durable save simulation save=true allowed: `False`
+- Durable canary prep ready: `False`
+- Durable canary live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -874,6 +896,8 @@ Structural validation plan:
 - Durable dry-run executor may execute: `False`
 - Durable save simulation status: `not_requested`
 - Durable save simulation save=true allowed: `False`
+- Durable canary prep ready: `False`
+- Durable canary live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -977,6 +1001,8 @@ Structural validation plan:
 - Durable dry-run executor may execute: `False`
 - Durable save simulation status: `not_requested`
 - Durable save simulation save=true allowed: `False`
+- Durable canary prep ready: `False`
+- Durable canary live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1120,6 +1146,8 @@ Structural validation plan:
 - Durable dry-run executor may execute: `False`
 - Durable save simulation status: `not_requested`
 - Durable save simulation save=true allowed: `False`
+- Durable canary prep ready: `False`
+- Durable canary live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1202,6 +1230,8 @@ Structural validation plan:
 - Durable dry-run executor may execute: `False`
 - Durable save simulation status: `not_requested`
 - Durable save simulation save=true allowed: `False`
+- Durable canary prep ready: `False`
+- Durable canary live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1314,6 +1344,8 @@ Structural validation plan:
 - Durable dry-run executor may execute: `False`
 - Durable save simulation status: `not_requested`
 - Durable save simulation save=true allowed: `False`
+- Durable canary prep ready: `False`
+- Durable canary live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1474,6 +1506,8 @@ Structural validation plan:
 - Durable dry-run executor may execute: `False`
 - Durable save simulation status: `not_requested`
 - Durable save simulation save=true allowed: `False`
+- Durable canary prep ready: `False`
+- Durable canary live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1612,6 +1646,8 @@ Structural validation plan:
 - Durable dry-run executor may execute: `False`
 - Durable save simulation status: `not_requested`
 - Durable save simulation save=true allowed: `False`
+- Durable canary prep ready: `False`
+- Durable canary live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1690,6 +1726,8 @@ Blocked/review reasons:
 - Durable dry-run executor may execute: `False`
 - Durable save simulation status: `not_requested`
 - Durable save simulation save=true allowed: `False`
+- Durable canary prep ready: `False`
+- Durable canary live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1768,6 +1806,8 @@ Blocked/review reasons:
 - Durable dry-run executor may execute: `False`
 - Durable save simulation status: `not_requested`
 - Durable save simulation save=true allowed: `False`
+- Durable canary prep ready: `False`
+- Durable canary live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`
@@ -1847,6 +1887,8 @@ Blocked/review reasons:
 - Durable dry-run executor may execute: `False`
 - Durable save simulation status: `not_requested`
 - Durable save simulation save=true allowed: `False`
+- Durable canary prep ready: `False`
+- Durable canary live allowed: `False`
 - Durable rollback ready: `False`
 - Durable executor ready: `False`
 - Durable enable satisfied: `False`

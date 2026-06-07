@@ -1,6 +1,6 @@
 # BP Authoring Job Contract Policy
 
-This policy defines the Section 12 through Section 51 contract between a
+This policy defines the Section 12 through Section 55 contract between a
 planner verdict and live Blueprint authoring execution.
 
 ## Required Manifest Fields
@@ -31,6 +31,7 @@ Every user request must be converted into a structured manifest with:
 - durable authoring executor contract
 - durable preflight dry-run contract
 - durable authoring enable contract
+- durable canary preparation contract
 - blocked or review reasons
 
 ## Execution Rule
@@ -206,6 +207,12 @@ Section 54 adds a durable save validation simulator. Durable requests may now
 evaluate save prerequisites in a report-only contract, but the simulator keeps
 `save_true_allowed=false`, `save_asset_allowed=false`,
 `compile_save_command_allowed=false`, and `live_command_count=0`.
+
+Section 55 adds a durable canary preparation contract. Durable requests may now
+reserve a canary target under `/Game/_MCP_Temp/DurableCanary`, but the prep
+contract keeps `canary_live_execution_allowed=false`,
+`general_blueprints_package_allowed=false`, `save_true_allowed=false`,
+`save_asset_allowed=false`, and `delete_asset_allowed=false`.
 
 ## Section 13 Executable Templates
 
@@ -935,6 +942,29 @@ dry-run plan validity, enable contract satisfaction, compile-save validation,
 and explicit durable executor enable flag. It must report missing conditions
 without generating a live durable save command.
 
+## Section 55 Durable Canary Preparation Contract
+
+Durable preflight now embeds `durable_canary_prep_contract`, also exposed at
+the manifest top level and inside `authoring_executor_contract`.
+
+The canary prep boundary is:
+
+- canary prep schema: `section_55_durable_canary_prep_contract_v1`
+- canary package path: `/Game/_MCP_Temp/DurableCanary`
+- canary asset path: `/Game/_MCP_Temp/DurableCanary/<BlueprintName>_Canary`
+- canary prep ready: `true` only when the durable request, canary allowlist,
+  ownership marker policy, and save simulation are all present
+- canary live execution allowed: `false`
+- general Blueprints package allowed: `false`
+- save true allowed: `false`
+- save asset allowed: `false`
+- delete asset allowed: `false`
+- cleanup requires ownership marker: `true`
+
+The contract defines a future canary target and cleanup boundary, not a live
+durable operation. Section 55 must keep the disabled durable executor closed
+and must not create, save, delete, rename, overwrite, or replace any asset.
+
 ## Live Smoke Rule
 
 The planner-driven live smoke must execute the manifest, not the raw user
@@ -957,12 +987,13 @@ dry-run until the parent class receives Section 31 reinforcement.
 
 A planner-safe request that asks for a saved or durable asset must also remain
 dry-run until Section 51 durable enable gates, Section 52 ownership marker
-policy, Section 53 dry-run plan, Section 54 save simulator, and a later durable
-executor release are all proven. A read-only
+policy, Section 53 dry-run plan, Section 54 save simulator, Section 55 canary
+prep, and a later durable executor release are all proven. A read-only
 asset-exists result, parsed overwrite/rename decision, draft save gate,
 readiness checklist entry, disabled durable executor skeleton, or ownership
-marker/dry-run/save-simulation contract alone must not enable durable save,
-delete, rename, overwrite, or replacement behavior.
+marker/dry-run/save-simulation/canary-prep contract alone must not enable
+durable save, delete, rename, overwrite, replacement behavior, or live canary
+execution.
 
 ## Validation
 

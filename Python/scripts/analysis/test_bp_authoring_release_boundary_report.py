@@ -59,6 +59,15 @@ def main() -> int:
         assert save_sim_row["actual"]["save_true_allowed_count"] == 0
         assert save_sim_row["actual"]["save_asset_allowed_count"] == 0
         assert save_sim_row["actual"]["live_command_count"] == 0
+        canary_row = find_row(report, "durable_canary_prep_contract")
+        assert canary_row["status"] == "passed"
+        assert canary_row["actual"]["durable_requested_canary_prep_count"] == 1
+        assert canary_row["actual"]["canary_prep_ready_count"] == 1
+        assert canary_row["actual"]["canary_live_execution_allowed_count"] == 0
+        assert canary_row["actual"]["general_blueprints_package_allowed_count"] == 0
+        assert canary_row["actual"]["save_true_allowed_count"] == 0
+        assert canary_row["actual"]["save_asset_allowed_count"] == 0
+        assert canary_row["actual"]["delete_asset_allowed_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         assert find_row(report, "durable_read_only_live_preflight")["status"] == "passed"
         assert find_row(report, "project_filesystem_side_effect_boundary")["status"] == "passed"

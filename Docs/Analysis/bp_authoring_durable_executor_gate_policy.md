@@ -73,7 +73,7 @@ For the default request set, the release boundary must prove:
 - target allowlist gate passed: `1`
 - overwrite/rename decision gate passed: `0`
 - rollback readiness gate passed: `0`
-- ownership marker gate passed: `0`
+- ownership marker gate passed after Section 52 marker policy: `1`
 
 The contract is intentionally stricter than the current read-only preflight.
 Even if all Section 51 gates are satisfied in a future offline contract, this
@@ -155,10 +155,40 @@ The release boundary must prove:
 The simulator may explain why a future save is blocked, but it must not promote
 that explanation into live durable execution.
 
+## Section 55 - Durable Canary Preparation Contract
+
+Section 55 reserves a narrow canary target and cleanup boundary for a future
+durable canary. It does not approve live durable canary execution.
+
+The canary prep boundary is:
+
+- canary package allowlist: `/Game/_MCP_Temp/DurableCanary`
+- source durable target remains `/Game/Blueprints/BP_PlannerDurable`
+- canary asset path uses the canary package, not the general Blueprint package
+- ownership marker policy must be ready before cleanup can be considered
+- save simulation must already be evaluated
+- live canary execution allowed: `false`
+- general `/Game/Blueprints` package allowed for canary output: `false`
+- `save=true`, `save_asset`, and `delete_asset` allowed: `false`
+
+The release boundary must prove:
+
+- durable canary prep requests: `1`
+- canary prep ready: `1`
+- live canary execution allowed: `0`
+- general Blueprints package allowed: `0`
+- `save=true` allowed: `0`
+- `save_asset` allowed: `0`
+- `delete_asset` allowed: `0`
+
+The prep contract is useful only as a target and cleanup definition. It must
+not produce a live command plan or open durable save/delete behavior.
+
 ## Decision
 
 Section 46-48 improves durable safety visibility, Section 51 separates the
 future durable enable gates, and Section 52 defines the ownership marker needed
 for future rollback. Section 53 adds a no-command dry-run plan. Section 54 adds
-a no-command save validation simulator. These sections do not enable durable
-Blueprint creation, saving, delete, or rename.
+a no-command save validation simulator. Section 55 adds canary prep only. These
+sections do not enable durable Blueprint creation, saving, delete, rename, or
+live canary execution.
