@@ -102,6 +102,17 @@ def main() -> int:
         assert report["authoring_job_contract"]["durable_canary_live_preflight_authoring_command_count"] == 0
         assert report["authoring_job_contract"]["durable_canary_live_preflight_save_or_delete_command_count"] == 0
         assert report["authoring_job_contract"]["durable_canary_live_preflight_cleanup_command_count"] == 0
+        assert report["authoring_job_contract"]["durable_canary_recovery_request_count"] == 1
+        assert report["authoring_job_contract"]["durable_canary_recovery_matrix_ready_count"] == 1
+        assert report["authoring_job_contract"]["durable_canary_recovery_scenario_count"] == 6
+        assert report["authoring_job_contract"]["durable_canary_recovery_cleanup_command_allowed_count"] == 0
+        assert report["authoring_job_contract"]["durable_canary_recovery_delete_command_allowed_count"] == 0
+        assert report["authoring_job_contract"]["durable_canary_recovery_save_command_allowed_count"] == 0
+        assert report["authoring_job_contract"]["durable_canary_recovery_authoring_command_allowed_count"] == 0
+        assert report["authoring_job_contract"]["durable_canary_recovery_live_cleanup_command_count"] == 0
+        assert report["authoring_job_contract"]["durable_canary_recovery_live_delete_command_count"] == 0
+        assert report["authoring_job_contract"]["durable_canary_recovery_live_save_command_count"] == 0
+        assert report["authoring_job_contract"]["durable_canary_recovery_live_authoring_command_count"] == 0
         assert report["authoring_job_contract"]["durable_enable_contract_request_count"] == 1
         assert report["authoring_job_contract"]["durable_enable_contract_satisfied_count"] == 0
         assert report["authoring_job_contract"]["durable_enable_executor_may_open_count"] == 0
@@ -178,6 +189,16 @@ def main() -> int:
             == 0
         )
         assert report["manifest_executor"]["durable_gate_summary"]["canary_live_preflight_cleanup_command_count"] == 0
+        assert report["manifest_executor"]["durable_gate_summary"]["canary_recovery_matrix_ready_count"] == 1
+        assert report["manifest_executor"]["durable_gate_summary"]["canary_recovery_scenario_count"] == 6
+        assert report["manifest_executor"]["durable_gate_summary"]["canary_recovery_cleanup_allowed_count"] == 0
+        assert report["manifest_executor"]["durable_gate_summary"]["canary_recovery_delete_allowed_count"] == 0
+        assert report["manifest_executor"]["durable_gate_summary"]["canary_recovery_save_allowed_count"] == 0
+        assert report["manifest_executor"]["durable_gate_summary"]["canary_recovery_authoring_allowed_count"] == 0
+        assert report["manifest_executor"]["durable_gate_summary"]["canary_recovery_live_cleanup_command_count"] == 0
+        assert report["manifest_executor"]["durable_gate_summary"]["canary_recovery_live_delete_command_count"] == 0
+        assert report["manifest_executor"]["durable_gate_summary"]["canary_recovery_live_save_command_count"] == 0
+        assert report["manifest_executor"]["durable_gate_summary"]["canary_recovery_live_authoring_command_count"] == 0
         assert report["manifest_executor"]["durable_gate_summary"]["durable_executor_enabled_count"] == 0
         assert report["manifest_executor"]["durable_gate_summary"]["durable_executor_executable_count"] == 0
         assert report["manifest_executor"]["durable_gate_summary"]["allowed_live_authoring_command_count"] == 0
@@ -307,6 +328,18 @@ def main() -> int:
             ]
             is False
         )
+        assert (
+            durable_save["durable_preflight_contract"]["durable_canary_recovery_matrix_contract"][
+                "recovery_matrix_ready"
+            ]
+            is True
+        )
+        assert (
+            durable_save["durable_preflight_contract"]["durable_canary_recovery_matrix_contract"][
+                "cleanup_command_allowed"
+            ]
+            is False
+        )
         assert durable_save["durable_preflight_contract"]["durable_save_gate_contract"]["save_allowed"] is False
         assert "rollback_policy_not_ready" in durable_save["durable_preflight_contract"]["durable_save_gate_contract"]["blocked_by"]
         assert durable_save["durable_preflight_contract"]["durable_executor_readiness_contract"]["durable_executor_ready"] is False
@@ -341,6 +374,9 @@ def main() -> int:
         assert durable_executor_policy["durable_executor_gate"]["canary_live_preflight_read_only_allowed"] is True
         assert durable_executor_policy["durable_executor_gate"]["canary_live_preflight_execution_allowed"] is False
         assert durable_executor_policy["durable_executor_gate"]["canary_live_preflight_save_or_delete_allowed"] is False
+        assert durable_executor_policy["durable_executor_gate"]["canary_recovery_matrix_ready"] is True
+        assert durable_executor_policy["durable_executor_gate"]["canary_recovery_cleanup_allowed"] is False
+        assert durable_executor_policy["durable_executor_gate"]["canary_recovery_delete_allowed"] is False
         assert durable_executor_policy["durable_executor_gate"]["save_allowed"] is False
         assert durable_executor_policy["durable_executor_gate"]["save_or_delete_commands_allowed"] is False
         assert any(

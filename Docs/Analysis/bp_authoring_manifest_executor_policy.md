@@ -41,6 +41,8 @@ Blueprint authoring manifest and live UnrealMCP commands.
 16. Section 57 canary live preflight coverage must prove the only live canary
     operation is read-only asset-exists and still allows no canary execution,
     save, delete, or cleanup commands.
+17. Section 58 recovery matrix coverage must prove recovery scenarios are
+    defined while cleanup, delete, save, and authoring commands remain disabled.
 
 ## Execution Boundary
 
@@ -71,6 +73,8 @@ temporary manifests. It must block:
   `delete_asset`, or any live command
 - any Section 57 canary live preflight contract that allows canary execution,
   authoring, save/delete, cleanup, or any non-read-only live command
+- any Section 58 canary recovery matrix that allows cleanup, delete, save,
+  authoring, or any live cleanup/delete/save/authoring command
 
 ## Validation
 
@@ -105,6 +109,9 @@ temporary manifests. It must block:
   read-only canary preflight allowance, 0 canary execution allowance, 0
   authoring command allowance, 0 save/delete allowance, 0 cleanup allowance, and
   0 live authoring/save/delete/cleanup command counts.
+- Offline tests must prove the Section 58 recovery matrix count: 1 ready
+  recovery matrix, 6 recovery scenarios, 0 cleanup/delete/save/authoring
+  allowance, and 0 live cleanup/delete/save/authoring command counts.
 - The planner-driven live smoke must report the executor version and executor
   executable count.
 - The planner-driven live smoke may perform only the read-only durable

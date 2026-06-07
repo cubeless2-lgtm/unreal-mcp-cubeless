@@ -83,6 +83,14 @@ def main() -> int:
         assert canary_live_preflight_row["actual"]["canary_execution_allowed_after_preflight_count"] == 0
         assert canary_live_preflight_row["actual"]["live_save_or_delete_command_count"] == 0
         assert canary_live_preflight_row["actual"]["live_cleanup_command_count"] == 0
+        canary_recovery_row = find_row(report, "durable_canary_recovery_matrix")
+        assert canary_recovery_row["status"] == "passed"
+        assert canary_recovery_row["actual"]["durable_requested_canary_recovery_count"] == 1
+        assert canary_recovery_row["actual"]["recovery_matrix_ready_count"] == 1
+        assert canary_recovery_row["actual"]["scenario_count"] == 6
+        assert canary_recovery_row["actual"]["cleanup_command_allowed_count"] == 0
+        assert canary_recovery_row["actual"]["delete_command_allowed_count"] == 0
+        assert canary_recovery_row["actual"]["live_cleanup_command_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False

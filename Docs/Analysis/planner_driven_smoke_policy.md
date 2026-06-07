@@ -96,4 +96,9 @@ job manifest until dedicated reinforcement exists.
   `authoring_command_allowed=false`, `save_or_delete_allowed=false`, and
   `cleanup_command_allowed=false` mean the smoke runner must not run durable
   canary execution, save, or cleanup commands.
+- Section 58 durable canary recovery matrix may be reported, but
+  `cleanup_command_allowed=false`, `delete_command_allowed=false`,
+  `save_command_allowed=false`, and `authoring_command_allowed=false` mean the
+  smoke runner must not run durable cleanup, delete, save, or authoring
+  commands.
 - Section 11 does not require C++ changes.

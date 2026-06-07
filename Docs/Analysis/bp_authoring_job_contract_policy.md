@@ -1,6 +1,6 @@
 # BP Authoring Job Contract Policy
 
-This policy defines the Section 12 through Section 57 contract between a
+This policy defines the Section 12 through Section 58 contract between a
 planner verdict and live Blueprint authoring execution.
 
 ## Required Manifest Fields
@@ -34,6 +34,7 @@ Every user request must be converted into a structured manifest with:
 - durable canary preparation contract
 - durable canary approval gate contract
 - durable canary live preflight contract
+- durable canary recovery matrix contract
 - blocked or review reasons
 
 ## Execution Rule
@@ -229,6 +230,12 @@ now allow a read-only canary `does_asset_exist` check, but the contract keeps
 `authoring_command_allowed=false`, `save_or_delete_allowed=false`,
 `cleanup_command_allowed=false`, and all live author/save/delete/cleanup command
 counts at `0`.
+
+Section 58 adds a durable canary recovery matrix. Durable requests may now
+record report-only rollback/cleanup scenarios, but the matrix keeps
+`cleanup_command_allowed=false`, `delete_command_allowed=false`,
+`save_command_allowed=false`, `authoring_command_allowed=false`, and all live
+cleanup/delete/save/authoring command counts at `0`.
 
 ## Section 13 Executable Templates
 
@@ -1031,6 +1038,27 @@ The live smoke may record whether the canary asset already exists, but that
 result is evidence only. It must not create, save, delete, cleanup, rename,
 overwrite, replace, or execute a canary asset.
 
+## Section 58 Durable Canary Recovery Matrix
+
+Durable preflight now embeds `durable_canary_recovery_matrix_contract`, also
+exposed at the manifest top level and inside `authoring_executor_contract`.
+
+The recovery matrix boundary is:
+
+- recovery schema: `section_58_durable_canary_recovery_matrix_v1`
+- recovery matrix defined: `true`
+- recovery matrix ready: `true`
+- scenario count: `6`
+- cleanup requires ownership marker: `true`
+- cleanup requires preflight asset absent: `true`
+- cleanup requires created asset path match: `true`
+- cleanup/delete/save/authoring command allowed: `false`
+- live cleanup/delete/save/authoring command counts: `0`
+
+The matrix gives a future durable canary executor a checklist for failure
+handling, but it is not a cleanup permission. Cleanup and delete still need a
+later explicit release gate.
+
 ## Live Smoke Rule
 
 The planner-driven live smoke must execute the manifest, not the raw user
@@ -1055,12 +1083,13 @@ A planner-safe request that asks for a saved or durable asset must also remain
 dry-run until Section 51 durable enable gates, Section 52 ownership marker
 policy, Section 53 dry-run plan, Section 54 save simulator, Section 55 canary
 prep, Section 56 canary approval gate, Section 57 canary live preflight, and a
-later durable executor release are all proven. A read-only
+Section 58 canary recovery matrix, plus a later durable executor release are all
+proven. A read-only
 asset-exists result, parsed overwrite/rename decision, draft save gate,
 readiness checklist entry, disabled durable executor skeleton, or ownership
 marker/dry-run/save-simulation/canary-prep/canary-approval/canary-preflight
-contract alone must not enable durable save, delete, cleanup, rename,
-overwrite, replacement behavior, or live canary execution.
+or recovery contract alone must not enable durable save, delete, cleanup,
+rename, overwrite, replacement behavior, or live canary execution.
 
 ## Validation
 

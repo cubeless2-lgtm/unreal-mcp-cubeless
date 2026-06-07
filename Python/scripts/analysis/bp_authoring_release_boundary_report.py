@@ -505,6 +505,60 @@ def build_durable_canary_live_preflight_row(
     )
 
 
+def build_durable_canary_recovery_row(
+    contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
+) -> Dict[str, Any]:
+    recovery_summary = contract_summary.get("durable_canary_recovery_summary", {})
+    durable_gate_summary = executor_summary.get("durable_gate_summary", {})
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_canary_recovery_count": 1,
+        "recovery_matrix_ready_count": 1,
+        "scenario_count": 6,
+        "cleanup_command_allowed_count": 0,
+        "delete_command_allowed_count": 0,
+        "save_command_allowed_count": 0,
+        "authoring_command_allowed_count": 0,
+        "live_cleanup_command_count": 0,
+        "live_delete_command_count": 0,
+        "live_save_command_count": 0,
+        "live_authoring_command_count": 0,
+        "executor_gate_recovery_matrix_ready_count": 1,
+        "executor_gate_cleanup_allowed_count": 0,
+        "executor_gate_delete_allowed_count": 0,
+    }
+    actual = {
+        "summary_status": recovery_summary.get("status"),
+        "durable_requested_canary_recovery_count": recovery_summary.get(
+            "durable_requested_canary_recovery_count"
+        ),
+        "recovery_matrix_ready_count": recovery_summary.get("recovery_matrix_ready_count"),
+        "scenario_count": recovery_summary.get("scenario_count"),
+        "cleanup_command_allowed_count": recovery_summary.get("cleanup_command_allowed_count"),
+        "delete_command_allowed_count": recovery_summary.get("delete_command_allowed_count"),
+        "save_command_allowed_count": recovery_summary.get("save_command_allowed_count"),
+        "authoring_command_allowed_count": recovery_summary.get("authoring_command_allowed_count"),
+        "live_cleanup_command_count": recovery_summary.get("live_cleanup_command_count"),
+        "live_delete_command_count": recovery_summary.get("live_delete_command_count"),
+        "live_save_command_count": recovery_summary.get("live_save_command_count"),
+        "live_authoring_command_count": recovery_summary.get("live_authoring_command_count"),
+        "executor_gate_recovery_matrix_ready_count": durable_gate_summary.get("canary_recovery_matrix_ready_count"),
+        "executor_gate_cleanup_allowed_count": durable_gate_summary.get("canary_recovery_cleanup_allowed_count"),
+        "executor_gate_delete_allowed_count": durable_gate_summary.get("canary_recovery_delete_allowed_count"),
+    }
+    return row(
+        "durable_canary_recovery_matrix",
+        "Section 58 durable canary recovery matrix",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "Recovery scenarios are report-only.",
+            "Cleanup/delete remain disabled until a later explicit release.",
+        ),
+    )
+
+
 def build_planner_live_rows(planner_report_path: Path, planner_report: Optional[Dict[str, Any]]) -> List[Dict[str, Any]]:
     if planner_report is None:
         return [missing_row("planner_driven_live_smoke_report", "Planner-driven live smoke report", planner_report_path)]
@@ -708,6 +762,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         build_durable_canary_prep_row(contract_summary, executor_summary),
         build_durable_canary_approval_row(contract_summary, executor_summary),
         build_durable_canary_live_preflight_row(contract_summary, executor_summary),
+        build_durable_canary_recovery_row(contract_summary, executor_summary),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -734,12 +789,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "durable_authoring_enabled": False,
             "durable_authoring_release_status": "not_enabled_read_only_preflight_only",
             "current_authoring_ceiling": (
-                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_and_section_57_canary_live_preflight"
+                "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_and_section_58_canary_recovery_matrix"
             ),
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
-            "durable canary rollback recovery matrix after Section 57 read-only preflight",
+            "release boundary v2 consolidation after Section 58 recovery matrix",
             "component default/type readback expansion for broader Blueprint classes",
             "function call diagnostics and graph layout repair suggestions",
             "UMG/CommonUI authoring classifier and non-executable manifest coverage",

@@ -254,6 +254,26 @@ but the result must report `authoring_attempted=false`,
 `save_or_delete_attempted=false`, `cleanup_attempted=false`, and
 `canary_execution_attempted=false`.
 
+## Section 58 - Durable Canary Recovery Matrix
+
+Section 58 defines the future rollback and cleanup recovery scenarios for a
+durable canary. The matrix is report-only.
+
+The recovery boundary is:
+
+- recovery schema: `section_58_durable_canary_recovery_matrix_v1`
+- recovery matrix ready: `true`
+- scenario count: `6`
+- cleanup requires ownership marker: `true`
+- cleanup requires the canary preflight asset to have been absent: `true`
+- cleanup requires the created asset path to match the canary path: `true`
+- cleanup/delete/save/authoring command allowed: `false`
+- live cleanup/delete/save/authoring command counts: `0`
+
+The matrix covers preflight asset absent, preflight asset present, creation
+failure before marker, creation failure after marker, compile/save blocked, and
+valid-marker cleanup review. It does not run cleanup or delete.
+
 ## Decision
 
 Section 46-48 improves durable safety visibility, Section 51 separates the
@@ -261,5 +281,6 @@ future durable enable gates, and Section 52 defines the ownership marker needed
 for future rollback. Section 53 adds a no-command dry-run plan. Section 54 adds
 a no-command save validation simulator. Section 55 adds canary prep only.
 Section 56 adds scoped approval only. Section 57 adds read-only canary live
-preflight only. These sections do not enable durable Blueprint creation,
-saving, delete, rename, cleanup, or live canary execution.
+preflight only. Section 58 adds recovery scenarios only. These sections do not
+enable durable Blueprint creation, saving, delete, rename, cleanup, or live
+canary execution.

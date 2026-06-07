@@ -83,6 +83,16 @@ def main() -> int:
         "canary_live_preflight_authoring_command_count": 0,
         "canary_live_preflight_save_or_delete_command_count": 0,
         "canary_live_preflight_cleanup_command_count": 0,
+        "canary_recovery_matrix_ready_count": 1,
+        "canary_recovery_scenario_count": 6,
+        "canary_recovery_cleanup_allowed_count": 0,
+        "canary_recovery_delete_allowed_count": 0,
+        "canary_recovery_save_allowed_count": 0,
+        "canary_recovery_authoring_allowed_count": 0,
+        "canary_recovery_live_cleanup_command_count": 0,
+        "canary_recovery_live_delete_command_count": 0,
+        "canary_recovery_live_save_command_count": 0,
+        "canary_recovery_live_authoring_command_count": 0,
         "durable_executor_enabled_count": 0,
         "durable_executor_executable_count": 0,
         "durable_executor_command_count": 0,
@@ -174,6 +184,16 @@ def main() -> int:
     assert durable_gate["canary_live_preflight_authoring_command_count"] == 0
     assert durable_gate["canary_live_preflight_save_or_delete_command_count"] == 0
     assert durable_gate["canary_live_preflight_cleanup_command_count"] == 0
+    assert durable_gate["canary_recovery_matrix_ready"] is True
+    assert durable_gate["canary_recovery_scenario_count"] == 6
+    assert durable_gate["canary_recovery_cleanup_allowed"] is False
+    assert durable_gate["canary_recovery_delete_allowed"] is False
+    assert durable_gate["canary_recovery_save_allowed"] is False
+    assert durable_gate["canary_recovery_authoring_allowed"] is False
+    assert durable_gate["canary_recovery_live_cleanup_command_count"] == 0
+    assert durable_gate["canary_recovery_live_delete_command_count"] == 0
+    assert durable_gate["canary_recovery_live_save_command_count"] == 0
+    assert durable_gate["canary_recovery_live_authoring_command_count"] == 0
     assert durable_gate["durable_executor_enabled"] is False
     assert durable_gate["durable_executor_can_execute"] is False
     assert durable_gate["save_allowed"] is False
