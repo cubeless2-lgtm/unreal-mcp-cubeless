@@ -83,6 +83,7 @@ import bp_authoring_durable_executor_authoring_activation_readiness_after_promot
 import bp_authoring_durable_executor_authoring_open_after_activation_readiness_after_promotion_barrier_contract as durable_executor_authoring_open_after_activation_readiness_after_promotion_barrier_after_decision_after_review_after_readiness_after_no_save_release_after_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness
 import bp_authoring_durable_executor_authoring_enable_after_open_after_activation_readiness_after_promotion_barrier_contract as durable_executor_authoring_enable_after_open_after_activation_readiness_after_promotion_barrier_after_decision_after_review_after_readiness_after_no_save_release_after_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness
 import bp_authoring_durable_executor_authoring_command_after_enable_after_open_after_activation_readiness_after_promotion_barrier_contract as durable_executor_authoring_command_after_enable_after_open_after_activation_readiness_after_promotion_barrier_after_decision_after_review_after_readiness_after_no_save_release_after_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness
+import bp_authoring_durable_executor_authoring_command_request_dry_run_route_contract as durable_executor_authoring_command_request_dry_run_route
 import bp_authoring_durable_executor_authoring_enable_contract as durable_executor_authoring_enable
 import bp_authoring_durable_executor_authoring_enable_after_open_contract as durable_executor_authoring_enable_after_open
 import bp_authoring_durable_executor_authoring_activation_readiness_contract as durable_executor_authoring_activation_readiness
@@ -120,7 +121,7 @@ import bp_authoring_durable_save_gate_final_review_contract as save_gate_final_r
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_161_bp_authoring_release_boundary_v103"
+REPORT_SCHEMA = "section_162_bp_authoring_release_boundary_v104"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -11324,6 +11325,99 @@ def build_durable_executor_authoring_command_after_enable_after_open_after_activ
     )
 
 
+def build_durable_executor_authoring_command_request_dry_run_route_row(
+    contract_summary: Dict[str, Any],
+    executor_summary: Dict[str, Any],
+    project_root: Path,
+    planner_report: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    command_row = build_durable_executor_authoring_command_after_enable_after_open_after_activation_readiness_after_promotion_barrier_after_decision_after_review_after_readiness_after_no_save_release_after_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_row(
+        contract_summary,
+        executor_summary,
+        project_root,
+        planner_report,
+    )
+    command_summary = dict(command_row["actual"])
+    command_summary["status"] = command_summary.pop("summary_status")
+    contract = durable_executor_authoring_command_request_dry_run_route.build_durable_executor_authoring_command_request_dry_run_route_contract(
+        requested=True,
+        section_161_authoring_command_summary=command_summary,
+    )
+    summary = durable_executor_authoring_command_request_dry_run_route.summarize_durable_executor_authoring_command_request_dry_run_routes(
+        [contract]
+    )
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_executor_authoring_command_request_dry_run_route_count": 1,
+        "route_contract_defined_count": 1,
+        "section_161_command_contract_ready_count": 1,
+        "open_activation_promotion_readiness_chain_satisfied_count": 0,
+        "authoring_enable_chain_satisfied_count": 0,
+        "durable_release_readiness_chain_reconfirmed_count": 0,
+        "authoring_command_inputs_satisfied_count": 0,
+        "authoring_command_record_valid_count": 0,
+        "readiness_chain_satisfied_count": 0,
+        "dry_run_route_record_present_count": 0,
+        "record_schema_matches_count": 0,
+        "route_scope_matches_count": 0,
+        "dry_run_only_count": 0,
+        "route_status_passed_count": 0,
+        "operator_reconfirmed_no_write_execution_count": 0,
+        "operator_reconfirmed_no_save_delete_rename_count": 0,
+        "requested_command_allowed_count": 0,
+        "requested_command_forbidden_count": 0,
+        "requested_command_unknown_count": 0,
+        "dry_run_operation_allowed_count": 0,
+        "target_asset_declared_count": 0,
+        "readiness_proof_matches_count": 0,
+        "release_boundary_proof_safe_count": 0,
+        "dry_run_route_record_valid_count": 0,
+        "dry_run_route_record_rejected_count": 0,
+        "dry_run_route_admissible_count": 0,
+        "unsafe_request_record_count": 0,
+        "missing_dry_run_route_prerequisite_count": 17,
+        "dry_run_route_request_started_count": 0,
+        "dry_run_route_request_accepted_count": 0,
+        "durable_command_request_promoted_count": 0,
+        "durable_executor_command_path_opened_count": 0,
+        "durable_executor_command_path_allowed_count": 0,
+        "durable_authoring_command_allowed_count": 0,
+        "durable_authoring_command_dispatched_count": 0,
+        "durable_authoring_command_executed_count": 0,
+        "durable_authoring_enabled_count": 0,
+        "durable_authoring_allowed_count": 0,
+        "final_durable_release_ready_count": 0,
+        "asset_write_performed_count": 0,
+        "package_dirty_marked_count": 0,
+        "code_change_performed_count": 0,
+        "executor_code_modified_count": 0,
+        "unreal_asset_modified_count": 0,
+        "live_bridge_probe_started_count": 0,
+        "save_delete_rename_allowed_count": 0,
+        "save_asset_allowed_count": 0,
+        "delete_asset_allowed_count": 0,
+        "rename_asset_allowed_count": 0,
+        "cleanup_allowed_count": 0,
+        "live_command_dispatched_count": 0,
+        "live_command_executed_count": 0,
+    }
+    actual = {
+        key: summary.get(key) if key != "summary_status" else summary.get("status")
+        for key in expected
+    }
+    return row(
+        "durable_executor_authoring_command_request_dry_run_route_contract",
+        "Section 162 durable executor authoring command request dry-run route contract",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "The durable executor authoring command request dry-run route contract is defined, but no command request route record is present and the readiness chain remains incomplete.",
+            "A future valid request can become dry-run admissible only; durable command promotion, command path opening, dispatch/execution, save, delete/rename, cleanup, and live durable authoring remain blocked.",
+        ),
+    )
+
+
 def build_section_51_58_consolidation_row(
     contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -11595,7 +11689,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     lyra_report = read_json(lyra_report_path)
     preliminary_verdict = {
         "status": "passed",
-        "release_boundary_version": "section_161_v103",
+        "release_boundary_version": "section_162_v104",
         "durable_authoring_enabled": False,
     }
     decision_contract = mvp_decision.build_mvp_decision_contract(
@@ -12164,6 +12258,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             project_root,
             planner_report,
         ),
+        build_durable_executor_authoring_command_request_dry_run_route_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        ),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -12184,7 +12284,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
-            "release_boundary_version": "section_161_v103",
+            "release_boundary_version": "section_162_v104",
             "mvp_decision_status": decision_contract["decision_status"],
             "temporary_blueprint_authoring_mvp_ready": decision_contract[
                 "temporary_blueprint_authoring_mvp_ready"
@@ -12475,6 +12575,9 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "section_161_durable_executor_authoring_command_after_enable_after_open_after_activation_readiness_after_promotion_barrier_after_decision_after_review_after_readiness_after_no_save_release_after_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_status": (
                 "passed" if not failed_blocking else "failed"
             ),
+            "section_162_durable_executor_authoring_command_request_dry_run_route_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
             "final_durable_release_ready": False,
             "main_push_requested": False,
             "current_authoring_ceiling": (
@@ -12511,11 +12614,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
                 "_and_section_159_durable_executor_authoring_open_after_activation_readiness_after_promotion_barrier_after_decision_after_review_after_readiness_after_no_save_release_after_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_contract"
                 "_and_section_160_durable_executor_authoring_enable_after_open_after_activation_readiness_after_promotion_barrier_after_decision_after_review_after_readiness_after_no_save_release_after_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_contract"
                 "_and_section_161_durable_executor_authoring_command_after_enable_after_open_after_activation_readiness_after_promotion_barrier_after_decision_after_review_after_readiness_after_no_save_release_after_readback_after_result_after_application_after_decision_after_evidence_after_execution_after_dispatch_after_command_after_enable_after_open_after_activation_readiness_contract"
+                "_and_section_162_durable_executor_authoring_command_request_dry_run_route_contract"
             ),
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
-            "durable executor authoring command dispatch contract only after durable executor authoring command-after-enable-after-open-after-activation-readiness-after-promotion-barrier-after-decision-after-review-after-readiness-after-no-save-release-after-readback-after-result-after-application-after-decision-after-evidence-after-execution-after-dispatch-after-command-after-enable-after-open-after-activation-readiness record",
+            "durable executor authoring command dispatch dry-run contract only after Section 162 command request dry-run route proof",
             "component default/type readback expansion for broader Blueprint classes",
             "function call diagnostics and graph layout repair suggestions",
         ],
