@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_201_208_v130"
+        assert report["verdict"]["release_boundary_version"] == "section_209_216_v131"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -603,6 +603,60 @@ def main() -> int:
             ]
             == "passed"
         )
+        assert (
+            report["verdict"][
+                "section_209_216_durable_executor_authoring_live_pre_save_checkpoint_batch_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_209_durable_authoring_live_bridge_recovery_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_210_durable_authoring_live_pre_save_read_only_target_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_211_durable_authoring_live_target_absence_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_212_durable_authoring_live_dirty_package_boundary_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_213_durable_authoring_live_overwrite_boundary_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_214_durable_authoring_live_save_dispatch_final_checkpoint_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_215_durable_authoring_live_save_execution_readback_plan_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_216_durable_authoring_actual_save_final_checkpoint_status"
+            ]
+            == "passed"
+        )
         assert report["verdict"]["durable_safety_boundary_unlock_ready"] is True
         assert report["verdict"]["durable_safety_boundary_unlocked"] is True
         assert report["verdict"]["final_durable_release_ready"] is False
@@ -630,13 +684,20 @@ def main() -> int:
         assert report["verdict"]["save_command_admitted"] is True
         assert report["verdict"]["save_command_dry_run_ready"] is True
         assert report["verdict"]["final_pre_save_execution_ready"] is True
+        assert report["verdict"]["live_pre_save_checkpoint_ready"] is True
+        assert (
+            report["verdict"][
+                "actual_save_execution_requires_final_user_checkpoint"
+            ]
+            is True
+        )
         assert report["verdict"]["save_command_dispatched"] is False
         assert report["verdict"]["save_command_executed"] is False
         assert report["verdict"]["save_asset_allowed"] is False
         assert report["verdict"]["save_true_allowed"] is False
         assert (
             report["verdict"]["durable_authoring_release_status"]
-            == "section_208_save_gate_open_command_admitted_actual_save_closed"
+            == "section_216_live_pre_save_checkpoint_ready_actual_save_closed"
         )
         assert find_row(report, "job_contract_default_request_set")["status"] == "passed"
         assert find_row(report, "manifest_executor_policy")["status"] == "passed"
@@ -8125,6 +8186,210 @@ def main() -> int:
             == 0
         )
         assert save_gate_open_admission_row["actual"]["live_command_executed_count"] == 0
+        live_pre_save_checkpoint_row = find_row(
+            report,
+            "durable_executor_authoring_live_pre_save_checkpoint_batch",
+        )
+        assert live_pre_save_checkpoint_row["status"] == "passed"
+        assert (
+            live_pre_save_checkpoint_row["actual"][
+                "durable_requested_executor_authoring_live_pre_save_checkpoint_batch_count"
+            ]
+            == 1
+        )
+        assert (
+            live_pre_save_checkpoint_row["actual"][
+                "section_201_208_summary_schema_matches_count"
+            ]
+            == 1
+        )
+        assert (
+            live_pre_save_checkpoint_row["actual"][
+                "section_201_208_summary_passed_count"
+            ]
+            == 1
+        )
+        assert (
+            live_pre_save_checkpoint_row["actual"][
+                "section_201_208_pre_save_ready_count"
+            ]
+            == 1
+        )
+        assert (
+            live_pre_save_checkpoint_row["actual"][
+                "section_201_208_write_and_live_outputs_blocked_count"
+            ]
+            == 1
+        )
+        assert live_pre_save_checkpoint_row["actual"]["live_result_schema_matches_count"] == 1
+        assert live_pre_save_checkpoint_row["actual"]["live_result_read_only_count"] == 1
+        assert live_pre_save_checkpoint_row["actual"]["live_bridge_reachable_count"] == 1
+        assert (
+            live_pre_save_checkpoint_row["actual"][
+                "ieta_slate_status_succeeded_count"
+            ]
+            == 1
+        )
+        assert live_pre_save_checkpoint_row["actual"]["target_path_matches_count"] == 1
+        assert (
+            live_pre_save_checkpoint_row["actual"][
+                "read_only_target_check_performed_count"
+            ]
+            == 1
+        )
+        assert (
+            live_pre_save_checkpoint_row["actual"][
+                "target_absent_for_new_temp_asset_count"
+            ]
+            == 1
+        )
+        assert (
+            live_pre_save_checkpoint_row["actual"][
+                "target_directory_absent_or_empty_count"
+            ]
+            == 1
+        )
+        assert (
+            live_pre_save_checkpoint_row["actual"][
+                "dirty_content_packages_zero_count"
+            ]
+            == 1
+        )
+        assert (
+            live_pre_save_checkpoint_row["actual"]["dirty_map_packages_zero_count"]
+            == 1
+        )
+        assert (
+            live_pre_save_checkpoint_row["actual"][
+                "live_result_write_outputs_blocked_count"
+            ]
+            == 1
+        )
+        assert (
+            live_pre_save_checkpoint_row["actual"][
+                "section_209_live_bridge_recovered_count"
+            ]
+            == 1
+        )
+        assert (
+            live_pre_save_checkpoint_row["actual"][
+                "section_210_live_pre_save_read_only_target_checked_count"
+            ]
+            == 1
+        )
+        assert (
+            live_pre_save_checkpoint_row["actual"][
+                "section_211_live_target_absence_confirmed_count"
+            ]
+            == 1
+        )
+        assert (
+            live_pre_save_checkpoint_row["actual"][
+                "section_212_live_dirty_package_boundary_clean_count"
+            ]
+            == 1
+        )
+        assert (
+            live_pre_save_checkpoint_row["actual"][
+                "section_213_live_overwrite_boundary_safe_for_new_temp_asset_count"
+            ]
+            == 1
+        )
+        assert (
+            live_pre_save_checkpoint_row["actual"][
+                "section_214_live_save_dispatch_final_checkpoint_ready_count"
+            ]
+            == 1
+        )
+        assert (
+            live_pre_save_checkpoint_row["actual"][
+                "section_215_live_save_execution_readback_plan_ready_count"
+            ]
+            == 1
+        )
+        assert (
+            live_pre_save_checkpoint_row["actual"][
+                "section_216_actual_save_requires_final_user_checkpoint_count"
+            ]
+            == 1
+        )
+        assert (
+            live_pre_save_checkpoint_row["actual"][
+                "save_dispatch_final_checkpoint_ready_count"
+            ]
+            == 1
+        )
+        assert (
+            live_pre_save_checkpoint_row["actual"][
+                "actual_save_execution_requires_final_user_checkpoint_count"
+            ]
+            == 1
+        )
+        assert (
+            live_pre_save_checkpoint_row["actual"]["save_gate_open_allowed_count"]
+            == 1
+        )
+        assert (
+            live_pre_save_checkpoint_row["actual"]["save_command_admitted_count"]
+            == 1
+        )
+        assert (
+            live_pre_save_checkpoint_row["actual"][
+                "final_pre_save_execution_ready_count"
+            ]
+            == 1
+        )
+        assert (
+            live_pre_save_checkpoint_row["actual"]["durable_authoring_allowed_count"]
+            == 0
+        )
+        assert (
+            live_pre_save_checkpoint_row["actual"][
+                "final_durable_release_ready_count"
+            ]
+            == 0
+        )
+        assert (
+            live_pre_save_checkpoint_row["actual"]["asset_write_performed_count"]
+            == 0
+        )
+        assert (
+            live_pre_save_checkpoint_row["actual"]["package_dirty_marked_count"]
+            == 0
+        )
+        assert (
+            live_pre_save_checkpoint_row["actual"]["save_command_dispatched_count"]
+            == 0
+        )
+        assert (
+            live_pre_save_checkpoint_row["actual"]["save_command_executed_count"]
+            == 0
+        )
+        assert live_pre_save_checkpoint_row["actual"]["save_true_allowed_count"] == 0
+        assert live_pre_save_checkpoint_row["actual"]["save_asset_allowed_count"] == 0
+        assert (
+            live_pre_save_checkpoint_row["actual"]["compile_save_allowed_count"]
+            == 0
+        )
+        assert (
+            live_pre_save_checkpoint_row["actual"][
+                "save_delete_rename_allowed_count"
+            ]
+            == 0
+        )
+        assert live_pre_save_checkpoint_row["actual"]["delete_asset_allowed_count"] == 0
+        assert live_pre_save_checkpoint_row["actual"]["rename_asset_allowed_count"] == 0
+        assert (
+            live_pre_save_checkpoint_row["actual"][
+                "live_durable_authoring_allowed_count"
+            ]
+            == 0
+        )
+        assert (
+            live_pre_save_checkpoint_row["actual"]["live_command_dispatched_count"]
+            == 0
+        )
+        assert live_pre_save_checkpoint_row["actual"]["live_command_executed_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False

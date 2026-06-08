@@ -110,6 +110,7 @@ import bp_authoring_durable_executor_authoring_enable_after_safety_boundary_unlo
 import bp_authoring_durable_executor_authoring_no_save_execution_batch_contract as durable_executor_authoring_no_save_execution_batch
 import bp_authoring_durable_executor_authoring_save_gate_preflight_batch_contract as durable_executor_authoring_save_gate_preflight_batch
 import bp_authoring_durable_executor_authoring_save_gate_open_admission_batch_contract as durable_executor_authoring_save_gate_open_admission_batch
+import bp_authoring_durable_executor_authoring_live_pre_save_checkpoint_batch_contract as durable_executor_authoring_live_pre_save_checkpoint_batch
 import bp_authoring_durable_executor_authoring_enable_contract as durable_executor_authoring_enable
 import bp_authoring_durable_executor_authoring_enable_after_open_contract as durable_executor_authoring_enable_after_open
 import bp_authoring_durable_executor_authoring_activation_readiness_contract as durable_executor_authoring_activation_readiness
@@ -147,7 +148,7 @@ import bp_authoring_durable_save_gate_final_review_contract as save_gate_final_r
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_201_208_bp_authoring_release_boundary_v130"
+REPORT_SCHEMA = "section_209_216_bp_authoring_release_boundary_v131"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -13600,6 +13601,115 @@ def build_durable_executor_authoring_save_gate_open_admission_batch_row(
     )
 
 
+def build_durable_executor_authoring_live_pre_save_checkpoint_batch_row(
+    contract_summary: Dict[str, Any],
+    executor_summary: Dict[str, Any],
+    project_root: Path,
+    planner_report: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    open_admission_row = (
+        build_durable_executor_authoring_save_gate_open_admission_batch_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        )
+    )
+    open_admission_summary = _summary_from_row_actual(open_admission_row)
+    open_admission_summary["schema"] = (
+        durable_executor_authoring_save_gate_open_admission_batch
+        .DURABLE_EXECUTOR_AUTHORING_SAVE_GATE_OPEN_ADMISSION_BATCH_SUMMARY_SCHEMA
+    )
+    live_result = durable_executor_authoring_live_pre_save_checkpoint_batch.build_live_pre_save_read_only_result(
+        bridge_reachable=True,
+        ieta_slate_status_succeeded=True,
+    )
+    contract = durable_executor_authoring_live_pre_save_checkpoint_batch.build_durable_executor_authoring_live_pre_save_checkpoint_batch_contract(
+        requested=True,
+        section_201_208_save_gate_open_admission_summary=open_admission_summary,
+        live_pre_save_read_only_result=live_result,
+    )
+    summary = durable_executor_authoring_live_pre_save_checkpoint_batch.summarize_durable_executor_authoring_live_pre_save_checkpoint_batches(
+        [contract]
+    )
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_executor_authoring_live_pre_save_checkpoint_batch_count": 1,
+        "section_201_208_summary_schema_matches_count": 1,
+        "section_201_208_summary_passed_count": 1,
+        "section_201_208_pre_save_ready_count": 1,
+        "section_201_208_write_and_live_outputs_blocked_count": 1,
+        "live_result_schema_matches_count": 1,
+        "live_result_read_only_count": 1,
+        "live_bridge_reachable_count": 1,
+        "ieta_slate_status_succeeded_count": 1,
+        "target_path_matches_count": 1,
+        "read_only_target_check_performed_count": 1,
+        "target_absent_for_new_temp_asset_count": 1,
+        "target_directory_absent_or_empty_count": 1,
+        "dirty_content_packages_zero_count": 1,
+        "dirty_map_packages_zero_count": 1,
+        "live_result_write_outputs_blocked_count": 1,
+        "section_209_live_bridge_recovered_count": 1,
+        "section_210_live_pre_save_read_only_target_checked_count": 1,
+        "section_211_live_target_absence_confirmed_count": 1,
+        "section_212_live_dirty_package_boundary_clean_count": 1,
+        "section_213_live_overwrite_boundary_safe_for_new_temp_asset_count": 1,
+        "section_214_live_save_dispatch_final_checkpoint_ready_count": 1,
+        "section_215_live_save_execution_readback_plan_ready_count": 1,
+        "section_216_actual_save_requires_final_user_checkpoint_count": 1,
+        "durable_authoring_enabled_count": 1,
+        "durable_executor_opened_count": 1,
+        "save_gate_open_allowed_count": 1,
+        "save_command_admitted_count": 1,
+        "final_pre_save_execution_ready_count": 1,
+        "durable_authoring_allowed_count": 0,
+        "final_durable_release_ready_count": 0,
+        "asset_write_performed_count": 0,
+        "package_dirty_marked_count": 0,
+        "save_command_dispatched_count": 0,
+        "save_command_executed_count": 0,
+        "save_true_allowed_count": 0,
+        "save_asset_allowed_count": 0,
+        "compile_save_allowed_count": 0,
+        "save_delete_rename_allowed_count": 0,
+        "delete_asset_allowed_count": 0,
+        "rename_asset_allowed_count": 0,
+        "live_durable_authoring_allowed_count": 0,
+        "live_command_dispatched_count": 0,
+        "live_command_executed_count": 0,
+    }
+    for key in (
+        durable_executor_authoring_live_pre_save_checkpoint_batch
+        .LIVE_PRE_SAVE_CHECKPOINT_PATH_COUNT_KEYS
+    ):
+        expected[key] = 1
+    expected.update(
+        {
+            key: 0
+            for key in (
+                durable_executor_authoring_live_pre_save_checkpoint_batch
+                .WRITE_AND_LIVE_BLOCKED_OUTPUT_COUNT_KEYS
+            )
+        }
+    )
+    actual = {
+        key: summary.get(key) if key != "summary_status" else summary.get("status")
+        for key in expected
+    }
+    return row(
+        "durable_executor_authoring_live_pre_save_checkpoint_batch",
+        "Sections 209-216 durable executor authoring live pre-save checkpoint batch",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "Sections 209-216 are bundled: bridge recovery, read-only target check, target absence, dirty-package boundary, overwrite boundary for a new temp asset, final save dispatch checkpoint, save execution/readback plan, and final user checkpoint requirement.",
+            "The batch does not dispatch or execute a save command and does not allow save=true, save_asset, compile/save, delete, rename, package dirtying, live durable writes, or final durable release readiness.",
+        ),
+    )
+
+
 def build_section_51_58_consolidation_row(
     contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -13871,7 +13981,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     lyra_report = read_json(lyra_report_path)
     preliminary_verdict = {
         "status": "passed",
-        "release_boundary_version": "section_201_208_v130",
+        "release_boundary_version": "section_209_216_v131",
         "durable_authoring_enabled": False,
     }
     decision_contract = mvp_decision.build_mvp_decision_contract(
@@ -14602,6 +14712,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             project_root,
             planner_report,
         ),
+        build_durable_executor_authoring_live_pre_save_checkpoint_batch_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        ),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -14622,7 +14738,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
-            "release_boundary_version": "section_201_208_v130",
+            "release_boundary_version": "section_209_216_v131",
             "mvp_decision_status": decision_contract["decision_status"],
             "temporary_blueprint_authoring_mvp_ready": decision_contract[
                 "temporary_blueprint_authoring_mvp_ready"
@@ -14633,7 +14749,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "ready_for_main_push": not failed_blocking,
             "durable_authoring_enabled": not failed_blocking,
             "durable_authoring_release_status": (
-                "section_208_save_gate_open_command_admitted_actual_save_closed"
+                "section_216_live_pre_save_checkpoint_ready_actual_save_closed"
                 if not failed_blocking
                 else "failed"
             ),
@@ -15067,6 +15183,33 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "section_208_durable_authoring_final_pre_save_execution_status": (
                 "passed" if not failed_blocking else "failed"
             ),
+            "section_209_216_durable_executor_authoring_live_pre_save_checkpoint_batch_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_209_durable_authoring_live_bridge_recovery_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_210_durable_authoring_live_pre_save_read_only_target_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_211_durable_authoring_live_target_absence_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_212_durable_authoring_live_dirty_package_boundary_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_213_durable_authoring_live_overwrite_boundary_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_214_durable_authoring_live_save_dispatch_final_checkpoint_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_215_durable_authoring_live_save_execution_readback_plan_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_216_durable_authoring_actual_save_final_checkpoint_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
             "durable_executor_opened": not failed_blocking,
             "durable_authoring_command_no_save_execution_ready": not failed_blocking,
             "final_no_save_release_ready": not failed_blocking,
@@ -15077,6 +15220,10 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "save_command_admitted": not failed_blocking,
             "save_command_dry_run_ready": not failed_blocking,
             "final_pre_save_execution_ready": not failed_blocking,
+            "live_pre_save_checkpoint_ready": not failed_blocking,
+            "actual_save_execution_requires_final_user_checkpoint": (
+                not failed_blocking
+            ),
             "save_command_dispatched": False,
             "save_command_executed": False,
             "save_asset_allowed": False,
@@ -15146,11 +15293,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
                 "_and_section_186_192_durable_executor_authoring_no_save_execution_ready_save_gate_closed"
                 "_and_section_193_200_durable_executor_authoring_save_gate_preflight_ready_actual_save_closed"
                 "_and_section_201_208_durable_executor_authoring_save_gate_open_command_admitted_actual_save_closed"
+                "_and_section_209_216_durable_executor_authoring_live_pre_save_checkpoint_ready_actual_save_closed"
             ),
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
-            "actual live save dispatch/execution and result readback remain separate from save command admission",
+            "actual live save dispatch/execution requires final user checkpoint and result readback",
             "component default/type readback expansion for broader Blueprint classes",
             "function call diagnostics and graph layout repair suggestions",
         ],
