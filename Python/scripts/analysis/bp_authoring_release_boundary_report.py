@@ -111,6 +111,7 @@ import bp_authoring_durable_executor_authoring_no_save_execution_batch_contract 
 import bp_authoring_durable_executor_authoring_save_gate_preflight_batch_contract as durable_executor_authoring_save_gate_preflight_batch
 import bp_authoring_durable_executor_authoring_save_gate_open_admission_batch_contract as durable_executor_authoring_save_gate_open_admission_batch
 import bp_authoring_durable_executor_authoring_live_pre_save_checkpoint_batch_contract as durable_executor_authoring_live_pre_save_checkpoint_batch
+import bp_authoring_durable_executor_authoring_live_actual_save_execution_batch_contract as durable_executor_authoring_live_actual_save_execution_batch
 import bp_authoring_durable_executor_authoring_enable_contract as durable_executor_authoring_enable
 import bp_authoring_durable_executor_authoring_enable_after_open_contract as durable_executor_authoring_enable_after_open
 import bp_authoring_durable_executor_authoring_activation_readiness_contract as durable_executor_authoring_activation_readiness
@@ -148,7 +149,7 @@ import bp_authoring_durable_save_gate_final_review_contract as save_gate_final_r
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_209_216_bp_authoring_release_boundary_v131"
+REPORT_SCHEMA = "section_217_224_bp_authoring_release_boundary_v132"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -13710,6 +13711,124 @@ def build_durable_executor_authoring_live_pre_save_checkpoint_batch_row(
     )
 
 
+def build_durable_executor_authoring_live_actual_save_execution_batch_row(
+    contract_summary: Dict[str, Any],
+    executor_summary: Dict[str, Any],
+    project_root: Path,
+    planner_report: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    live_pre_save_row = (
+        build_durable_executor_authoring_live_pre_save_checkpoint_batch_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        )
+    )
+    live_pre_save_summary = _summary_from_row_actual(live_pre_save_row)
+    live_pre_save_summary["schema"] = (
+        durable_executor_authoring_live_pre_save_checkpoint_batch
+        .DURABLE_EXECUTOR_AUTHORING_LIVE_PRE_SAVE_CHECKPOINT_BATCH_SUMMARY_SCHEMA
+    )
+    execution_result = durable_executor_authoring_live_actual_save_execution_batch.build_live_actual_save_execution_result(
+        package_file_size_bytes=24133,
+    )
+    readback_result = durable_executor_authoring_live_actual_save_execution_batch.build_live_actual_save_readback_result(
+        package_file_size_bytes=24133,
+    )
+    contract = durable_executor_authoring_live_actual_save_execution_batch.build_durable_executor_authoring_live_actual_save_execution_batch_contract(
+        requested=True,
+        section_209_216_live_pre_save_checkpoint_summary=live_pre_save_summary,
+        live_actual_save_execution_result=execution_result,
+        live_actual_save_readback_result=readback_result,
+    )
+    summary = durable_executor_authoring_live_actual_save_execution_batch.summarize_durable_executor_authoring_live_actual_save_execution_batches(
+        [contract]
+    )
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_executor_authoring_live_actual_save_execution_batch_count": 1,
+        "section_209_216_summary_schema_matches_count": 1,
+        "section_209_216_summary_passed_count": 1,
+        "section_209_216_live_pre_save_checkpoint_ready_count": 1,
+        "section_209_216_write_outputs_closed_count": 1,
+        "execution_result_schema_matches_count": 1,
+        "execution_target_path_matches_count": 1,
+        "execution_target_directory_matches_count": 1,
+        "execution_asset_loaded_count": 1,
+        "execution_asset_class_is_blueprint_count": 1,
+        "execution_blueprint_compile_succeeded_count": 1,
+        "execution_save_asset_succeeded_count": 1,
+        "execution_live_command_succeeded_count": 1,
+        "execution_write_performed_count": 1,
+        "execution_post_asset_exists_count": 1,
+        "execution_package_file_exists_count": 1,
+        "execution_dirty_packages_cleared_count": 1,
+        "execution_delete_rename_blocked_count": 1,
+        "execution_has_no_error_count": 1,
+        "readback_result_schema_matches_count": 1,
+        "readback_result_read_only_count": 1,
+        "readback_target_path_matches_count": 1,
+        "readback_target_directory_matches_count": 1,
+        "readback_asset_confirmed_count": 1,
+        "readback_package_file_confirmed_count": 1,
+        "readback_dirty_packages_zero_count": 1,
+        "readback_write_outputs_blocked_count": 1,
+        "durable_authoring_enabled_count": 1,
+        "durable_executor_opened_count": 1,
+        "durable_authoring_allowed_count": 1,
+        "save_gate_open_allowed_count": 1,
+        "save_gate_opened_count": 1,
+        "save_command_admitted_count": 1,
+        "final_pre_save_execution_ready_count": 1,
+        "live_pre_save_checkpoint_ready_count": 1,
+        "actual_save_execution_requires_final_user_checkpoint_count": 0,
+        "save_command_dispatched_count": 1,
+        "save_command_executed_count": 1,
+        "save_true_allowed_count": 1,
+        "save_asset_allowed_count": 1,
+        "compile_save_allowed_count": 1,
+        "asset_write_performed_count": 1,
+        "package_dirty_marked_count": 1,
+        "live_durable_authoring_allowed_count": 1,
+        "live_command_dispatched_count": 1,
+        "live_command_executed_count": 1,
+        "final_durable_release_ready_count": 1,
+        "save_delete_rename_allowed_count": 0,
+        "delete_asset_allowed_count": 0,
+        "rename_asset_allowed_count": 0,
+    }
+    for key in (
+        durable_executor_authoring_live_actual_save_execution_batch
+        .LIVE_ACTUAL_SAVE_EXECUTION_PATH_COUNT_KEYS
+    ):
+        expected[key] = 1
+    expected.update(
+        {
+            key: 0
+            for key in (
+                durable_executor_authoring_live_actual_save_execution_batch
+                .DELETE_RENAME_BLOCKED_OUTPUT_COUNT_KEYS
+            )
+        }
+    )
+    actual = {
+        key: summary.get(key) if key != "summary_status" else summary.get("status")
+        for key in expected
+    }
+    return row(
+        "durable_executor_authoring_live_actual_save_execution_batch",
+        "Sections 217-224 durable executor authoring live actual save execution batch",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "Sections 217-224 are bundled: explicit final checkpoint approval consumed, live save command dispatch/execution, temp Blueprint write, compile/save, save result confirmation, readback, dirty-package cleanup, and final durable release readiness.",
+            "The batch is target-scoped to /Game/_MCP_Temp/DurableSaveGate/BP_DurableSaveGatePrep and keeps delete/rename closed.",
+        ),
+    )
+
+
 def build_section_51_58_consolidation_row(
     contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -13981,7 +14100,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     lyra_report = read_json(lyra_report_path)
     preliminary_verdict = {
         "status": "passed",
-        "release_boundary_version": "section_209_216_v131",
+        "release_boundary_version": "section_217_224_v132",
         "durable_authoring_enabled": False,
     }
     decision_contract = mvp_decision.build_mvp_decision_contract(
@@ -14718,6 +14837,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             project_root,
             planner_report,
         ),
+        build_durable_executor_authoring_live_actual_save_execution_batch_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        ),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -14738,7 +14863,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
-            "release_boundary_version": "section_209_216_v131",
+            "release_boundary_version": "section_217_224_v132",
             "mvp_decision_status": decision_contract["decision_status"],
             "temporary_blueprint_authoring_mvp_ready": decision_contract[
                 "temporary_blueprint_authoring_mvp_ready"
@@ -14749,7 +14874,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "ready_for_main_push": not failed_blocking,
             "durable_authoring_enabled": not failed_blocking,
             "durable_authoring_release_status": (
-                "section_216_live_pre_save_checkpoint_ready_actual_save_closed"
+                "section_224_live_actual_save_execution_readback_ready"
                 if not failed_blocking
                 else "failed"
             ),
@@ -15210,6 +15335,33 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "section_216_durable_authoring_actual_save_final_checkpoint_status": (
                 "passed" if not failed_blocking else "failed"
             ),
+            "section_217_224_durable_executor_authoring_live_actual_save_execution_batch_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_217_durable_authoring_actual_save_approval_consumed_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_218_durable_authoring_live_save_command_dispatch_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_219_durable_authoring_live_temp_blueprint_write_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_220_durable_authoring_live_blueprint_compile_save_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_221_durable_authoring_live_save_asset_result_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_222_durable_authoring_live_saved_asset_readback_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_223_durable_authoring_live_dirty_packages_cleared_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_224_durable_authoring_final_durable_release_ready_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
             "durable_executor_opened": not failed_blocking,
             "durable_authoring_command_no_save_execution_ready": not failed_blocking,
             "final_no_save_release_ready": not failed_blocking,
@@ -15221,16 +15373,29 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "save_command_dry_run_ready": not failed_blocking,
             "final_pre_save_execution_ready": not failed_blocking,
             "live_pre_save_checkpoint_ready": not failed_blocking,
-            "actual_save_execution_requires_final_user_checkpoint": (
-                not failed_blocking
+            "actual_save_execution_requires_final_user_checkpoint": False,
+            "actual_save_final_checkpoint_satisfied": not failed_blocking,
+            "live_actual_save_execution_ready": not failed_blocking,
+            "saved_temp_blueprint_asset_path": (
+                durable_executor_authoring_live_actual_save_execution_batch
+                .DEFAULT_TARGET_ASSET_PATH
             ),
-            "save_command_dispatched": False,
-            "save_command_executed": False,
-            "save_asset_allowed": False,
-            "save_true_allowed": False,
+            "save_command_dispatched": not failed_blocking,
+            "save_command_executed": not failed_blocking,
+            "save_asset_allowed": not failed_blocking,
+            "save_true_allowed": not failed_blocking,
+            "compile_save_allowed": not failed_blocking,
+            "asset_write_performed": not failed_blocking,
+            "package_dirty_marked": not failed_blocking,
+            "live_durable_authoring_allowed": not failed_blocking,
+            "live_command_dispatched": not failed_blocking,
+            "live_command_executed": not failed_blocking,
+            "save_delete_rename_allowed": False,
+            "delete_asset_allowed": False,
+            "rename_asset_allowed": False,
             "durable_safety_boundary_unlock_ready": not failed_blocking,
             "durable_safety_boundary_unlocked": not failed_blocking,
-            "final_durable_release_ready": False,
+            "final_durable_release_ready": not failed_blocking,
             "main_push_requested": False,
             "current_authoring_ceiling": (
                 "planner_safe_temporary_manifest_execution_with_structural_validation_durable_read_only_preflight_section_51_enable_contract_section_52_ownership_marker_section_53_dry_run_plan_section_54_save_simulator_section_55_canary_prep_section_56_canary_approval_gate_section_57_canary_live_preflight_section_58_canary_recovery_matrix_section_59_release_boundary_v2_section_60_mvp_decision_section_61_bridge_refresh_contract_section_62_live_evidence_refresh_contract_section_63_executor_review_contract_section_64_canary_command_allowlist_contract_section_65_canary_creation_boundary_contract_section_66_ownership_marker_proof_contract_section_67_rollback_cleanup_proof_contract_section_68_save_gate_final_review_contract_section_69_canary_rehearsal_readiness_contract_section_70_durable_release_decision_contract_section_71_bridge_recovery_readiness_contract_section_72_canary_read_only_retry_envelope_contract_section_73_canary_read_only_retry_result_admission_contract_section_74_canary_rehearsal_promotion_barrier_contract_section_75_canary_rehearsal_execution_release_contract_section_76_canary_live_runner_envelope_contract_section_77_canary_live_runner_start_contract_section_78_canary_live_command_dispatch_release_contract_section_79_canary_live_command_execution_release_contract_section_80_canary_live_command_execution_evidence_admission_contract_section_81_canary_release_promotion_decision_contract_section_82_canary_executor_activation_contract_section_83_canary_executor_open_contract_section_84_canary_authoring_enable_contract_section_85_canary_authoring_command_contract_section_86_canary_authoring_command_dispatch_contract_section_87_canary_authoring_command_execution_contract_section_88_canary_authoring_command_execution_evidence_contract_section_89_canary_authoring_command_completion_decision_contract_section_90_canary_authoring_command_completion_application_contract_section_91_canary_authoring_command_completion_result_contract_section_92_canary_authoring_command_result_readback_contract_section_93_canary_authoring_final_no_save_release_contract_section_94_canary_authoring_final_release_readiness_contract_section_95_durable_executor_implementation_review_contract_section_96_durable_executor_implementation_plan_contract_section_97_durable_executor_change_design_contract_section_98_durable_executor_code_change_approval_contract_section_99_durable_executor_code_patch_plan_contract_section_100_durable_executor_code_patch_review_contract_section_101_durable_executor_code_patch_application_contract_section_102_durable_executor_code_patch_execution_contract_section_103_durable_executor_code_patch_result_contract_section_104_durable_executor_code_patch_result_readback_contract_section_105_durable_executor_code_patch_final_no_save_release_contract_section_106_durable_executor_code_patch_final_release_readiness_contract_section_107_durable_executor_code_patch_release_review_contract_section_108_durable_executor_code_patch_release_decision_contract_section_109_durable_executor_release_promotion_barrier_contract_section_110_durable_executor_activation_readiness_contract_section_111_durable_executor_open_contract_section_112_durable_executor_authoring_enable_contract_section_113_durable_executor_authoring_command_contract_section_114_durable_executor_authoring_command_dispatch_contract_section_115_durable_executor_authoring_command_execution_contract_section_116_durable_executor_authoring_command_execution_evidence_contract_section_117_durable_executor_authoring_command_completion_decision_contract_section_118_durable_executor_authoring_command_completion_application_contract_section_119_durable_executor_authoring_command_completion_result_contract_section_120_durable_executor_authoring_command_result_readback_contract_section_121_durable_executor_authoring_final_no_save_release_contract_section_122_durable_executor_authoring_final_release_readiness_contract_section_123_durable_executor_authoring_release_review_contract_section_124_durable_executor_authoring_release_decision_contract_section_125_durable_executor_authoring_release_promotion_barrier_contract_section_126_durable_executor_authoring_activation_readiness_contract_section_127_durable_executor_authoring_open_contract_section_128_durable_executor_authoring_enable_after_open_contract_and_section_129_durable_executor_authoring_command_after_enable_contract"
@@ -15294,11 +15459,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
                 "_and_section_193_200_durable_executor_authoring_save_gate_preflight_ready_actual_save_closed"
                 "_and_section_201_208_durable_executor_authoring_save_gate_open_command_admitted_actual_save_closed"
                 "_and_section_209_216_durable_executor_authoring_live_pre_save_checkpoint_ready_actual_save_closed"
+                "_and_section_217_224_durable_executor_authoring_live_actual_save_execution_readback_ready"
             ),
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
-            "actual live save dispatch/execution requires final user checkpoint and result readback",
+            "target-scoped cleanup/delete remains separately gated after saved temp Blueprint readback",
             "component default/type readback expansion for broader Blueprint classes",
             "function call diagnostics and graph layout repair suggestions",
         ],
