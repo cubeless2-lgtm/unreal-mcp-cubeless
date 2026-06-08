@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_186_192_v128"
+        assert report["verdict"]["release_boundary_version"] == "section_193_200_v129"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -497,6 +497,60 @@ def main() -> int:
             ]
             == "passed"
         )
+        assert (
+            report["verdict"][
+                "section_193_200_durable_executor_authoring_save_gate_preflight_batch_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_193_durable_authoring_save_target_declaration_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_194_durable_authoring_ownership_marker_revalidation_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_195_durable_authoring_rollback_revalidation_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_196_durable_authoring_overwrite_rename_decision_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_197_durable_authoring_read_only_save_preflight_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_198_durable_authoring_save_command_admission_preflight_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_199_durable_authoring_save_gate_open_review_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_200_durable_authoring_final_save_gate_preflight_status"
+            ]
+            == "passed"
+        )
         assert report["verdict"]["durable_safety_boundary_unlock_ready"] is True
         assert report["verdict"]["durable_safety_boundary_unlocked"] is True
         assert report["verdict"]["final_durable_release_ready"] is False
@@ -513,8 +567,19 @@ def main() -> int:
         )
         assert report["verdict"]["final_no_save_release_ready"] is True
         assert (
+            report["verdict"]["durable_authoring_save_gate_preflight_ready"]
+            is True
+        )
+        assert (
+            report["verdict"]["save_command_admission_preflight_ready"] is True
+        )
+        assert report["verdict"]["save_gate_open_allowed"] is False
+        assert report["verdict"]["save_command_admitted"] is False
+        assert report["verdict"]["save_asset_allowed"] is False
+        assert report["verdict"]["save_true_allowed"] is False
+        assert (
             report["verdict"]["durable_authoring_release_status"]
-            == "section_192_no_save_execution_ready_save_gate_closed"
+            == "section_200_save_gate_preflight_ready_actual_save_closed"
         )
         assert find_row(report, "job_contract_default_request_set")["status"] == "passed"
         assert find_row(report, "manifest_executor_policy")["status"] == "passed"
@@ -7624,6 +7689,164 @@ def main() -> int:
         assert no_save_batch_row["actual"]["live_durable_authoring_allowed_count"] == 0
         assert no_save_batch_row["actual"]["live_command_dispatched_count"] == 0
         assert no_save_batch_row["actual"]["live_command_executed_count"] == 0
+        save_gate_preflight_row = find_row(
+            report,
+            "durable_executor_authoring_save_gate_preflight_batch",
+        )
+        assert save_gate_preflight_row["status"] == "passed"
+        assert (
+            save_gate_preflight_row["actual"][
+                "durable_requested_executor_authoring_save_gate_preflight_batch_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_preflight_row["actual"][
+                "section_186_192_summary_schema_matches_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_preflight_row["actual"][
+                "section_186_192_summary_passed_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_preflight_row["actual"][
+                "section_186_192_no_save_ready_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_preflight_row["actual"][
+                "section_186_192_write_outputs_blocked_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_preflight_row["actual"][
+                "section_193_save_target_declared_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_preflight_row["actual"][
+                "section_194_ownership_marker_revalidated_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_preflight_row["actual"][
+                "section_195_rollback_policy_revalidated_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_preflight_row["actual"][
+                "section_196_overwrite_rename_decision_ready_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_preflight_row["actual"][
+                "section_197_read_only_save_preflight_ready_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_preflight_row["actual"][
+                "section_198_save_command_admission_preflight_ready_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_preflight_row["actual"][
+                "section_199_save_gate_open_review_ready_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_preflight_row["actual"][
+                "section_200_final_save_gate_preflight_ready_count"
+            ]
+            == 1
+        )
+        assert save_gate_preflight_row["actual"]["save_target_declared_count"] == 1
+        assert (
+            save_gate_preflight_row["actual"][
+                "save_target_package_allowlisted_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_preflight_row["actual"][
+                "save_target_read_only_exists_check_ready_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_preflight_row["actual"]["ownership_marker_revalidated_count"]
+            == 1
+        )
+        assert save_gate_preflight_row["actual"]["rollback_policy_revalidated_count"] == 1
+        assert (
+            save_gate_preflight_row["actual"]["overwrite_rename_decision_ready_count"]
+            == 1
+        )
+        assert (
+            save_gate_preflight_row["actual"]["read_only_save_preflight_ready_count"]
+            == 1
+        )
+        assert (
+            save_gate_preflight_row["actual"][
+                "save_command_admission_preflight_ready_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_preflight_row["actual"]["save_gate_open_review_ready_count"]
+            == 1
+        )
+        assert save_gate_preflight_row["actual"]["save_gate_preflight_ready_count"] == 1
+        assert save_gate_preflight_row["actual"]["durable_authoring_enabled_count"] == 1
+        assert save_gate_preflight_row["actual"]["durable_executor_opened_count"] == 1
+        assert (
+            save_gate_preflight_row["actual"][
+                "durable_authoring_command_no_save_execution_ready_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_preflight_row["actual"]["final_no_save_release_ready_count"]
+            == 1
+        )
+        assert save_gate_preflight_row["actual"]["durable_authoring_allowed_count"] == 0
+        assert (
+            save_gate_preflight_row["actual"]["final_durable_release_ready_count"]
+            == 0
+        )
+        assert save_gate_preflight_row["actual"]["asset_write_performed_count"] == 0
+        assert save_gate_preflight_row["actual"]["package_dirty_marked_count"] == 0
+        assert save_gate_preflight_row["actual"]["save_gate_open_allowed_count"] == 0
+        assert save_gate_preflight_row["actual"]["save_command_admitted_count"] == 0
+        assert save_gate_preflight_row["actual"]["save_command_dispatched_count"] == 0
+        assert save_gate_preflight_row["actual"]["save_command_executed_count"] == 0
+        assert save_gate_preflight_row["actual"]["save_true_allowed_count"] == 0
+        assert save_gate_preflight_row["actual"]["save_asset_allowed_count"] == 0
+        assert save_gate_preflight_row["actual"]["compile_save_allowed_count"] == 0
+        assert (
+            save_gate_preflight_row["actual"]["save_delete_rename_allowed_count"]
+            == 0
+        )
+        assert save_gate_preflight_row["actual"]["delete_asset_allowed_count"] == 0
+        assert save_gate_preflight_row["actual"]["rename_asset_allowed_count"] == 0
+        assert (
+            save_gate_preflight_row["actual"]["live_durable_authoring_allowed_count"]
+            == 0
+        )
+        assert save_gate_preflight_row["actual"]["live_command_dispatched_count"] == 0
+        assert save_gate_preflight_row["actual"]["live_command_executed_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
