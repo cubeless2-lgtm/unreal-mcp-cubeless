@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_172_v114"
+        assert report["verdict"]["release_boundary_version"] == "section_175_v117"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -379,6 +379,24 @@ def main() -> int:
         assert (
             report["verdict"][
                 "section_172_durable_executor_authoring_final_release_readiness_dry_run_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_173_durable_executor_authoring_release_review_dry_run_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_174_durable_executor_authoring_release_decision_dry_run_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_175_durable_executor_authoring_release_promotion_barrier_dry_run_status"
             ]
             == "passed"
         )
@@ -6740,6 +6758,115 @@ def main() -> int:
             final_release_readiness_dry_run_row["actual"]
             == expected_final_release_readiness_dry_run_actual
         )
+        release_review_dry_run_row = find_row(
+            report,
+            "durable_executor_authoring_release_review_dry_run_contract",
+        )
+        assert release_review_dry_run_row["status"] == "passed"
+        assert (
+            release_review_dry_run_row["actual"][
+                "durable_requested_executor_authoring_release_review_dry_run_count"
+            ]
+            == 1
+        )
+        assert release_review_dry_run_row["actual"]["release_review_contract_defined_count"] == 1
+        assert (
+            release_review_dry_run_row["actual"][
+                "section_172_final_release_readiness_contract_ready_count"
+            ]
+            == 1
+        )
+        assert release_review_dry_run_row["actual"]["final_release_readiness_chain_satisfied_count"] == 0
+        assert release_review_dry_run_row["actual"]["release_review_dry_run_record_present_count"] == 0
+        assert release_review_dry_run_row["actual"]["release_review_dry_run_record_valid_count"] == 0
+        assert release_review_dry_run_row["actual"]["release_review_dry_run_admissible_count"] == 0
+        assert release_review_dry_run_row["actual"]["missing_release_review_dry_run_prerequisite_count"] == 41
+        assert release_review_dry_run_row["actual"]["durable_release_review_started_count"] == 0
+        assert release_review_dry_run_row["actual"]["durable_release_decision_started_count"] == 0
+        assert release_review_dry_run_row["actual"]["durable_executor_command_path_opened_count"] == 0
+        assert release_review_dry_run_row["actual"]["durable_authoring_command_allowed_count"] == 0
+        assert release_review_dry_run_row["actual"]["save_delete_rename_allowed_count"] == 0
+        release_decision_dry_run_row = find_row(
+            report,
+            "durable_executor_authoring_release_decision_dry_run_contract",
+        )
+        assert release_decision_dry_run_row["status"] == "passed"
+        assert (
+            release_decision_dry_run_row["actual"][
+                "durable_requested_executor_authoring_release_decision_dry_run_count"
+            ]
+            == 1
+        )
+        assert release_decision_dry_run_row["actual"]["release_decision_contract_defined_count"] == 1
+        assert (
+            release_decision_dry_run_row["actual"][
+                "section_173_release_review_contract_ready_count"
+            ]
+            == 1
+        )
+        assert release_decision_dry_run_row["actual"]["release_review_chain_satisfied_count"] == 0
+        assert release_decision_dry_run_row["actual"]["release_decision_dry_run_record_present_count"] == 0
+        assert release_decision_dry_run_row["actual"]["release_decision_dry_run_record_valid_count"] == 0
+        assert release_decision_dry_run_row["actual"]["release_decision_dry_run_admissible_count"] == 0
+        assert release_decision_dry_run_row["actual"]["missing_release_decision_dry_run_prerequisite_count"] == 43
+        assert release_decision_dry_run_row["actual"]["durable_release_decision_started_count"] == 0
+        assert release_decision_dry_run_row["actual"]["durable_release_promotion_barrier_started_count"] == 0
+        assert release_decision_dry_run_row["actual"]["durable_executor_command_path_opened_count"] == 0
+        assert release_decision_dry_run_row["actual"]["durable_authoring_command_allowed_count"] == 0
+        assert release_decision_dry_run_row["actual"]["save_delete_rename_allowed_count"] == 0
+        promotion_barrier_dry_run_row = find_row(
+            report,
+            "durable_executor_authoring_release_promotion_barrier_dry_run_contract",
+        )
+        assert promotion_barrier_dry_run_row["status"] == "passed"
+        assert (
+            promotion_barrier_dry_run_row["actual"][
+                "durable_requested_executor_authoring_release_promotion_barrier_dry_run_count"
+            ]
+            == 1
+        )
+        assert (
+            promotion_barrier_dry_run_row["actual"][
+                "release_promotion_barrier_contract_defined_count"
+            ]
+            == 1
+        )
+        assert (
+            promotion_barrier_dry_run_row["actual"][
+                "section_174_release_decision_contract_ready_count"
+            ]
+            == 1
+        )
+        assert promotion_barrier_dry_run_row["actual"]["release_decision_chain_satisfied_count"] == 0
+        assert (
+            promotion_barrier_dry_run_row["actual"][
+                "release_promotion_barrier_dry_run_record_present_count"
+            ]
+            == 0
+        )
+        assert (
+            promotion_barrier_dry_run_row["actual"][
+                "release_promotion_barrier_dry_run_record_valid_count"
+            ]
+            == 0
+        )
+        assert (
+            promotion_barrier_dry_run_row["actual"][
+                "release_promotion_barrier_dry_run_admissible_count"
+            ]
+            == 0
+        )
+        assert (
+            promotion_barrier_dry_run_row["actual"][
+                "missing_release_promotion_barrier_dry_run_prerequisite_count"
+            ]
+            == 45
+        )
+        assert promotion_barrier_dry_run_row["actual"]["durable_release_promotion_barrier_started_count"] == 0
+        assert promotion_barrier_dry_run_row["actual"]["durable_executor_activation_readiness_started_count"] == 0
+        assert promotion_barrier_dry_run_row["actual"]["durable_executor_command_path_opened_count"] == 0
+        assert promotion_barrier_dry_run_row["actual"]["durable_authoring_command_allowed_count"] == 0
+        assert promotion_barrier_dry_run_row["actual"]["save_delete_rename_allowed_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False

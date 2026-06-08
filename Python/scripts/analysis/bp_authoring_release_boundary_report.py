@@ -94,6 +94,9 @@ import bp_authoring_durable_executor_authoring_command_completion_result_dry_run
 import bp_authoring_durable_executor_authoring_command_result_readback_dry_run_contract as durable_executor_authoring_command_result_readback_dry_run
 import bp_authoring_durable_executor_authoring_final_no_save_release_dry_run_contract as durable_executor_authoring_final_no_save_release_dry_run
 import bp_authoring_durable_executor_authoring_final_release_readiness_dry_run_contract as durable_executor_authoring_final_release_readiness_dry_run
+import bp_authoring_durable_executor_authoring_release_review_dry_run_contract as durable_executor_authoring_release_review_dry_run
+import bp_authoring_durable_executor_authoring_release_decision_dry_run_contract as durable_executor_authoring_release_decision_dry_run
+import bp_authoring_durable_executor_authoring_release_promotion_barrier_dry_run_contract as durable_executor_authoring_release_promotion_barrier_dry_run
 import bp_authoring_durable_executor_authoring_enable_contract as durable_executor_authoring_enable
 import bp_authoring_durable_executor_authoring_enable_after_open_contract as durable_executor_authoring_enable_after_open
 import bp_authoring_durable_executor_authoring_activation_readiness_contract as durable_executor_authoring_activation_readiness
@@ -131,7 +134,7 @@ import bp_authoring_durable_save_gate_final_review_contract as save_gate_final_r
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_172_bp_authoring_release_boundary_v114"
+REPORT_SCHEMA = "section_175_bp_authoring_release_boundary_v117"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -12567,6 +12570,154 @@ def build_durable_executor_authoring_final_release_readiness_dry_run_row(
     )
 
 
+def _summary_from_row_actual(row_data: Dict[str, Any]) -> Dict[str, Any]:
+    summary = dict(row_data["actual"])
+    summary["status"] = summary.pop("summary_status")
+    return summary
+
+
+def _release_stage_dry_run_expected(module: Any) -> Dict[str, Any]:
+    expected = {
+        "summary_status": "passed",
+        module.REQUEST_COUNT_KEY: 1,
+        module.CONTRACT_DEFINED_COUNT_KEY: 1,
+        module.PREVIOUS_READY_COUNT_KEY: 1,
+    }
+    expected.update(
+        {
+            f"{output_key}_count": 0
+            for output_key, _summary_key, _missing_key in module.CHAIN_INPUTS
+        }
+    )
+    expected[module.CHAIN_SATISFIED_COUNT_KEY] = 0
+    expected.update({key: 0 for key in module.RECORD_SUMMARY_ZERO_COUNT_KEYS})
+    expected[module.MISSING_PREREQUISITE_COUNT_KEY] = (
+        module.CURRENT_MISSING_PREREQUISITE_COUNT
+    )
+    expected.update({f"{key}_count": 0 for key in module.OUTPUT_ACTION_KEYS})
+    return expected
+
+
+def build_durable_executor_authoring_release_review_dry_run_row(
+    contract_summary: Dict[str, Any],
+    executor_summary: Dict[str, Any],
+    project_root: Path,
+    planner_report: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    final_readiness_row = build_durable_executor_authoring_final_release_readiness_dry_run_row(
+        contract_summary,
+        executor_summary,
+        project_root,
+        planner_report,
+    )
+    final_readiness_summary = _summary_from_row_actual(final_readiness_row)
+    contract = durable_executor_authoring_release_review_dry_run.build_durable_executor_authoring_release_review_dry_run_contract(
+        requested=True,
+        section_172_final_release_readiness_dry_run_summary=final_readiness_summary,
+    )
+    summary = durable_executor_authoring_release_review_dry_run.summarize_durable_executor_authoring_release_review_dry_runs(
+        [contract]
+    )
+    expected = _release_stage_dry_run_expected(
+        durable_executor_authoring_release_review_dry_run
+    )
+    actual = {
+        key: summary.get(key) if key != "summary_status" else summary.get("status")
+        for key in expected
+    }
+    return row(
+        "durable_executor_authoring_release_review_dry_run_contract",
+        "Section 173 durable executor authoring release review dry-run contract",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "The durable executor authoring release review dry-run contract is defined, but no release review record is present and the Section 172 final release readiness dry-run is not admissible.",
+            "A future valid release review record can become dry-run admissible only; durable review promotion, release decision start, live dispatch/execution, save, delete/rename, cleanup, and live durable authoring remain blocked.",
+        ),
+    )
+
+
+def build_durable_executor_authoring_release_decision_dry_run_row(
+    contract_summary: Dict[str, Any],
+    executor_summary: Dict[str, Any],
+    project_root: Path,
+    planner_report: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    review_row = build_durable_executor_authoring_release_review_dry_run_row(
+        contract_summary,
+        executor_summary,
+        project_root,
+        planner_report,
+    )
+    review_summary = _summary_from_row_actual(review_row)
+    contract = durable_executor_authoring_release_decision_dry_run.build_durable_executor_authoring_release_decision_dry_run_contract(
+        requested=True,
+        section_173_release_review_dry_run_summary=review_summary,
+    )
+    summary = durable_executor_authoring_release_decision_dry_run.summarize_durable_executor_authoring_release_decision_dry_runs(
+        [contract]
+    )
+    expected = _release_stage_dry_run_expected(
+        durable_executor_authoring_release_decision_dry_run
+    )
+    actual = {
+        key: summary.get(key) if key != "summary_status" else summary.get("status")
+        for key in expected
+    }
+    return row(
+        "durable_executor_authoring_release_decision_dry_run_contract",
+        "Section 174 durable executor authoring release decision dry-run contract",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "The durable executor authoring release decision dry-run contract is defined, but no release decision record is present and the Section 173 release review dry-run is not admissible.",
+            "A future valid release decision record can become dry-run admissible only; durable decision promotion, promotion barrier start, live dispatch/execution, save, delete/rename, cleanup, and live durable authoring remain blocked.",
+        ),
+    )
+
+
+def build_durable_executor_authoring_release_promotion_barrier_dry_run_row(
+    contract_summary: Dict[str, Any],
+    executor_summary: Dict[str, Any],
+    project_root: Path,
+    planner_report: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    decision_row = build_durable_executor_authoring_release_decision_dry_run_row(
+        contract_summary,
+        executor_summary,
+        project_root,
+        planner_report,
+    )
+    decision_summary = _summary_from_row_actual(decision_row)
+    contract = durable_executor_authoring_release_promotion_barrier_dry_run.build_durable_executor_authoring_release_promotion_barrier_dry_run_contract(
+        requested=True,
+        section_174_release_decision_dry_run_summary=decision_summary,
+    )
+    summary = durable_executor_authoring_release_promotion_barrier_dry_run.summarize_durable_executor_authoring_release_promotion_barrier_dry_runs(
+        [contract]
+    )
+    expected = _release_stage_dry_run_expected(
+        durable_executor_authoring_release_promotion_barrier_dry_run
+    )
+    actual = {
+        key: summary.get(key) if key != "summary_status" else summary.get("status")
+        for key in expected
+    }
+    return row(
+        "durable_executor_authoring_release_promotion_barrier_dry_run_contract",
+        "Section 175 durable executor authoring release promotion barrier dry-run contract",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "The durable executor authoring release promotion barrier dry-run contract is defined, but no promotion barrier record is present and the Section 174 release decision dry-run is not admissible.",
+            "A future valid promotion barrier record can become dry-run admissible only; durable promotion barrier promotion, activation/open/enable, live dispatch/execution, save, delete/rename, cleanup, and live durable authoring remain blocked.",
+        ),
+    )
+
+
 def build_section_51_58_consolidation_row(
     contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -12838,7 +12989,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     lyra_report = read_json(lyra_report_path)
     preliminary_verdict = {
         "status": "passed",
-        "release_boundary_version": "section_172_v114",
+        "release_boundary_version": "section_175_v117",
         "durable_authoring_enabled": False,
     }
     decision_contract = mvp_decision.build_mvp_decision_contract(
@@ -13473,6 +13624,24 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             project_root,
             planner_report,
         ),
+        build_durable_executor_authoring_release_review_dry_run_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        ),
+        build_durable_executor_authoring_release_decision_dry_run_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        ),
+        build_durable_executor_authoring_release_promotion_barrier_dry_run_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        ),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -13493,7 +13662,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
-            "release_boundary_version": "section_172_v114",
+            "release_boundary_version": "section_175_v117",
             "mvp_decision_status": decision_contract["decision_status"],
             "temporary_blueprint_authoring_mvp_ready": decision_contract[
                 "temporary_blueprint_authoring_mvp_ready"
@@ -13817,6 +13986,15 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "section_172_durable_executor_authoring_final_release_readiness_dry_run_status": (
                 "passed" if not failed_blocking else "failed"
             ),
+            "section_173_durable_executor_authoring_release_review_dry_run_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_174_durable_executor_authoring_release_decision_dry_run_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_175_durable_executor_authoring_release_promotion_barrier_dry_run_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
             "final_durable_release_ready": False,
             "main_push_requested": False,
             "current_authoring_ceiling": (
@@ -13864,11 +14042,14 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
                 "_and_section_170_durable_executor_authoring_command_result_readback_dry_run_contract"
                 "_and_section_171_durable_executor_authoring_final_no_save_release_dry_run_contract"
                 "_and_section_172_durable_executor_authoring_final_release_readiness_dry_run_contract"
+                "_and_section_173_durable_executor_authoring_release_review_dry_run_contract"
+                "_and_section_174_durable_executor_authoring_release_decision_dry_run_contract"
+                "_and_section_175_durable_executor_authoring_release_promotion_barrier_dry_run_contract"
             ),
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
-            "durable executor authoring release review dry-run contract only after Section 172 final release readiness dry-run proof",
+            "durable executor authoring activation readiness dry-run contract only after Section 175 release promotion barrier dry-run proof",
             "component default/type readback expansion for broader Blueprint classes",
             "function call diagnostics and graph layout repair suggestions",
         ],
