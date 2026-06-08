@@ -109,6 +109,7 @@ import bp_authoring_durable_executor_authoring_safety_boundary_unlock_contract a
 import bp_authoring_durable_executor_authoring_enable_after_safety_boundary_unlock_contract as durable_executor_authoring_enable_after_safety_boundary_unlock
 import bp_authoring_durable_executor_authoring_no_save_execution_batch_contract as durable_executor_authoring_no_save_execution_batch
 import bp_authoring_durable_executor_authoring_save_gate_preflight_batch_contract as durable_executor_authoring_save_gate_preflight_batch
+import bp_authoring_durable_executor_authoring_save_gate_open_admission_batch_contract as durable_executor_authoring_save_gate_open_admission_batch
 import bp_authoring_durable_executor_authoring_enable_contract as durable_executor_authoring_enable
 import bp_authoring_durable_executor_authoring_enable_after_open_contract as durable_executor_authoring_enable_after_open
 import bp_authoring_durable_executor_authoring_activation_readiness_contract as durable_executor_authoring_activation_readiness
@@ -146,7 +147,7 @@ import bp_authoring_durable_save_gate_final_review_contract as save_gate_final_r
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_193_200_bp_authoring_release_boundary_v129"
+REPORT_SCHEMA = "section_201_208_bp_authoring_release_boundary_v130"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -13506,6 +13507,99 @@ def build_durable_executor_authoring_save_gate_preflight_batch_row(
     )
 
 
+def build_durable_executor_authoring_save_gate_open_admission_batch_row(
+    contract_summary: Dict[str, Any],
+    executor_summary: Dict[str, Any],
+    project_root: Path,
+    planner_report: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    preflight_row = build_durable_executor_authoring_save_gate_preflight_batch_row(
+        contract_summary,
+        executor_summary,
+        project_root,
+        planner_report,
+    )
+    preflight_summary = _summary_from_row_actual(preflight_row)
+    preflight_summary["schema"] = (
+        durable_executor_authoring_save_gate_preflight_batch
+        .DURABLE_EXECUTOR_AUTHORING_SAVE_GATE_PREFLIGHT_BATCH_SUMMARY_SCHEMA
+    )
+    contract = durable_executor_authoring_save_gate_open_admission_batch.build_durable_executor_authoring_save_gate_open_admission_batch_contract(
+        requested=True,
+        section_193_200_save_gate_preflight_summary=preflight_summary,
+    )
+    summary = durable_executor_authoring_save_gate_open_admission_batch.summarize_durable_executor_authoring_save_gate_open_admission_batches(
+        [contract]
+    )
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_executor_authoring_save_gate_open_admission_batch_count": 1,
+        "section_193_200_summary_schema_matches_count": 1,
+        "section_193_200_summary_passed_count": 1,
+        "section_193_200_save_gate_preflight_ready_count": 1,
+        "section_193_200_save_gate_still_closed_count": 1,
+        "section_193_200_write_and_live_outputs_blocked_count": 1,
+        "section_201_explicit_save_gate_open_approved_count": 1,
+        "section_202_save_gate_opened_count": 1,
+        "section_203_save_command_admission_contract_accepted_count": 1,
+        "section_204_save_command_admitted_count": 1,
+        "section_205_save_command_dispatch_dry_run_ready_count": 1,
+        "section_206_save_command_execution_dry_run_ready_count": 1,
+        "section_207_save_command_result_readback_dry_run_ready_count": 1,
+        "section_208_final_pre_save_execution_ready_count": 1,
+        "durable_authoring_enabled_count": 1,
+        "durable_executor_opened_count": 1,
+        "durable_authoring_command_no_save_execution_ready_count": 1,
+        "final_no_save_release_ready_count": 1,
+        "durable_authoring_save_gate_preflight_ready_count": 1,
+        "save_command_admission_preflight_ready_count": 1,
+        "durable_authoring_allowed_count": 0,
+        "final_durable_release_ready_count": 0,
+        "asset_write_performed_count": 0,
+        "package_dirty_marked_count": 0,
+        "save_command_dispatched_count": 0,
+        "save_command_executed_count": 0,
+        "save_true_allowed_count": 0,
+        "save_asset_allowed_count": 0,
+        "compile_save_allowed_count": 0,
+        "save_delete_rename_allowed_count": 0,
+        "delete_asset_allowed_count": 0,
+        "rename_asset_allowed_count": 0,
+        "live_durable_authoring_allowed_count": 0,
+        "live_command_dispatched_count": 0,
+        "live_command_executed_count": 0,
+    }
+    for key in (
+        durable_executor_authoring_save_gate_open_admission_batch
+        .SAVE_GATE_OPEN_ADMISSION_PATH_COUNT_KEYS
+    ):
+        expected[key] = 1
+    expected.update(
+        {
+            key: 0
+            for key in (
+                durable_executor_authoring_save_gate_open_admission_batch
+                .WRITE_AND_LIVE_BLOCKED_OUTPUT_COUNT_KEYS
+            )
+        }
+    )
+    actual = {
+        key: summary.get(key) if key != "summary_status" else summary.get("status")
+        for key in expected
+    }
+    return row(
+        "durable_executor_authoring_save_gate_open_admission_batch",
+        "Sections 201-208 durable executor authoring save-gate open/admission batch",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "Sections 201-208 are bundled: explicit save-gate open approval, save gate open, save-command admission, dry-run dispatch readiness, dry-run execution readiness, dry-run result readback readiness, and final pre-save execution readiness.",
+            "The batch does not dispatch or execute a live save command and does not allow save=true, save_asset, compile/save, delete, rename, package dirtying, live durable writes, or final durable release readiness.",
+        ),
+    )
+
+
 def build_section_51_58_consolidation_row(
     contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -13777,7 +13871,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     lyra_report = read_json(lyra_report_path)
     preliminary_verdict = {
         "status": "passed",
-        "release_boundary_version": "section_193_200_v129",
+        "release_boundary_version": "section_201_208_v130",
         "durable_authoring_enabled": False,
     }
     decision_contract = mvp_decision.build_mvp_decision_contract(
@@ -14502,6 +14596,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             project_root,
             planner_report,
         ),
+        build_durable_executor_authoring_save_gate_open_admission_batch_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        ),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -14522,7 +14622,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
-            "release_boundary_version": "section_193_200_v129",
+            "release_boundary_version": "section_201_208_v130",
             "mvp_decision_status": decision_contract["decision_status"],
             "temporary_blueprint_authoring_mvp_ready": decision_contract[
                 "temporary_blueprint_authoring_mvp_ready"
@@ -14533,7 +14633,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "ready_for_main_push": not failed_blocking,
             "durable_authoring_enabled": not failed_blocking,
             "durable_authoring_release_status": (
-                "section_200_save_gate_preflight_ready_actual_save_closed"
+                "section_208_save_gate_open_command_admitted_actual_save_closed"
                 if not failed_blocking
                 else "failed"
             ),
@@ -14940,13 +15040,45 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "section_200_durable_authoring_final_save_gate_preflight_status": (
                 "passed" if not failed_blocking else "failed"
             ),
+            "section_201_208_durable_executor_authoring_save_gate_open_admission_batch_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_201_durable_authoring_explicit_save_gate_open_approval_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_202_durable_authoring_save_gate_open_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_203_durable_authoring_save_command_admission_contract_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_204_durable_authoring_save_command_admission_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_205_durable_authoring_save_command_dispatch_dry_run_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_206_durable_authoring_save_command_execution_dry_run_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_207_durable_authoring_save_command_result_readback_dry_run_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_208_durable_authoring_final_pre_save_execution_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
             "durable_executor_opened": not failed_blocking,
             "durable_authoring_command_no_save_execution_ready": not failed_blocking,
             "final_no_save_release_ready": not failed_blocking,
             "durable_authoring_save_gate_preflight_ready": not failed_blocking,
             "save_command_admission_preflight_ready": not failed_blocking,
-            "save_gate_open_allowed": False,
-            "save_command_admitted": False,
+            "save_gate_open_allowed": not failed_blocking,
+            "save_gate_opened": not failed_blocking,
+            "save_command_admitted": not failed_blocking,
+            "save_command_dry_run_ready": not failed_blocking,
+            "final_pre_save_execution_ready": not failed_blocking,
+            "save_command_dispatched": False,
+            "save_command_executed": False,
             "save_asset_allowed": False,
             "save_true_allowed": False,
             "durable_safety_boundary_unlock_ready": not failed_blocking,
@@ -15013,11 +15145,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
                 "_and_section_185_durable_executor_authoring_enabled_no_executor_open_no_write"
                 "_and_section_186_192_durable_executor_authoring_no_save_execution_ready_save_gate_closed"
                 "_and_section_193_200_durable_executor_authoring_save_gate_preflight_ready_actual_save_closed"
+                "_and_section_201_208_durable_executor_authoring_save_gate_open_command_admitted_actual_save_closed"
             ),
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
-            "explicit save gate open approval and save command admission remain separate from preflight readiness",
+            "actual live save dispatch/execution and result readback remain separate from save command admission",
             "component default/type readback expansion for broader Blueprint classes",
             "function call diagnostics and graph layout repair suggestions",
         ],

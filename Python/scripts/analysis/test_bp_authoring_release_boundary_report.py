@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_193_200_v129"
+        assert report["verdict"]["release_boundary_version"] == "section_201_208_v130"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -551,6 +551,58 @@ def main() -> int:
             ]
             == "passed"
         )
+        assert (
+            report["verdict"][
+                "section_201_208_durable_executor_authoring_save_gate_open_admission_batch_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_201_durable_authoring_explicit_save_gate_open_approval_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"]["section_202_durable_authoring_save_gate_open_status"]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_203_durable_authoring_save_command_admission_contract_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_204_durable_authoring_save_command_admission_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_205_durable_authoring_save_command_dispatch_dry_run_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_206_durable_authoring_save_command_execution_dry_run_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_207_durable_authoring_save_command_result_readback_dry_run_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_208_durable_authoring_final_pre_save_execution_status"
+            ]
+            == "passed"
+        )
         assert report["verdict"]["durable_safety_boundary_unlock_ready"] is True
         assert report["verdict"]["durable_safety_boundary_unlocked"] is True
         assert report["verdict"]["final_durable_release_ready"] is False
@@ -573,13 +625,18 @@ def main() -> int:
         assert (
             report["verdict"]["save_command_admission_preflight_ready"] is True
         )
-        assert report["verdict"]["save_gate_open_allowed"] is False
-        assert report["verdict"]["save_command_admitted"] is False
+        assert report["verdict"]["save_gate_open_allowed"] is True
+        assert report["verdict"]["save_gate_opened"] is True
+        assert report["verdict"]["save_command_admitted"] is True
+        assert report["verdict"]["save_command_dry_run_ready"] is True
+        assert report["verdict"]["final_pre_save_execution_ready"] is True
+        assert report["verdict"]["save_command_dispatched"] is False
+        assert report["verdict"]["save_command_executed"] is False
         assert report["verdict"]["save_asset_allowed"] is False
         assert report["verdict"]["save_true_allowed"] is False
         assert (
             report["verdict"]["durable_authoring_release_status"]
-            == "section_200_save_gate_preflight_ready_actual_save_closed"
+            == "section_208_save_gate_open_command_admitted_actual_save_closed"
         )
         assert find_row(report, "job_contract_default_request_set")["status"] == "passed"
         assert find_row(report, "manifest_executor_policy")["status"] == "passed"
@@ -7847,6 +7904,227 @@ def main() -> int:
         )
         assert save_gate_preflight_row["actual"]["live_command_dispatched_count"] == 0
         assert save_gate_preflight_row["actual"]["live_command_executed_count"] == 0
+        save_gate_open_admission_row = find_row(
+            report,
+            "durable_executor_authoring_save_gate_open_admission_batch",
+        )
+        assert save_gate_open_admission_row["status"] == "passed"
+        assert (
+            save_gate_open_admission_row["actual"][
+                "durable_requested_executor_authoring_save_gate_open_admission_batch_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_open_admission_row["actual"][
+                "section_193_200_summary_schema_matches_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_open_admission_row["actual"][
+                "section_193_200_summary_passed_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_open_admission_row["actual"][
+                "section_193_200_save_gate_preflight_ready_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_open_admission_row["actual"][
+                "section_193_200_save_gate_still_closed_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_open_admission_row["actual"][
+                "section_193_200_write_and_live_outputs_blocked_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_open_admission_row["actual"][
+                "section_201_explicit_save_gate_open_approved_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_open_admission_row["actual"][
+                "section_202_save_gate_opened_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_open_admission_row["actual"][
+                "section_203_save_command_admission_contract_accepted_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_open_admission_row["actual"][
+                "section_204_save_command_admitted_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_open_admission_row["actual"][
+                "section_205_save_command_dispatch_dry_run_ready_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_open_admission_row["actual"][
+                "section_206_save_command_execution_dry_run_ready_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_open_admission_row["actual"][
+                "section_207_save_command_result_readback_dry_run_ready_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_open_admission_row["actual"][
+                "section_208_final_pre_save_execution_ready_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_open_admission_row["actual"][
+                "explicit_save_gate_open_approved_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_open_admission_row["actual"]["save_gate_open_allowed_count"]
+            == 1
+        )
+        assert save_gate_open_admission_row["actual"]["save_gate_opened_count"] == 1
+        assert (
+            save_gate_open_admission_row["actual"][
+                "save_command_admission_contract_started_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_open_admission_row["actual"][
+                "save_command_admission_contract_accepted_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_open_admission_row["actual"]["save_command_admitted_count"]
+            == 1
+        )
+        assert (
+            save_gate_open_admission_row["actual"][
+                "save_command_dry_run_allowed_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_open_admission_row["actual"][
+                "save_command_dispatch_dry_run_ready_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_open_admission_row["actual"][
+                "save_command_execution_dry_run_ready_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_open_admission_row["actual"][
+                "save_command_result_readback_dry_run_ready_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_open_admission_row["actual"][
+                "final_pre_save_execution_ready_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_open_admission_row["actual"]["durable_authoring_enabled_count"]
+            == 1
+        )
+        assert (
+            save_gate_open_admission_row["actual"]["durable_executor_opened_count"]
+            == 1
+        )
+        assert (
+            save_gate_open_admission_row["actual"][
+                "durable_authoring_save_gate_preflight_ready_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_open_admission_row["actual"][
+                "save_command_admission_preflight_ready_count"
+            ]
+            == 1
+        )
+        assert (
+            save_gate_open_admission_row["actual"][
+                "durable_authoring_allowed_count"
+            ]
+            == 0
+        )
+        assert (
+            save_gate_open_admission_row["actual"][
+                "final_durable_release_ready_count"
+            ]
+            == 0
+        )
+        assert (
+            save_gate_open_admission_row["actual"]["asset_write_performed_count"]
+            == 0
+        )
+        assert (
+            save_gate_open_admission_row["actual"]["package_dirty_marked_count"]
+            == 0
+        )
+        assert (
+            save_gate_open_admission_row["actual"][
+                "save_command_dispatched_count"
+            ]
+            == 0
+        )
+        assert (
+            save_gate_open_admission_row["actual"]["save_command_executed_count"]
+            == 0
+        )
+        assert save_gate_open_admission_row["actual"]["save_true_allowed_count"] == 0
+        assert save_gate_open_admission_row["actual"]["save_asset_allowed_count"] == 0
+        assert (
+            save_gate_open_admission_row["actual"]["compile_save_allowed_count"]
+            == 0
+        )
+        assert (
+            save_gate_open_admission_row["actual"][
+                "save_delete_rename_allowed_count"
+            ]
+            == 0
+        )
+        assert save_gate_open_admission_row["actual"]["delete_asset_allowed_count"] == 0
+        assert save_gate_open_admission_row["actual"]["rename_asset_allowed_count"] == 0
+        assert (
+            save_gate_open_admission_row["actual"][
+                "live_durable_authoring_allowed_count"
+            ]
+            == 0
+        )
+        assert (
+            save_gate_open_admission_row["actual"]["live_command_dispatched_count"]
+            == 0
+        )
+        assert save_gate_open_admission_row["actual"]["live_command_executed_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
