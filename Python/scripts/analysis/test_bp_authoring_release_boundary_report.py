@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_163_v105"
+        assert report["verdict"]["release_boundary_version"] == "section_164_v106"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -325,6 +325,12 @@ def main() -> int:
         assert (
             report["verdict"][
                 "section_163_durable_executor_authoring_command_dispatch_dry_run_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_164_durable_executor_authoring_command_dispatch_evidence_dry_run_status"
             ]
             == "passed"
         )
@@ -5904,6 +5910,78 @@ def main() -> int:
         assert (
             command_dispatch_dry_run_row["actual"]
             == expected_command_dispatch_dry_run_actual
+        )
+        command_dispatch_evidence_dry_run_row = find_row(
+            report,
+            "durable_executor_authoring_command_dispatch_evidence_dry_run_contract",
+        )
+        assert command_dispatch_evidence_dry_run_row["status"] == "passed"
+        expected_command_dispatch_evidence_dry_run_actual = {
+            "summary_status": "passed",
+            "durable_requested_executor_authoring_command_dispatch_evidence_dry_run_count": 1,
+            "dispatch_evidence_contract_defined_count": 1,
+            "section_163_dispatch_contract_ready_count": 1,
+            "open_activation_promotion_readiness_chain_satisfied_count": 0,
+            "authoring_enable_chain_satisfied_count": 0,
+            "durable_release_readiness_chain_reconfirmed_count": 0,
+            "authoring_command_inputs_satisfied_count": 0,
+            "authoring_command_record_valid_count": 0,
+            "dry_run_route_record_valid_count": 0,
+            "dry_run_route_admissible_count": 0,
+            "dispatch_dry_run_record_valid_count": 0,
+            "dispatch_dry_run_admissible_count": 0,
+            "dispatch_chain_satisfied_count": 0,
+            "dispatch_evidence_dry_run_record_present_count": 0,
+            "record_schema_matches_count": 0,
+            "evidence_scope_matches_count": 0,
+            "dry_run_only_count": 0,
+            "evidence_status_passed_count": 0,
+            "operator_reconfirmed_no_live_dispatch_count": 0,
+            "operator_reconfirmed_no_live_execution_count": 0,
+            "operator_reconfirmed_no_write_execution_count": 0,
+            "operator_reconfirmed_no_save_delete_rename_count": 0,
+            "requested_command_allowed_count": 0,
+            "requested_command_forbidden_count": 0,
+            "requested_command_unknown_count": 0,
+            "evidence_operation_allowed_count": 0,
+            "dispatch_evidence_target_declared_count": 0,
+            "dispatch_admission_proof_matches_count": 0,
+            "release_boundary_proof_safe_count": 0,
+            "dispatch_evidence_dry_run_record_valid_count": 0,
+            "dispatch_evidence_dry_run_record_rejected_count": 0,
+            "dispatch_evidence_dry_run_admissible_count": 0,
+            "unsafe_evidence_record_count": 0,
+            "missing_dispatch_evidence_dry_run_prerequisite_count": 23,
+            "dispatch_evidence_dry_run_started_count": 0,
+            "dispatch_evidence_dry_run_accepted_count": 0,
+            "durable_evidence_promoted_count": 0,
+            "durable_dispatch_envelope_promoted_count": 0,
+            "durable_command_request_promoted_count": 0,
+            "durable_executor_command_path_opened_count": 0,
+            "durable_executor_command_path_allowed_count": 0,
+            "durable_authoring_command_allowed_count": 0,
+            "durable_authoring_command_dispatched_count": 0,
+            "durable_authoring_command_executed_count": 0,
+            "durable_authoring_enabled_count": 0,
+            "durable_authoring_allowed_count": 0,
+            "final_durable_release_ready_count": 0,
+            "asset_write_performed_count": 0,
+            "package_dirty_marked_count": 0,
+            "code_change_performed_count": 0,
+            "executor_code_modified_count": 0,
+            "unreal_asset_modified_count": 0,
+            "live_bridge_probe_started_count": 0,
+            "save_delete_rename_allowed_count": 0,
+            "save_asset_allowed_count": 0,
+            "delete_asset_allowed_count": 0,
+            "rename_asset_allowed_count": 0,
+            "cleanup_allowed_count": 0,
+            "live_command_dispatched_count": 0,
+            "live_command_executed_count": 0,
+        }
+        assert (
+            command_dispatch_evidence_dry_run_row["actual"]
+            == expected_command_dispatch_evidence_dry_run_actual
         )
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
