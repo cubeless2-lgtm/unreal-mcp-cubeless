@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_185_v127"
+        assert report["verdict"]["release_boundary_version"] == "section_186_192_v128"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -460,6 +460,43 @@ def main() -> int:
             ]
             == "passed"
         )
+        assert (
+            report["verdict"][
+                "section_186_192_durable_executor_authoring_no_save_execution_batch_status"
+            ]
+            == "passed"
+        )
+        assert report["verdict"]["section_186_durable_executor_open_status"] == "passed"
+        assert (
+            report["verdict"]["section_187_durable_executor_open_readiness_status"]
+            == "passed"
+        )
+        assert (
+            report["verdict"]["section_188_durable_authoring_command_allow_status"]
+            == "passed"
+        )
+        assert (
+            report["verdict"]["section_189_durable_authoring_command_dispatch_status"]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_190_durable_authoring_command_execution_evidence_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_191_durable_authoring_command_completion_readback_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_192_durable_authoring_final_no_save_release_status"
+            ]
+            == "passed"
+        )
         assert report["verdict"]["durable_safety_boundary_unlock_ready"] is True
         assert report["verdict"]["durable_safety_boundary_unlocked"] is True
         assert report["verdict"]["final_durable_release_ready"] is False
@@ -469,9 +506,15 @@ def main() -> int:
         assert report["verdict"]["durable_blueprint_authoring_mvp_ready"] is False
         assert report["verdict"]["ready_for_main_push"] is True
         assert report["verdict"]["durable_authoring_enabled"] is True
+        assert report["verdict"]["durable_executor_opened"] is True
+        assert (
+            report["verdict"]["durable_authoring_command_no_save_execution_ready"]
+            is True
+        )
+        assert report["verdict"]["final_no_save_release_ready"] is True
         assert (
             report["verdict"]["durable_authoring_release_status"]
-            == "section_185_enabled_no_executor_open_no_write"
+            == "section_192_no_save_execution_ready_save_gate_closed"
         )
         assert find_row(report, "job_contract_default_request_set")["status"] == "passed"
         assert find_row(report, "manifest_executor_policy")["status"] == "passed"
@@ -7491,6 +7534,96 @@ def main() -> int:
             == 0
         )
         assert enable_after_unlock_row["actual"]["live_command_dispatched_count"] == 0
+        no_save_batch_row = find_row(
+            report,
+            "durable_executor_authoring_no_save_execution_batch",
+        )
+        assert no_save_batch_row["status"] == "passed"
+        assert (
+            no_save_batch_row["actual"][
+                "durable_requested_executor_authoring_no_save_execution_batch_count"
+            ]
+            == 1
+        )
+        assert (
+            no_save_batch_row["actual"]["section_185_summary_schema_matches_count"]
+            == 1
+        )
+        assert no_save_batch_row["actual"]["section_185_summary_passed_count"] == 1
+        assert no_save_batch_row["actual"]["section_185_authoring_enabled_count"] == 1
+        assert no_save_batch_row["actual"]["section_185_final_release_not_ready_count"] == 1
+        assert no_save_batch_row["actual"]["section_185_executor_open_blocked_count"] == 1
+        assert no_save_batch_row["actual"]["section_185_command_allow_blocked_count"] == 1
+        assert (
+            no_save_batch_row["actual"]["section_185_save_delete_rename_blocked_count"]
+            == 1
+        )
+        assert (
+            no_save_batch_row["actual"][
+                "section_185_live_durable_authoring_blocked_count"
+            ]
+            == 1
+        )
+        assert no_save_batch_row["actual"]["blocked_outputs_zero_count"] == 1
+        assert no_save_batch_row["actual"]["no_save_execution_batch_admissible_count"] == 1
+        assert no_save_batch_row["actual"]["section_186_executor_opened_count"] == 1
+        assert (
+            no_save_batch_row["actual"]["section_187_open_readiness_consolidated_count"]
+            == 1
+        )
+        assert (
+            no_save_batch_row["actual"]["section_188_authoring_command_allowed_count"]
+            == 1
+        )
+        assert (
+            no_save_batch_row["actual"]["section_189_command_dispatch_gate_open_count"]
+            == 1
+        )
+        assert (
+            no_save_batch_row["actual"][
+                "section_190_command_execution_evidence_gate_open_count"
+            ]
+            == 1
+        )
+        assert (
+            no_save_batch_row["actual"]["section_191_completion_readback_ready_count"]
+            == 1
+        )
+        assert (
+            no_save_batch_row["actual"]["section_192_final_no_save_release_ready_count"]
+            == 1
+        )
+        assert no_save_batch_row["actual"]["durable_executor_open_allowed_count"] == 1
+        assert no_save_batch_row["actual"]["durable_executor_opened_count"] == 1
+        assert (
+            no_save_batch_row["actual"]["durable_authoring_command_allowed_count"]
+            == 1
+        )
+        assert (
+            no_save_batch_row["actual"]["durable_authoring_command_dispatched_count"]
+            == 1
+        )
+        assert (
+            no_save_batch_row["actual"]["durable_authoring_command_executed_count"]
+            == 1
+        )
+        assert (
+            no_save_batch_row["actual"]["durable_authoring_command_completed_count"]
+            == 1
+        )
+        assert no_save_batch_row["actual"]["final_no_save_release_ready_count"] == 1
+        assert no_save_batch_row["actual"]["durable_authoring_enabled_count"] == 1
+        assert no_save_batch_row["actual"]["durable_authoring_allowed_count"] == 0
+        assert no_save_batch_row["actual"]["final_durable_release_ready_count"] == 0
+        assert no_save_batch_row["actual"]["asset_write_performed_count"] == 0
+        assert no_save_batch_row["actual"]["package_dirty_marked_count"] == 0
+        assert no_save_batch_row["actual"]["save_delete_rename_allowed_count"] == 0
+        assert no_save_batch_row["actual"]["save_asset_allowed_count"] == 0
+        assert no_save_batch_row["actual"]["delete_asset_allowed_count"] == 0
+        assert no_save_batch_row["actual"]["rename_asset_allowed_count"] == 0
+        assert no_save_batch_row["actual"]["live_durable_authoring_allowed_count"] == 0
+        assert no_save_batch_row["actual"]["live_command_dispatched_count"] == 0
+        assert no_save_batch_row["actual"]["live_command_executed_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
