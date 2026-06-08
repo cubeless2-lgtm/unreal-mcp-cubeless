@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_180_v122"
+        assert report["verdict"]["release_boundary_version"] == "section_181_v123"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -427,6 +427,12 @@ def main() -> int:
         assert (
             report["verdict"][
                 "section_180_durable_executor_authoring_command_admission_dry_run_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_181_durable_executor_authoring_release_boundary_consolidation_status"
             ]
             == "passed"
         )
@@ -7168,6 +7174,60 @@ def main() -> int:
         assert command_admission_dry_run_row["actual"]["durable_authoring_command_dispatched_count"] == 0
         assert command_admission_dry_run_row["actual"]["durable_authoring_command_executed_count"] == 0
         assert command_admission_dry_run_row["actual"]["save_delete_rename_allowed_count"] == 0
+        release_boundary_consolidation_row = find_row(
+            report,
+            "durable_executor_authoring_release_boundary_consolidation",
+        )
+        assert release_boundary_consolidation_row["status"] == "passed"
+        assert (
+            release_boundary_consolidation_row["actual"][
+                "durable_requested_executor_authoring_release_boundary_consolidation_count"
+            ]
+            == 1
+        )
+        assert (
+            release_boundary_consolidation_row["actual"][
+                "release_boundary_consolidated_count"
+            ]
+            == 1
+        )
+        assert (
+            release_boundary_consolidation_row["actual"][
+                "section_180_summary_passed_count"
+            ]
+            == 1
+        )
+        assert (
+            release_boundary_consolidation_row["actual"][
+                "section_180_command_admission_contract_defined_count"
+            ]
+            == 1
+        )
+        assert (
+            release_boundary_consolidation_row["actual"][
+                "section_180_command_path_chain_unsatisfied_count"
+            ]
+            == 1
+        )
+        assert (
+            release_boundary_consolidation_row["actual"][
+                "command_admission_not_admissible_count"
+            ]
+            == 1
+        )
+        assert (
+            release_boundary_consolidation_row["actual"][
+                "blocked_outputs_zero_count"
+            ]
+            == 1
+        )
+        assert release_boundary_consolidation_row["actual"]["durable_authoring_enabled_count"] == 0
+        assert release_boundary_consolidation_row["actual"]["final_durable_release_ready_count"] == 0
+        assert release_boundary_consolidation_row["actual"]["durable_safety_boundary_unlock_ready_count"] == 0
+        assert release_boundary_consolidation_row["actual"]["durable_executor_command_path_opened_count"] == 0
+        assert release_boundary_consolidation_row["actual"]["durable_authoring_command_allowed_count"] == 0
+        assert release_boundary_consolidation_row["actual"]["save_delete_rename_allowed_count"] == 0
+        assert release_boundary_consolidation_row["actual"]["live_command_dispatched_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
