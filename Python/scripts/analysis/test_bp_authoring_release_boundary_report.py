@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_181_v123"
+        assert report["verdict"]["release_boundary_version"] == "section_182_v124"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -433,6 +433,12 @@ def main() -> int:
         assert (
             report["verdict"][
                 "section_181_durable_executor_authoring_release_boundary_consolidation_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_182_durable_executor_authoring_safety_boundary_unlock_decision_status"
             ]
             == "passed"
         )
@@ -7228,6 +7234,42 @@ def main() -> int:
         assert release_boundary_consolidation_row["actual"]["durable_authoring_command_allowed_count"] == 0
         assert release_boundary_consolidation_row["actual"]["save_delete_rename_allowed_count"] == 0
         assert release_boundary_consolidation_row["actual"]["live_command_dispatched_count"] == 0
+        unlock_decision_row = find_row(
+            report,
+            "durable_executor_authoring_safety_boundary_unlock_decision",
+        )
+        assert unlock_decision_row["status"] == "passed"
+        assert (
+            unlock_decision_row["actual"][
+                "durable_requested_executor_authoring_safety_boundary_unlock_decision_count"
+            ]
+            == 1
+        )
+        assert unlock_decision_row["actual"]["unlock_decision_checkpoint_only_count"] == 1
+        assert unlock_decision_row["actual"]["unlock_decision_checkpoint_reached_count"] == 1
+        assert (
+            unlock_decision_row["actual"][
+                "section_181_release_boundary_consolidated_count"
+            ]
+            == 1
+        )
+        assert unlock_decision_row["actual"]["section_181_unlock_ready_absent_count"] == 1
+        assert unlock_decision_row["actual"]["section_181_authoring_disabled_count"] == 1
+        assert unlock_decision_row["actual"]["section_181_final_release_not_ready_count"] == 1
+        assert unlock_decision_row["actual"]["blocked_outputs_zero_count"] == 1
+        assert unlock_decision_row["actual"]["unlock_decision_record_present_count"] == 0
+        assert unlock_decision_row["actual"]["unlock_decision_record_absent_count"] == 1
+        assert unlock_decision_row["actual"]["explicit_unlock_approval_present_count"] == 0
+        assert unlock_decision_row["actual"]["explicit_unlock_approval_absent_count"] == 1
+        assert unlock_decision_row["actual"]["unlock_requires_explicit_user_approval_count"] == 1
+        assert unlock_decision_row["actual"]["unlock_record_admissible_count"] == 0
+        assert unlock_decision_row["actual"]["durable_safety_boundary_unlock_ready_count"] == 0
+        assert unlock_decision_row["actual"]["durable_safety_boundary_unlocked_count"] == 0
+        assert unlock_decision_row["actual"]["durable_authoring_enabled_count"] == 0
+        assert unlock_decision_row["actual"]["final_durable_release_ready_count"] == 0
+        assert unlock_decision_row["actual"]["save_delete_rename_allowed_count"] == 0
+        assert unlock_decision_row["actual"]["live_durable_authoring_allowed_count"] == 0
+        assert unlock_decision_row["actual"]["durable_authoring_command_allowed_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False

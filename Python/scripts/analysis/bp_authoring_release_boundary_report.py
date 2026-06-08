@@ -103,6 +103,7 @@ import bp_authoring_durable_executor_authoring_open_promotion_barrier_dry_run_co
 import bp_authoring_durable_executor_authoring_command_path_dry_run_contract as durable_executor_authoring_command_path_dry_run
 import bp_authoring_durable_executor_authoring_command_admission_dry_run_contract as durable_executor_authoring_command_admission_dry_run
 import bp_authoring_durable_executor_authoring_release_boundary_consolidation_contract as durable_executor_authoring_release_boundary_consolidation
+import bp_authoring_durable_executor_authoring_safety_boundary_unlock_decision_contract as durable_executor_authoring_safety_boundary_unlock_decision
 import bp_authoring_durable_executor_authoring_enable_contract as durable_executor_authoring_enable
 import bp_authoring_durable_executor_authoring_enable_after_open_contract as durable_executor_authoring_enable_after_open
 import bp_authoring_durable_executor_authoring_activation_readiness_contract as durable_executor_authoring_activation_readiness
@@ -140,7 +141,7 @@ import bp_authoring_durable_save_gate_final_review_contract as save_gate_final_r
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_181_bp_authoring_release_boundary_v123"
+REPORT_SCHEMA = "section_182_bp_authoring_release_boundary_v124"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -12996,6 +12997,82 @@ def build_durable_executor_authoring_release_boundary_consolidation_row(
     )
 
 
+def build_durable_executor_authoring_safety_boundary_unlock_decision_row(
+    contract_summary: Dict[str, Any],
+    executor_summary: Dict[str, Any],
+    project_root: Path,
+    planner_report: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    consolidation_row = build_durable_executor_authoring_release_boundary_consolidation_row(
+        contract_summary,
+        executor_summary,
+        project_root,
+        planner_report,
+    )
+    consolidation_summary = _summary_from_row_actual(consolidation_row)
+    consolidation_summary["schema"] = (
+        durable_executor_authoring_release_boundary_consolidation
+        .DURABLE_EXECUTOR_AUTHORING_RELEASE_BOUNDARY_CONSOLIDATION_SUMMARY_SCHEMA
+    )
+    contract = durable_executor_authoring_safety_boundary_unlock_decision.build_durable_executor_authoring_safety_boundary_unlock_decision_contract(
+        requested=True,
+        section_181_release_boundary_consolidation_summary=consolidation_summary,
+    )
+    summary = durable_executor_authoring_safety_boundary_unlock_decision.summarize_durable_executor_authoring_safety_boundary_unlock_decisions(
+        [contract]
+    )
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_executor_authoring_safety_boundary_unlock_decision_count": 1,
+        "unlock_decision_checkpoint_only_count": 1,
+        "unlock_decision_checkpoint_reached_count": 1,
+        "section_181_summary_schema_matches_count": 1,
+        "section_181_summary_passed_count": 1,
+        "section_181_release_boundary_consolidated_count": 1,
+        "section_181_unlock_ready_absent_count": 1,
+        "section_181_authoring_disabled_count": 1,
+        "section_181_final_release_not_ready_count": 1,
+        "blocked_outputs_zero_count": 1,
+        "unlock_decision_record_present_count": 0,
+        "unlock_decision_record_absent_count": 1,
+        "unlock_decision_record_schema_matches_count": 0,
+        "explicit_unlock_approval_present_count": 0,
+        "explicit_unlock_approval_absent_count": 1,
+        "unlock_requires_explicit_user_approval_count": 1,
+        "unlock_record_admissible_count": 0,
+        "durable_safety_boundary_unlock_ready_count": 0,
+        "durable_safety_boundary_unlocked_count": 0,
+        "durable_authoring_enabled_count": 0,
+        "final_durable_release_ready_count": 0,
+        "save_delete_rename_allowed_count": 0,
+        "live_durable_authoring_allowed_count": 0,
+    }
+    expected.update(
+        {
+            key: 0
+            for key in (
+                durable_executor_authoring_safety_boundary_unlock_decision
+                .BLOCKED_OUTPUT_COUNT_KEYS
+            )
+        }
+    )
+    actual = {
+        key: summary.get(key) if key != "summary_status" else summary.get("status")
+        for key in expected
+    }
+    return row(
+        "durable_executor_authoring_safety_boundary_unlock_decision",
+        "Section 182 durable executor authoring safety boundary unlock decision checkpoint",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "The durable safety boundary unlock decision checkpoint is reached after Section 181 consolidation, but no explicit unlock decision record is present.",
+            "This checkpoint does not unlock durable authoring, final durable release readiness, command path open/allow, authoring command allow/dispatch/execute, save/delete/rename, cleanup, or live durable authoring.",
+        ),
+    )
+
+
 def build_section_51_58_consolidation_row(
     contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -13267,7 +13344,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     lyra_report = read_json(lyra_report_path)
     preliminary_verdict = {
         "status": "passed",
-        "release_boundary_version": "section_181_v123",
+        "release_boundary_version": "section_182_v124",
         "durable_authoring_enabled": False,
     }
     decision_contract = mvp_decision.build_mvp_decision_contract(
@@ -13956,6 +14033,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             project_root,
             planner_report,
         ),
+        build_durable_executor_authoring_safety_boundary_unlock_decision_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        ),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -13976,7 +14059,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
-            "release_boundary_version": "section_181_v123",
+            "release_boundary_version": "section_182_v124",
             "mvp_decision_status": decision_contract["decision_status"],
             "temporary_blueprint_authoring_mvp_ready": decision_contract[
                 "temporary_blueprint_authoring_mvp_ready"
@@ -14327,6 +14410,9 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "section_181_durable_executor_authoring_release_boundary_consolidation_status": (
                 "passed" if not failed_blocking else "failed"
             ),
+            "section_182_durable_executor_authoring_safety_boundary_unlock_decision_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
             "final_durable_release_ready": False,
             "main_push_requested": False,
             "current_authoring_ceiling": (
@@ -14383,11 +14469,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
                 "_and_section_179_durable_executor_authoring_command_path_dry_run_contract"
                 "_and_section_180_durable_executor_authoring_command_admission_dry_run_contract"
                 "_and_section_181_durable_executor_authoring_release_boundary_consolidation"
+                "_and_section_182_durable_executor_authoring_safety_boundary_unlock_decision_checkpoint"
             ),
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
-            "durable safety boundary unlock decision checkpoint requiring explicit user approval",
+            "explicit durable safety boundary unlock record and live safety preflight require separate user approval",
             "component default/type readback expansion for broader Blueprint classes",
             "function call diagnostics and graph layout repair suggestions",
         ],
