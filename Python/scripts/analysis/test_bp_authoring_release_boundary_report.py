@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_175_v117"
+        assert report["verdict"]["release_boundary_version"] == "section_176_v118"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -397,6 +397,12 @@ def main() -> int:
         assert (
             report["verdict"][
                 "section_175_durable_executor_authoring_release_promotion_barrier_dry_run_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_176_durable_executor_authoring_activation_readiness_dry_run_status"
             ]
             == "passed"
         )
@@ -6867,6 +6873,74 @@ def main() -> int:
         assert promotion_barrier_dry_run_row["actual"]["durable_executor_command_path_opened_count"] == 0
         assert promotion_barrier_dry_run_row["actual"]["durable_authoring_command_allowed_count"] == 0
         assert promotion_barrier_dry_run_row["actual"]["save_delete_rename_allowed_count"] == 0
+        activation_readiness_dry_run_row = find_row(
+            report,
+            "durable_executor_authoring_activation_readiness_dry_run_contract",
+        )
+        assert activation_readiness_dry_run_row["status"] == "passed"
+        assert (
+            activation_readiness_dry_run_row["actual"][
+                "durable_requested_executor_authoring_activation_readiness_dry_run_count"
+            ]
+            == 1
+        )
+        assert (
+            activation_readiness_dry_run_row["actual"][
+                "activation_readiness_contract_defined_count"
+            ]
+            == 1
+        )
+        assert (
+            activation_readiness_dry_run_row["actual"][
+                "section_175_release_promotion_barrier_contract_ready_count"
+            ]
+            == 1
+        )
+        assert (
+            activation_readiness_dry_run_row["actual"][
+                "release_promotion_barrier_chain_satisfied_count"
+            ]
+            == 0
+        )
+        assert (
+            activation_readiness_dry_run_row["actual"][
+                "activation_readiness_dry_run_record_present_count"
+            ]
+            == 0
+        )
+        assert (
+            activation_readiness_dry_run_row["actual"][
+                "activation_readiness_dry_run_record_valid_count"
+            ]
+            == 0
+        )
+        assert (
+            activation_readiness_dry_run_row["actual"][
+                "activation_readiness_dry_run_admissible_count"
+            ]
+            == 0
+        )
+        assert (
+            activation_readiness_dry_run_row["actual"][
+                "missing_activation_readiness_dry_run_prerequisite_count"
+            ]
+            == 47
+        )
+        assert (
+            activation_readiness_dry_run_row["actual"][
+                "durable_executor_activation_readiness_started_count"
+            ]
+            == 0
+        )
+        assert (
+            activation_readiness_dry_run_row["actual"][
+                "durable_executor_open_contract_started_count"
+            ]
+            == 0
+        )
+        assert activation_readiness_dry_run_row["actual"]["durable_executor_command_path_opened_count"] == 0
+        assert activation_readiness_dry_run_row["actual"]["durable_authoring_command_allowed_count"] == 0
+        assert activation_readiness_dry_run_row["actual"]["save_delete_rename_allowed_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
