@@ -100,6 +100,7 @@ import bp_authoring_durable_executor_authoring_release_promotion_barrier_dry_run
 import bp_authoring_durable_executor_authoring_activation_readiness_dry_run_contract as durable_executor_authoring_activation_readiness_dry_run
 import bp_authoring_durable_executor_authoring_open_dry_run_contract as durable_executor_authoring_open_dry_run
 import bp_authoring_durable_executor_authoring_open_promotion_barrier_dry_run_contract as durable_executor_authoring_open_promotion_barrier_dry_run
+import bp_authoring_durable_executor_authoring_command_path_dry_run_contract as durable_executor_authoring_command_path_dry_run
 import bp_authoring_durable_executor_authoring_enable_contract as durable_executor_authoring_enable
 import bp_authoring_durable_executor_authoring_enable_after_open_contract as durable_executor_authoring_enable_after_open
 import bp_authoring_durable_executor_authoring_activation_readiness_contract as durable_executor_authoring_activation_readiness
@@ -137,7 +138,7 @@ import bp_authoring_durable_save_gate_final_review_contract as save_gate_final_r
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_178_bp_authoring_release_boundary_v120"
+REPORT_SCHEMA = "section_179_bp_authoring_release_boundary_v121"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -12841,6 +12842,48 @@ def build_durable_executor_authoring_open_promotion_barrier_dry_run_row(
     )
 
 
+def build_durable_executor_authoring_command_path_dry_run_row(
+    contract_summary: Dict[str, Any],
+    executor_summary: Dict[str, Any],
+    project_root: Path,
+    planner_report: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    open_promotion_barrier_row = build_durable_executor_authoring_open_promotion_barrier_dry_run_row(
+        contract_summary,
+        executor_summary,
+        project_root,
+        planner_report,
+    )
+    open_promotion_barrier_summary = _summary_from_row_actual(
+        open_promotion_barrier_row
+    )
+    contract = durable_executor_authoring_command_path_dry_run.build_durable_executor_authoring_command_path_dry_run_contract(
+        requested=True,
+        section_178_open_promotion_barrier_dry_run_summary=open_promotion_barrier_summary,
+    )
+    summary = durable_executor_authoring_command_path_dry_run.summarize_durable_executor_authoring_command_path_dry_runs(
+        [contract]
+    )
+    expected = _release_stage_dry_run_expected(
+        durable_executor_authoring_command_path_dry_run
+    )
+    actual = {
+        key: summary.get(key) if key != "summary_status" else summary.get("status")
+        for key in expected
+    }
+    return row(
+        "durable_executor_authoring_command_path_dry_run_contract",
+        "Section 179 durable executor authoring command path dry-run contract",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "The durable executor authoring command path dry-run contract is defined, but no command path record is present and the Section 178 open promotion barrier dry-run is not admissible.",
+            "A future valid command path record can become dry-run admissible only; executor command path open/allow, authoring command admission, live dispatch/execution, save, delete/rename, cleanup, and live durable authoring remain blocked.",
+        ),
+    )
+
+
 def build_section_51_58_consolidation_row(
     contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -13112,7 +13155,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     lyra_report = read_json(lyra_report_path)
     preliminary_verdict = {
         "status": "passed",
-        "release_boundary_version": "section_178_v120",
+        "release_boundary_version": "section_179_v121",
         "durable_authoring_enabled": False,
     }
     decision_contract = mvp_decision.build_mvp_decision_contract(
@@ -13783,6 +13826,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             project_root,
             planner_report,
         ),
+        build_durable_executor_authoring_command_path_dry_run_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        ),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -13803,7 +13852,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
-            "release_boundary_version": "section_178_v120",
+            "release_boundary_version": "section_179_v121",
             "mvp_decision_status": decision_contract["decision_status"],
             "temporary_blueprint_authoring_mvp_ready": decision_contract[
                 "temporary_blueprint_authoring_mvp_ready"
@@ -14145,6 +14194,9 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "section_178_durable_executor_authoring_open_promotion_barrier_dry_run_status": (
                 "passed" if not failed_blocking else "failed"
             ),
+            "section_179_durable_executor_authoring_command_path_dry_run_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
             "final_durable_release_ready": False,
             "main_push_requested": False,
             "current_authoring_ceiling": (
@@ -14198,11 +14250,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
                 "_and_section_176_durable_executor_authoring_activation_readiness_dry_run_contract"
                 "_and_section_177_durable_executor_authoring_open_dry_run_contract"
                 "_and_section_178_durable_executor_authoring_open_promotion_barrier_dry_run_contract"
+                "_and_section_179_durable_executor_authoring_command_path_dry_run_contract"
             ),
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
-            "durable executor authoring command path dry-run contract only after Section 178 open promotion barrier dry-run proof",
+            "durable executor authoring command admission dry-run contract only after Section 179 command path dry-run proof",
             "component default/type readback expansion for broader Blueprint classes",
             "function call diagnostics and graph layout repair suggestions",
         ],
