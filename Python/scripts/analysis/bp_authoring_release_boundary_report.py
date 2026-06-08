@@ -90,6 +90,7 @@ import bp_authoring_durable_executor_authoring_command_execution_dry_run_contrac
 import bp_authoring_durable_executor_authoring_command_execution_evidence_dry_run_contract as durable_executor_authoring_command_execution_evidence_dry_run
 import bp_authoring_durable_executor_authoring_command_completion_decision_dry_run_contract as durable_executor_authoring_command_completion_decision_dry_run
 import bp_authoring_durable_executor_authoring_command_completion_application_dry_run_contract as durable_executor_authoring_command_completion_application_dry_run
+import bp_authoring_durable_executor_authoring_command_completion_result_dry_run_contract as durable_executor_authoring_command_completion_result_dry_run
 import bp_authoring_durable_executor_authoring_enable_contract as durable_executor_authoring_enable
 import bp_authoring_durable_executor_authoring_enable_after_open_contract as durable_executor_authoring_enable_after_open
 import bp_authoring_durable_executor_authoring_activation_readiness_contract as durable_executor_authoring_activation_readiness
@@ -127,7 +128,7 @@ import bp_authoring_durable_save_gate_final_review_contract as save_gate_final_r
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_168_bp_authoring_release_boundary_v110"
+REPORT_SCHEMA = "section_169_bp_authoring_release_boundary_v111"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -12059,6 +12060,125 @@ def build_durable_executor_authoring_command_completion_application_dry_run_row(
     )
 
 
+def build_durable_executor_authoring_command_completion_result_dry_run_row(
+    contract_summary: Dict[str, Any],
+    executor_summary: Dict[str, Any],
+    project_root: Path,
+    planner_report: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    application_row = build_durable_executor_authoring_command_completion_application_dry_run_row(
+        contract_summary,
+        executor_summary,
+        project_root,
+        planner_report,
+    )
+    application_summary = dict(application_row["actual"])
+    application_summary["status"] = application_summary.pop("summary_status")
+    contract = durable_executor_authoring_command_completion_result_dry_run.build_durable_executor_authoring_command_completion_result_dry_run_contract(
+        requested=True,
+        section_168_command_completion_application_dry_run_summary=application_summary,
+    )
+    summary = durable_executor_authoring_command_completion_result_dry_run.summarize_durable_executor_authoring_command_completion_result_dry_runs(
+        [contract]
+    )
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_executor_authoring_command_completion_result_dry_run_count": 1,
+        "completion_result_contract_defined_count": 1,
+        "section_168_completion_application_contract_ready_count": 1,
+        "open_activation_promotion_readiness_chain_satisfied_count": 0,
+        "authoring_enable_chain_satisfied_count": 0,
+        "durable_release_readiness_chain_reconfirmed_count": 0,
+        "authoring_command_inputs_satisfied_count": 0,
+        "authoring_command_record_valid_count": 0,
+        "dry_run_route_record_valid_count": 0,
+        "dry_run_route_admissible_count": 0,
+        "dispatch_dry_run_record_valid_count": 0,
+        "dispatch_dry_run_admissible_count": 0,
+        "dispatch_evidence_dry_run_record_valid_count": 0,
+        "dispatch_evidence_dry_run_admissible_count": 0,
+        "execution_dry_run_record_valid_count": 0,
+        "execution_dry_run_admissible_count": 0,
+        "execution_evidence_dry_run_record_valid_count": 0,
+        "execution_evidence_dry_run_admissible_count": 0,
+        "completion_decision_dry_run_record_valid_count": 0,
+        "completion_decision_dry_run_admissible_count": 0,
+        "completion_application_dry_run_record_valid_count": 0,
+        "completion_application_dry_run_admissible_count": 0,
+        "completion_application_chain_satisfied_count": 0,
+        "completion_result_dry_run_record_present_count": 0,
+        "record_schema_matches_count": 0,
+        "completion_result_scope_matches_count": 0,
+        "dry_run_only_count": 0,
+        "completion_result_status_passed_count": 0,
+        "operator_reconfirmed_no_live_dispatch_count": 0,
+        "operator_reconfirmed_no_live_execution_count": 0,
+        "operator_reconfirmed_no_write_execution_count": 0,
+        "operator_reconfirmed_no_save_delete_rename_count": 0,
+        "requested_command_allowed_count": 0,
+        "requested_command_forbidden_count": 0,
+        "requested_command_unknown_count": 0,
+        "completion_result_operation_allowed_count": 0,
+        "completion_result_target_declared_count": 0,
+        "completion_application_admission_proof_matches_count": 0,
+        "release_boundary_proof_safe_count": 0,
+        "completion_result_dry_run_record_valid_count": 0,
+        "completion_result_dry_run_record_rejected_count": 0,
+        "completion_result_dry_run_admissible_count": 0,
+        "unsafe_completion_result_record_count": 0,
+        "missing_completion_result_dry_run_prerequisite_count": 33,
+        "completion_result_dry_run_started_count": 0,
+        "completion_result_dry_run_accepted_count": 0,
+        "durable_completion_result_promoted_count": 0,
+        "durable_completion_result_recorded_count": 0,
+        "durable_completion_application_promoted_count": 0,
+        "durable_completion_application_applied_count": 0,
+        "durable_completion_decision_promoted_count": 0,
+        "durable_execution_evidence_promoted_count": 0,
+        "durable_execution_envelope_promoted_count": 0,
+        "durable_evidence_promoted_count": 0,
+        "durable_dispatch_envelope_promoted_count": 0,
+        "durable_command_request_promoted_count": 0,
+        "durable_executor_command_path_opened_count": 0,
+        "durable_executor_command_path_allowed_count": 0,
+        "durable_authoring_command_allowed_count": 0,
+        "durable_authoring_command_dispatched_count": 0,
+        "durable_authoring_command_executed_count": 0,
+        "durable_authoring_command_completed_count": 0,
+        "durable_authoring_enabled_count": 0,
+        "durable_authoring_allowed_count": 0,
+        "final_durable_release_ready_count": 0,
+        "asset_write_performed_count": 0,
+        "package_dirty_marked_count": 0,
+        "code_change_performed_count": 0,
+        "executor_code_modified_count": 0,
+        "unreal_asset_modified_count": 0,
+        "live_bridge_probe_started_count": 0,
+        "save_delete_rename_allowed_count": 0,
+        "save_asset_allowed_count": 0,
+        "delete_asset_allowed_count": 0,
+        "rename_asset_allowed_count": 0,
+        "cleanup_allowed_count": 0,
+        "live_command_dispatched_count": 0,
+        "live_command_executed_count": 0,
+    }
+    actual = {
+        key: summary.get(key) if key != "summary_status" else summary.get("status")
+        for key in expected
+    }
+    return row(
+        "durable_executor_authoring_command_completion_result_dry_run_contract",
+        "Section 169 durable executor authoring command completion result dry-run contract",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "The durable executor authoring command completion result dry-run contract is defined, but no completion result record is present and the Section 168 completion application dry-run is not admissible.",
+            "A future valid completion result record can become dry-run admissible only; durable completion result promotion/recording, command completion, live dispatch/execution, save, delete/rename, cleanup, and live durable authoring remain blocked.",
+        ),
+    )
+
+
 def build_section_51_58_consolidation_row(
     contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -12330,7 +12450,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     lyra_report = read_json(lyra_report_path)
     preliminary_verdict = {
         "status": "passed",
-        "release_boundary_version": "section_168_v110",
+        "release_boundary_version": "section_169_v111",
         "durable_authoring_enabled": False,
     }
     decision_contract = mvp_decision.build_mvp_decision_contract(
@@ -12941,6 +13061,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             project_root,
             planner_report,
         ),
+        build_durable_executor_authoring_command_completion_result_dry_run_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        ),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -12961,7 +13087,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
-            "release_boundary_version": "section_168_v110",
+            "release_boundary_version": "section_169_v111",
             "mvp_decision_status": decision_contract["decision_status"],
             "temporary_blueprint_authoring_mvp_ready": decision_contract[
                 "temporary_blueprint_authoring_mvp_ready"
@@ -13273,6 +13399,9 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "section_168_durable_executor_authoring_command_completion_application_dry_run_status": (
                 "passed" if not failed_blocking else "failed"
             ),
+            "section_169_durable_executor_authoring_command_completion_result_dry_run_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
             "final_durable_release_ready": False,
             "main_push_requested": False,
             "current_authoring_ceiling": (
@@ -13316,11 +13445,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
                 "_and_section_166_durable_executor_authoring_command_execution_evidence_dry_run_contract"
                 "_and_section_167_durable_executor_authoring_command_completion_decision_dry_run_contract"
                 "_and_section_168_durable_executor_authoring_command_completion_application_dry_run_contract"
+                "_and_section_169_durable_executor_authoring_command_completion_result_dry_run_contract"
             ),
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
-            "durable executor authoring command completion result dry-run contract only after Section 168 completion application dry-run proof",
+            "durable executor authoring command result readback dry-run contract only after Section 169 completion result dry-run proof",
             "component default/type readback expansion for broader Blueprint classes",
             "function call diagnostics and graph layout repair suggestions",
         ],
