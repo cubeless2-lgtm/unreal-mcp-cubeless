@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_179_v121"
+        assert report["verdict"]["release_boundary_version"] == "section_180_v122"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -421,6 +421,12 @@ def main() -> int:
         assert (
             report["verdict"][
                 "section_179_durable_executor_authoring_command_path_dry_run_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_180_durable_executor_authoring_command_admission_dry_run_status"
             ]
             == "passed"
         )
@@ -7109,6 +7115,59 @@ def main() -> int:
         assert command_path_dry_run_row["actual"]["durable_authoring_command_contract_started_count"] == 0
         assert command_path_dry_run_row["actual"]["durable_authoring_command_allowed_count"] == 0
         assert command_path_dry_run_row["actual"]["save_delete_rename_allowed_count"] == 0
+        command_admission_dry_run_row = find_row(
+            report,
+            "durable_executor_authoring_command_admission_dry_run_contract",
+        )
+        assert command_admission_dry_run_row["status"] == "passed"
+        assert (
+            command_admission_dry_run_row["actual"][
+                "durable_requested_executor_authoring_command_admission_dry_run_count"
+            ]
+            == 1
+        )
+        assert (
+            command_admission_dry_run_row["actual"][
+                "command_admission_contract_defined_count"
+            ]
+            == 1
+        )
+        assert (
+            command_admission_dry_run_row["actual"][
+                "section_179_command_path_contract_ready_count"
+            ]
+            == 1
+        )
+        assert command_admission_dry_run_row["actual"]["command_path_chain_satisfied_count"] == 0
+        assert (
+            command_admission_dry_run_row["actual"][
+                "command_admission_dry_run_record_present_count"
+            ]
+            == 0
+        )
+        assert (
+            command_admission_dry_run_row["actual"][
+                "command_admission_dry_run_record_valid_count"
+            ]
+            == 0
+        )
+        assert (
+            command_admission_dry_run_row["actual"][
+                "command_admission_dry_run_admissible_count"
+            ]
+            == 0
+        )
+        assert (
+            command_admission_dry_run_row["actual"][
+                "missing_command_admission_dry_run_prerequisite_count"
+            ]
+            == 55
+        )
+        assert command_admission_dry_run_row["actual"]["durable_authoring_command_contract_started_count"] == 0
+        assert command_admission_dry_run_row["actual"]["durable_authoring_command_allowed_count"] == 0
+        assert command_admission_dry_run_row["actual"]["durable_authoring_command_dispatched_count"] == 0
+        assert command_admission_dry_run_row["actual"]["durable_authoring_command_executed_count"] == 0
+        assert command_admission_dry_run_row["actual"]["save_delete_rename_allowed_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
