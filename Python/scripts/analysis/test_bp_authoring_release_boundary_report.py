@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_170_v112"
+        assert report["verdict"]["release_boundary_version"] == "section_172_v114"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -367,6 +367,18 @@ def main() -> int:
         assert (
             report["verdict"][
                 "section_170_durable_executor_authoring_command_result_readback_dry_run_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_171_durable_executor_authoring_final_no_save_release_dry_run_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_172_durable_executor_authoring_final_release_readiness_dry_run_status"
             ]
             == "passed"
         )
@@ -6523,6 +6535,210 @@ def main() -> int:
         assert (
             command_result_readback_dry_run_row["actual"]
             == expected_command_result_readback_dry_run_actual
+        )
+        final_no_save_release_dry_run_row = find_row(
+            report,
+            "durable_executor_authoring_final_no_save_release_dry_run_contract",
+        )
+        assert final_no_save_release_dry_run_row["status"] == "passed"
+        expected_final_no_save_release_dry_run_actual = {
+            "summary_status": "passed",
+            "durable_requested_executor_authoring_final_no_save_release_dry_run_count": 1,
+            "final_no_save_release_contract_defined_count": 1,
+            "section_170_result_readback_contract_ready_count": 1,
+            "open_activation_promotion_readiness_chain_satisfied_count": 0,
+            "authoring_enable_chain_satisfied_count": 0,
+            "durable_release_readiness_chain_reconfirmed_count": 0,
+            "authoring_command_inputs_satisfied_count": 0,
+            "authoring_command_record_valid_count": 0,
+            "dry_run_route_record_valid_count": 0,
+            "dry_run_route_admissible_count": 0,
+            "dispatch_dry_run_record_valid_count": 0,
+            "dispatch_dry_run_admissible_count": 0,
+            "dispatch_evidence_dry_run_record_valid_count": 0,
+            "dispatch_evidence_dry_run_admissible_count": 0,
+            "execution_dry_run_record_valid_count": 0,
+            "execution_dry_run_admissible_count": 0,
+            "execution_evidence_dry_run_record_valid_count": 0,
+            "execution_evidence_dry_run_admissible_count": 0,
+            "completion_decision_dry_run_record_valid_count": 0,
+            "completion_decision_dry_run_admissible_count": 0,
+            "completion_application_dry_run_record_valid_count": 0,
+            "completion_application_dry_run_admissible_count": 0,
+            "completion_result_dry_run_record_valid_count": 0,
+            "completion_result_dry_run_admissible_count": 0,
+            "result_readback_dry_run_record_valid_count": 0,
+            "result_readback_dry_run_admissible_count": 0,
+            "result_readback_chain_satisfied_count": 0,
+            "final_no_save_release_dry_run_record_present_count": 0,
+            "record_schema_matches_count": 0,
+            "final_no_save_release_scope_matches_count": 0,
+            "dry_run_only_count": 0,
+            "final_no_save_release_status_passed_count": 0,
+            "operator_reconfirmed_no_live_dispatch_count": 0,
+            "operator_reconfirmed_no_live_execution_count": 0,
+            "operator_reconfirmed_no_write_execution_count": 0,
+            "operator_reconfirmed_no_save_delete_rename_count": 0,
+            "requested_command_allowed_count": 0,
+            "requested_command_forbidden_count": 0,
+            "requested_command_unknown_count": 0,
+            "final_no_save_release_operation_allowed_count": 0,
+            "final_no_save_release_target_declared_count": 0,
+            "result_readback_admission_proof_matches_count": 0,
+            "release_boundary_proof_safe_count": 0,
+            "final_no_save_release_dry_run_record_valid_count": 0,
+            "final_no_save_release_dry_run_record_rejected_count": 0,
+            "final_no_save_release_dry_run_admissible_count": 0,
+            "unsafe_final_no_save_release_record_count": 0,
+            "missing_final_no_save_release_dry_run_prerequisite_count": 37,
+            "final_no_save_release_dry_run_started_count": 0,
+            "final_no_save_release_dry_run_accepted_count": 0,
+            "durable_final_no_save_release_promoted_count": 0,
+            "durable_final_no_save_release_accepted_count": 0,
+            "durable_final_release_readiness_started_count": 0,
+            "durable_final_release_ready_count": 0,
+            "durable_result_readback_promoted_count": 0,
+            "durable_result_readback_accepted_count": 0,
+            "durable_completion_result_promoted_count": 0,
+            "durable_completion_result_recorded_count": 0,
+            "durable_completion_application_promoted_count": 0,
+            "durable_completion_application_applied_count": 0,
+            "durable_completion_decision_promoted_count": 0,
+            "durable_execution_evidence_promoted_count": 0,
+            "durable_execution_envelope_promoted_count": 0,
+            "durable_evidence_promoted_count": 0,
+            "durable_dispatch_envelope_promoted_count": 0,
+            "durable_command_request_promoted_count": 0,
+            "durable_executor_command_path_opened_count": 0,
+            "durable_executor_command_path_allowed_count": 0,
+            "durable_authoring_command_allowed_count": 0,
+            "durable_authoring_command_dispatched_count": 0,
+            "durable_authoring_command_executed_count": 0,
+            "durable_authoring_command_completed_count": 0,
+            "durable_authoring_enabled_count": 0,
+            "durable_authoring_allowed_count": 0,
+            "final_durable_release_ready_count": 0,
+            "asset_write_performed_count": 0,
+            "package_dirty_marked_count": 0,
+            "code_change_performed_count": 0,
+            "executor_code_modified_count": 0,
+            "unreal_asset_modified_count": 0,
+            "live_bridge_probe_started_count": 0,
+            "save_delete_rename_allowed_count": 0,
+            "save_asset_allowed_count": 0,
+            "delete_asset_allowed_count": 0,
+            "rename_asset_allowed_count": 0,
+            "cleanup_allowed_count": 0,
+            "live_command_dispatched_count": 0,
+            "live_command_executed_count": 0,
+        }
+        assert (
+            final_no_save_release_dry_run_row["actual"]
+            == expected_final_no_save_release_dry_run_actual
+        )
+        final_release_readiness_dry_run_row = find_row(
+            report,
+            "durable_executor_authoring_final_release_readiness_dry_run_contract",
+        )
+        assert final_release_readiness_dry_run_row["status"] == "passed"
+        expected_final_release_readiness_dry_run_actual = {
+            "summary_status": "passed",
+            "durable_requested_executor_authoring_final_release_readiness_dry_run_count": 1,
+            "final_release_readiness_contract_defined_count": 1,
+            "section_171_final_no_save_contract_ready_count": 1,
+            "open_activation_promotion_readiness_chain_satisfied_count": 0,
+            "authoring_enable_chain_satisfied_count": 0,
+            "durable_release_readiness_chain_reconfirmed_count": 0,
+            "authoring_command_inputs_satisfied_count": 0,
+            "authoring_command_record_valid_count": 0,
+            "dry_run_route_record_valid_count": 0,
+            "dry_run_route_admissible_count": 0,
+            "dispatch_dry_run_record_valid_count": 0,
+            "dispatch_dry_run_admissible_count": 0,
+            "dispatch_evidence_dry_run_record_valid_count": 0,
+            "dispatch_evidence_dry_run_admissible_count": 0,
+            "execution_dry_run_record_valid_count": 0,
+            "execution_dry_run_admissible_count": 0,
+            "execution_evidence_dry_run_record_valid_count": 0,
+            "execution_evidence_dry_run_admissible_count": 0,
+            "completion_decision_dry_run_record_valid_count": 0,
+            "completion_decision_dry_run_admissible_count": 0,
+            "completion_application_dry_run_record_valid_count": 0,
+            "completion_application_dry_run_admissible_count": 0,
+            "completion_result_dry_run_record_valid_count": 0,
+            "completion_result_dry_run_admissible_count": 0,
+            "result_readback_dry_run_record_valid_count": 0,
+            "result_readback_dry_run_admissible_count": 0,
+            "final_no_save_release_dry_run_record_valid_count": 0,
+            "final_no_save_release_dry_run_admissible_count": 0,
+            "final_no_save_release_chain_satisfied_count": 0,
+            "final_release_readiness_dry_run_record_present_count": 0,
+            "record_schema_matches_count": 0,
+            "final_release_readiness_scope_matches_count": 0,
+            "dry_run_only_count": 0,
+            "final_release_readiness_status_passed_count": 0,
+            "operator_reconfirmed_no_live_dispatch_count": 0,
+            "operator_reconfirmed_no_live_execution_count": 0,
+            "operator_reconfirmed_no_write_execution_count": 0,
+            "operator_reconfirmed_no_save_delete_rename_count": 0,
+            "requested_command_allowed_count": 0,
+            "requested_command_forbidden_count": 0,
+            "requested_command_unknown_count": 0,
+            "final_release_readiness_operation_allowed_count": 0,
+            "final_release_readiness_target_declared_count": 0,
+            "final_no_save_admission_proof_matches_count": 0,
+            "release_boundary_proof_safe_count": 0,
+            "final_release_readiness_dry_run_record_valid_count": 0,
+            "final_release_readiness_dry_run_record_rejected_count": 0,
+            "final_release_readiness_dry_run_admissible_count": 0,
+            "unsafe_final_release_readiness_record_count": 0,
+            "missing_final_release_readiness_dry_run_prerequisite_count": 39,
+            "final_release_readiness_dry_run_started_count": 0,
+            "final_release_readiness_dry_run_accepted_count": 0,
+            "durable_final_release_readiness_promoted_count": 0,
+            "durable_final_release_readiness_started_count": 0,
+            "durable_final_release_ready_count": 0,
+            "durable_release_review_started_count": 0,
+            "durable_final_no_save_release_promoted_count": 0,
+            "durable_final_no_save_release_accepted_count": 0,
+            "durable_result_readback_promoted_count": 0,
+            "durable_result_readback_accepted_count": 0,
+            "durable_completion_result_promoted_count": 0,
+            "durable_completion_result_recorded_count": 0,
+            "durable_completion_application_promoted_count": 0,
+            "durable_completion_application_applied_count": 0,
+            "durable_completion_decision_promoted_count": 0,
+            "durable_execution_evidence_promoted_count": 0,
+            "durable_execution_envelope_promoted_count": 0,
+            "durable_evidence_promoted_count": 0,
+            "durable_dispatch_envelope_promoted_count": 0,
+            "durable_command_request_promoted_count": 0,
+            "durable_executor_command_path_opened_count": 0,
+            "durable_executor_command_path_allowed_count": 0,
+            "durable_authoring_command_allowed_count": 0,
+            "durable_authoring_command_dispatched_count": 0,
+            "durable_authoring_command_executed_count": 0,
+            "durable_authoring_command_completed_count": 0,
+            "durable_authoring_enabled_count": 0,
+            "durable_authoring_allowed_count": 0,
+            "final_durable_release_ready_count": 0,
+            "asset_write_performed_count": 0,
+            "package_dirty_marked_count": 0,
+            "code_change_performed_count": 0,
+            "executor_code_modified_count": 0,
+            "unreal_asset_modified_count": 0,
+            "live_bridge_probe_started_count": 0,
+            "save_delete_rename_allowed_count": 0,
+            "save_asset_allowed_count": 0,
+            "delete_asset_allowed_count": 0,
+            "rename_asset_allowed_count": 0,
+            "cleanup_allowed_count": 0,
+            "live_command_dispatched_count": 0,
+            "live_command_executed_count": 0,
+        }
+        assert (
+            final_release_readiness_dry_run_row["actual"]
+            == expected_final_release_readiness_dry_run_actual
         )
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
