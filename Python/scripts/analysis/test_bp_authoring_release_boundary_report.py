@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_183_v125"
+        assert report["verdict"]["release_boundary_version"] == "section_184_v126"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -448,8 +448,14 @@ def main() -> int:
             ]
             == "passed"
         )
+        assert (
+            report["verdict"][
+                "section_184_durable_executor_authoring_safety_boundary_unlock_status"
+            ]
+            == "passed"
+        )
         assert report["verdict"]["durable_safety_boundary_unlock_ready"] is True
-        assert report["verdict"]["durable_safety_boundary_unlocked"] is False
+        assert report["verdict"]["durable_safety_boundary_unlocked"] is True
         assert report["verdict"]["final_durable_release_ready"] is False
         assert report["verdict"]["main_push_requested"] is False
         assert report["verdict"]["mvp_decision_status"] == "temporary_mvp_ready_durable_not_enabled"
@@ -7356,6 +7362,38 @@ def main() -> int:
         assert unlock_record_row["actual"]["save_delete_rename_allowed_count"] == 0
         assert unlock_record_row["actual"]["live_durable_authoring_allowed_count"] == 0
         assert unlock_record_row["actual"]["durable_authoring_command_allowed_count"] == 0
+        unlock_row = find_row(
+            report,
+            "durable_executor_authoring_safety_boundary_unlock",
+        )
+        assert unlock_row["status"] == "passed"
+        assert (
+            unlock_row["actual"][
+                "durable_requested_executor_authoring_safety_boundary_unlock_count"
+            ]
+            == 1
+        )
+        assert unlock_row["actual"]["section_183_summary_schema_matches_count"] == 1
+        assert unlock_row["actual"]["section_183_summary_passed_count"] == 1
+        assert unlock_row["actual"]["section_183_unlock_record_admissible_count"] == 1
+        assert unlock_row["actual"]["section_183_unlock_ready_count"] == 1
+        assert unlock_row["actual"]["section_183_unlocked_absent_count"] == 1
+        assert unlock_row["actual"]["section_183_authoring_disabled_count"] == 1
+        assert unlock_row["actual"]["section_183_final_release_not_ready_count"] == 1
+        assert unlock_row["actual"]["section_183_save_delete_rename_blocked_count"] == 1
+        assert (
+            unlock_row["actual"]["section_183_live_durable_authoring_blocked_count"]
+            == 1
+        )
+        assert unlock_row["actual"]["blocked_outputs_zero_count"] == 1
+        assert unlock_row["actual"]["durable_safety_boundary_unlocked_count"] == 1
+        assert unlock_row["actual"]["durable_authoring_enabled_count"] == 0
+        assert unlock_row["actual"]["final_durable_release_ready_count"] == 0
+        assert unlock_row["actual"]["durable_executor_open_allowed_count"] == 0
+        assert unlock_row["actual"]["durable_authoring_command_allowed_count"] == 0
+        assert unlock_row["actual"]["save_delete_rename_allowed_count"] == 0
+        assert unlock_row["actual"]["live_durable_authoring_allowed_count"] == 0
+        assert unlock_row["actual"]["live_command_dispatched_count"] == 0
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
