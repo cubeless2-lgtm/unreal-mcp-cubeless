@@ -1,0 +1,174 @@
+import pathlib
+import time
+import traceback
+
+
+SCRIPT_DIR = pathlib.Path(__file__).resolve().parent
+SUPPRESS_FINAL_RAISE = bool(globals().get("PCG_STUDY_REGRESSION_SUPPRESS_FINAL_RAISE", False))
+REGRESSION_PHASE = str(globals().get("PCG_STUDY_REGRESSION_PHASE", "all"))
+REGRESSION_STEP_FILTER = str(globals().get("PCG_STUDY_REGRESSION_STEP", ""))
+
+REGRESSION_STEPS = [
+    (
+        "build",
+        "main_spline_assembly_build",
+        "build_spline_assembly_with_post_copy_offset.py",
+    ),
+    (
+        "verify",
+        "main_spline_assembly_verify",
+        "verify_spline_assembly_output.py",
+    ),
+    (
+        "build",
+        "self_pruning_fixture_build",
+        "build_ground_self_pruning_fixture.py",
+    ),
+    (
+        "verify",
+        "self_pruning_fixture_verify",
+        "verify_ground_self_pruning_fixture.py",
+    ),
+    (
+        "build",
+        "density_bounds_fixture_build",
+        "build_ground_density_bounds_fixture.py",
+    ),
+    (
+        "verify",
+        "density_bounds_fixture_verify",
+        "verify_ground_density_bounds_fixture.py",
+    ),
+    (
+        "build",
+        "ground_combo_fixture_build",
+        "build_ground_combo_fixture.py",
+    ),
+    (
+        "verify",
+        "ground_combo_fixture_verify",
+        "verify_ground_combo_fixture.py",
+    ),
+    (
+        "verify",
+        "dynamic_material_axis_actor_property_compat_verify",
+        "verify_cubeless_ed_dynamic_material_axis_actor_property_selector_compat.py",
+    ),
+    (
+        "verify",
+        "dynamic_material_axis_menu_apply_verify",
+        "verify_cubeless_ed_dynamic_material_axis_menu_apply.py",
+    ),
+    (
+        "verify",
+        "true_material_applied_presets_verify",
+        "verify_cubeless_ed_true_material_applied_presets.py",
+    ),
+    (
+        "build",
+        "material_override_selector_prepare",
+        "prepare_cubeless_ed_material_override_selector_validation.py",
+    ),
+    (
+        "verify",
+        "material_override_selector_verify",
+        "verify_cubeless_ed_material_override_selector_blueprint.py",
+    ),
+    (
+        "build",
+        "ecosystem_selector_prepare",
+        "prepare_cubeless_ed_ecosystem_selector_validation.py",
+    ),
+    (
+        "verify",
+        "ecosystem_selector_verify",
+        "verify_cubeless_ed_ecosystem_selector_blueprint.py",
+    ),
+]
+
+
+def run_script(step_name, relative_script):
+    script_path = SCRIPT_DIR / relative_script
+    if not script_path.exists():
+        raise RuntimeError(f"Missing regression script for {step_name}: {script_path}")
+
+    started = time.perf_counter()
+    namespace = {
+        "__name__": "__main__",
+        "__file__": str(script_path),
+    }
+    with script_path.open("r", encoding="utf-8") as handle:
+        code = compile(handle.read(), str(script_path), "exec")
+    exec(code, namespace)
+    elapsed = time.perf_counter() - started
+    return elapsed
+
+
+def main():
+    print("MCP_PCG_STUDY_REGRESSION_BEGIN")
+    print(f"regression_phase={REGRESSION_PHASE}")
+    print(f"regression_step_filter={REGRESSION_STEP_FILTER}")
+    if REGRESSION_PHASE == "all":
+        print(
+            "regression_phase_note=all runs build and verify in one Unreal Python call; "
+            "use separate build then verify phases when generated graph output is delayed"
+        )
+    results = []
+    failures = []
+    started = time.perf_counter()
+
+    selected_steps = [
+        (phase, step_name, relative_script)
+        for phase, step_name, relative_script in REGRESSION_STEPS
+        if REGRESSION_PHASE == "all" or phase == REGRESSION_PHASE
+    ]
+    if REGRESSION_STEP_FILTER:
+        selected_steps = [
+            (phase, step_name, relative_script)
+            for phase, step_name, relative_script in selected_steps
+            if step_name == REGRESSION_STEP_FILTER or relative_script == REGRESSION_STEP_FILTER
+        ]
+    if not selected_steps:
+        raise RuntimeError(
+            f"No regression steps selected for phase={REGRESSION_PHASE!r} "
+            f"step={REGRESSION_STEP_FILTER!r}"
+        )
+
+    for phase, step_name, relative_script in selected_steps:
+        print(f"regression_step_begin={step_name}|{relative_script}")
+        try:
+            elapsed = run_script(step_name, relative_script)
+            results.append((phase, step_name, relative_script, "PASS", elapsed, ""))
+            print(f"regression_step_result={step_name}|PASS|{elapsed:.3f}s")
+        except Exception as exc:
+            elapsed = 0.0
+            message = "".join(traceback.format_exception_only(type(exc), exc)).strip()
+            failures.append((step_name, relative_script, message))
+            results.append((phase, step_name, relative_script, "FAIL", elapsed, message))
+            print(f"regression_step_result={step_name}|FAIL|{message}")
+            print(traceback.format_exc())
+
+    total_elapsed = time.perf_counter() - started
+    pass_count = sum(1 for _, _, _, status, _, _ in results if status == "PASS")
+    fail_count = len(failures)
+
+    print("regression_summary=")
+    for phase, step_name, relative_script, status, elapsed, message in results:
+        if status == "PASS":
+            print(f"  {phase}|{step_name}|{relative_script}|{status}|{elapsed:.3f}s")
+        else:
+            print(f"  {phase}|{step_name}|{relative_script}|{status}|{message}")
+
+    print(f"regression_pass_count={pass_count}")
+    print(f"regression_fail_count={fail_count}")
+    print(f"regression_total_elapsed={total_elapsed:.3f}s")
+    print(f"pcg_study_regression_pass={fail_count == 0}")
+    print("MCP_PCG_STUDY_REGRESSION_END")
+
+    if failures and not SUPPRESS_FINAL_RAISE:
+        failed_names = ", ".join(step_name for step_name, _, _ in failures)
+        raise RuntimeError(f"PCG study regression failed: {failed_names}")
+
+
+if __name__ == "__main__":
+    main()

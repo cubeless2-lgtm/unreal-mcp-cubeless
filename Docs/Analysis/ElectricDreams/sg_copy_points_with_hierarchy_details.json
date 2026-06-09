@@ -1,0 +1,730 @@
+{
+  "graph_path": "/Game/PCG/Assets/PCGCustomNodes/SG_CopyPointsWithHierarchy.SG_CopyPointsWithHierarchy",
+  "errors": [],
+  "graph": {
+    "repr": "<Object '/Game/PCG/Assets/PCGCustomNodes/SG_CopyPointsWithHierarchy.SG_CopyPointsWithHierarchy' (0x000001C285EF3600) Class 'PCGGraph'>",
+    "type": "PCGGraph",
+    "class": "PCGGraph",
+    "name": "SG_CopyPointsWithHierarchy",
+    "path": "/Game/PCG/Assets/PCGCustomNodes/SG_CopyPointsWithHierarchy.SG_CopyPointsWithHierarchy"
+  },
+  "nodes": [
+    {
+      "name": "CopyPoints_0",
+      "title": "None",
+      "class": "PCGNode",
+      "settings_class": "PCGCopyPointsSettings",
+      "settings_path": "/Game/PCG/Assets/PCGCustomNodes/SG_CopyPointsWithHierarchy.SG_CopyPointsWithHierarchy:CopyPoints_0.PCGCopyPointsSettings_0",
+      "position": "(1744, -528)",
+      "pins": {
+        "inputs": [
+          {
+            "name": "PCGPin_1",
+            "label": "Source",
+            "edge_count": 1
+          },
+          {
+            "name": "PCGPin_2",
+            "label": "Target",
+            "edge_count": 1
+          },
+          {
+            "name": "PCGPin_10",
+            "label": "Execution Dependency",
+            "edge_count": 0
+          },
+          {
+            "name": "PCGPin_0",
+            "label": "Overrides",
+            "edge_count": 0
+          },
+          {
+            "name": "PCGPin_4",
+            "label": "RotationInheritance",
+            "edge_count": 0
+          },
+          {
+            "name": "PCGPin_11",
+            "label": "bApplyTargetRotationToPositions",
+            "edge_count": 0
+          },
+          {
+            "name": "PCGPin_5",
+            "label": "ScaleInheritance",
+            "edge_count": 0
+          },
+          {
+            "name": "PCGPin_12",
+            "label": "bApplyTargetScaleToPositions",
+            "edge_count": 0
+          },
+          {
+            "name": "PCGPin_6",
+            "label": "ColorInheritance",
+            "edge_count": 0
+          },
+          {
+            "name": "PCGPin_7",
+            "label": "SeedInheritance",
+            "edge_count": 0
+          },
+          {
+            "name": "PCGPin_8",
+            "label": "AttributeInheritance",
+            "edge_count": 0
+          },
+          {
+            "name": "PCGPin_9",
+            "label": "TagInheritance",
+            "edge_count": 0
+          },
+          {
+            "name": "PCGPin_13",
+            "label": "bCopyEachSourceOnEveryTarget",
+            "edge_count": 0
+          }
+        ],
+        "outputs": [
+          {
+            "name": "PCGPin_3",
+            "label": "Out",
+            "edge_count": 1
+          }
+        ]
+      },
+      "settings_properties": {
+        "rotation_inheritance": "<PCGCopyPointsInheritanceMode.RELATIVE: 0>",
+        "scale_inheritance": "<PCGCopyPointsInheritanceMode.RELATIVE: 0>",
+        "color_inheritance": "<PCGCopyPointsInheritanceMode.RELATIVE: 0>",
+        "seed_inheritance": "<PCGCopyPointsInheritanceMode.RELATIVE: 0>",
+        "attribute_inheritance": "<PCGCopyPointsMetadataInheritanceMode.SOURCE_ONLY: 2>",
+        "tag_inheritance": "<PCGCopyPointsTagInheritanceMode.BOTH: 0>",
+        "copy_each_source_on_every_target": true
+      }
+    },
+    {
+      "name": "ExecuteBlueprint_1",
+      "title": "None",
+      "class": "PCGNode",
+      "settings_class": "PCGBlueprintSettings",
+      "settings_path": "/Game/PCG/Assets/PCGCustomNodes/SG_CopyPointsWithHierarchy.SG_CopyPointsWithHierarchy:ExecuteBlueprint_1.PCGBlueprintSettings_2",
+      "position": "(1952, -432)",
+      "pins": {
+        "inputs": [
+          {
+            "name": "PCGPin_0",
+            "label": "CopyPointsOut",
+            "edge_count": 1
+          },
+          {
+            "name": "PCGPin_1",
+            "label": "CopyPointsTarget",
+            "edge_count": 1
+          },
+          {
+            "name": "PCGPin_6",
+            "label": "Execution Dependency",
+            "edge_count": 0
+          },
+          {
+            "name": "PCGPin_3",
+            "label": "Overrides",
+            "edge_count": 0
+          },
+          {
+            "name": "PCGPin_4",
+            "label": "Seed",
+            "edge_count": 0
+          },
+          {
+            "name": "PCGPin_5",
+            "label": "AddRandomOffset",
+            "edge_count": 0
+          }
+        ],
+        "outputs": [
+          {
+            "name": "PCGPin_2",
+            "label": "Out",
+            "edge_count": 1
+          }
+        ]
+      },
+      "settings_properties": {
+        "blueprint_element_type": {
+          "repr": "<Object '/Game/PCG/Assets/PCGCustomNodes/PostCopyPoints-OffsetIndices.PostCopyPoints-OffsetIndices_C' (0x000001C285DE8500) Class 'BlueprintGeneratedClass'>",
+          "type": "BlueprintGeneratedClass",
+          "class": "BlueprintGeneratedClass",
+          "name": "PostCopyPoints-OffsetIndices_C",
+          "path": "/Game/PCG/Assets/PCGCustomNodes/PostCopyPoints-OffsetIndices.PostCopyPoints-OffsetIndices_C"
+        },
+        "blueprint_element_instance": {
+          "repr": "<Object '/Game/PCG/Assets/PCGCustomNodes/SG_CopyPointsWithHierarchy.SG_CopyPointsWithHierarchy:ExecuteBlueprint_1.PCGBlueprintSettings_2.PostCopyPoints-OffsetIndices_C_0' (0x000001C285F82A00) Class 'PostCopyPoints-OffsetIndices_C'>",
+          "type": "PCGBlueprintElement",
+          "class": "PostCopyPoints-OffsetIndices_C",
+          "name": "PostCopyPoints-OffsetIndices_C_0",
+          "path": "/Game/PCG/Assets/PCGCustomNodes/SG_CopyPointsWithHierarchy.SG_CopyPointsWithHierarchy:ExecuteBlueprint_1.PCGBlueprintSettings_2.PostCopyPoints-OffsetIndices_C_0"
+        }
+      }
+    },
+    {
+      "name": "CreateAttribute_0",
+      "title": "None",
+      "class": "PCGNode",
+      "settings_class": "PCGAddAttributeSettings",
+      "settings_path": "/Game/PCG/Assets/PCGCustomNodes/SG_CopyPointsWithHierarchy.SG_CopyPointsWithHierarchy:CreateAttribute_0.PCGCreateAttributeSettings_0",
+      "position": "(2240, -432)",
+      "pins": {
+        "inputs": [
+          {
+            "name": "PCGPin_0",
+            "label": "In",
+            "edge_count": 1
+          },
+          {
+            "name": "PCGPin_2",
+            "label": "Attributes",
+            "edge_count": 0
+          },
+          {
+            "name": "PCGPin_7",
+            "label": "Execution Dependency",
+            "edge_count": 0
+          },
+          {
+            "name": "PCGPin_3",
+            "label": "Overrides",
+            "edge_count": 0
+          },
+          {
+            "name": "PCGPin_4",
+            "label": "InputSource",
+            "edge_count": 0
+          },
+          {
+            "name": "PCGPin_5",
+            "label": "OutputTarget",
+            "edge_count": 0
+          },
+          {
+            "name": "PCGPin_6",
+            "label": "bCopyAllAttributes",
+            "edge_count": 0
+          },
+          {
+            "name": "PCGPin_8",
+            "label": "bCopyAllDomains",
+            "edge_count": 0
+          }
+        ],
+        "outputs": [
+          {
+            "name": "PCGPin_1",
+            "label": "Out",
+            "edge_count": 1
+          }
+        ]
+      },
+      "settings_properties": {
+        "input_source": {
+          "type": "PCGAttributePropertyInputSelector",
+          "export_text": "PCGBegin(@Last)PCGEnd"
+        },
+        "output_target": {
+          "type": "PCGAttributePropertyOutputSelector",
+          "export_text": "PCGBegin(IgnoreParentRotation)PCGEnd"
+        },
+        "attribute_types": {
+          "type": "PCGMetadataTypesConstantStruct",
+          "export_text": "(Type=Boolean,FloatValue=0.000000,Int32Value=0,DoubleValue=1.000000,IntValue=0,Vector2Value=(X=0.000000,Y=0.000000),VectorValue=(X=0.000000,Y=0.000000,Z=0.000000),Vector4Value=(X=0.000000,Y=0.000000,Z=0.000000,W=0.000000),QuatValue=(X=0.000000,Y=0.000000,Z=0.000000,W=1.000000),TransformValue=(Rotation=(X=0.000000,Y=0.000000,Z=0.000000,W=1.000000),Translation=(X=0.000000,Y=0.000000,Z=0.000000),Scale3D=(X=1.000000,Y=1.000000,Z=1.000000)),StringValue=\"\",BoolValue=False,RotatorValue=(Pitch=0.000000,Yaw=0.000000,Roll=0.000000),NameValue=\"\",SoftClassPathValue=None,SoftObjectPathValue=None,bAllowsTypeChange=True)"
+        },
+        "copy_all_attributes": false,
+        "copy_all_domains": false
+      }
+    },
+    {
+      "name": "CreateAttribute_4",
+      "title": "None",
+      "class": "PCGNode",
+      "settings_class": "PCGAddAttributeSettings",
+      "settings_path": "/Game/PCG/Assets/PCGCustomNodes/SG_CopyPointsWithHierarchy.SG_CopyPointsWithHierarchy:CreateAttribute_4.PCGCreateAttributeSettings_0",
+      "position": "(2496, -432)",
+      "pins": {
+        "inputs": [
+          {
+            "name": "PCGPin_0",
+            "label": "In",
+            "edge_count": 1
+          },
+          {
+            "name": "PCGPin_2",
+            "label": "Attributes",
+            "edge_count": 0
+          },
+          {
+            "name": "PCGPin_7",
+            "label": "Execution Dependency",
+            "edge_count": 0
+          },
+          {
+            "name": "PCGPin_3",
+            "label": "Overrides",
+            "edge_count": 0
+          },
+          {
+            "name": "PCGPin_4",
+            "label": "InputSource",
+            "edge_count": 0
+          },
+          {
+            "name": "PCGPin_5",
+            "label": "OutputTarget",
+            "edge_count": 0
+          },
+          {
+            "name": "PCGPin_6",
+            "label": "bCopyAllAttributes",
+            "edge_count": 0
+          },
+          {
+            "name": "PCGPin_8",
+            "label": "bCopyAllDomains",
+            "edge_count": 0
+          }
+        ],
+        "outputs": [
+          {
+            "name": "PCGPin_1",
+            "label": "Out",
+            "edge_count": 1
+          }
+        ]
+      },
+      "settings_properties": {
+        "input_source": {
+          "type": "PCGAttributePropertyInputSelector",
+          "export_text": "PCGBegin(@Last)PCGEnd"
+        },
+        "output_target": {
+          "type": "PCGAttributePropertyOutputSelector",
+          "export_text": "PCGBegin(IgnoreParentScale)PCGEnd"
+        },
+        "attribute_types": {
+          "type": "PCGMetadataTypesConstantStruct",
+          "export_text": "(Type=Boolean,FloatValue=0.000000,Int32Value=0,DoubleValue=1.000000,IntValue=0,Vector2Value=(X=0.000000,Y=0.000000),VectorValue=(X=0.000000,Y=0.000000,Z=0.000000),Vector4Value=(X=0.000000,Y=0.000000,Z=0.000000,W=0.000000),QuatValue=(X=0.000000,Y=0.000000,Z=0.000000,W=1.000000),TransformValue=(Rotation=(X=0.000000,Y=0.000000,Z=0.000000,W=1.000000),Translation=(X=0.000000,Y=0.000000,Z=0.000000),Scale3D=(X=1.000000,Y=1.000000,Z=1.000000)),StringValue=\"\",BoolValue=False,RotatorValue=(Pitch=0.000000,Yaw=0.000000,Roll=0.000000),NameValue=\"\",SoftClassPathValue=None,SoftObjectPathValue=None,bAllowsTypeChange=True)"
+        },
+        "copy_all_attributes": false,
+        "copy_all_domains": false
+      }
+    },
+    {
+      "name": "DefaultInputNode",
+      "title": "None",
+      "class": "PCGNode",
+      "settings_class": "PCGGraphInputOutputSettings",
+      "settings_path": "/Game/PCG/Assets/PCGCustomNodes/SG_CopyPointsWithHierarchy.SG_CopyPointsWithHierarchy:DefaultInputNodeSettings",
+      "position": "(1216, -464)",
+      "pins": {
+        "inputs": [
+          {
+            "name": "DefaultPin_0",
+            "label": "In",
+            "edge_count": 0
+          },
+          {
+            "name": "PCGPin_0",
+            "label": "CopyPoints Source",
+            "edge_count": 0
+          },
+          {
+            "name": "PCGPin_2",
+            "label": "CopyPoints Target",
+            "edge_count": 0
+          }
+        ],
+        "outputs": [
+          {
+            "name": "DefaultPin_1",
+            "label": "In",
+            "edge_count": 0
+          },
+          {
+            "name": "PCGPin_1",
+            "label": "CopyPoints Source",
+            "edge_count": 1
+          },
+          {
+            "name": "PCGPin_3",
+            "label": "CopyPoints Target",
+            "edge_count": 2
+          }
+        ]
+      },
+      "settings_properties": {}
+    },
+    {
+      "name": "DefaultOutputNode",
+      "title": "None",
+      "class": "PCGNode",
+      "settings_class": "PCGGraphInputOutputSettings",
+      "settings_path": "/Game/PCG/Assets/PCGCustomNodes/SG_CopyPointsWithHierarchy.SG_CopyPointsWithHierarchy:DefaultOutputNodeSettings",
+      "position": "(2752, -416)",
+      "pins": {
+        "inputs": [
+          {
+            "name": "DefaultPin_2",
+            "label": "Out",
+            "edge_count": 1
+          }
+        ],
+        "outputs": [
+          {
+            "name": "DefaultPin_3",
+            "label": "Out",
+            "edge_count": 0
+          }
+        ]
+      },
+      "settings_properties": {}
+    }
+  ],
+  "edges": [
+    {
+      "edge": "/Game/PCG/Assets/PCGCustomNodes/SG_CopyPointsWithHierarchy.SG_CopyPointsWithHierarchy:DefaultInputNode.PCGPin_1.PCGEdge_0",
+      "input": {
+        "node": "CopyPoints_0",
+        "node_title": "None",
+        "pin": "PCGPin_1",
+        "label": "Source"
+      },
+      "output": {
+        "node": "DefaultInputNode",
+        "node_title": "None",
+        "pin": "PCGPin_1",
+        "label": "CopyPoints Source"
+      }
+    },
+    {
+      "edge": "/Game/PCG/Assets/PCGCustomNodes/SG_CopyPointsWithHierarchy.SG_CopyPointsWithHierarchy:DefaultInputNode.PCGPin_3.PCGEdge_0",
+      "input": {
+        "node": "CopyPoints_0",
+        "node_title": "None",
+        "pin": "PCGPin_2",
+        "label": "Target"
+      },
+      "output": {
+        "node": "DefaultInputNode",
+        "node_title": "None",
+        "pin": "PCGPin_3",
+        "label": "CopyPoints Target"
+      }
+    },
+    {
+      "edge": "/Game/PCG/Assets/PCGCustomNodes/SG_CopyPointsWithHierarchy.SG_CopyPointsWithHierarchy:CopyPoints_0.PCGPin_3.PCGEdge_0",
+      "output": {
+        "node": "CopyPoints_0",
+        "node_title": "None",
+        "pin": "PCGPin_3",
+        "label": "Out"
+      },
+      "input": {
+        "node": "ExecuteBlueprint_1",
+        "node_title": "None",
+        "pin": "PCGPin_0",
+        "label": "CopyPointsOut"
+      }
+    },
+    {
+      "edge": "/Game/PCG/Assets/PCGCustomNodes/SG_CopyPointsWithHierarchy.SG_CopyPointsWithHierarchy:DefaultInputNode.PCGPin_3.PCGEdge_1",
+      "input": {
+        "node": "ExecuteBlueprint_1",
+        "node_title": "None",
+        "pin": "PCGPin_1",
+        "label": "CopyPointsTarget"
+      },
+      "output": {
+        "node": "DefaultInputNode",
+        "node_title": "None",
+        "pin": "PCGPin_3",
+        "label": "CopyPoints Target"
+      }
+    },
+    {
+      "edge": "/Game/PCG/Assets/PCGCustomNodes/SG_CopyPointsWithHierarchy.SG_CopyPointsWithHierarchy:ExecuteBlueprint_1.PCGPin_2.PCGEdge_0",
+      "output": {
+        "node": "ExecuteBlueprint_1",
+        "node_title": "None",
+        "pin": "PCGPin_2",
+        "label": "Out"
+      },
+      "input": {
+        "node": "CreateAttribute_0",
+        "node_title": "None",
+        "pin": "PCGPin_0",
+        "label": "In"
+      }
+    },
+    {
+      "edge": "/Game/PCG/Assets/PCGCustomNodes/SG_CopyPointsWithHierarchy.SG_CopyPointsWithHierarchy:CreateAttribute_0.PCGPin_1.PCGEdge_1",
+      "output": {
+        "node": "CreateAttribute_0",
+        "node_title": "None",
+        "pin": "PCGPin_1",
+        "label": "Out"
+      },
+      "input": {
+        "node": "CreateAttribute_4",
+        "node_title": "None",
+        "pin": "PCGPin_0",
+        "label": "In"
+      }
+    },
+    {
+      "edge": "/Game/PCG/Assets/PCGCustomNodes/SG_CopyPointsWithHierarchy.SG_CopyPointsWithHierarchy:CreateAttribute_4.PCGPin_1.PCGEdge_1",
+      "output": {
+        "node": "CreateAttribute_4",
+        "node_title": "None",
+        "pin": "PCGPin_1",
+        "label": "Out"
+      },
+      "input": {
+        "node": "DefaultOutputNode",
+        "node_title": "None",
+        "pin": "DefaultPin_2",
+        "label": "Out"
+      }
+    }
+  ],
+  "blueprint_settings": [
+    {
+      "node": "ExecuteBlueprint_1",
+      "title": "None",
+      "settings": {
+        "repr": "<Object '/Game/PCG/Assets/PCGCustomNodes/SG_CopyPointsWithHierarchy.SG_CopyPointsWithHierarchy:ExecuteBlueprint_1.PCGBlueprintSettings_2' (0x000001C285DF9B00) Class 'PCGBlueprintSettings'>",
+        "type": "PCGBlueprintSettings",
+        "class": "PCGBlueprintSettings",
+        "name": "PCGBlueprintSettings_2",
+        "path": "/Game/PCG/Assets/PCGCustomNodes/SG_CopyPointsWithHierarchy.SG_CopyPointsWithHierarchy:ExecuteBlueprint_1.PCGBlueprintSettings_2"
+      },
+      "settings_properties": {
+        "blueprint_element_instance": {
+          "repr": "<Object '/Game/PCG/Assets/PCGCustomNodes/SG_CopyPointsWithHierarchy.SG_CopyPointsWithHierarchy:ExecuteBlueprint_1.PCGBlueprintSettings_2.PostCopyPoints-OffsetIndices_C_0' (0x000001C285F82A00) Class 'PostCopyPoints-OffsetIndices_C'>",
+          "type": "PCGBlueprintElement",
+          "class": "PostCopyPoints-OffsetIndices_C",
+          "name": "PostCopyPoints-OffsetIndices_C_0",
+          "path": "/Game/PCG/Assets/PCGCustomNodes/SG_CopyPointsWithHierarchy.SG_CopyPointsWithHierarchy:ExecuteBlueprint_1.PCGBlueprintSettings_2.PostCopyPoints-OffsetIndices_C_0"
+        },
+        "blueprint_element_type": {
+          "repr": "<Object '/Game/PCG/Assets/PCGCustomNodes/PostCopyPoints-OffsetIndices.PostCopyPoints-OffsetIndices_C' (0x000001C285DE8500) Class 'BlueprintGeneratedClass'>",
+          "type": "BlueprintGeneratedClass",
+          "class": "BlueprintGeneratedClass",
+          "name": "PostCopyPoints-OffsetIndices_C",
+          "path": "/Game/PCG/Assets/PCGCustomNodes/PostCopyPoints-OffsetIndices.PostCopyPoints-OffsetIndices_C"
+        },
+        "break_debugger": false,
+        "category": "Text(\"\")",
+        "debug": false,
+        "debug_settings": {
+          "type": "PCGDebugVisualizationSettings",
+          "export_text": "(PointScale=1.000000,ScaleMethod=Extents,PointMesh=\"/PCG/DebugObjects/PCG_Cube.PCG_Cube\",MaterialOverride=None)"
+        },
+        "description": "Text(\"\")",
+        "determinism_settings": {
+          "type": "PCGDeterminismSettings",
+          "export_text": "(bNativeTests=True,bUseBlueprintDeterminismTest=False,DeterminismTestBlueprint=None)"
+        },
+        "enabled": true,
+        "execution_dependency_required": false,
+        "expose_to_library": false,
+        "seed": -1017473487,
+        "track_actors_only_within_bounds": false,
+        "tracked_actor_tags": []
+      },
+      "blueprint_element_type": {
+        "repr": "<Object '/Game/PCG/Assets/PCGCustomNodes/PostCopyPoints-OffsetIndices.PostCopyPoints-OffsetIndices_C' (0x000001C285DE8500) Class 'BlueprintGeneratedClass'>",
+        "type": "BlueprintGeneratedClass",
+        "class": "BlueprintGeneratedClass",
+        "name": "PostCopyPoints-OffsetIndices_C",
+        "path": "/Game/PCG/Assets/PCGCustomNodes/PostCopyPoints-OffsetIndices.PostCopyPoints-OffsetIndices_C"
+      },
+      "blueprint_element_default_object": {
+        "summary": {
+          "repr": "<Object '/Script/Engine.Default__BlueprintGeneratedClass' (0x000001C21716AF00) Class 'BlueprintGeneratedClass'>",
+          "type": "BlueprintGeneratedClass",
+          "class": "BlueprintGeneratedClass",
+          "name": "Default__BlueprintGeneratedClass",
+          "path": "/Script/Engine.Default__BlueprintGeneratedClass"
+        },
+        "properties": {},
+        "dir": [
+          "acquire_editor_element_handle",
+          "call_method",
+          "cast",
+          "get_class",
+          "get_class_path_name",
+          "get_default_object",
+          "get_editor_property",
+          "get_fname",
+          "get_full_name",
+          "get_name",
+          "get_outer",
+          "get_outermost",
+          "get_package",
+          "get_path_name",
+          "get_typed_outer",
+          "get_world",
+          "is_editor_property_overridden",
+          "is_package_external",
+          "modify",
+          "rename",
+          "reset_editor_property",
+          "set_editor_properties",
+          "set_editor_property",
+          "static_class"
+        ]
+      },
+      "blueprint_asset": {
+        "repr": "<Object '/Game/PCG/Assets/PCGCustomNodes/PostCopyPoints-OffsetIndices.PostCopyPoints-OffsetIndices' (0x000001C285EF0000) Class 'Blueprint'>",
+        "type": "Blueprint",
+        "class": "Blueprint",
+        "name": "PostCopyPoints-OffsetIndices",
+        "path": "/Game/PCG/Assets/PCGCustomNodes/PostCopyPoints-OffsetIndices.PostCopyPoints-OffsetIndices",
+        "properties": {},
+        "graphs": [
+          {
+            "name": "EventGraph",
+            "class": "EdGraph",
+            "path": "/Game/PCG/Assets/PCGCustomNodes/PostCopyPoints-OffsetIndices.PostCopyPoints-OffsetIndices:EventGraph",
+            "nodes": []
+          },
+          {
+            "name": "ExecuteWithContext",
+            "class": "EdGraph",
+            "path": "/Game/PCG/Assets/PCGCustomNodes/PostCopyPoints-OffsetIndices.PostCopyPoints-OffsetIndices:ExecuteWithContext",
+            "nodes": []
+          },
+          {
+            "name": "IterationLoopBody",
+            "class": "EdGraph",
+            "path": "/Game/PCG/Assets/PCGCustomNodes/PostCopyPoints-OffsetIndices.PostCopyPoints-OffsetIndices:IterationLoopBody",
+            "nodes": []
+          }
+        ]
+      },
+      "blueprint_element_instance": {
+        "summary": {
+          "repr": "<Object '/Game/PCG/Assets/PCGCustomNodes/SG_CopyPointsWithHierarchy.SG_CopyPointsWithHierarchy:ExecuteBlueprint_1.PCGBlueprintSettings_2.PostCopyPoints-OffsetIndices_C_0' (0x000001C285F82A00) Class 'PostCopyPoints-OffsetIndices_C'>",
+          "type": "PCGBlueprintElement",
+          "class": "PostCopyPoints-OffsetIndices_C",
+          "name": "PostCopyPoints-OffsetIndices_C_0",
+          "path": "/Game/PCG/Assets/PCGCustomNodes/SG_CopyPointsWithHierarchy.SG_CopyPointsWithHierarchy:ExecuteBlueprint_1.PCGBlueprintSettings_2.PostCopyPoints-OffsetIndices_C_0"
+        },
+        "properties": {
+          "category": "Text(\"Opal\")",
+          "compute_full_data_crc": false,
+          "custom_input_pins": [
+            {
+              "type": "PCGPinProperties",
+              "export_text": "(Label=\"CopyPointsOut\",Usage=Normal,AllowedTypes=(Ids=((Struct=\"/Script/CoreUObject.ScriptStruct'/Script/PCG.PCGDataTypeInfoPoint'\")),CustomSubtype=-1),bAllowMultipleData=True,PinStatus=Normal,bInvisiblePin=False,Tooltip=\"\",bAllowMultipleConnections=False)"
+            },
+            {
+              "type": "PCGPinProperties",
+              "export_text": "(Label=\"CopyPointsTarget\",Usage=Normal,AllowedTypes=(Ids=((Struct=\"/Script/CoreUObject.ScriptStruct'/Script/PCG.PCGDataTypeInfoSpatial'\")),CustomSubtype=-1),bAllowMultipleData=True,PinStatus=Normal,bInvisiblePin=False,Tooltip=\"\",bAllowMultipleConnections=False)"
+            }
+          ],
+          "custom_output_pins": [
+            {
+              "type": "PCGPinProperties",
+              "export_text": "(Label=\"Out\",Usage=Normal,AllowedTypes=(Ids=((Struct=\"/Script/CoreUObject.ScriptStruct'/Script/PCG.PCGDataTypeInfoPoint'\")),CustomSubtype=-1),bAllowMultipleData=True,PinStatus=Normal,bInvisiblePin=False,Tooltip=\"\",bAllowMultipleConnections=True)"
+            }
+          ],
+          "dependency_parsing_depth": 1,
+          "description": "Text(\"\")",
+          "enable_preconfigured_settings": false,
+          "expose_to_library": false,
+          "has_default_in_pin": false,
+          "has_default_out_pin": false,
+          "has_dynamic_pins": false,
+          "is_cacheable": true,
+          "only_expose_preconfigured_settings": false,
+          "preconfigured_info": [],
+          "requires_game_thread": true
+        },
+        "dir": [
+          "acquire_editor_element_handle",
+          "apply_preconfigured_settings",
+          "call_method",
+          "cast",
+          "category",
+          "compute_full_data_crc",
+          "custom_input_labels",
+          "custom_input_pins",
+          "custom_output_labels",
+          "custom_output_pins",
+          "dependency_parsing_depth",
+          "description",
+          "dynamic_pin_types_override",
+          "enable_preconfigured_settings",
+          "execute",
+          "execute_with_context",
+          "expose_to_library",
+          "get_class",
+          "get_context",
+          "get_context_handle",
+          "get_default_object",
+          "get_editor_property",
+          "get_fname",
+          "get_full_name",
+          "get_input_pin_by_label",
+          "get_input_pins",
+          "get_name",
+          "get_outer",
+          "get_outermost",
+          "get_output_pin_by_label",
+          "get_output_pins",
+          "get_package",
+          "get_path_name",
+          "get_random_stream",
+          "get_random_stream_with_context",
+          "get_seed",
+          "get_seed_with_context",
+          "get_typed_outer",
+          "get_world",
+          "has_default_in_pin",
+          "has_default_out_pin",
+          "has_dynamic_pins",
+          "is_cacheable",
+          "is_cacheable_override",
+          "is_editor_property_overridden",
+          "is_package_external",
+          "iteration_loop",
+          "iteration_loop_body",
+          "loop_n_times",
+          "loop_on_point_pairs",
+          "loop_on_points",
+          "modify",
+          "multi_loop_on_points",
+          "multi_point_loop_body",
+          "nested_loop",
+          "nested_loop_body",
+          "node_color_override",
+          "node_title_override",
+          "node_type_override",
+          "only_expose_preconfigured_settings",
+          "point_loop",
+          "point_loop_body",
+          "point_pair_loop_body",
+          "preconfigured_info",
+          "rename",
+          "requires_game_thread",
+          "reset_editor_property",
+          "set_editor_properties",
+          "set_editor_property",
+          "static_class",
+          "variable_loop",
+          "variable_loop_body"
+        ]
+      }
+    }
+  ]
+}
