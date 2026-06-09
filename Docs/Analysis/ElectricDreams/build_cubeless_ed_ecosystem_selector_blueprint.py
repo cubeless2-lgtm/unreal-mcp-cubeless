@@ -207,6 +207,22 @@ def add_selector_variable(name, default_value, friendly_name, tooltip, clamp_max
     )
 
 
+def add_selector_bool_variable(name, default_value, friendly_name, tooltip):
+    require_success(
+        "add_blueprint_variable",
+        {
+            "blueprint_name": BLUEPRINT_PATH,
+            "variable_name": name,
+            "variable_type": "Boolean",
+            "default_value": bool(default_value),
+            "is_exposed": True,
+            "category": "Cubeless PCG Ecosystem",
+            "friendly_name": friendly_name,
+            "tooltip": tooltip,
+        },
+    )
+
+
 def add_selector_variables():
     add_selector_variable(
         "EcosystemMode",
@@ -263,6 +279,12 @@ def add_selector_variables():
         "Material Variant Type",
         "1 = Default, 2 = cool/dark variant, 3 = warm/soft variant.",
     )
+    add_selector_bool_variable(
+        "GenerateMaterialPreview",
+        True,
+        "Generate Material Preview",
+        "Generate the separate material override preview component alongside the active ecosystem output.",
+    )
     code = f"""
 import unreal
 
@@ -280,6 +302,7 @@ for variable_name in (
     "TreeAmountType",
     "MaterialDomainType",
     "MaterialVariantType",
+    "GenerateMaterialPreview",
 ):
     blueprint.set_blueprint_variable_instance_editable(variable_name, True)
     blueprint.set_blueprint_variable_expose_on_spawn(variable_name, True)

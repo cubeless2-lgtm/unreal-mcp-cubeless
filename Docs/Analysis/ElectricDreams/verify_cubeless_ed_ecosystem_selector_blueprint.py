@@ -57,6 +57,19 @@ VALIDATION_SPECS = [
         "material_variant_type": 3,
     },
     {
+        "name": "NoPreview_Combined_ClassicGrass_GroundOnly_GroundDense_CompactSolo_MaterialLeafWarm",
+        "ecosystem_mode": 3,
+        "visual_style_type": 1,
+        "profile_mode": 1,
+        "ground_amount_type": 3,
+        "ditch_amount_type": 2,
+        "tree_style_type": 1,
+        "tree_amount_type": 1,
+        "material_domain_type": 1,
+        "material_variant_type": 3,
+        "generate_material_preview": False,
+    },
+    {
         "name": "StyleOnly_SmallRocks_DitchOnly_DitchNormal_MaterialLeafWarm",
         "ecosystem_mode": 1,
         "visual_style_type": 5,
@@ -222,6 +235,19 @@ def set_int_property(actor, prop_name, value):
     actor.set_editor_property(prop_name, int(value))
 
 
+def set_bool_property(actor, prop_name, value):
+    actor.set_editor_property(prop_name, bool(value))
+
+
+def get_bool_property(actor, prop_names, default_value=True):
+    for prop_name in prop_names:
+        try:
+            return bool(actor.get_editor_property(prop_name))
+        except Exception:
+            pass
+    return bool(default_value)
+
+
 def normalized_style_axes(spec):
     profile_mode = int(spec["profile_mode"])
     ground_type = int(spec["ground_amount_type"])
@@ -381,6 +407,7 @@ def spawn_selector_actor(spec, index, menu_module):
             "MaterialVariantType": "material_variant_type",
         }[prop_name]
         set_int_property(actor, prop_name, spec.get(snake_key, spec.get(key)))
+    set_bool_property(actor, "GenerateMaterialPreview", spec.get("generate_material_preview", True))
     configure_validation_spline(actor)
     apply_result = menu_module.apply_ecosystem_selector(actor, force=True)
     return actor, apply_result
@@ -425,13 +452,19 @@ def validate_selector(spec, style_config, tree_config, material_config, menu_mod
         material_config,
         menu_module,
     )
+    expected_generate_material_preview = bool(spec.get("generate_material_preview", True))
+    actual_generate_material_preview = get_bool_property(
+        actor,
+        ("GenerateMaterialPreview", "generatematerialpreview"),
+        True,
+    )
     style_active = int(spec["ecosystem_mode"]) in (1, 3)
     tree_active = int(spec["ecosystem_mode"]) in (2, 3)
     style_true_material_route = expected_style_graph != default_style_graph
     tree_true_material_route = expected_tree_graph != default_tree_graph
     expected_style_points = style_spec["expected_points"] if style_active else 0
     expected_tree_points = tree_spec["expected_points"] if tree_active else 0
-    expected_material_points = material_spec["expected_points"]
+    expected_material_points = material_spec["expected_points"] if expected_generate_material_preview else 0
     style_points = get_generated_point_count(style_component)
     tree_points = get_generated_point_count(tree_component)
     material_points = get_generated_point_count(material_component)
@@ -442,7 +475,7 @@ def validate_selector(spec, style_config, tree_config, material_config, menu_mod
     material_ism = count_instances_for_meshes(ism_rows, material_mesh_paths)
     expected_style_ism = style_spec["expected_ism"] if style_active else 0
     expected_tree_ism = tree_spec["expected_ism"] if tree_active else 0
-    expected_material_ism = material_spec["expected_ism"]
+    expected_material_ism = material_spec["expected_ism"] if expected_generate_material_preview else 0
     style_mesh_disjoint_from_material = meshes_are_disjoint(style_spec["mesh_paths"], material_mesh_paths)
     tree_mesh_disjoint_from_material = meshes_are_disjoint(tree_spec["mesh_paths"], material_mesh_paths)
     style_ism_check_required = style_mesh_disjoint_from_material
@@ -455,13 +488,18 @@ def validate_selector(spec, style_config, tree_config, material_config, menu_mod
     tree_ism_check_pass = (not tree_ism_check_required) or tree_ism == expected_tree_ism
     material_ism_check_pass = (not material_ism_check_required) or material_ism == expected_material_ism
     material_point_check_pass = material_points == expected_material_points
-    material_dynamic_metadata_relaxed = expected_material_graph_mode == "dynamic_actor_property"
+    material_dynamic_metadata_relaxed = (
+        expected_generate_material_preview
+        and expected_material_graph_mode == "dynamic_actor_property"
+    )
     if material_dynamic_metadata_relaxed:
         material_point_check_pass = True
+    material_preview_enabled_check = actual_generate_material_preview == expected_generate_material_preview
     validation_pass = all([
         style_graph_path == expected_style_graph,
         tree_graph_path == expected_tree_graph,
         material_graph_path == expected_material_graph,
+        material_preview_enabled_check,
         style_points == expected_style_points,
         tree_points == expected_tree_points,
         material_point_check_pass,
@@ -473,6 +511,8 @@ def validate_selector(spec, style_config, tree_config, material_config, menu_mod
         "ecosystem": spec["name"],
         "actor": label,
         "ecosystem_mode": spec["ecosystem_mode"],
+        "generate_material_preview": actual_generate_material_preview,
+        "expected_generate_material_preview": expected_generate_material_preview,
         "style_graph": style_graph_path,
         "expected_style_graph": expected_style_graph,
         "tree_graph": tree_graph_path,
@@ -497,6 +537,7 @@ def validate_selector(spec, style_config, tree_config, material_config, menu_mod
         "style_ism_check_required": style_ism_check_required,
         "tree_ism_check_required": tree_ism_check_required,
         "material_ism_check_required": material_ism_check_required,
+        "material_preview_enabled_check": material_preview_enabled_check,
         "material_dynamic_metadata_relaxed": material_dynamic_metadata_relaxed,
         "ism_rows": ism_rows,
         "validation_pass": validation_pass,
@@ -540,6 +581,8 @@ def main():
         print(f"ecosystem={result['ecosystem']}")
         print(f"  actor={result['actor']}")
         print(f"  ecosystem_mode={result['ecosystem_mode']}")
+        print(f"  generate_material_preview={result['generate_material_preview']}")
+        print(f"  expected_generate_material_preview={result['expected_generate_material_preview']}")
         print(f"  style_graph={result['style_graph']}")
         print(f"  expected_style_graph={result['expected_style_graph']}")
         print(f"  tree_graph={result['tree_graph']}")
@@ -564,6 +607,7 @@ def main():
         print(f"  style_ism_check_required={result['style_ism_check_required']}")
         print(f"  tree_ism_check_required={result['tree_ism_check_required']}")
         print(f"  material_ism_check_required={result['material_ism_check_required']}")
+        print(f"  material_preview_enabled_check={result['material_preview_enabled_check']}")
         print(f"  material_dynamic_metadata_relaxed={result['material_dynamic_metadata_relaxed']}")
         print(f"  ism_rows={result['ism_rows']}")
         print(f"  validation_pass={result['validation_pass']}")
