@@ -8,6 +8,8 @@ Approve or reject creating the first isolated production candidate package:
 
 `/Game/Cubeless/PCG/ProductionCandidates/`
 
+Decision status: approved and implemented on 2026-06-09.
+
 This approval would allow creating new Unreal assets in that package only. It
 would not approve touching `RuntimeGrass`, `NewPCGGraph`, original Electric
 Dreams assets, existing placed production actors, or non-exception C++.
@@ -77,6 +79,7 @@ noise.
 | PCG generation output is delayed in editor validation | Medium | Use prepare/verify split, same as ecosystem selector validation |
 | Candidate accidentally mutates production graph assets | High | Write only under `ProductionCandidates`; do not touch runtime graph paths |
 | User wants different art direction presets | Medium | Preset mapping is a first pass and can be changed without altering learning assets |
+| Candidate needs validation in the final production level before runtime promotion | Medium | StaticMesh surface and disposable Landscape validation now pass; run a final level-specific check before touching runtime graph assets |
 
 ## Approval Phrase
 

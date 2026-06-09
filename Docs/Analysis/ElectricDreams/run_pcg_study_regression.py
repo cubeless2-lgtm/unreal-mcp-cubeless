@@ -84,6 +84,41 @@ REGRESSION_STEPS = [
         "ecosystem_selector_verify",
         "verify_cubeless_ed_ecosystem_selector_blueprint.py",
     ),
+    (
+        "build",
+        "production_candidate_prepare",
+        "prepare_cubeless_pcg_production_candidate_validation.py",
+    ),
+    (
+        "verify",
+        "production_candidate_verify",
+        "verify_cubeless_pcg_production_candidate_blueprint.py",
+    ),
+    (
+        "build",
+        "runtime_candidate_promote",
+        "promote_cubeless_pcg_runtime_candidate_blueprint.py",
+    ),
+    (
+        "build",
+        "runtime_candidate_prepare",
+        "prepare_cubeless_pcg_runtime_candidate_validation.py",
+    ),
+    (
+        "verify",
+        "runtime_candidate_verify",
+        "verify_cubeless_pcg_runtime_candidate_blueprint.py",
+    ),
+    (
+        "verify",
+        "ecosystem_field_level_verify",
+        "verify_cubeless_pcg_ecosystem_field_level.py",
+    ),
+    (
+        "verify",
+        "production_promotion_target_audit",
+        "audit_cubeless_pcg_production_promotion_targets.py",
+    ),
 ]
 
 

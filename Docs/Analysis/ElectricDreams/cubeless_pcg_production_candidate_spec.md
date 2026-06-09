@@ -38,6 +38,30 @@ Latest verified result:
 - Latest verification marker `log_error_count=0`
 - `GenerateMaterialPreview=False` case passed with material point/ISM output `0`
 
+Production candidate implementation result:
+
+- Candidate asset:
+  `/Game/Cubeless/PCG/ProductionCandidates/Blueprints/BP_Cubeless_PCG_EcosystemCandidate`
+- Production candidate validation actors: `12`
+- `production_candidate_validation_pass=True`
+- Latest production candidate verification marker `log_error_count=0`
+
+Landscape note:
+
+- The baseline validation does not require a Landscape because it verifies
+  candidate control mapping, graph routing, generated output counts, material
+  preview gating, and editor log cleanliness.
+- A follow-up direct Landscape validation now passes against:
+  `/Game/_MCP_Temp/PCG/LVL_PCG_LandscapeValidation_MCP`
+- Direct Landscape validation result:
+  `production_candidate_landscape_validation_pass=True`
+- The editor apply route includes a production-candidate Landscape conform pass
+  for generated ISM output, with a delayed Slate-tick pass for PCG output that
+  appears after the initial apply call.
+- Promotion into `RuntimeGrass`, `NewPCGGraph`, or a real production level is
+  still a separate approval gate because it would touch production placement or
+  runtime graph assets.
+
 ## Production Candidate Boundary
 
 The first production candidate should be created under a new isolated package

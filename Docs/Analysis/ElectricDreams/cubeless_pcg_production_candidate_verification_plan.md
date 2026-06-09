@@ -156,6 +156,65 @@ Use this order when debugging failures:
 6. ISM count ambiguity caused by overlapping mesh families.
 7. Actual editor log errors after the marker.
 
+## Surface-Fitting Follow-Up
+
+The first candidate validation does not require a Landscape. It verifies the
+candidate actor surface, graph routing, generated output counts, material
+preview gating, and editor log cleanliness.
+
+Before promoting the candidate into a real production level or runtime graph,
+add a separate surface-fitting validation using either a target production
+surface or a disposable `_MCP_Temp` test surface. That follow-up should verify:
+
+- projection or sampling onto the target surface
+- height placement and ground contact
+- slope behavior
+- collision assumptions
+- whether the candidate still behaves correctly when placed in a real level
+  context
+
+StaticMesh plane smoke status:
+
+- Added on 2026-06-09.
+- `production_candidate_surface_validation_pass=True`
+- `surface_out_of_bounds_count=0`
+- `surface_z_out_of_range_count=0`
+- Total generated instances checked: `148`
+
+Landscape direct validation status:
+
+- Added on 2026-06-09 after the user provided a disposable Landscape map:
+  `/Game/_MCP_Temp/PCG/LVL_PCG_LandscapeValidation_MCP`.
+- `prepare_cubeless_pcg_production_candidate_landscape_validation.py`
+- `verify_cubeless_pcg_production_candidate_landscape_validation.py`
+- Landscape actors found: `65`
+- Candidate cases checked: `4`
+- `production_candidate_landscape_validation_pass=True`
+- Latest marker `log_error_count=0`
+
+Landscape direct checks cover:
+
+- trace hit against Landscape or LandscapeStreamingProxy
+- route validation for each candidate preset/override case
+- generated instance contact against the Landscape surface
+- XY containment around the actor placement
+- height tolerance against traced Landscape Z
+- slope sampling on flat and sloped terrain
+
+The project menu apply route now includes a production-candidate Landscape
+conform pass for generated ISM output. It runs immediately and schedules a
+short retry window to handle delayed PCG output. Repeated conform must use a
+cached original vertical offset per generated instance; otherwise a second
+conform pass can apply an already-adjusted Z delta again on sloped terrain.
+
+MCP map-load safety:
+
+- Before switching validation maps inside Unreal Python, clear Python exception
+  state, run Python GC, and request Unreal GC.
+- This avoids retaining dirty `_MCP_Temp` map packages through Python traceback
+  or UObject references while `LevelEditorSubsystem.load_level` is trying to
+  clean up the previous world.
+
 ## Approval Blocker
 
 This plan is ready for implementation, but actual implementation requires
