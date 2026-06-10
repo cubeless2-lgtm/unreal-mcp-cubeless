@@ -7,6 +7,7 @@ SCRIPT_DIR = pathlib.Path(__file__).resolve().parent
 SUPPRESS_FINAL_RAISE = bool(globals().get("PCG_STUDY_REGRESSION_SUPPRESS_FINAL_RAISE", False))
 REGRESSION_PHASE = str(globals().get("PCG_STUDY_REGRESSION_PHASE", "all"))
 REGRESSION_STEP_FILTER = str(globals().get("PCG_STUDY_REGRESSION_STEP", ""))
+AUTO_REGRESSION_PHASES = {"build", "verify"}
 
 REGRESSION_STEPS = [
     (
@@ -116,6 +117,41 @@ REGRESSION_STEPS = [
     ),
     (
         "verify",
+        "ecosystem_field_topdown_qa",
+        "export_cubeless_pcg_ecosystem_field_topdown_qa.py",
+    ),
+    (
+        "build",
+        "ecosystem_tuning_gallery_prepare",
+        "prepare_cubeless_pcg_ecosystem_tuning_gallery.py",
+    ),
+    (
+        "verify",
+        "ecosystem_tuning_gallery_verify",
+        "verify_cubeless_pcg_ecosystem_tuning_gallery.py",
+    ),
+    (
+        "build",
+        "intent_gallery_prepare",
+        "prepare_cubeless_pcg_intent_gallery.py",
+    ),
+    (
+        "verify",
+        "intent_gallery_verify",
+        "verify_cubeless_pcg_intent_gallery.py",
+    ),
+    (
+        "deferred_prepare",
+        "runtime_road_native_smoke_prepare",
+        "prepare_cubeless_pcg_runtime_road_native_smoke.py",
+    ),
+    (
+        "deferred_verify",
+        "runtime_road_native_smoke_verify",
+        "verify_cubeless_pcg_runtime_road_native_smoke.py",
+    ),
+    (
+        "verify",
         "production_promotion_target_audit",
         "audit_cubeless_pcg_production_promotion_targets.py",
     ),
@@ -148,6 +184,10 @@ def main():
             "regression_phase_note=all runs build and verify in one Unreal Python call; "
             "use separate build then verify phases when generated graph output is delayed"
         )
+        print(
+            "regression_deferred_note=deferred_prepare/deferred_verify steps are skipped "
+            "by all unless explicitly requested by phase or step filter"
+        )
     results = []
     failures = []
     started = time.perf_counter()
@@ -155,7 +195,15 @@ def main():
     selected_steps = [
         (phase, step_name, relative_script)
         for phase, step_name, relative_script in REGRESSION_STEPS
-        if REGRESSION_PHASE == "all" or phase == REGRESSION_PHASE
+        if (
+            (REGRESSION_PHASE == "all" and phase in AUTO_REGRESSION_PHASES)
+            or phase == REGRESSION_PHASE
+            or (
+                REGRESSION_PHASE == "all"
+                and REGRESSION_STEP_FILTER
+                and (step_name == REGRESSION_STEP_FILTER or relative_script == REGRESSION_STEP_FILTER)
+            )
+        )
     ]
     if REGRESSION_STEP_FILTER:
         selected_steps = [

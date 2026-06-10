@@ -290,17 +290,121 @@ Regression coverage:
   `ecosystem_field_level_verify|PASS|0.194s`,
   `pcg_study_regression_pass=True`.
 
+## Tuning Gallery And Tuned Field Layout
+
+After the checkpoint, a disposable tuning gallery was created under:
+
+`/Game/_MCP_Temp/PCG/LVL_Cubeless_PCG_TuningGallery_MCP`
+
+Gallery result:
+
+- `9` candidate cases
+- `324` total instances
+- `trace_miss_count=0`
+- `height_fail_count=0`
+- `xy_fail_count=0`
+- latest marker `log_error_count=0`
+
+The best balanced field direction was then expanded after visual QA showed the
+four-actor version was still too small. The saved field level now uses a
+ten-actor broad patch:
+
+| Actor | Role | Instances |
+| --- | --- | ---: |
+| `Cubeless_PCG_EcosystemRuntime_DenseMeadowWest` | dense meadow west row | 101 |
+| `Cubeless_PCG_EcosystemRuntime_DenseMeadowCenter` | dense meadow center | 101 |
+| `Cubeless_PCG_EcosystemRuntime_DenseMeadowEast` | dense meadow east row | 101 |
+| `Cubeless_PCG_EcosystemRuntime_GroundFoliageSouthWestWarm` | warm low foliage southwest row | 58 |
+| `Cubeless_PCG_EcosystemRuntime_GroundFoliageSouthWarm` | warm low foliage and flowers | 58 |
+| `Cubeless_PCG_EcosystemRuntime_GroundFoliageSouthEastWarm` | warm low foliage southeast row | 58 |
+| `Cubeless_PCG_EcosystemRuntime_RockyCoolEdgeEastNorth` | cool rocky north-east accent | 3 |
+| `Cubeless_PCG_EcosystemRuntime_RockyCoolEdgeEastSouth` | cool rocky south-east accent | 3 |
+| `Cubeless_PCG_EcosystemRuntime_ConiferGroveNorthWest` | light conifer edge | 29 |
+| `Cubeless_PCG_EcosystemRuntime_ConiferGroveNorthEast` | light conifer edge | 29 |
+
+Tuned field result:
+
+- `field_total_instances=541`
+- top-down QA bounds: `44.2m x 23.0m`
+- top-down QA category counts:
+  `300` meadow grass, `174` warm foliage/flowers, `61` conifer, and `6` rock
+- `trace_miss_count=0`
+- `height_fail_count=0`
+- `xy_fail_count=0`
+- latest marker `log_error_count=0`
+- `field_layout_refine_saved=True`
+- `dirty_after_save=[]`
+- read-only regression:
+  `ecosystem_field_level_verify|PASS|0.328s`
+- top-down QA regression:
+  `ecosystem_field_topdown_qa|PASS|0.114s`
+
+Additional scripts:
+
+- `prepare_cubeless_pcg_ecosystem_tuning_gallery.py`
+- `verify_cubeless_pcg_ecosystem_tuning_gallery.py`
+- `prepare_cubeless_pcg_ecosystem_field_tuned_layout.py`
+- `verify_save_cubeless_pcg_ecosystem_field_tuned_layout.py`
+- `export_cubeless_pcg_ecosystem_field_topdown_qa.py`
+- `run_pcg_study_regression.py` includes `ecosystem_field_topdown_qa`
+
+Result docs:
+
+- `cubeless_pcg_ecosystem_tuning_gallery_result.md`
+- `cubeless_pcg_ecosystem_field_tuned_layout_result.md`
+
+QA artifacts are written under:
+
+`D:\Git\CubelessStylized\Saved\MCP_Screenshots`
+
+## Intent Gallery
+
+An intent-based staging layer was added so a user-facing request can map to a
+validated PCG recipe before production levels are edited.
+
+Temp gallery:
+
+`/Game/_MCP_Temp/PCG/LVL_Cubeless_PCG_IntentGallery_MCP`
+
+First supported intents:
+
+| Intent | Meaning |
+| --- | --- |
+| `MeadowPatch` | dense mixed meadow |
+| `FlowerBand` | warm low foliage and flowers |
+| `RockEdge` | cool sparse rocks for borders |
+| `ConiferEdge` | light conifer edge |
+| `BalancedEcosystem` | meadow + flowers + rocks + conifer edge |
+
+Intent gallery validation:
+
+- `intent_gallery_actor_count=9`
+- `field_total_instances=483`
+- `trace_miss_count=0`
+- `height_fail_count=0`
+- `xy_fail_count=0`
+- latest marker `log_error_count=0`
+- `dirty_after_save=[]`
+- regression runner:
+  `intent_gallery_verify|PASS|0.328s`
+
+Additional scripts:
+
+- `prepare_cubeless_pcg_intent_gallery.py`
+- `verify_cubeless_pcg_intent_gallery.py`
+
+Result doc:
+
+- `cubeless_pcg_intent_gallery_result.md`
+
 ## Recommended Next Gate
 
 Recommended path:
 
-1. Commit the isolated candidate, runtime Blueprint, field level, and validation
-   tooling as a checkpoint.
-2. Visual-review `/Game/Cubeless/Map/LVL_Cubeless_PCG_Ecosystem_Field` in the
+1. Visual-review `/Game/Cubeless/Map/LVL_Cubeless_PCG_Ecosystem_Field` in the
    editor.
-3. If the look is acceptable, tune preset/density/material controls on the saved
-   runtime actor or add additional approved runtime actors.
-4. If the look is not acceptable, duplicate the field level or adjust the
+2. If the look is acceptable, commit and push the tuned field checkpoint.
+3. If the look is not acceptable, duplicate the field level or adjust the
    runtime actor in a new staging pass before saving more production changes.
 
 ## Approval Required

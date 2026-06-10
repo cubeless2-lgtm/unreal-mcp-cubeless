@@ -7,7 +7,7 @@ SCRIPT_DIR = pathlib.Path(
         r"D:\Git\unreal-mcp-cubeless\Docs\Analysis\ElectricDreams\verify_cubeless_pcg_ecosystem_field_level.py",
     )
 ).parent
-FIELD_VERIFY_SCRIPT = SCRIPT_DIR / "verify_save_cubeless_pcg_ecosystem_field_layout_refine.py"
+FIELD_VERIFY_SCRIPT = SCRIPT_DIR / "verify_save_cubeless_pcg_ecosystem_field_tuned_layout.py"
 
 
 def main():
