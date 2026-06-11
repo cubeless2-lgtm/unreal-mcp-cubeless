@@ -172,19 +172,19 @@ for actor in actors:
                 method()
                 called.append(method_name)
             except Exception as exc:
-                errors.append({
+                errors.append({{
                     "actor": label,
                     "component": component.get_name(),
                     "method": method_name,
                     "error": str(exc),
-                })
-        processed.append({
+                }})
+        processed.append({{
             "actor": label,
             "component": component.get_name(),
             "component_class": class_name,
             "called_methods": called,
-        })
-RESULT = {"success": True, "count": len(processed), "processed": processed, "errors": errors}
+        }})
+RESULT = {{"success": True, "count": len(processed), "processed": processed, "errors": errors}}
 """
         return _run_unreal_python_json(code)
 
@@ -240,13 +240,13 @@ for actor in actors:
             except Exception:
                 pass
         if component_changes:
-            changed.append({
+            changed.append({{
                 "actor": label,
                 "component": component.get_name(),
                 "component_class": class_name,
                 "properties": component_changes,
-            })
-RESULT = {"success": True, "count": len(changed), "changed": changed, "errors": errors}
+            }})
+RESULT = {{"success": True, "count": len(changed), "changed": changed, "errors": errors}}
 """
         return _run_unreal_python_json(code)
 
@@ -276,8 +276,8 @@ for asset_data in assets:
         if asset and unreal.EditorAssetLibrary.save_loaded_asset(asset):
             saved.append(package_name)
     except Exception as exc:
-        errors.append({"asset": package_name, "error": str(exc)})
-RESULT = {"success": True, "count": len(saved), "saved": saved, "errors": errors}
+        errors.append({{"asset": package_name, "error": str(exc)}})
+RESULT = {{"success": True, "count": len(saved), "saved": saved, "errors": errors}}
 """
         return _run_unreal_python_json(code)
 

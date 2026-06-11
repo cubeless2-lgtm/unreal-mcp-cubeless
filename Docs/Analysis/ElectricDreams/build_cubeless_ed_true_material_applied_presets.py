@@ -21,6 +21,8 @@ LEVEL = "/Game/_MCP_Temp/PCG/LVL_ElectricDreams_SplineAssembly_MCP"
 ACTOR_LABEL_PREFIX = "MCP_Cubeless_ED_TrueMaterialApplied"
 TARGET_SAMPLE_COUNT = 6
 TARGET_POINT_SPACING = 320.0
+DYNAMIC_MESH_ATTR = "DynamicMeshPath"
+OVERRIDE_TRUE_ATTR = "MeshOverrideTrue"
 
 STYLE_DOMAIN_BY_STYLE_TYPE = {
     4: 1,
@@ -221,6 +223,119 @@ def configure_spawner_with_overrides(node, mesh_paths, override_map):
     params.set_editor_property("mesh_entries", entries)
 
 
+def selector_import(settings, prop, text):
+    selector = settings.get_editor_property(prop)
+    selector.import_text(f"PCGBegin({text})PCGEnd")
+    settings.set_editor_property(prop, selector)
+
+
+def configure_get_actor_property(node, property_name, output_attr):
+    settings = node.get_settings()
+    settings.set_editor_property("property_name", property_name)
+    settings.set_editor_property("always_requery_actors", True)
+    settings.set_editor_property("sanitize_output_attribute_name", True)
+    selector_import(settings, "output_attribute_name", output_attr)
+
+
+def configure_actor_bool_filter(node, use_property_name):
+    settings = node.get_settings()
+    settings.set_editor_property("operator", unreal.PCGAttributeFilterOperator.EQUAL)
+    settings.set_editor_property("use_constant_threshold", False)
+    settings.set_editor_property("use_spatial_query", False)
+    selector_import(settings, "target_attribute", OVERRIDE_TRUE_ATTR)
+    selector_import(settings, "threshold_attribute", use_property_name)
+    settings.set_editor_property("warn_on_data_missing_attribute", False)
+    settings.set_editor_property("generate_output_data_even_if_empty", True)
+
+
+def configure_copy_actor_mesh(node, source_attr, target_attr=DYNAMIC_MESH_ATTR):
+    settings = node.get_settings()
+    settings.set_editor_property("copy_all_attributes", False)
+    settings.set_editor_property("copy_all_domains", False)
+    selector_import(settings, "input_source", source_attr)
+    selector_import(settings, "output_target", target_attr)
+
+
+def configure_by_attribute_spawner(node):
+    settings = node.get_settings()
+    settings.set_editor_property("allow_descriptor_changes", True)
+    settings.set_mesh_selector_type(unreal.PCGMeshSelectorByAttribute.static_class())
+    params = settings.get_editor_property("mesh_selector_parameters")
+    params.set_editor_property("attribute_name", DYNAMIC_MESH_ATTR)
+    params.set_editor_property("use_attribute_material_overrides", False)
+    params.set_editor_property("material_override_attributes", [])
+
+
+def add_true_material_mesh_override_switch(
+    graph,
+    upstream,
+    domain_name,
+    use_property,
+    mesh_property,
+    mesh_paths,
+    override_map,
+    x,
+    y,
+):
+    flag = add_node(graph, unreal.PCGAddAttributeSettings, f"{domain_name} Override Flag True", x, y)
+    STYLE_CONFIG["configure_add"](
+        flag,
+        OVERRIDE_TRUE_ATTR,
+        "@Last",
+        unreal.PCGMetadataTypes.BOOLEAN,
+        True,
+    )
+
+    get_use = add_node(graph, unreal.PCGGetActorPropertySettings, f"Get Actor {use_property}", x, y - 280)
+    configure_get_actor_property(get_use, use_property, use_property)
+
+    split = add_node(graph, unreal.PCGAttributeFilteringSettings, f"Split {domain_name} Mesh Override", x + 340, y)
+    configure_actor_bool_filter(split, use_property)
+
+    original_spawner = add_node(
+        graph,
+        unreal.PCGStaticMeshSpawnerSettings,
+        f"Spawn {domain_name} TrueMaterial Default",
+        x + 700,
+        y + 120,
+    )
+    configure_spawner_with_overrides(original_spawner, mesh_paths, override_map)
+
+    get_mesh = add_node(graph, unreal.PCGGetActorPropertySettings, f"Get Actor {mesh_property}", x + 700, y - 280)
+    configure_get_actor_property(get_mesh, mesh_property, mesh_property)
+
+    copy_mesh = add_node(
+        graph,
+        unreal.PCGCopyAttributesSettings,
+        f"Copy {mesh_property} To {DYNAMIC_MESH_ATTR}",
+        x + 1040,
+        y - 120,
+    )
+    configure_copy_actor_mesh(copy_mesh, mesh_property, DYNAMIC_MESH_ATTR)
+
+    override_spawner = add_node(
+        graph,
+        unreal.PCGStaticMeshSpawnerSettings,
+        f"Spawn {domain_name} ByActorMeshOverride",
+        x + 1380,
+        y - 120,
+    )
+    configure_by_attribute_spawner(override_spawner)
+
+    merge = add_node(graph, unreal.PCGMergeSettings, f"Merge {domain_name} Mesh Override Result", x + 1760, y)
+
+    graph.add_edge(upstream, "Out", flag, "In")
+    graph.add_edge(flag, "Out", split, "In")
+    graph.add_edge(get_use, "Out", split, "Filter")
+    graph.add_edge(split, "OutsideFilter", original_spawner, "In")
+    graph.add_edge(split, "InsideFilter", copy_mesh, "Target")
+    graph.add_edge(get_mesh, "Out", copy_mesh, "Source")
+    graph.add_edge(copy_mesh, "Out", override_spawner, "In")
+    graph.add_edge(original_spawner, "Out", merge, "In")
+    graph.add_edge(override_spawner, "Out", merge, "In")
+    return merge
+
+
 def build_true_style_amount_graph(profile_key, amount, style, variant_type):
     asset_name = true_style_amount_asset_name(profile_key, amount, style, variant_type)
     graph = ensure_graph(TRUE_STYLE_AMOUNT_PACKAGE, asset_name)
@@ -249,10 +364,22 @@ def build_true_style_amount_graph(profile_key, amount, style, variant_type):
     markers = STYLE_CONFIG["add_profile_amount_style_markers"](graph, upstream, amount, style, x, 0)
     domain_type = STYLE_DOMAIN_BY_STYLE_TYPE[style["style_type"]]
     material_markers = add_true_material_markers(graph, markers, domain_type, variant_type, x + 2240, 0)
-    spawner = add_node(graph, unreal.PCGStaticMeshSpawnerSettings, f"Spawn TrueMaterial {style['name']}", x + 5000, 0)
-    configure_spawner_with_overrides(spawner, style["mesh_paths"], material_override_map_for_style(style, variant_type))
-    graph.add_edge(material_markers, "Out", spawner, "In")
-    graph.add_edge(spawner, "Out", graph.get_output_node(), "Out")
+    style_type = int(style["style_type"])
+    domain_name = "Rock" if style_type == 5 else "Grass"
+    use_property = "UseRockMeshOverride" if style_type == 5 else "UseGrassMeshOverride"
+    mesh_property = "RockMeshOverride" if style_type == 5 else "GrassMeshOverride"
+    merged = add_true_material_mesh_override_switch(
+        graph,
+        material_markers,
+        domain_name,
+        use_property,
+        mesh_property,
+        style["mesh_paths"],
+        material_override_map_for_style(style, variant_type),
+        x + 5000,
+        0,
+    )
+    graph.add_edge(merged, "Out", graph.get_output_node(), "Out")
     unreal.EditorAssetLibrary.save_loaded_asset(graph)
     return graph
 
@@ -318,10 +445,18 @@ def build_true_tree_graph(tree_spec, variant_type):
     tree_markers = TREE_CONFIG["add_tree_markers"](graph, source, tree_spec, -820, 0)
     domain_type = TREE_DOMAIN_BY_STYLE_TYPE[tree_spec["style_type"]]
     material_markers = add_true_material_markers(graph, tree_markers, domain_type, variant_type, 2600, 0)
-    spawner = add_node(graph, unreal.PCGStaticMeshSpawnerSettings, f"Spawn TrueMaterial {tree_spec['name']}", 5300, 0)
-    configure_spawner_with_overrides(spawner, tree_spec["mesh_paths"], material_override_map_for_tree(tree_spec, variant_type))
-    graph.add_edge(material_markers, "Out", spawner, "In")
-    graph.add_edge(spawner, "Out", graph.get_output_node(), "Out")
+    merged = add_true_material_mesh_override_switch(
+        graph,
+        material_markers,
+        "Tree",
+        "UseTreeMeshOverride",
+        "TreeMeshOverride",
+        tree_spec["mesh_paths"],
+        material_override_map_for_tree(tree_spec, variant_type),
+        5300,
+        0,
+    )
+    graph.add_edge(merged, "Out", graph.get_output_node(), "Out")
     unreal.EditorAssetLibrary.save_loaded_asset(graph)
     return graph
 

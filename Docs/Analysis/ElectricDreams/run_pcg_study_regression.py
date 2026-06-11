@@ -151,6 +151,16 @@ REGRESSION_STEPS = [
         "verify_cubeless_pcg_runtime_road_native_smoke.py",
     ),
     (
+        "deferred_prepare",
+        "runtime_actor_property_override_prepare",
+        "prepare_cubeless_pcg_runtime_actor_property_override_validation.py",
+    ),
+    (
+        "deferred_verify",
+        "runtime_actor_property_override_verify",
+        "verify_cubeless_pcg_runtime_actor_property_override_validation.py",
+    ),
+    (
         "verify",
         "production_promotion_target_audit",
         "audit_cubeless_pcg_production_promotion_targets.py",
