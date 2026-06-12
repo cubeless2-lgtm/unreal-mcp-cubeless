@@ -152,6 +152,16 @@ REGRESSION_STEPS = [
     ),
     (
         "deferred_prepare",
+        "runtime_road_native_shape_suite_prepare",
+        "prepare_cubeless_pcg_runtime_road_native_shape_suite.py",
+    ),
+    (
+        "deferred_verify",
+        "runtime_road_native_shape_suite_verify",
+        "verify_cubeless_pcg_runtime_road_native_shape_suite.py",
+    ),
+    (
+        "deferred_prepare",
         "runtime_actor_property_override_prepare",
         "prepare_cubeless_pcg_runtime_actor_property_override_validation.py",
     ),
@@ -159,6 +169,51 @@ REGRESSION_STEPS = [
         "deferred_verify",
         "runtime_actor_property_override_verify",
         "verify_cubeless_pcg_runtime_actor_property_override_validation.py",
+    ),
+    (
+        "deferred_prepare",
+        "pcg_closed_spline_grass_area_prepare",
+        "prepare_cubeless_pcg_closed_spline_grass_area.py",
+    ),
+    (
+        "deferred_verify",
+        "pcg_closed_spline_grass_area_verify",
+        "verify_cubeless_pcg_closed_spline_grass_area.py",
+    ),
+    (
+        "deferred_prepare",
+        "pcg_spline_intent_coexistence_prepare",
+        "prepare_cubeless_pcg_spline_intent_coexistence.py",
+    ),
+    (
+        "deferred_verify",
+        "pcg_spline_intent_coexistence_verify",
+        "verify_cubeless_pcg_spline_intent_coexistence.py",
+    ),
+    (
+        "deferred_prepare",
+        "pcg_block_tag_staticmesh_exclusion_prepare",
+        "prepare_cubeless_pcg_block_tag_staticmesh_exclusion.py",
+    ),
+    (
+        "deferred_verify",
+        "pcg_block_tag_staticmesh_exclusion_verify",
+        "verify_cubeless_pcg_block_tag_staticmesh_exclusion.py",
+    ),
+    (
+        "deferred_prepare",
+        "pcg_closed_grass_mesh_override_prepare",
+        "prepare_cubeless_pcg_closed_grass_mesh_actor_property_override.py",
+    ),
+    (
+        "deferred_verify",
+        "pcg_closed_grass_mesh_override_verify",
+        "verify_cubeless_pcg_closed_grass_mesh_actor_property_override.py",
+    ),
+    (
+        "verify",
+        "static_mesh_spawner_actor_property_audit_verify",
+        "verify_cubeless_pcg_static_mesh_spawner_actor_property_audit.py",
     ),
     (
         "verify",

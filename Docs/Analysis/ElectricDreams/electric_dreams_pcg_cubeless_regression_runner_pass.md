@@ -148,6 +148,41 @@ The disposable Cubeless PCG study suite now has a reusable regression runner and
 
 This gives a pre-production safety gate before moving any PCG controls outside `_MCP_Temp`.
 
+## 2026-06-12 StaticMeshSpawner Actor Property Audit Gate
+
+The runner now includes:
+
+```text
+static_mesh_spawner_actor_property_audit_verify
+```
+
+This wrapper executes the project audit script:
+
+```text
+D:\Git\CubelessStylized\Tools\Unreal\audit_pcg_static_mesh_spawner_actor_property_overrides.py
+```
+
+Gate conditions:
+
+- audit policy loads successfully
+- `actionable_graphs_needing_actor_property_review=0`
+- `actionable_review_spawner_count=0`
+- `production_graphs_needing_actor_property_review=0`
+- `production_review_spawner_count=0`
+- `cleanup_candidate_graph_count=0` after the 2026-06-12 archive cleanup
+- `cleanup_candidate_spawner_count=0` after the 2026-06-12 archive cleanup
+
+Latest targeted runner evidence:
+
+```text
+PCG_STUDY_REGRESSION_PHASE=verify
+PCG_STUDY_REGRESSION_STEP=static_mesh_spawner_actor_property_audit_verify
+regression_step_result=static_mesh_spawner_actor_property_audit_verify|PASS|0.186s
+pcg_study_regression_pass=True
+```
+
+The 2026-06-12 cleanup pass archived the previously reported material override candidates under `/Game/Cubeless/_Archive/PCG_StaticMeshSpawnerActorPropertyAudit_20260612`. The empty `RuntimeGrass/NewPCGGraph` candidate was deleted after its archive copy produced a missing soft reference AssetCheck error. This runner step still does not delete, move, save, or archive Unreal assets; it only verifies the current audit state.
+
 ## Approval Boundary
 
 No approval is needed to keep adding `_MCP_Temp` regression cases.

@@ -57,6 +57,79 @@ Capture a screenshot of the viewport.
 }
 ```
 
+### list_viewport_bookmarks
+
+List bookmark slots for the active editor viewport.
+
+**Parameters:**
+- None
+
+**Returns:**
+- `max_bookmark_count`
+- `bookmarks` with per-slot `index` and `exists`
+- `existing_indices`
+- current `view_location` and `view_rotation`
+
+### capture_viewport_bookmark_screenshot
+
+Capture the active editor viewport to PNG, optionally after jumping to an existing bookmark slot. This uses the native UnrealMCP bridge path, not OS window capture, and does not overwrite bookmark data.
+
+**Parameters:**
+- `filepath` (string, required) - PNG output path
+- `bookmark_index` (integer, optional) - Bookmark slot to jump to before capture. Omit or use `-1` for the active viewport.
+- `redraw_count` (integer, optional) - Forced viewport draws before pixel readback, default `2`
+
+**Returns:**
+- `filepath`, `width`, `height`, `file_size_bytes`
+- `capture_mode`
+- `bookmark_requested`, `bookmark_exists`, `bookmark_index`
+- `view_location`, `view_rotation`
+- `dirty_package_count`, `dirty_packages`
+- `dirty_package_count_before`, `dirty_package_count_after`
+- `dirty_package_added_count`, `dirty_packages_added_by_command`
+- `dirty_package_removed_count`, `dirty_packages_removed_by_command`
+
+**Example:**
+```json
+{
+  "command": "capture_viewport_bookmark_screenshot",
+  "params": {
+    "bookmark_index": 1,
+    "filepath": "D:/Git/CubelessStylized/Saved/MCP_Screenshots/bookmark_1.png",
+    "redraw_count": 2
+  }
+}
+```
+
+### open_editor_level
+
+Safely preflight or open an editor level through the native UnrealMCP bridge. The default is `dry_run=true`, so the command reports target validity and blockers without changing the current map.
+
+**Parameters:**
+- `level_path` (string, required) - Long package path, object path, or `.umap` filename
+- `dry_run` (boolean, optional) - Validate only, default `true`
+- `allow_dirty_packages` (boolean, optional) - Allow a real transition while dirty packages exist, default `false`
+- `load_as_template` (boolean, optional) - Forwarded to `FEditorFileUtils::LoadMap`
+- `show_progress` (boolean, optional) - Forwarded to `FEditorFileUtils::LoadMap`
+
+**Returns:**
+- `target_long_package_name`, `target_filename`, `target_exists`
+- `current_world_package_name`, `already_open`
+- `can_load`, `blocked_reasons`
+- `dirty_package_count_before`, `dirty_packages_before`
+- `load_attempted`, `loaded`
+
+**Example:**
+```json
+{
+  "command": "open_editor_level",
+  "params": {
+    "level_path": "/Game/_MCP_Temp/PCG/LVL_PCG_LandscapeValidation_MCP",
+    "dry_run": true
+  }
+}
+```
+
 ## Error Handling
 
 All command responses include a "status" field indicating whether the operation succeeded, and an optional "message" field with details in case of failure.

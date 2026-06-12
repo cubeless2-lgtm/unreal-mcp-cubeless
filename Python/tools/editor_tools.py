@@ -307,6 +307,117 @@ def register_editor_tools(mcp: FastMCP):
             return {"status": "error", "message": str(e)}
 
     @mcp.tool()
+    def list_viewport_bookmarks(ctx: Context) -> Dict[str, Any]:
+        """
+        List bookmark slots available to the active editor viewport.
+
+        Returns:
+            Dict with max_bookmark_count, per-slot existence, existing_indices,
+            and the current viewport transform.
+        """
+        from unreal_mcp_server import get_unreal_connection
+
+        try:
+            unreal = get_unreal_connection()
+            if not unreal:
+                logger.error("Failed to connect to Unreal Engine")
+                return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+            response = unreal.send_command("list_viewport_bookmarks", {})
+            return response or {}
+
+        except Exception as e:
+            logger.error(f"Error listing viewport bookmarks: {e}")
+            return {"success": False, "message": str(e)}
+
+    @mcp.tool()
+    def capture_viewport_bookmark_screenshot(
+        ctx: Context,
+        filepath: str,
+        bookmark_index: int = -1,
+        redraw_count: int = 2,
+    ) -> Dict[str, Any]:
+        """
+        Capture the active editor viewport, optionally after jumping to a bookmark.
+
+        Args:
+            filepath: PNG output path.
+            bookmark_index: Bookmark slot to jump to before capture. Use -1 for active viewport.
+            redraw_count: Number of forced viewport draws before pixel readback, clamped by the bridge.
+
+        Returns:
+            Dict containing screenshot path, size, file size, capture mode, and viewport transform.
+        """
+        from unreal_mcp_server import get_unreal_connection
+
+        try:
+            unreal = get_unreal_connection()
+            if not unreal:
+                logger.error("Failed to connect to Unreal Engine")
+                return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+            params: Dict[str, Any] = {
+                "filepath": filepath,
+                "redraw_count": redraw_count,
+            }
+            if bookmark_index >= 0:
+                params["bookmark_index"] = bookmark_index
+
+            response = unreal.send_command("capture_viewport_bookmark_screenshot", params)
+            return response or {}
+
+        except Exception as e:
+            logger.error(f"Error capturing viewport screenshot: {e}")
+            return {"success": False, "message": str(e)}
+
+    @mcp.tool()
+    def open_editor_level(
+        ctx: Context,
+        level_path: str,
+        dry_run: bool = True,
+        allow_dirty_packages: bool = False,
+        load_as_template: bool = False,
+        show_progress: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Safely preflight or open an editor level through the native bridge.
+
+        Args:
+            level_path: Long package path, object path, or .umap filename.
+            dry_run: If true, only validate the transition and report blockers.
+            allow_dirty_packages: If false, block real transitions when dirty packages exist.
+            load_as_template: Forwarded to FEditorFileUtils::LoadMap for real loads.
+            show_progress: Forwarded to FEditorFileUtils::LoadMap for real loads.
+
+        Returns:
+            Dict with target path, current world, dirty package summary,
+            can_load, blocked_reasons, load_attempted, and loaded.
+        """
+        from unreal_mcp_server import get_unreal_connection
+
+        try:
+            unreal = get_unreal_connection()
+            if not unreal:
+                logger.error("Failed to connect to Unreal Engine")
+                return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+            response = unreal.send_command(
+                "open_editor_level",
+                {
+                    "level_path": level_path,
+                    "dry_run": dry_run,
+                    "allow_dirty_packages": allow_dirty_packages,
+                    "load_as_template": load_as_template,
+                    "show_progress": show_progress,
+                },
+            )
+            return response or {}
+
+        except Exception as e:
+            logger.error(f"Error opening editor level: {e}")
+            return {"success": False, "message": str(e)}
+
+    @mcp.tool()
     def spawn_blueprint_actor(
         ctx: Context,
         blueprint_name: str,

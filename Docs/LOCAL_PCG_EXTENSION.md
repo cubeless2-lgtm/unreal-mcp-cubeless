@@ -25,7 +25,9 @@ The extension deliberately avoids adding a separate C++ command for every TA ope
 - `Python/tools/python_tools.py`
   - Registers `execute_unreal_python`.
 - `Python/tools/pcg_tools.py`
-  - Registers PCG-focused automation tools.
+  - Registers PCG-focused automation tools. Fast PCG refresh and spline point sync use native UnrealMCP bridge commands first, with Unreal Python fallback for older running editor sessions.
+- `Python/tools/editor_tools.py`
+  - Adds native viewport bookmark listing, bookmark/active viewport screenshot wrappers for visual QA, and protected editor level transition preflight/opening.
 - `Python/tools/texture_generation.py`
   - Registers BaseColor-focused AI texture generation tools.
 - `Python/services/openai_image_service.py`
@@ -65,7 +67,11 @@ The extension deliberately avoids adding a separate C++ command for every TA ope
 - `execute_unreal_python(code, mode="ExecuteFile")`
 - `list_pcg_assets(root_path="/Game")`
 - `list_pcg_components()`
-- `refresh_pcg_components(actor_name="", selected_only=false)`
+- `refresh_pcg_components(actor_name="", selected_only=false, cleanup=true, generate=true, wait_until_complete=false, timeout_seconds=10.0, poll_interval_seconds=0.05, max_components=1000)`
+- `set_spline_component_points(points, actor_label="", actor_tag="", actor_label_prefix="", component_name="Road_SourceSpline", closed_loop=false)`
+- `list_viewport_bookmarks()`
+- `capture_viewport_bookmark_screenshot(filepath, bookmark_index=-1, redraw_count=2)`
+- `open_editor_level(level_path, dry_run=true, allow_dirty_packages=false, load_as_template=false, show_progress=true)`
 - `set_pcg_debug_enabled(enabled=false, actor_name="", selected_only=false)`
 - `resave_pcg_assets(root_path="/Game")`
 - `get_static_mesh_uv_layout(mesh_path, uv_channel=0, output_path="")`
@@ -82,7 +88,14 @@ The extension deliberately avoids adding a separate C++ command for every TA ope
 
 UE 5.7 multi-line scripts that include `import` statements should run through `ExecuteFile`. `ExecuteStatement` works for simple one-line commands but fails for the PCG helper's generated scripts.
 
-The PCG component operations are best-effort. Unreal PCG Python API details vary by engine version and project plugins, so the tools check class/property/method names dynamically instead of depending on a narrow API surface.
+The PCG component operations are native-first where a focused C++ bridge exists. `refresh_pcg_components` sends cleanup/refresh/generate requests through the C++ bridge and returns component state/readback without sleeping on the editor game thread. When `wait_until_complete=true`, the MCP Python tool polls the native command externally with `generate=false` until PCG busy state clears or the timeout expires. The Unreal Python fallback remains best-effort and does not block for completion because blocking Python can stall editor ticking. `set_spline_component_points` uses the native helper to avoid transient `TRASH_` spline components when available.
+
+Editor level transitions should use `open_editor_level` instead of Python
+`load_level`/`load_map` calls. The command defaults to `dry_run=true` and
+returns target existence, current world, dirty package blockers, and whether a
+real load would be attempted. Real loads are blocked by default when dirty
+packages exist, avoiding the previous Python-frame world-reference crash path
+and avoiding silent loss of unsaved editor state.
 
 The AI texture tools are BaseColor-first. They do not claim to create full PBR material sets. Normal, Roughness, AO, and Metallic generation should stay as separate TODO/stub work until deliberately implemented.
 
