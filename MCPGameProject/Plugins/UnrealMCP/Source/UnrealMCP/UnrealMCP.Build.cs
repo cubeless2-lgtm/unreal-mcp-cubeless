@@ -51,6 +51,8 @@ public class UnrealMCP : ModuleRules
 				"Kismet",
 				"KismetCompiler",
 				"BlueprintGraph",
+				"Niagara",
+				"NiagaraEditor",
 				"Projects",
 				"AssetRegistry"
 			}

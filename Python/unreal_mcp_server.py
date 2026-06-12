@@ -95,13 +95,14 @@ class UnrealConnection:
                 
                 # Process the data received so far
                 data = b''.join(chunks)
-                decoded_data = data.decode('utf-8')
-                
-                # Try to parse as JSON to check if complete
                 try:
+                    decoded_data = data.decode('utf-8')
                     json.loads(decoded_data)
                     logger.info(f"Received complete response ({len(data)} bytes)")
                     return data
+                except UnicodeDecodeError:
+                    logger.debug("Received partial UTF-8 sequence, waiting for more data...")
+                    continue
                 except json.JSONDecodeError:
                     # Not complete JSON yet, continue reading
                     logger.debug(f"Received partial response, waiting for more data...")
@@ -276,6 +277,7 @@ from tools.umg_tools import register_umg_tools
 from tools.python_tools import register_python_tools
 from tools.pcg_tools import register_pcg_tools
 from tools.material_tools import register_material_tools
+from tools.niagara_tools import register_niagara_tools
 from tools.texture_generation import register_texture_generation_tools
 from tools.ieta_tools import register_ieta_tools
 
@@ -288,6 +290,7 @@ register_umg_tools(mcp)
 register_python_tools(mcp)
 register_pcg_tools(mcp)
 register_material_tools(mcp)
+register_niagara_tools(mcp)
 register_texture_generation_tools(mcp)
 register_ieta_tools(mcp)
 
@@ -322,6 +325,24 @@ def info():
     - `capture_niagara_preview_lab_view(filepath, view=1)` - Capture a clean Niagara Preview Lab PNG; auto-frames preview actors when present
     - `preview_niagara_system_in_preview_lab(system_path, filepath, view=1, label="", warmup_time=0.35, cleanup_after=True)` - One-call optimized Niagara preview: spawn, warm up, auto-frame capture, and optional cleanup
     - `sample_niagara_system_in_preview_lab(system_path, output_dir="", label="", warmup_times=[...], views=[...])` - Multi-candidate optimized Niagara preview sampling in one MCP round trip
+
+    ## Niagara Authoring
+    - `analyze_niagara_system(system_path)` - Aggregate read-only Niagara renderer, user parameter, stack, graph, module-input, and compile inspection
+    - `inspect_niagara_renderers(system_path)` - Inspect enabled Niagara renderers and material slots
+    - `set_niagara_renderer_material(system_path, material_path, emitter_index=None, renderer_index=None, allow_source_edit=False, save=True)` - Set renderer material, temp/generated assets only by default
+    - `inspect_niagara_user_parameters(system_path)` - Inspect exposed User parameters and current values
+    - `set_niagara_user_parameter(system_path, parameter_name, value, allow_source_edit=False, save=True)` - Set supported User parameter values
+    - `inspect_niagara_stack(system_path, include_pins=False, max_function_calls=200)` - Inspect system/emitter/scratch-pad function calls
+    - `inspect_niagara_graph(system_path, include_pins=True, include_links=True)` - Inspect full Niagara graph nodes, pins, links, and scratch-pad graphs
+    - `inspect_niagara_scratch_pad_interface(system_path, include_graph_summary=True, include_parent_scratch_pads=True)` - Inspect Scratch Pad inputs/outputs/usages as a read-only authoring interface
+    - `duplicate_or_attach_emitter_from_source(target_system_path, source_emitter_path="", source_system_path="", source_emitter_index=None, new_emitter_name="", save=True)` - Add a source emitter into a generated temp Niagara System
+    - `create_or_duplicate_scratch_pad_module(target_system_path, source_script_path="", source_system_path="", source_owner_kind="system", target_owner_kind="system", save=True)` - Duplicate an existing Scratch Pad script into a generated temp Niagara System or emitter
+    - `add_scratch_pad_module_to_stack(target_system_path, scratch_pad_owner_kind="system", scratch_pad_script_index=None, target_usage="ParticleUpdateScript", target_emitter_index=None, save=True)` - Insert a target-local Scratch Pad module into a Niagara stack
+    - `inspect_niagara_compile_status(system_path, request_compile=False, force=False, allow_source_compile=False, wait_for_completion=False)` - Inspect Niagara script compile status and outstanding requests
+    - `inspect_niagara_module_inputs(system_path, include_linked_sources=True, include_resolved_stack_inputs=False)` - Inspect module input candidates for generation planning
+    - `create_niagara_module_input_override(system_path, input_name, value, module_index=None, module_node_guid="", overwrite_existing=False, allow_source_edit=False, save=True)` - Create a missing RapidIteration module input override, temp/generated assets only by default
+    - `set_niagara_module_inputs_batch(system_path, edits, operation="set_existing", overwrite_existing=False, continue_on_error=False, allow_source_edit=False, save=True)` - Apply multiple RapidIteration module input edits and save once
+    - `set_niagara_module_input_value(system_path, input_name, value, module_index=None, module_node_guid="", allow_source_edit=False, save=True)` - Set an existing RapidIteration module input override
 
     ### Actor Management
     - `get_actors_in_level()` - List all actors in current level
