@@ -61,12 +61,15 @@ Capture a screenshot of the viewport.
 
 Open the level-independent Niagara Preview Player window. The current MVP is a
 Slate drop surface that accepts Content Browser assets and World Outliner actors
-without saving or modifying the current level.
+without saving or modifying the current level. Pass `system_path` to load a
+Niagara System immediately after opening.
 
 ```json
 {
   "command": "open_niagara_preview_player",
-  "params": {}
+  "params": {
+    "system_path": "/Game/FX/NS_Example.NS_Example"
+  }
 }
 ```
 

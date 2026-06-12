@@ -367,12 +367,15 @@ def register_editor_tools(mcp: FastMCP):
             return {"success": False, "message": error_msg}
 
     @mcp.tool()
-    def open_niagara_preview_player(ctx: Context) -> Dict[str, Any]:
+    def open_niagara_preview_player(ctx: Context, system_path: str = "") -> Dict[str, Any]:
         """Open the level-independent Niagara Preview Player window.
 
         The current MVP is a Slate drop surface. It accepts Content Browser
         assets and World Outliner actors, then exposes the latest drop through
         get_niagara_preview_player_state().
+
+        Args:
+            system_path: Optional Niagara System path to load into the player after opening.
         """
         from unreal_mcp_server import get_unreal_connection
 
@@ -382,7 +385,10 @@ def register_editor_tools(mcp: FastMCP):
                 logger.error("Failed to connect to Unreal Engine")
                 return {"success": False, "message": "Failed to connect to Unreal Engine"}
 
-            response = unreal.send_command("open_niagara_preview_player", {})
+            params = {}
+            if system_path:
+                params["system_path"] = system_path
+            response = unreal.send_command("open_niagara_preview_player", params)
             return response or {}
 
         except Exception as e:

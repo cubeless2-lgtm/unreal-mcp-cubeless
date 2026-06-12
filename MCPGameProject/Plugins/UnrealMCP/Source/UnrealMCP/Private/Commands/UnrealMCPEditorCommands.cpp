@@ -21,6 +21,33 @@
 #include "Engine/Blueprint.h"
 #include "Engine/BlueprintGeneratedClass.h"
 
+namespace
+{
+    FLevelEditorViewportClient* GetActiveLevelEditorViewportClient()
+    {
+        if (!GEditor)
+        {
+            return nullptr;
+        }
+
+        FViewport* ActiveViewport = GEditor->GetActiveViewport();
+        if (!ActiveViewport)
+        {
+            return GCurrentLevelEditingViewportClient;
+        }
+
+        for (FLevelEditorViewportClient* Candidate : GEditor->GetLevelViewportClients())
+        {
+            if (Candidate && Candidate->Viewport == ActiveViewport)
+            {
+                return Candidate;
+            }
+        }
+
+        return GCurrentLevelEditingViewportClient;
+    }
+}
+
 FUnrealMCPEditorCommands::FUnrealMCPEditorCommands()
 {
 }
@@ -505,7 +532,7 @@ TSharedPtr<FJsonObject> FUnrealMCPEditorCommands::HandleFocusViewport(const TSha
     }
 
     // Get the active viewport
-    FLevelEditorViewportClient* ViewportClient = (FLevelEditorViewportClient*)GEditor->GetActiveViewport()->GetClient();
+    FLevelEditorViewportClient* ViewportClient = GetActiveLevelEditorViewportClient();
     if (!ViewportClient)
     {
         return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Failed to get active viewport"));
@@ -597,4 +624,4 @@ TSharedPtr<FJsonObject> FUnrealMCPEditorCommands::HandleTakeScreenshot(const TSh
     }
     
     return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Failed to take screenshot"));
-} 
+}
