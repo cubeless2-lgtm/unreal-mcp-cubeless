@@ -11,6 +11,7 @@
 #include "Commands/UnrealMCPEditorCommands.h"
 #include "Commands/UnrealMCPBlueprintCommands.h"
 #include "Commands/UnrealMCPBlueprintNodeCommands.h"
+#include "Commands/UnrealMCPNiagaraCommands.h"
 #include "Commands/UnrealMCPProjectCommands.h"
 #include "Commands/UnrealMCPUMGCommands.h"
 #include "UnrealMCPBridge.generated.h"
@@ -61,6 +62,7 @@ private:
 	TSharedPtr<FUnrealMCPEditorCommands> EditorCommands;
 	TSharedPtr<FUnrealMCPBlueprintCommands> BlueprintCommands;
 	TSharedPtr<FUnrealMCPBlueprintNodeCommands> BlueprintNodeCommands;
+	TSharedPtr<FUnrealMCPNiagaraCommands> NiagaraCommands;
 	TSharedPtr<FUnrealMCPProjectCommands> ProjectCommands;
 	TSharedPtr<FUnrealMCPUMGCommands> UMGCommands;
 };

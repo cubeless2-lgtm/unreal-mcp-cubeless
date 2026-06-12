@@ -130,6 +130,114 @@ Safely preflight or open an editor level through the native UnrealMCP bridge. Th
 }
 ```
 
+### open_niagara_preview_player
+
+Open the level-independent Niagara Preview Player window. The current MVP is a
+Slate drop surface that accepts Content Browser assets and World Outliner actors
+without saving or modifying the current level. Pass `system_path` to load a
+Niagara System immediately after opening.
+
+```json
+{
+  "command": "open_niagara_preview_player",
+  "params": {
+    "system_path": "/Game/FX/NS_Example.NS_Example"
+  }
+}
+```
+
+### get_niagara_preview_player_state
+
+Return whether the Niagara Preview Player window is open and the latest dropped
+asset/actor metadata.
+
+```json
+{
+  "command": "get_niagara_preview_player_state",
+  "params": {}
+}
+```
+
+### get_niagara_preview_lab_state
+
+Return Niagara Preview Lab safety state for the currently loaded editor world.
+
+**Returns:**
+- Current map package
+- Whether the loaded map is the Niagara Preview Lab map
+- Whether the map is dirty
+- Preview actor labels using `MCP_NiagaraPreviewLab_` or legacy `MCP_NiagaraReview_`
+- Whether an editor restart is recommended instead of reloading the map
+
+### cleanup_niagara_preview_lab
+
+Delete Niagara Preview Lab preview actors by prefix without saving or reloading the map.
+
+This command is intentionally conservative. If the map remains dirty after cleanup, do not call `load_map` from the same session. Restart Unreal Editor for a full reset.
+
+### capture_niagara_preview_lab_view
+
+Capture a clean Niagara Preview Lab viewport PNG. When Preview Lab actors exist, the Unreal-side command frames those temporary actors with an auto camera instead of relying on fixed bookmarks. The `view` value remains a near/mid/far distance hint and fallback when no preview actor exists.
+
+**Parameters:**
+- `filepath` (string, required) - PNG output path. Relative paths are resolved under `Saved/MCP/NiagaraReviews`.
+- `view` (integer, optional) - Preview view number. Use 1 first; use 2 or 3 only when the auto-framed effect is too large, clipped, or not reviewable.
+
+**Safety:**
+- Requires `/Game/SampleTestMap/Niagara_TestMap` to already be loaded.
+- Does not load, reload, or save maps.
+- Temporarily enters clean game view for the capture and restores viewport flags afterward.
+- Returns camera mode, camera location/rotation, and frame target metadata when auto framing is used.
+
+### preview_niagara_system_in_preview_lab
+
+Run the optimized one-call Niagara Preview Lab route.
+
+This command loads a read-only Niagara system, optionally deletes existing Preview Lab actors, spawns one transient preview actor, advances Niagara simulation for a short warmup, captures with auto framing, and optionally removes the actor afterward. Use this as the default route for repeated generated Niagara still reviews because it avoids separate Python spawn, state, capture, and cleanup round trips.
+
+**Parameters:**
+- `system_path` (string, required) - Niagara system object path or package path.
+- `filepath` (string, required) - PNG output path. Relative paths are resolved under `Saved/MCP/NiagaraReviews`.
+- `view` (integer, optional) - Near/mid/far distance hint, 1 to 3.
+- `label` (string, optional) - Preview actor label suffix.
+- `warmup_time` (float, optional) - Seconds to advance simulation before capture. Default `0.35`.
+- `warmup_tick_delta` (float, optional) - Simulation tick size for warmup. Default `1/30`.
+- `cleanup_before` (bool, optional) - Delete existing Preview Lab actors before spawning. Default `true`.
+- `cleanup_after` (bool, optional) - Delete Preview Lab actors after capture. Default `true`.
+- `location` (array, optional) - Spawn location `[x, y, z]`. Default `[0, 0, 120]`.
+- `scale` (array, optional) - Actor scale `[x, y, z]`. Default `[1, 1, 1]`.
+
+**Safety:**
+- Requires `/Game/SampleTestMap/Niagara_TestMap` to already be loaded.
+- Does not load, reload, or save maps.
+- Does not modify or save the source Niagara system.
+- Spawns the preview actor as transient and removes it by default.
+
+### sample_niagara_system_in_preview_lab
+
+Capture multiple Niagara Preview Lab candidates in one MCP round trip.
+
+Use this when a Niagara effect is timing-sensitive, invisible in the first still, or needs a quick search over warmup moments and near/mid/far distances. The command loops over `warmup_times` and `views`, uses the optimized one-call preview route for each candidate, and returns structured metadata for every generated PNG.
+
+**Parameters:**
+- `system_path` (string, required) - Niagara system object path or package path.
+- `output_dir` (string, optional) - Relative output folder under `Saved/MCP/NiagaraReviews`.
+- `label` (string, optional) - File and actor label stem.
+- `warmup_times` (array, optional) - Seconds to advance simulation before each capture. Default `[0.1, 0.35, 0.7]`.
+- `views` (array, optional) - Near/mid/far distance hints. Default `[1]`.
+- `warmup_tick_delta` (float, optional) - Simulation tick size for warmup. Default `1/30`.
+- `cleanup_before` (bool, optional) - Delete existing Preview Lab actors before sampling. Default `true`.
+- `cleanup_after_each` (bool, optional) - Delete the sample actor after each capture. Default `true`.
+- `cleanup_after_all` (bool, optional) - Final cleanup pass after all samples. Default `true`.
+- `location` (array, optional) - Spawn location `[x, y, z]`.
+- `scale` (array, optional) - Actor scale `[x, y, z]`.
+
+**Safety:**
+- Requires `/Game/SampleTestMap/Niagara_TestMap` to already be loaded.
+- Does not load, reload, or save maps.
+- Does not modify or save the source Niagara system.
+- Leaves no preview actors when cleanup options remain enabled.
+
 ## Error Handling
 
 All command responses include a "status" field indicating whether the operation succeeded, and an optional "message" field with details in case of failure.

@@ -72,6 +72,7 @@
 #include "Commands/UnrealMCPEditorCommands.h"
 #include "Commands/UnrealMCPBlueprintCommands.h"
 #include "Commands/UnrealMCPBlueprintNodeCommands.h"
+#include "Commands/UnrealMCPNiagaraCommands.h"
 #include "Commands/UnrealMCPProjectCommands.h"
 #include "Commands/UnrealMCPCommonUtils.h"
 #include "Commands/UnrealMCPUMGCommands.h"
@@ -568,6 +569,7 @@ UUnrealMCPBridge::UUnrealMCPBridge()
     EditorCommands = MakeShared<FUnrealMCPEditorCommands>();
     BlueprintCommands = MakeShared<FUnrealMCPBlueprintCommands>();
     BlueprintNodeCommands = MakeShared<FUnrealMCPBlueprintNodeCommands>();
+    NiagaraCommands = MakeShared<FUnrealMCPNiagaraCommands>();
     ProjectCommands = MakeShared<FUnrealMCPProjectCommands>();
     UMGCommands = MakeShared<FUnrealMCPUMGCommands>();
 }
@@ -577,6 +579,7 @@ UUnrealMCPBridge::~UUnrealMCPBridge()
     EditorCommands.Reset();
     BlueprintCommands.Reset();
     BlueprintNodeCommands.Reset();
+    NiagaraCommands.Reset();
     ProjectCommands.Reset();
     UMGCommands.Reset();
 }
@@ -850,6 +853,26 @@ FString UUnrealMCPBridge::ExecuteCommand(const FString& CommandType, const TShar
             {
                 ResultJson = BlueprintNodeCommands->HandleCommand(CommandType, Params);
             }
+            // Niagara Commands
+            else if (CommandType == TEXT("analyze_niagara_system") ||
+                     CommandType == TEXT("inspect_niagara_renderers") ||
+                     CommandType == TEXT("set_niagara_renderer_material") ||
+                     CommandType == TEXT("inspect_niagara_user_parameters") ||
+                     CommandType == TEXT("set_niagara_user_parameter") ||
+                     CommandType == TEXT("inspect_niagara_stack") ||
+                     CommandType == TEXT("inspect_niagara_graph") ||
+                     CommandType == TEXT("inspect_niagara_compile_status") ||
+                     CommandType == TEXT("inspect_niagara_scratch_pad_interface") ||
+                     CommandType == TEXT("duplicate_or_attach_emitter_from_source") ||
+                     CommandType == TEXT("create_or_duplicate_scratch_pad_module") ||
+                     CommandType == TEXT("add_scratch_pad_module_to_stack") ||
+                     CommandType == TEXT("inspect_niagara_module_inputs") ||
+                     CommandType == TEXT("create_niagara_module_input_override") ||
+                     CommandType == TEXT("set_niagara_module_inputs_batch") ||
+                     CommandType == TEXT("set_niagara_module_input_value"))
+            {
+                ResultJson = NiagaraCommands->HandleCommand(CommandType, Params);
+            }
             // Project Commands
             else if (CommandType == TEXT("create_input_mapping") ||
                      CommandType == TEXT("execute_python"))
@@ -889,6 +912,10 @@ FString UUnrealMCPBridge::ExecuteCommand(const FString& CommandType, const TShar
                 {
                     ErrorMessage = ResultJson->GetStringField(TEXT("error"));
                 }
+                if (!bSuccess && ErrorMessage.IsEmpty())
+                {
+                    ErrorMessage = FString::Printf(TEXT("Command '%s' reported failure without details"), *CommandType);
+                }
             }
             
             if (bSuccess)
@@ -902,6 +929,7 @@ FString UUnrealMCPBridge::ExecuteCommand(const FString& CommandType, const TShar
                 // Set error status and include the error message
                 ResponseJson->SetStringField(TEXT("status"), TEXT("error"));
                 ResponseJson->SetStringField(TEXT("error"), ErrorMessage);
+                ResponseJson->SetObjectField(TEXT("result"), ResultJson);
             }
         }
         catch (const std::exception& e)

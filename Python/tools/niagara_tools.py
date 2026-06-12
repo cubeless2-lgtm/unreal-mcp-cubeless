@@ -1,10 +1,9 @@
 """
-Niagara tools for Unreal MCP.
+Niagara authoring and inspection tools for Unreal MCP.
 
-These tools intentionally use the generic execute_python bridge. Niagara's
-editor API exposes many useful details through reflected properties, while the
-deeper stack/graph editing APIs are C++-heavy and should stay out of the first
-MVP.
+These tools route to UnrealMCP C++ commands for Niagara APIs that are not
+safe or practical through Unreal Python alone, such as renderer material edits
+and stack/module input inspection.
 """
 
 import logging
@@ -12,613 +11,726 @@ from typing import Any, Dict
 
 from mcp.server.fastmcp import Context, FastMCP
 
-from services.unreal_texture_importer import run_unreal_python_json
-
-
 logger = logging.getLogger("UnrealMCP")
 
 
-def _run_niagara_python(code_body: str) -> Dict[str, Any]:
-    """Run Unreal Python for Niagara tooling and return a JSON RESULT."""
-    return run_unreal_python_json(code_body, result_name="niagara_tools")
-
-
 def register_niagara_tools(mcp: FastMCP):
-    """Register Niagara-focused inspection and validation tools."""
+    """Register Niagara inspection and limited authoring tools."""
+
+    def send_niagara_command(command_name: str, params: Dict[str, Any]) -> Dict[str, Any]:
+        from unreal_mcp_server import get_unreal_connection
+
+        unreal = get_unreal_connection()
+        if not unreal:
+            logger.error("Failed to connect to Unreal Engine")
+            return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+        response = unreal.send_command(command_name, params)
+        if not response:
+            logger.error("No response from Unreal Engine")
+            return {"success": False, "message": "No response from Unreal Engine"}
+
+        return response
 
     @mcp.tool()
-    def list_niagara_assets(
-        ctx: Context,
-        root_path: str = "/Game",
-        include_scripts: bool = False,
-        include_parameter_collections: bool = False,
-    ) -> Dict[str, Any]:
-        """
-        List Niagara assets under a content path.
-
-        Args:
-            root_path: Unreal content path to scan, for example /Game.
-            include_scripts: Include NiagaraScript/module assets in addition to systems and emitters.
-            include_parameter_collections: Include Niagara parameter collections.
-        """
-        code = f"""
-import unreal
-
-root_path = {root_path!r}
-include_scripts = {bool(include_scripts)!r}
-include_parameter_collections = {bool(include_parameter_collections)!r}
-
-registry = unreal.AssetRegistryHelpers.get_asset_registry()
-assets = registry.get_assets_by_path(root_path, recursive=True)
-items = []
-
-def tags_to_dict(asset_data):
-    tags = {{}}
-    raw_tags = getattr(asset_data, "tags_and_values", None)
-    if raw_tags:
-        try:
-            for key in raw_tags:
-                tags[str(key)] = str(raw_tags[key])
-        except Exception:
-            try:
-                tags = {{str(k): str(v) for k, v in dict(raw_tags).items()}}
-            except Exception:
-                tags = {{}}
-    return tags
-
-for asset_data in assets:
-    class_name = str(asset_data.asset_class_path.asset_name)
-    package_name = str(asset_data.package_name)
-    asset_name = str(asset_data.asset_name)
-    is_system = class_name == "NiagaraSystem"
-    is_emitter = class_name in ("NiagaraEmitter", "NiagaraStatelessEmitter")
-    is_script = class_name == "NiagaraScript"
-    is_collection = class_name == "NiagaraParameterCollection"
-    if not is_system and not is_emitter:
-        if is_script and not include_scripts:
-            continue
-        if is_collection and not include_parameter_collections:
-            continue
-        if not is_script and not is_collection:
-            continue
-    items.append({{
-        "asset_name": asset_name,
-        "package_name": package_name,
-        "object_path": f"{{package_name}}.{{asset_name}}",
-        "class_name": class_name,
-        "tags": tags_to_dict(asset_data),
-    }})
-
-RESULT = {{"success": True, "count": len(items), "assets": items}}
-"""
-        return _run_niagara_python(code)
-
-    @mcp.tool()
-    def inspect_niagara_system(
+    def analyze_niagara_system(
         ctx: Context,
         system_path: str,
-        include_emitters: bool = True,
-        include_scripts: bool = True,
-        include_parameters: bool = True,
+        include_renderers: bool = True,
+        include_user_parameters: bool = True,
+        include_stack: bool = True,
+        include_graph: bool = True,
+        include_module_inputs: bool = True,
+        include_compile_status: bool = True,
+        include_pins: bool = False,
+        include_links: bool = False,
+        include_scratch_pads: bool = True,
+        include_resolved_stack_inputs: bool = False,
+        max_function_calls: int = 200,
+        max_nodes_per_graph: int = 300,
+        max_links_per_graph: int = 0,
+        max_modules: int = 200,
+        max_candidates_per_module: int = 24,
+        max_resolved_inputs_per_module: int = 8,
+        max_top_candidates: int = 80,
     ) -> Dict[str, Any]:
         """
-        Inspect a Niagara System asset without modifying it.
+        Aggregate read-only Niagara renderer, user parameter, stack, graph,
+        module-input, and compile-health inspection into one response.
 
         Args:
-            system_path: Niagara System package/object path or short asset name.
-            include_emitters: Include emitter handle summaries where reflected data is available.
-            include_scripts: Include system/emitter script summaries where reflected data is available.
-            include_parameters: Include exposed user parameter summaries where reflected data is available.
+            system_path: Niagara System package path or object path
+            include_renderers: Include renderer/material inspection
+            include_user_parameters: Include exposed User.* parameter inspection
+            include_stack: Include stack function-call inspection
+            include_graph: Include graph topology inspection
+            include_module_inputs: Include module input candidate inspection
+            include_compile_status: Include read-only compile status inspection
+            include_pins: Include pin metadata where supported
+            include_links: Include explicit graph links where supported
+            include_scratch_pads: Include Scratch Pad graph/script data
+            include_resolved_stack_inputs: Include resolved stack input values in module inspection
+            max_function_calls: Maximum function calls per stack graph
+            max_nodes_per_graph: Maximum graph nodes per graph
+            max_links_per_graph: Maximum graph links per graph
+            max_modules: Maximum modules to inspect
+            max_candidates_per_module: Maximum candidates per module
+            max_resolved_inputs_per_module: Maximum resolved inputs per module
+            max_top_candidates: Maximum prioritized module input candidates
         """
-        code = f"""
-import unreal
-
-system_path = {system_path!r}
-include_emitters = {bool(include_emitters)!r}
-include_scripts = {bool(include_scripts)!r}
-include_parameters = {bool(include_parameters)!r}
-
-def safe_string(value):
-    try:
-        if value is None:
-            return ""
-        if hasattr(value, "to_string"):
-            return value.to_string()
-        return str(value)
-    except Exception:
-        return repr(value)
-
-def asset_ref(obj):
-    if not obj:
-        return None
-    return {{
-        "name": safe_string(obj.get_name()) if hasattr(obj, "get_name") else "",
-        "path": safe_string(obj.get_path_name()) if hasattr(obj, "get_path_name") else "",
-        "class_name": safe_string(obj.get_class().get_name()) if hasattr(obj, "get_class") else type(obj).__name__,
-    }}
-
-def get_prop(obj, names, default=None):
-    if obj is None:
-        return default
-    for name in names:
         try:
-            return obj.get_editor_property(name)
-        except Exception:
-            pass
-    for name in names:
-        if hasattr(obj, name):
-            try:
-                return getattr(obj, name)
-            except Exception:
-                pass
-    return default
-
-def call_no_arg(obj, names, default=None):
-    if obj is None:
-        return default
-    for name in names:
-        fn = getattr(obj, name, None)
-        if callable(fn):
-            try:
-                return fn()
-            except Exception:
-                pass
-    return default
-
-def enum_name(value):
-    text = safe_string(value)
-    if "." in text:
-        return text.split(".")[-1]
-    return text
-
-def variable_summary(variable):
-    if variable is None:
-        return {{"name": "", "type": "", "raw": ""}}
-    name = call_no_arg(variable, ["get_name"], None)
-    if name is None:
-        name = get_prop(variable, ["name", "Name"], "")
-    type_def = call_no_arg(variable, ["get_type"], None)
-    if type_def is None:
-        type_def = get_prop(variable, ["type_def", "TypeDef", "type", "Type"], "")
-    return {{"name": safe_string(name), "type": safe_string(type_def), "raw": safe_string(variable)}}
-
-def parameter_store_summary(store):
-    if store is None:
-        return {{"available": False, "reason": "parameter store was not readable"}}
-    variables = []
-    raw_variables = None
-    for method_name in ("get_user_parameters", "get_parameters"):
-        method = getattr(store, method_name, None)
-        if callable(method):
-            try:
-                raw_variables = method()
-                break
-            except Exception:
-                pass
-    if raw_variables is None:
-        raw_variables = get_prop(
-            store,
-            [
-                "sorted_parameter_offsets",
-                "SortedParameterOffsets",
-                "user_parameter_redirects",
-                "UserParameterRedirects",
-            ],
-            None,
-        )
-    if raw_variables is not None:
-        try:
-            for variable in raw_variables:
-                variables.append(variable_summary(variable))
-        except Exception as exc:
-            return {{
-                "available": False,
-                "reason": "parameter variables exist but could not be iterated",
-                "error": str(exc),
-                "raw": safe_string(raw_variables),
-            }}
-    return {{
-        "available": bool(variables),
-        "count": len(variables),
-        "parameters": variables,
-        "raw": safe_string(store) if not variables else "",
-    }}
-
-def script_summary(script):
-    if not script:
-        return None
-    vm_data = get_prop(script, ["cached_script_vm", "CachedScriptVM"], None)
-    compile_status = None
-    compile_events = []
-    error_message = ""
-    if vm_data is not None:
-        compile_status = get_prop(vm_data, ["last_compile_status", "LastCompileStatus"], None)
-        error_message = safe_string(get_prop(vm_data, ["error_msg", "ErrorMsg"], ""))
-        events = get_prop(vm_data, ["last_compile_events", "LastCompileEvents"], [])
-        try:
-            for event in events:
-                compile_events.append(safe_string(event))
-        except Exception:
-            compile_events = [safe_string(events)]
-    if compile_status is None:
-        compile_status = get_prop(script, ["last_compile_status", "LastCompileStatus"], None)
-    return {{
-        "asset": asset_ref(script),
-        "usage": enum_name(get_prop(script, ["usage", "Usage"], "")),
-        "last_compile_status": enum_name(compile_status),
-        "error_message": error_message,
-        "compile_event_count": len(compile_events),
-        "compile_events": compile_events[:25],
-    }}
-
-def emitter_data_summary(emitter_data):
-    if emitter_data is None:
-        return {{}}
-    renderers = []
-    for renderer in get_prop(emitter_data, ["renderer_properties", "RendererProperties"], []) or []:
-        renderers.append(asset_ref(renderer))
-    return {{
-        "sim_target": enum_name(get_prop(emitter_data, ["sim_target", "SimTarget"], "")),
-        "local_space": bool(get_prop(emitter_data, ["local_space", "bLocalSpace", "b_local_space"], False)),
-        "determinism": bool(get_prop(emitter_data, ["determinism", "bDeterminism", "b_determinism"], False)),
-        "random_seed": get_prop(emitter_data, ["random_seed", "RandomSeed"], None),
-        "renderer_count": len(renderers),
-        "renderers": renderers,
-        "spawn_script": script_summary(get_prop(get_prop(emitter_data, ["emitter_spawn_script_props", "EmitterSpawnScriptProps"], None), ["script", "Script"], None)) if include_scripts else None,
-        "update_script": script_summary(get_prop(get_prop(emitter_data, ["emitter_update_script_props", "EmitterUpdateScriptProps"], None), ["script", "Script"], None)) if include_scripts else None,
-    }}
-
-def emitter_handle_summary(handle, index):
-    name = call_no_arg(handle, ["get_name"], None)
-    if name is None:
-        name = get_prop(handle, ["name", "Name"], "")
-    enabled = call_no_arg(handle, ["get_is_enabled"], None)
-    if enabled is None:
-        enabled = get_prop(handle, ["is_enabled", "bIsEnabled", "b_is_enabled"], None)
-    mode = call_no_arg(handle, ["get_emitter_mode"], None)
-    if mode is None:
-        mode = get_prop(handle, ["emitter_mode", "EmitterMode"], "")
-    instance = call_no_arg(handle, ["get_instance"], None)
-    if instance is None:
-        instance = get_prop(handle, ["versioned_instance", "VersionedInstance"], None)
-    emitter = get_prop(instance, ["emitter", "Emitter"], None)
-    version = get_prop(instance, ["version", "Version"], None)
-    emitter_data = call_no_arg(instance, ["get_emitter_data"], None)
-    if emitter_data is None:
-        emitter_data = get_prop(emitter, ["latest_emitter_data", "LatestEmitterData"], None)
-    return {{
-        "index": index,
-        "name": safe_string(name),
-        "enabled": enabled if enabled is not None else "unknown",
-        "mode": enum_name(mode),
-        "emitter_asset": asset_ref(emitter),
-        "version": safe_string(version),
-        "data": emitter_data_summary(emitter_data),
-    }}
-
-def resolve_system(path):
-    asset = unreal.EditorAssetLibrary.load_asset(path)
-    if asset and asset.get_class().get_name() == "NiagaraSystem":
-        return asset
-    registry = unreal.AssetRegistryHelpers.get_asset_registry()
-    candidates = registry.get_assets_by_path("/Game", recursive=True)
-    for asset_data in candidates:
-        if str(asset_data.asset_class_path.asset_name) != "NiagaraSystem":
-            continue
-        package_name = str(asset_data.package_name)
-        asset_name = str(asset_data.asset_name)
-        object_path = f"{{package_name}}.{{asset_name}}"
-        if path in (asset_name, package_name, object_path) or package_name.endswith("/" + path):
-            return unreal.EditorAssetLibrary.load_asset(package_name)
-    return None
-
-system = resolve_system(system_path)
-if not system:
-    RESULT = {{"success": False, "message": f"Niagara System not found: {{system_path}}"}}
-elif system.get_class().get_name() != "NiagaraSystem":
-    RESULT = {{
-        "success": False,
-        "message": f"Asset is not a NiagaraSystem: {{system_path}}",
-        "class_name": system.get_class().get_name(),
-    }}
-else:
-    system_scripts = []
-    if include_scripts:
-        for prop_names in (
-            ["system_spawn_script", "SystemSpawnScript"],
-            ["system_update_script", "SystemUpdateScript"],
-        ):
-            summary = script_summary(get_prop(system, prop_names, None))
-            if summary:
-                system_scripts.append(summary)
-
-    emitters = []
-    if include_emitters:
-        handles = get_prop(system, ["emitter_handles", "EmitterHandles"], [])
-        try:
-            for index, handle in enumerate(handles):
-                emitters.append(emitter_handle_summary(handle, index))
-        except Exception as exc:
-            emitters.append({{"error": f"EmitterHandles could not be iterated: {{exc}}", "raw": safe_string(handles)}})
-
-    exposed_parameters = None
-    if include_parameters:
-        exposed_parameters = parameter_store_summary(get_prop(system, ["exposed_parameters", "ExposedParameters"], None))
-
-    RESULT = {{
-        "success": True,
-        "asset": asset_ref(system),
-        "is_valid": call_no_arg(system, ["is_valid"], "unknown"),
-        "is_ready_to_run": call_no_arg(system, ["is_ready_to_run"], "unknown"),
-        "needs_warmup": call_no_arg(system, ["needs_warmup"], "unknown"),
-        "warmup_time": call_no_arg(system, ["get_warmup_time"], get_prop(system, ["warmup_time", "WarmupTime"], None)),
-        "warmup_tick_count": call_no_arg(system, ["get_warmup_tick_count"], get_prop(system, ["warmup_tick_count", "WarmupTickCount"], None)),
-        "warmup_tick_delta": call_no_arg(system, ["get_warmup_tick_delta"], get_prop(system, ["warmup_tick_delta", "WarmupTickDelta"], None)),
-        "system_scripts": system_scripts,
-        "exposed_parameters": exposed_parameters,
-        "emitter_count": len(emitters),
-        "emitters": emitters,
-        "notes": [
-            "This MVP uses reflected Python-visible fields. Deep Niagara stack module graph editing is intentionally not included.",
-            "If emitter details are sparse, the engine did not expose the relevant internal fields through Python reflection.",
-        ],
-    }}
-"""
-        return _run_niagara_python(code)
+            return send_niagara_command(
+                "analyze_niagara_system",
+                {
+                    "system_path": system_path,
+                    "include_renderers": include_renderers,
+                    "include_user_parameters": include_user_parameters,
+                    "include_stack": include_stack,
+                    "include_graph": include_graph,
+                    "include_module_inputs": include_module_inputs,
+                    "include_compile_status": include_compile_status,
+                    "include_pins": include_pins,
+                    "include_links": include_links,
+                    "include_scratch_pads": include_scratch_pads,
+                    "include_resolved_stack_inputs": include_resolved_stack_inputs,
+                    "max_function_calls": max_function_calls,
+                    "max_nodes_per_graph": max_nodes_per_graph,
+                    "max_links_per_graph": max_links_per_graph,
+                    "max_modules": max_modules,
+                    "max_candidates_per_module": max_candidates_per_module,
+                    "max_resolved_inputs_per_module": max_resolved_inputs_per_module,
+                    "max_top_candidates": max_top_candidates,
+                },
+            )
+        except Exception as e:
+            error_msg = f"Error analyzing Niagara system: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
 
     @mcp.tool()
-    def list_niagara_components(
-        ctx: Context,
-        selected_only: bool = False,
-    ) -> Dict[str, Any]:
+    def inspect_niagara_renderers(ctx: Context, system_path: str) -> Dict[str, Any]:
         """
-        List Niagara components in the current editor level.
+        Inspect enabled renderer properties and materials on a Niagara System.
 
         Args:
-            selected_only: If true, inspect only selected actors.
+            system_path: Niagara System package path or object path
         """
-        code = f"""
-import unreal
-
-selected_only = {bool(selected_only)!r}
-editor_actor_subsystem = unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
-actors = editor_actor_subsystem.get_selected_level_actors() if selected_only else editor_actor_subsystem.get_all_level_actors()
-components = []
-
-for actor in actors:
-    actor_label = actor.get_actor_label()
-    actor_path = actor.get_path_name()
-    for component in actor.get_components_by_class(unreal.ActorComponent):
-        class_name = component.get_class().get_name()
-        if "NiagaraComponent" not in class_name:
-            continue
-        asset = None
-        getter = getattr(component, "get_asset", None)
-        if callable(getter):
-            try:
-                asset = getter()
-            except Exception:
-                asset = None
-        if asset is None:
-            try:
-                asset = component.get_editor_property("asset")
-            except Exception:
-                pass
-        components.append({{
-            "actor": actor_label,
-            "actor_path": actor_path,
-            "component": component.get_name(),
-            "component_path": component.get_path_name(),
-            "component_class": class_name,
-            "system_asset": asset.get_path_name() if asset else "",
-        }})
-
-RESULT = {{"success": True, "count": len(components), "components": components}}
-"""
-        return _run_niagara_python(code)
+        try:
+            return send_niagara_command("inspect_niagara_renderers", {"system_path": system_path})
+        except Exception as e:
+            error_msg = f"Error inspecting Niagara renderers: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
 
     @mcp.tool()
-    def duplicate_niagara_system_to_temp(
+    def set_niagara_renderer_material(
         ctx: Context,
         system_path: str,
-        temp_folder: str = "/Game/_MCP_Temp",
-        new_name: str = "",
+        material_path: str,
+        emitter_index: int | None = None,
+        emitter_name: str = "",
+        renderer_index: int | None = None,
+        material_slot_index: int = 0,
+        allow_source_edit: bool = False,
+        save: bool = True,
     ) -> Dict[str, Any]:
         """
-        Duplicate a Niagara System into a temporary package for safe experiments.
+        Set a Niagara renderer material on a temp/generated system by default.
 
         Args:
-            system_path: Source Niagara System package/object path or short asset name.
-            temp_folder: Destination content folder, normally /Game/_MCP_Temp.
-            new_name: Optional duplicate asset name. Defaults to <SourceName>_MCP.
+            system_path: Niagara System package path or object path
+            material_path: Material or Material Instance package path or object path
+            emitter_index: Optional target emitter index
+            emitter_name: Optional target emitter name
+            renderer_index: Optional target renderer index
+            material_slot_index: Mesh renderer override slot index
+            allow_source_edit: Allow edits outside /Game/_MCP_Temp
+            save: Save the Niagara System after editing
         """
-        code = f"""
-import re
-import unreal
-
-system_path = {system_path!r}
-temp_folder = {temp_folder!r}
-new_name = {new_name!r}
-
-def resolve_system(path):
-    asset = unreal.EditorAssetLibrary.load_asset(path)
-    if asset and asset.get_class().get_name() == "NiagaraSystem":
-        return asset
-    registry = unreal.AssetRegistryHelpers.get_asset_registry()
-    for asset_data in registry.get_assets_by_path("/Game", recursive=True):
-        if str(asset_data.asset_class_path.asset_name) != "NiagaraSystem":
-            continue
-        package_name = str(asset_data.package_name)
-        asset_name = str(asset_data.asset_name)
-        object_path = f"{{package_name}}.{{asset_name}}"
-        if path in (asset_name, package_name, object_path) or package_name.endswith("/" + path):
-            return unreal.EditorAssetLibrary.load_asset(package_name)
-    return None
-
-source = resolve_system(system_path)
-if not source:
-    RESULT = {{"success": False, "message": f"Niagara System not found: {{system_path}}"}}
-else:
-    normalized_temp_folder = temp_folder.rstrip("/")
-    if normalized_temp_folder != "/Game/_MCP_Temp" and not normalized_temp_folder.startswith("/Game/_MCP_Temp/"):
-        RESULT = {{"success": False, "message": "temp_folder must be under /Game/_MCP_Temp"}}
-    else:
-        source_name = source.get_name()
-        safe_name = new_name or f"{{source_name}}_MCP"
-        safe_name = re.sub(r"[^A-Za-z0-9_]", "_", safe_name)
-        destination_path = f"{{normalized_temp_folder}}/{{safe_name}}"
-        if unreal.EditorAssetLibrary.does_asset_exist(destination_path):
-            unreal.EditorAssetLibrary.delete_asset(destination_path)
-        duplicated = unreal.EditorAssetLibrary.duplicate_asset(source.get_path_name().split(".")[0], destination_path)
-        if duplicated:
-            unreal.EditorAssetLibrary.save_loaded_asset(duplicated)
-            RESULT = {{
-                "success": True,
-                "source": source.get_path_name(),
-                "duplicate": duplicated.get_path_name(),
-                "package_path": destination_path,
-                "note": "Temporary duplicate created for MCP validation. Do not stage _MCP_Temp outputs unless explicitly requested.",
-            }}
-        else:
-            RESULT = {{"success": False, "message": f"Failed to duplicate {{source.get_path_name()}} to {{destination_path}}"}}
-"""
-        return _run_niagara_python(code)
+        try:
+            params: Dict[str, Any] = {
+                "system_path": system_path,
+                "material_path": material_path,
+                "emitter_name": emitter_name,
+                "material_slot_index": material_slot_index,
+                "allow_source_edit": allow_source_edit,
+                "save": save,
+            }
+            if emitter_index is not None:
+                params["emitter_index"] = emitter_index
+            if renderer_index is not None:
+                params["renderer_index"] = renderer_index
+            return send_niagara_command("set_niagara_renderer_material", params)
+        except Exception as e:
+            error_msg = f"Error setting Niagara renderer material: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
 
     @mcp.tool()
-    def compile_and_save_niagara_system(
-        ctx: Context,
-        system_path: str,
-        save: bool = False,
-    ) -> Dict[str, Any]:
+    def inspect_niagara_user_parameters(ctx: Context, system_path: str) -> Dict[str, Any]:
         """
-        Best-effort compile validation for a Niagara System, optionally saving after success.
+        Inspect exposed User parameters on a Niagara System.
 
         Args:
-            system_path: Niagara System package/object path or short asset name.
-            save: Save the asset after the compile/wait path reports no immediate failure.
+            system_path: Niagara System package path or object path
         """
-        code = f"""
-import unreal
-
-system_path = {system_path!r}
-save = {bool(save)!r}
-
-def resolve_system(path):
-    asset = unreal.EditorAssetLibrary.load_asset(path)
-    if asset and asset.get_class().get_name() == "NiagaraSystem":
-        return asset
-    registry = unreal.AssetRegistryHelpers.get_asset_registry()
-    for asset_data in registry.get_assets_by_path("/Game", recursive=True):
-        if str(asset_data.asset_class_path.asset_name) != "NiagaraSystem":
-            continue
-        package_name = str(asset_data.package_name)
-        asset_name = str(asset_data.asset_name)
-        object_path = f"{{package_name}}.{{asset_name}}"
-        if path in (asset_name, package_name, object_path) or package_name.endswith("/" + path):
-            return unreal.EditorAssetLibrary.load_asset(package_name)
-    return None
-
-def try_call(obj, name, *args):
-    fn = getattr(obj, name, None)
-    if not callable(fn):
-        return {{"called": False, "message": f"{{name}} is not exposed to Python"}}
-    try:
-        value = fn(*args)
-        return {{"called": True, "success": True, "value": str(value)}}
-    except Exception as exc:
-        return {{"called": True, "success": False, "message": str(exc)}}
-
-def script_compile_summary(script):
-    if not script:
-        return None
-    def get_prop(obj, names, default=None):
-        for prop_name in names:
-            try:
-                return obj.get_editor_property(prop_name)
-            except Exception:
-                pass
-        return default
-    vm_data = get_prop(script, ["cached_script_vm", "CachedScriptVM"], None)
-    status = ""
-    events = []
-    error_msg = ""
-    if vm_data is not None:
-        status = str(get_prop(vm_data, ["last_compile_status", "LastCompileStatus"], ""))
-        error_msg = str(get_prop(vm_data, ["error_msg", "ErrorMsg"], ""))
-        raw_events = get_prop(vm_data, ["last_compile_events", "LastCompileEvents"], [])
         try:
-            events = [str(event) for event in raw_events]
-        except Exception:
-            events = [str(raw_events)] if raw_events else []
-    if not status:
-        status = str(get_prop(script, ["last_compile_status", "LastCompileStatus"], ""))
-    return {{
-        "script": script.get_path_name(),
-        "usage": str(get_prop(script, ["usage", "Usage"], "")),
-        "last_compile_status": status,
-        "error_message": error_msg,
-        "compile_event_count": len(events),
-        "compile_events": events[:25],
-    }}
+            return send_niagara_command("inspect_niagara_user_parameters", {"system_path": system_path})
+        except Exception as e:
+            error_msg = f"Error inspecting Niagara user parameters: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
 
-system = resolve_system(system_path)
-if not system:
-    RESULT = {{"success": False, "message": f"Niagara System not found: {{system_path}}"}}
-elif save and not system.get_path_name().split(".")[0].startswith("/Game/_MCP_Temp/"):
-    RESULT = {{
-        "success": False,
-        "message": "save=true is allowed only for Niagara Systems under /Game/_MCP_Temp",
-        "asset": system.get_path_name(),
-        "save_requested": save,
-    }}
-else:
-    request_result = try_call(system, "request_compile", True)
-    wait_result = try_call(system, "wait_for_compilation_complete", False, False)
-    poll_result = try_call(system, "poll_for_compilation_complete", True)
-    save_result = None
+    @mcp.tool()
+    def set_niagara_user_parameter(
+        ctx: Context,
+        system_path: str,
+        parameter_name: str,
+        value: Any,
+        allow_source_edit: bool = False,
+        save: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Set a supported exposed Niagara User parameter value.
 
-    scripts = []
-    for prop_name in ("system_spawn_script", "SystemSpawnScript", "system_update_script", "SystemUpdateScript"):
+        Args:
+            system_path: Niagara System package path or object path
+            parameter_name: Parameter name, with or without the User. prefix
+            value: New JSON value. Vector/color values use arrays or objects.
+            allow_source_edit: Allow edits outside /Game/_MCP_Temp
+            save: Save the Niagara System after editing
+        """
         try:
-            script = system.get_editor_property(prop_name)
-            if script:
-                summary = script_compile_summary(script)
-                if summary and summary not in scripts:
-                    scripts.append(summary)
-        except Exception:
-            pass
+            return send_niagara_command(
+                "set_niagara_user_parameter",
+                {
+                    "system_path": system_path,
+                    "parameter_name": parameter_name,
+                    "value": value,
+                    "allow_source_edit": allow_source_edit,
+                    "save": save,
+                },
+            )
+        except Exception as e:
+            error_msg = f"Error setting Niagara user parameter: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
 
-    compile_error_count = 0
-    for summary in scripts:
-        status = summary.get("last_compile_status", "")
-        if "Error" in status or summary.get("error_message"):
-            compile_error_count += 1
-        for event in summary.get("compile_events", []):
-            if "Error" in event or "error" in event:
-                compile_error_count += 1
+    @mcp.tool()
+    def inspect_niagara_stack(
+        ctx: Context,
+        system_path: str,
+        include_pins: bool = False,
+        max_function_calls: int = 200,
+    ) -> Dict[str, Any]:
+        """
+        Inspect Niagara System, emitter, and scratch-pad stack function calls.
 
-    validation_pass = compile_error_count == 0
-    if save and validation_pass:
+        Args:
+            system_path: Niagara System package path or object path
+            include_pins: Include function call pin metadata
+            max_function_calls: Maximum function calls per script/graph
+        """
         try:
-            save_result = unreal.EditorAssetLibrary.save_loaded_asset(system)
-        except Exception as exc:
-            validation_pass = False
-            save_result = {{"success": False, "message": str(exc)}}
+            return send_niagara_command(
+                "inspect_niagara_stack",
+                {
+                    "system_path": system_path,
+                    "include_pins": include_pins,
+                    "max_function_calls": max_function_calls,
+                },
+            )
+        except Exception as e:
+            error_msg = f"Error inspecting Niagara stack: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
 
-    RESULT = {{
-        "success": True,
-        "asset": system.get_path_name(),
-        "request_compile": request_result,
-        "wait_for_compilation_complete": wait_result,
-        "poll_for_compilation_complete": poll_result,
-        "compile_error_count": compile_error_count,
-        "validation_pass": validation_pass,
-        "save_requested": save,
-        "save_result": save_result,
-        "scripts": scripts,
-        "note": "Niagara compile C++ methods may not be exposed in Python on every engine build. Inspect request/wait/poll called flags before trusting this as a full compile gate.",
-    }}
-"""
-        return _run_niagara_python(code)
+    @mcp.tool()
+    def inspect_niagara_graph(
+        ctx: Context,
+        system_path: str,
+        include_pins: bool = True,
+        include_links: bool = True,
+        include_scratch_pads: bool = True,
+        max_nodes_per_graph: int = 600,
+        max_links_per_graph: int = 2000,
+    ) -> Dict[str, Any]:
+        """
+        Inspect full Niagara graph nodes, pins, links, and scratch-pad graphs.
+
+        Args:
+            system_path: Niagara System package path or object path
+            include_pins: Include pin metadata on each graph node
+            include_links: Include explicit graph links and linked pin refs
+            include_scratch_pads: Include system, emitter, and parent scratch pads
+            max_nodes_per_graph: Maximum nodes returned per graph
+            max_links_per_graph: Maximum links returned per graph
+        """
+        try:
+            return send_niagara_command(
+                "inspect_niagara_graph",
+                {
+                    "system_path": system_path,
+                    "include_pins": include_pins,
+                    "include_links": include_links,
+                    "include_scratch_pads": include_scratch_pads,
+                    "max_nodes_per_graph": max_nodes_per_graph,
+                    "max_links_per_graph": max_links_per_graph,
+                },
+            )
+        except Exception as e:
+            error_msg = f"Error inspecting Niagara graph: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def inspect_niagara_scratch_pad_interface(
+        ctx: Context,
+        system_path: str,
+        include_graph_summary: bool = True,
+        include_parent_scratch_pads: bool = True,
+        max_scripts: int = 200,
+        max_function_calls: int = 80,
+    ) -> Dict[str, Any]:
+        """
+        Inspect Scratch Pad scripts as read-only authoring interfaces.
+
+        Args:
+            system_path: Niagara System package path or object path
+            include_graph_summary: Include compact function-call/input/output graph summary per Scratch Pad
+            include_parent_scratch_pads: Include inherited parent-emitter Scratch Pads
+            max_scripts: Maximum Scratch Pad scripts to return
+            max_function_calls: Maximum function calls per Scratch Pad graph summary
+        """
+        try:
+            return send_niagara_command(
+                "inspect_niagara_scratch_pad_interface",
+                {
+                    "system_path": system_path,
+                    "include_graph_summary": include_graph_summary,
+                    "include_parent_scratch_pads": include_parent_scratch_pads,
+                    "max_scripts": max_scripts,
+                    "max_function_calls": max_function_calls,
+                },
+            )
+        except Exception as e:
+            error_msg = f"Error inspecting Niagara scratch pad interface: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def duplicate_or_attach_emitter_from_source(
+        ctx: Context,
+        target_system_path: str,
+        source_emitter_path: str = "",
+        source_system_path: str = "",
+        source_emitter_index: int | None = None,
+        source_emitter_name: str = "",
+        new_emitter_name: str = "",
+        enabled: bool | None = None,
+        allow_source_edit: bool = False,
+        save: bool = True,
+        request_compile: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Duplicate or attach a source Niagara emitter into a target temp Niagara System.
+
+        Args:
+            target_system_path: Target Niagara System package path or object path
+            source_emitter_path: Optional source Niagara Emitter asset path
+            source_system_path: Optional source Niagara System path when copying one of its emitter handles
+            source_emitter_index: Optional source emitter index for source_system_path
+            source_emitter_name: Optional source emitter display name for source_system_path
+            new_emitter_name: Optional desired display name for the new target emitter
+            enabled: Optional enabled-state override for the new target emitter
+            allow_source_edit: Allow editing target systems outside /Game/_MCP_Temp/NiagaraGenerated/
+            save: Save the target system after attaching the emitter
+            request_compile: Request Niagara compile after attaching the emitter
+        """
+        try:
+            params: Dict[str, Any] = {
+                "target_system_path": target_system_path,
+                "source_emitter_path": source_emitter_path,
+                "source_system_path": source_system_path,
+                "source_emitter_name": source_emitter_name,
+                "new_emitter_name": new_emitter_name,
+                "allow_source_edit": allow_source_edit,
+                "save": save,
+                "request_compile": request_compile,
+            }
+            if source_emitter_index is not None:
+                params["source_emitter_index"] = source_emitter_index
+            if enabled is not None:
+                params["enabled"] = enabled
+            return send_niagara_command("duplicate_or_attach_emitter_from_source", params)
+        except Exception as e:
+            error_msg = f"Error duplicating or attaching Niagara emitter: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def create_or_duplicate_scratch_pad_module(
+        ctx: Context,
+        target_system_path: str,
+        source_script_path: str = "",
+        source_system_path: str = "",
+        source_owner_kind: str = "system",
+        source_script_index: int | None = None,
+        source_scratch_pad_name: str = "",
+        source_emitter_index: int | None = None,
+        source_emitter_name: str = "",
+        target_owner_kind: str = "system",
+        target_emitter_index: int | None = None,
+        target_emitter_name: str = "",
+        new_script_name: str = "",
+        allow_source_edit: bool = False,
+        save: bool = True,
+        request_compile: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Duplicate an existing Scratch Pad script into a target temp Niagara System or emitter.
+
+        Args:
+            target_system_path: Target Niagara System package path or object path
+            source_script_path: Optional direct Scratch Pad script object path
+            source_system_path: Optional source Niagara System path when selecting by owner/index/name
+            source_owner_kind: Source owner kind: system, emitter, parent_emitter
+            source_script_index: Optional source Scratch Pad script index
+            source_scratch_pad_name: Optional source Scratch Pad script name
+            source_emitter_index: Optional source emitter index for emitter-owned Scratch Pads
+            source_emitter_name: Optional source emitter name for emitter-owned Scratch Pads
+            target_owner_kind: Target owner kind: system or emitter
+            target_emitter_index: Optional target emitter index when target_owner_kind is emitter
+            target_emitter_name: Optional target emitter name when target_owner_kind is emitter
+            new_script_name: Optional desired name for the duplicated Scratch Pad script
+            allow_source_edit: Allow editing target systems outside /Game/_MCP_Temp/NiagaraGenerated/
+            save: Save the target system after duplicating the Scratch Pad
+            request_compile: Request Niagara compile after duplicating the Scratch Pad
+        """
+        try:
+            params: Dict[str, Any] = {
+                "target_system_path": target_system_path,
+                "source_script_path": source_script_path,
+                "source_system_path": source_system_path,
+                "source_owner_kind": source_owner_kind,
+                "source_scratch_pad_name": source_scratch_pad_name,
+                "source_emitter_name": source_emitter_name,
+                "target_owner_kind": target_owner_kind,
+                "target_emitter_name": target_emitter_name,
+                "new_script_name": new_script_name,
+                "allow_source_edit": allow_source_edit,
+                "save": save,
+                "request_compile": request_compile,
+            }
+            if source_script_index is not None:
+                params["source_script_index"] = source_script_index
+            if source_emitter_index is not None:
+                params["source_emitter_index"] = source_emitter_index
+            if target_emitter_index is not None:
+                params["target_emitter_index"] = target_emitter_index
+            return send_niagara_command("create_or_duplicate_scratch_pad_module", params)
+        except Exception as e:
+            error_msg = f"Error duplicating Niagara Scratch Pad module: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def add_scratch_pad_module_to_stack(
+        ctx: Context,
+        target_system_path: str,
+        scratch_pad_script_path: str = "",
+        scratch_pad_owner_kind: str = "system",
+        scratch_pad_script_index: int | None = None,
+        scratch_pad_name: str = "",
+        scratch_pad_emitter_index: int | None = None,
+        scratch_pad_emitter_name: str = "",
+        target_usage: str = "ParticleUpdateScript",
+        target_usage_id: str = "",
+        target_emitter_index: int | None = None,
+        target_emitter_name: str = "",
+        target_index: int | None = None,
+        suggested_name: str = "",
+        skip_if_duplicate: bool = True,
+        allow_source_edit: bool = False,
+        save: bool = True,
+        request_compile: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Insert a target-local Scratch Pad module into a Niagara stack.
+
+        Args:
+            target_system_path: Target Niagara System package path or object path
+            scratch_pad_script_path: Optional direct Scratch Pad script object path already inside the target system
+            scratch_pad_owner_kind: Scratch Pad owner kind: system or emitter
+            scratch_pad_script_index: Optional Scratch Pad script index
+            scratch_pad_name: Optional Scratch Pad script name
+            scratch_pad_emitter_index: Optional emitter index for emitter-owned Scratch Pads
+            scratch_pad_emitter_name: Optional emitter name for emitter-owned Scratch Pads
+            target_usage: Target stack usage, such as ParticleUpdateScript or EmitterSpawnScript
+            target_usage_id: Optional target output usage GUID
+            target_emitter_index: Optional target emitter index for emitter/particle stacks
+            target_emitter_name: Optional target emitter name for emitter/particle stacks
+            target_index: Optional stack insertion index; omit or -1 to append
+            suggested_name: Optional suggested module node name
+            skip_if_duplicate: Skip without mutation if the same Scratch Pad already exists in the requested output stack
+            allow_source_edit: Allow editing target systems outside /Game/_MCP_Temp/NiagaraGenerated/
+            save: Save the target system after stack insertion
+            request_compile: Request Niagara compile after stack insertion
+        """
+        try:
+            params: Dict[str, Any] = {
+                "target_system_path": target_system_path,
+                "scratch_pad_script_path": scratch_pad_script_path,
+                "scratch_pad_owner_kind": scratch_pad_owner_kind,
+                "scratch_pad_name": scratch_pad_name,
+                "scratch_pad_emitter_name": scratch_pad_emitter_name,
+                "target_usage": target_usage,
+                "target_usage_id": target_usage_id,
+                "target_emitter_name": target_emitter_name,
+                "suggested_name": suggested_name,
+                "skip_if_duplicate": skip_if_duplicate,
+                "allow_source_edit": allow_source_edit,
+                "save": save,
+                "request_compile": request_compile,
+            }
+            if scratch_pad_script_index is not None:
+                params["scratch_pad_script_index"] = scratch_pad_script_index
+            if scratch_pad_emitter_index is not None:
+                params["scratch_pad_emitter_index"] = scratch_pad_emitter_index
+            if target_emitter_index is not None:
+                params["target_emitter_index"] = target_emitter_index
+            if target_index is not None:
+                params["target_index"] = target_index
+            return send_niagara_command("add_scratch_pad_module_to_stack", params)
+        except Exception as e:
+            error_msg = f"Error adding Niagara Scratch Pad module to stack: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def inspect_niagara_compile_status(
+        ctx: Context,
+        system_path: str,
+        request_compile: bool = False,
+        force: bool = False,
+        allow_source_compile: bool = False,
+        wait_for_completion: bool = False,
+        timeout_seconds: float = 10.0,
+        poll_interval_seconds: float = 0.1,
+    ) -> Dict[str, Any]:
+        """
+        Inspect Niagara script compile status and outstanding compile requests.
+
+        Args:
+            system_path: Niagara System package path or object path
+            request_compile: Request a compile before returning status
+            force: Force compile when request_compile is true
+            allow_source_compile: Allow compile requests outside /Game/_MCP_Temp/NiagaraGenerated/
+            wait_for_completion: Poll outstanding compile requests before returning
+            timeout_seconds: Maximum wait time when wait_for_completion is true
+            poll_interval_seconds: Poll interval when wait_for_completion is true
+        """
+        try:
+            return send_niagara_command(
+                "inspect_niagara_compile_status",
+                {
+                    "system_path": system_path,
+                    "request_compile": request_compile,
+                    "force": force,
+                    "allow_source_compile": allow_source_compile,
+                    "wait_for_completion": wait_for_completion,
+                    "timeout_seconds": timeout_seconds,
+                    "poll_interval_seconds": poll_interval_seconds,
+                },
+            )
+        except Exception as e:
+            error_msg = f"Error inspecting Niagara compile status: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def inspect_niagara_module_inputs(
+        ctx: Context,
+        system_path: str,
+        include_linked_sources: bool = True,
+        include_resolved_stack_inputs: bool = False,
+        max_modules: int = 200,
+        max_candidates_per_module: int = 24,
+        max_resolved_inputs_per_module: int = 8,
+        max_top_candidates: int = 80,
+    ) -> Dict[str, Any]:
+        """
+        Inspect Niagara module input candidates for generation planning.
+
+        Args:
+            system_path: Niagara System package path or object path
+            include_linked_sources: Include linked script/source metadata
+            include_resolved_stack_inputs: Include resolved stack input values
+            max_modules: Maximum modules to inspect per emitter
+            max_candidates_per_module: Maximum editable-looking candidates per module
+            max_resolved_inputs_per_module: Maximum resolved inputs per module
+            max_top_candidates: Maximum prioritized candidates in the top list
+        """
+        try:
+            return send_niagara_command(
+                "inspect_niagara_module_inputs",
+                {
+                    "system_path": system_path,
+                    "include_linked_sources": include_linked_sources,
+                    "include_resolved_stack_inputs": include_resolved_stack_inputs,
+                    "max_modules": max_modules,
+                    "max_candidates_per_module": max_candidates_per_module,
+                    "max_resolved_inputs_per_module": max_resolved_inputs_per_module,
+                    "max_top_candidates": max_top_candidates,
+                },
+            )
+        except Exception as e:
+            error_msg = f"Error inspecting Niagara module inputs: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def set_niagara_module_input_value(
+        ctx: Context,
+        system_path: str,
+        input_name: str,
+        value: Any,
+        emitter_index: int | None = None,
+        emitter_name: str = "",
+        module_index: int | None = None,
+        module_name: str = "",
+        module_node_guid: str = "",
+        allow_source_edit: bool = False,
+        save: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Set an existing Niagara RapidIteration module input override.
+
+        Args:
+            system_path: Niagara System package path or object path
+            input_name: Module input name, with or without the Module. prefix
+            value: New JSON value. Only existing RapidIteration values are edited.
+            emitter_index: Optional target emitter index
+            emitter_name: Optional target emitter name
+            module_index: Optional target module index from inspect_niagara_module_inputs
+            module_name: Optional target module name
+            module_node_guid: Optional target module node GUID
+            allow_source_edit: Allow edits outside /Game/_MCP_Temp
+            save: Save the Niagara System after editing
+        """
+        try:
+            params: Dict[str, Any] = {
+                "system_path": system_path,
+                "input_name": input_name,
+                "value": value,
+                "emitter_name": emitter_name,
+                "module_name": module_name,
+                "module_node_guid": module_node_guid,
+                "allow_source_edit": allow_source_edit,
+                "save": save,
+            }
+            if emitter_index is not None:
+                params["emitter_index"] = emitter_index
+            if module_index is not None:
+                params["module_index"] = module_index
+            return send_niagara_command("set_niagara_module_input_value", params)
+        except Exception as e:
+            error_msg = f"Error setting Niagara module input value: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def create_niagara_module_input_override(
+        ctx: Context,
+        system_path: str,
+        input_name: str,
+        value: Any,
+        emitter_index: int | None = None,
+        emitter_name: str = "",
+        module_index: int | None = None,
+        module_name: str = "",
+        module_node_guid: str = "",
+        overwrite_existing: bool = False,
+        allow_source_edit: bool = False,
+        save: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Create a missing Niagara RapidIteration module input override.
+
+        Args:
+            system_path: Niagara System package path or object path
+            input_name: Module input name, with or without the Module. prefix
+            value: Initial JSON value for the new override
+            emitter_index: Optional target emitter index
+            emitter_name: Optional target emitter name
+            module_index: Optional target module index from inspect_niagara_module_inputs
+            module_name: Optional target module name
+            module_node_guid: Optional target module node GUID
+            overwrite_existing: Allow replacing an existing override
+            allow_source_edit: Allow edits outside /Game/_MCP_Temp
+            save: Save the Niagara System after editing
+        """
+        try:
+            params: Dict[str, Any] = {
+                "system_path": system_path,
+                "input_name": input_name,
+                "value": value,
+                "emitter_name": emitter_name,
+                "module_name": module_name,
+                "module_node_guid": module_node_guid,
+                "overwrite_existing": overwrite_existing,
+                "allow_source_edit": allow_source_edit,
+                "save": save,
+            }
+            if emitter_index is not None:
+                params["emitter_index"] = emitter_index
+            if module_index is not None:
+                params["module_index"] = module_index
+            return send_niagara_command("create_niagara_module_input_override", params)
+        except Exception as e:
+            error_msg = f"Error creating Niagara module input override: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def set_niagara_module_inputs_batch(
+        ctx: Context,
+        system_path: str,
+        edits: list[Dict[str, Any]],
+        operation: str = "set_existing",
+        overwrite_existing: bool = False,
+        continue_on_error: bool = False,
+        allow_source_edit: bool = False,
+        save: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Apply multiple Niagara RapidIteration module input edits in one command.
+
+        Args:
+            system_path: Niagara System package path or object path
+            edits: Edit objects with selectors, input_name, value, and optional operation
+            operation: Default operation: set_existing, create_override, or upsert
+            overwrite_existing: Default overwrite flag for create/upsert operations
+            continue_on_error: Continue processing after an edit failure
+            allow_source_edit: Allow edits outside /Game/_MCP_Temp
+            save: Save the Niagara System once after successful edits
+        """
+        try:
+            return send_niagara_command(
+                "set_niagara_module_inputs_batch",
+                {
+                    "system_path": system_path,
+                    "edits": edits,
+                    "operation": operation,
+                    "overwrite_existing": overwrite_existing,
+                    "continue_on_error": continue_on_error,
+                    "allow_source_edit": allow_source_edit,
+                    "save": save,
+                },
+            )
+        except Exception as e:
+            error_msg = f"Error batch setting Niagara module input values: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
 
     logger.info("Niagara tools registered successfully")

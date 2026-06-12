@@ -15,7 +15,7 @@ from mcp.server.fastmcp import FastMCP
 
 # Configure logging with more detailed format
 logging.basicConfig(
-    level=logging.DEBUG,  # Change to DEBUG level for more details
+    level=os.environ.get("UNREAL_MCP_LOG_LEVEL", "INFO").upper(),
     format='%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s',
     handlers=[
         logging.FileHandler('unreal_mcp.log'),
@@ -28,6 +28,17 @@ logger = logging.getLogger("UnrealMCP")
 UNREAL_HOST = "127.0.0.1"
 UNREAL_PORT = 55557
 UNREAL_RESPONSE_TIMEOUT_SECONDS = int(os.environ.get("UNREAL_MCP_RESPONSE_TIMEOUT_SECONDS", "120"))
+UNREAL_MCP_LOG_PAYLOAD_CHARS = int(os.environ.get("UNREAL_MCP_LOG_PAYLOAD_CHARS", "1200"))
+
+def _summarize_for_log(value: Any, max_chars: int = UNREAL_MCP_LOG_PAYLOAD_CHARS) -> str:
+    """Return a bounded JSON-ish representation for operational logs."""
+    try:
+        text = json.dumps(value, ensure_ascii=False, default=str)
+    except Exception:
+        text = str(value)
+    if len(text) <= max_chars:
+        return text
+    return f"{text[:max_chars]}... <truncated {len(text) - max_chars} chars>"
 
 class UnrealConnection:
     """Connection to an Unreal Engine instance."""
@@ -95,13 +106,14 @@ class UnrealConnection:
                 
                 # Process the data received so far
                 data = b''.join(chunks)
-                decoded_data = data.decode('utf-8')
-                
-                # Try to parse as JSON to check if complete
                 try:
+                    decoded_data = data.decode('utf-8')
                     json.loads(decoded_data)
                     logger.info(f"Received complete response ({len(data)} bytes)")
                     return data
+                except UnicodeDecodeError:
+                    logger.debug("Received partial UTF-8 sequence, waiting for more data...")
+                    continue
                 except json.JSONDecodeError:
                     # Not complete JSON yet, continue reading
                     logger.debug(f"Received partial response, waiting for more data...")
@@ -150,15 +162,23 @@ class UnrealConnection:
             
             # Send without newline, exactly like Unity
             command_json = json.dumps(command_obj)
-            logger.info(f"Sending command: {command_json}")
+            logger.info(
+                "Sending command '%s' (%d bytes): %s",
+                command,
+                len(command_json.encode("utf-8")),
+                _summarize_for_log(command_obj),
+            )
             self.socket.sendall(command_json.encode('utf-8'))
             
             # Read response using improved handler
             response_data = self.receive_full_response(self.socket)
             response = json.loads(response_data.decode('utf-8'))
             
-            # Log complete response for debugging
-            logger.info(f"Complete response from Unreal: {response}")
+            logger.info(
+                "Complete response from Unreal for '%s': %s",
+                command,
+                _summarize_for_log(response),
+            )
             
             # Check for both error formats: {"status": "error", ...} and {"success": false, ...}
             if response.get("status") == "error":
@@ -171,11 +191,8 @@ class UnrealConnection:
                 # This format uses {"success": false, "error": "message"} or {"success": false, "message": "message"}
                 error_message = response.get("error") or response.get("message", "Unknown Unreal error")
                 logger.error(f"Unreal error (success=false): {error_message}")
-                # Convert to the standard format expected by higher layers
-                response = {
-                    "status": "error",
-                    "error": error_message
-                }
+                response.setdefault("status", "error")
+                response.setdefault("error", error_message)
             
             # Always close the connection after command is complete
             # since Unreal will close it on its side anyway
@@ -214,23 +231,11 @@ def get_unreal_connection() -> Optional[UnrealConnection]:
             if not _unreal_connection.connect():
                 logger.warning("Could not connect to Unreal Engine")
                 _unreal_connection = None
-        else:
-            # Verify connection is still valid with a ping-like test
-            try:
-                # Simple test by sending an empty buffer to check if socket is still connected
-                _unreal_connection.socket.sendall(b'\x00')
-                logger.debug("Connection verified with ping test")
-            except Exception as e:
-                logger.warning(f"Existing connection failed: {e}")
-                _unreal_connection.disconnect()
+        elif not _unreal_connection.connected or _unreal_connection.socket is None:
+            _unreal_connection = UnrealConnection()
+            if not _unreal_connection.connect():
+                logger.warning("Could not reconnect to Unreal Engine")
                 _unreal_connection = None
-                # Try to reconnect
-                _unreal_connection = UnrealConnection()
-                if not _unreal_connection.connect():
-                    logger.warning("Could not reconnect to Unreal Engine")
-                    _unreal_connection = None
-                else:
-                    logger.info("Successfully reconnected to Unreal Engine")
         
         return _unreal_connection
     except Exception as e:
@@ -276,6 +281,7 @@ from tools.umg_tools import register_umg_tools
 from tools.python_tools import register_python_tools
 from tools.pcg_tools import register_pcg_tools
 from tools.material_tools import register_material_tools
+from tools.niagara_tools import register_niagara_tools
 from tools.texture_generation import register_texture_generation_tools
 from tools.ieta_tools import register_ieta_tools
 from tools.niagara_tools import register_niagara_tools
@@ -289,6 +295,7 @@ register_umg_tools(mcp)
 register_python_tools(mcp)
 register_pcg_tools(mcp)
 register_material_tools(mcp)
+register_niagara_tools(mcp)
 register_texture_generation_tools(mcp)
 register_ieta_tools(mcp)
 register_niagara_tools(mcp)
@@ -317,6 +324,31 @@ def info():
     ### Viewport and Screenshots
     - `focus_viewport(target, location, distance, orientation)` - Focus viewport
     - `take_screenshot(filename, show_ui, resolution)` - Capture screenshots
+    - `open_niagara_preview_player(system_path="")` - Open the level-independent Niagara Preview Player Slate drop surface and optionally load a Niagara System
+    - `get_niagara_preview_player_state()` - Inspect Niagara Preview Player window and latest dropped asset/actor state
+    - `get_niagara_preview_lab_state()` - Inspect Niagara Preview Lab map, dirty, and preview actor safety state
+    - `cleanup_niagara_preview_lab()` - Delete Niagara Preview Lab preview actors without saving or reloading the map
+    - `capture_niagara_preview_lab_view(filepath, view=1)` - Capture a clean Niagara Preview Lab PNG; auto-frames preview actors when present
+    - `preview_niagara_system_in_preview_lab(system_path, filepath, view=1, label="", warmup_time=0.35, cleanup_after=True)` - One-call optimized Niagara preview: spawn, warm up, auto-frame capture, and optional cleanup
+    - `sample_niagara_system_in_preview_lab(system_path, output_dir="", label="", warmup_times=[...], views=[...])` - Multi-candidate optimized Niagara preview sampling in one MCP round trip
+
+    ## Niagara Authoring
+    - `analyze_niagara_system(system_path)` - Aggregate read-only Niagara renderer, user parameter, stack, graph, module-input, and compile inspection
+    - `inspect_niagara_renderers(system_path)` - Inspect enabled Niagara renderers and material slots
+    - `set_niagara_renderer_material(system_path, material_path, emitter_index=None, emitter_name="", renderer_index=None, material_slot_index=0, allow_source_edit=False, save=True)` - Set renderer material, temp/generated assets only by default
+    - `inspect_niagara_user_parameters(system_path)` - Inspect exposed User parameters and current values
+    - `set_niagara_user_parameter(system_path, parameter_name, value, allow_source_edit=False, save=True)` - Set supported User parameter values
+    - `inspect_niagara_stack(system_path, include_pins=False, max_function_calls=200)` - Inspect system/emitter/scratch-pad function calls
+    - `inspect_niagara_graph(system_path, include_pins=True, include_links=True)` - Inspect full Niagara graph nodes, pins, links, and scratch-pad graphs
+    - `inspect_niagara_scratch_pad_interface(system_path, include_graph_summary=True, include_parent_scratch_pads=True)` - Inspect Scratch Pad inputs/outputs/usages as a read-only authoring interface
+    - `duplicate_or_attach_emitter_from_source(target_system_path, source_emitter_path="", source_system_path="", source_emitter_index=None, source_emitter_name="", new_emitter_name="", enabled=None, allow_source_edit=False, save=True, request_compile=True)` - Add a source emitter into a generated temp Niagara System
+    - `create_or_duplicate_scratch_pad_module(target_system_path, source_script_path="", source_system_path="", source_owner_kind="system", source_script_index=None, source_scratch_pad_name="", source_emitter_index=None, source_emitter_name="", target_owner_kind="system", target_emitter_index=None, target_emitter_name="", new_script_name="", allow_source_edit=False, save=True, request_compile=True)` - Duplicate an existing Scratch Pad script into a generated temp Niagara System or emitter
+    - `add_scratch_pad_module_to_stack(target_system_path, scratch_pad_script_path="", scratch_pad_owner_kind="system", scratch_pad_script_index=None, scratch_pad_name="", scratch_pad_emitter_index=None, scratch_pad_emitter_name="", target_usage="ParticleUpdateScript", target_usage_id="", target_emitter_index=None, target_emitter_name="", target_index=None, suggested_name="", allow_source_edit=False, save=True, request_compile=True, skip_if_duplicate=True)` - Insert a target-local Scratch Pad module into a Niagara stack
+    - `inspect_niagara_compile_status(system_path, request_compile=False, force=False, allow_source_compile=False, wait_for_completion=False)` - Inspect Niagara script compile status and outstanding requests
+    - `inspect_niagara_module_inputs(system_path, include_linked_sources=True, include_resolved_stack_inputs=False)` - Inspect module input candidates for generation planning
+    - `create_niagara_module_input_override(system_path, input_name, value, emitter_index=None, emitter_name="", module_index=None, module_name="", module_node_guid="", overwrite_existing=False, allow_source_edit=False, save=True, request_compile=True)` - Create a missing RapidIteration module input override, temp/generated assets only by default
+    - `set_niagara_module_inputs_batch(system_path, edits, operation="set_existing", overwrite_existing=False, continue_on_error=False, allow_source_edit=False, save=True, request_compile=True)` - Apply multiple RapidIteration module input edits, compile once, and save once
+    - `set_niagara_module_input_value(system_path, input_name, value, emitter_index=None, emitter_name="", module_index=None, module_name="", module_node_guid="", allow_source_edit=False, save=True, request_compile=True)` - Set an existing RapidIteration module input override
 
     ### Actor Management
     - `get_actors_in_level()` - List all actors in current level

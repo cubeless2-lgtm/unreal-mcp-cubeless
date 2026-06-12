@@ -25,4 +25,4 @@ if (-not (Test-Path -LiteralPath $serverScript -PathType Leaf)) {
     throw "Expected MCP server script at '$serverScript'. Check the unreal-mcp checkout."
 }
 
-& uv --directory $pythonRoot run unreal_mcp_server.py
+& uv --directory $pythonRoot run --python 3.11 unreal_mcp_server.py
