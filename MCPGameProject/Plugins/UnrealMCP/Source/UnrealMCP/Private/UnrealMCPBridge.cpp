@@ -1,5 +1,6 @@
 #include "UnrealMCPBridge.h"
 #include "MCPServerRunnable.h"
+#include "UI/IetaMCPStatusWindow.h"
 #include "Sockets.h"
 #include "SocketSubsystem.h"
 #include "HAL/RunnableThread.h"
@@ -22,24 +23,7 @@
 #include "Engine/Selection.h"
 #include "Kismet/GameplayStatics.h"
 #include "Async/Async.h"
-#include "Engine/Texture2D.h"
 #include "Containers/Ticker.h"
-#include "Framework/Application/SlateApplication.h"
-#include "HAL/FileManager.h"
-#include "ImageUtils.h"
-#include "Interfaces/IPluginManager.h"
-#include "Misc/App.h"
-#include "Misc/FileHelper.h"
-#include "Misc/Paths.h"
-#include "Styling/SlateBrush.h"
-#include "Styling/CoreStyle.h"
-#include "Widgets/Images/SImage.h"
-#include "Widgets/Layout/SBorder.h"
-#include "Widgets/Layout/SBox.h"
-#include "Widgets/SBoxPanel.h"
-#include "Widgets/SWindow.h"
-#include "Widgets/Notifications/SProgressBar.h"
-#include "Widgets/Text/STextBlock.h"
 // Add Blueprint related includes
 #include "Engine/Blueprint.h"
 #include "Engine/BlueprintGeneratedClass.h"
@@ -72,7 +56,9 @@
 #include "Commands/UnrealMCPEditorCommands.h"
 #include "Commands/UnrealMCPBlueprintCommands.h"
 #include "Commands/UnrealMCPBlueprintNodeCommands.h"
+#include "Commands/UnrealMCPMaterialCommands.h"
 #include "Commands/UnrealMCPNiagaraCommands.h"
+#include "Commands/UnrealMCPPCGCommands.h"
 #include "Commands/UnrealMCPProjectCommands.h"
 #include "Commands/UnrealMCPCommonUtils.h"
 #include "Commands/UnrealMCPUMGCommands.h"
@@ -81,495 +67,14 @@
 #define MCP_SERVER_HOST "127.0.0.1"
 #define MCP_SERVER_PORT 55557
 
-namespace
-{
-class FIetaMCPStatusWindow
-{
-public:
-    static void ShowWithParams(const FString& CommandType, const TSharedPtr<FJsonObject>& Params)
-    {
-        if (!IsIetaPlanningCommand(CommandType))
-        {
-            PendingParamsSummary.Reset();
-            bUsePendingParamsOnNextShow = false;
-            return;
-        }
-
-        (void)Params;
-        PendingParamsSummary.Reset();
-        bUsePendingParamsOnNextShow = false;
-        Show(CommandType);
-    }
-
-    static void Show(const FString& CommandType)
-    {
-        if (!IsIetaPlanningCommand(CommandType))
-        {
-            return;
-        }
-
-        if (!FSlateApplication::IsInitialized())
-        {
-            return;
-        }
-
-        if (bUsePendingParamsOnNextShow)
-        {
-            bUsePendingParamsOnNextShow = false;
-        }
-        else
-        {
-            PendingParamsSummary.Reset();
-        }
-
-        ++CloseRequestGeneration;
-
-        if (StatusWindow.IsValid())
-        {
-            const TSharedPtr<SWindow> ExistingWindow = StatusWindow;
-            LastShowTime = FPlatformTime::Seconds();
-            SetProcessingStatus(CommandType);
-            ExistingWindow->BringToFront();
-            FlushSlateWindowNow(ExistingWindow.ToSharedRef());
-            return;
-        }
-
-        const TSharedPtr<IPlugin> Plugin = IPluginManager::Get().FindPlugin(TEXT("UnrealMCP"));
-        const FString ImagePath = Plugin.IsValid()
-            ? FPaths::Combine(Plugin->GetBaseDir(), TEXT("Resources"), TEXT("Ieta.png"))
-            : FString();
-
-        if (!AvatarTexture && FPaths::FileExists(ImagePath))
-        {
-            AvatarTexture = FImageUtils::ImportFileAsTexture2D(ImagePath);
-            if (AvatarTexture)
-            {
-                AvatarTexture->AddToRoot();
-                AvatarTexture->SRGB = true;
-            }
-        }
-
-        if (AvatarTexture)
-        {
-            AvatarBrush = MakeShared<FSlateBrush>();
-            AvatarBrush->SetResourceObject(AvatarTexture);
-            AvatarBrush->ImageSize = FVector2D(64.0f, 64.0f);
-            AvatarBrush->DrawAs = ESlateBrushDrawType::Image;
-        }
-        else
-        {
-            AvatarBrush.Reset();
-        }
-
-        const FText TitleText = FText::FromString(TEXT("이에타 상태"));
-        const FText BodyText = FText::FromString(FString::Printf(
-            TEXT("확인 중\n")
-            TEXT("명령: %s"),
-            *CommandType));
-
-        TSharedRef<SWindow> Window = SNew(SWindow)
-            .Title(TitleText)
-            .ClientSize(FVector2D(520.0f, 170.0f))
-            .SizingRule(ESizingRule::FixedSize)
-            .SupportsMaximize(false)
-            .SupportsMinimize(false)
-            .HasCloseButton(true)
-            .IsTopmostWindow(true)
-            [
-                SNew(SBorder)
-                .Padding(14.0f)
-                .BorderBackgroundColor(FLinearColor(0.035f, 0.035f, 0.042f, 0.96f))
-                [
-                    SNew(SHorizontalBox)
-
-                    + SHorizontalBox::Slot()
-                    .AutoWidth()
-                    .VAlign(VAlign_Center)
-                    [
-                        SNew(SBox)
-                        .WidthOverride(78.0f)
-                        .HeightOverride(78.0f)
-                        [
-                            SNew(SImage)
-                            .Image(AvatarBrush.IsValid() ? AvatarBrush.Get() : FCoreStyle::Get().GetDefaultBrush())
-                        ]
-                    ]
-
-                    + SHorizontalBox::Slot()
-                    .FillWidth(1.0f)
-                    .Padding(14.0f, 0.0f, 0.0f, 0.0f)
-                    .VAlign(VAlign_Center)
-                    [
-                        SNew(SVerticalBox)
-
-                        + SVerticalBox::Slot()
-                        .AutoHeight()
-                        [
-                            SNew(STextBlock)
-                            .Text(TitleText)
-                            .ColorAndOpacity(FLinearColor(1.0f, 0.86f, 0.48f, 1.0f))
-                            .Font(FCoreStyle::GetDefaultFontStyle("Bold", 16))
-                        ]
-
-                        + SVerticalBox::Slot()
-                        .AutoHeight()
-                        .Padding(0.0f, 6.0f, 0.0f, 0.0f)
-                        [
-                            SAssignNew(BodyTextBlock, STextBlock)
-                            .Text(BodyText)
-                            .AutoWrapText(true)
-                            .ColorAndOpacity(FLinearColor(0.93f, 0.93f, 0.96f, 1.0f))
-                            .Font(FCoreStyle::GetDefaultFontStyle("Regular", 12))
-                        ]
-
-                        + SVerticalBox::Slot()
-                        .AutoHeight()
-                        .Padding(0.0f, 10.0f, 0.0f, 0.0f)
-                        [
-                            SAssignNew(ProgressBar, SProgressBar)
-                            .Percent(0.05f)
-                        ]
-                    ]
-                ]
-            ];
-
-        Window->SetOnWindowClosed(FOnWindowClosed::CreateStatic(&FIetaMCPStatusWindow::OnStatusWindowClosed));
-        StatusWindow = Window;
-        LastShowTime = FPlatformTime::Seconds();
-        FSlateApplication::Get().AddWindow(Window);
-        SetProcessingStatus(CommandType);
-        FlushSlateWindowNow(Window);
-    }
-
-    static void UpdateStatus(const FString& StatusText, const FString& CommandType, TOptional<float> Progress = TOptional<float>())
-    {
-        const FString SlateCommand = CommandType.IsEmpty() ? TEXT("ieta_status") : CommandType;
-        if (!IsIetaPlanningCommand(SlateCommand))
-        {
-            return;
-        }
-
-        if (!FSlateApplication::IsInitialized())
-        {
-            return;
-        }
-
-        if (!StatusWindow.IsValid())
-        {
-            Show(SlateCommand);
-        }
-
-        const FString EffectiveCommand = SlateCommand;
-        const FText UpdatedBodyText = FText::FromString(FString::Printf(
-            TEXT("%s\n")
-            TEXT("명령: %s"),
-            *StatusText,
-            *EffectiveCommand));
-
-        if (BodyTextBlock.IsValid())
-        {
-            BodyTextBlock->SetText(UpdatedBodyText);
-        }
-
-        if (ProgressBar.IsValid())
-        {
-            ProgressBar->SetVisibility(EVisibility::Visible);
-            if (Progress.IsSet())
-            {
-                ProgressBar->SetPercent(FMath::Clamp(Progress.GetValue(), 0.0f, 1.0f));
-            }
-        }
-
-        LastShowTime = FPlatformTime::Seconds();
-        if (StatusWindow.IsValid())
-        {
-            const TSharedPtr<SWindow> Window = StatusWindow;
-            Window->BringToFront();
-            FlushSlateWindowNow(Window.ToSharedRef());
-        }
-    }
-
-    static void CompleteCommand(const FString& CommandType, const TSharedPtr<FJsonObject>& ResponseJson)
-    {
-        if (!IsIetaPlanningCommand(CommandType))
-        {
-            return;
-        }
-
-        FString ResponseStatus;
-        if (ResponseJson.IsValid())
-        {
-            ResponseJson->TryGetStringField(TEXT("status"), ResponseStatus);
-        }
-
-        FString DetailText;
-        if (ResponseJson.IsValid())
-        {
-            ResponseJson->TryGetStringField(TEXT("error"), DetailText);
-            if (DetailText.IsEmpty())
-            {
-                ResponseJson->TryGetStringField(TEXT("message"), DetailText);
-            }
-        }
-
-        const bool bSucceeded = ResponseStatus == TEXT("success");
-        if (IsIetaPlanningCommand(CommandType))
-        {
-            const FString IetaPlanningCompletionText = bSucceeded
-                ? TEXT("계획은 끝났어. 이제 필요한 걸 넘기면 돼.")
-                : FString::Printf(TEXT("흠, 생각하다가 막혔어.%s%s"),
-                    DetailText.IsEmpty() ? TEXT("") : TEXT("\n"),
-                    *DetailText);
-
-            UpdateStatus(IetaPlanningCompletionText, CommandType, TOptional<float>(1.0f));
-            Hide();
-            return;
-        }
-
-        const FString CompletionText = bSucceeded
-            ? TEXT("MCP 작업 완료: 성공")
-            : FString::Printf(TEXT("MCP 작업 완료: 실패%s%s"),
-                DetailText.IsEmpty() ? TEXT("") : TEXT("\n"),
-                *DetailText);
-
-        (void)CompletionText;
-
-        const FString IetaCompletionText = bSucceeded
-            ? TEXT("끝났어. 티브렛이 처리해뒀어.")
-            : FString::Printf(TEXT("흠, 티브렛이 여기서 막혔어.%s%s"),
-                DetailText.IsEmpty() ? TEXT("") : TEXT("\n"),
-                *DetailText);
-
-        UpdateStatus(IetaCompletionText, CommandType, TOptional<float>(1.0f));
-        Hide();
-    }
-
-    static void Hide()
-    {
-        if (!FSlateApplication::IsInitialized())
-        {
-            StatusWindow.Reset();
-            AvatarBrush.Reset();
-            BodyTextBlock.Reset();
-            ProgressBar.Reset();
-            return;
-        }
-
-        if (StatusWindow.IsValid())
-        {
-            const double RemainingSeconds = CompletionVisibleSeconds - (FPlatformTime::Seconds() - LastShowTime);
-            if (RemainingSeconds > 0.0)
-            {
-                const TWeakPtr<SWindow> WindowToClose = StatusWindow;
-                const uint64 RequestedGeneration = CloseRequestGeneration;
-                FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([WindowToClose, RequestedGeneration](float)
-                {
-                    if (CloseRequestGeneration != RequestedGeneration)
-                    {
-                        return false;
-                    }
-
-                    if (WindowToClose.IsValid())
-                    {
-                        WindowToClose.Pin()->RequestDestroyWindow();
-                    }
-                    const TSharedPtr<SWindow> CurrentWindow = StatusWindow;
-                    const TSharedPtr<SWindow> ExpectedWindow = WindowToClose.Pin();
-                    if ((CurrentWindow.IsValid() && ExpectedWindow.IsValid() && CurrentWindow.Get() == ExpectedWindow.Get()) ||
-                        (!CurrentWindow.IsValid() && !ExpectedWindow.IsValid()))
-                    {
-                        StatusWindow.Reset();
-                        AvatarBrush.Reset();
-                        BodyTextBlock.Reset();
-                        ProgressBar.Reset();
-                    }
-                    return false;
-                }), static_cast<float>(RemainingSeconds));
-                return;
-            }
-        }
-
-        if (StatusWindow.IsValid())
-        {
-            StatusWindow->RequestDestroyWindow();
-        }
-
-        StatusWindow.Reset();
-        AvatarBrush.Reset();
-        BodyTextBlock.Reset();
-        ProgressBar.Reset();
-    }
-
-private:
-    static bool IsIetaPlanningCommand(const FString& CommandType)
-    {
-        return CommandType == TEXT("ieta_status");
-    }
-
-    static FString GetFriendlyCommandText(const FString& CommandType)
-    {
-        if (CommandType == TEXT("codex_connection"))
-        {
-            return TEXT("Codex가 Unreal MCP에 연결됐어.");
-        }
-        if (CommandType == TEXT("ieta_status"))
-        {
-            return TEXT("Unreal MCP 연결 상태를 확인하는 중이야.");
-        }
-        if (CommandType == TEXT("execute_python"))
-        {
-            return TEXT("에디터 Python 스크립트를 실행하는 중이야.");
-        }
-        if (CommandType == TEXT("get_actors_in_level"))
-        {
-            return TEXT("현재 레벨의 액터 목록을 확인하는 중이야.");
-        }
-        if (CommandType == TEXT("find_actors_by_name"))
-        {
-            return TEXT("이름으로 액터를 찾는 중이야.");
-        }
-        if (CommandType == TEXT("spawn_actor") || CommandType == TEXT("create_actor") || CommandType == TEXT("spawn_blueprint_actor"))
-        {
-            return TEXT("레벨에 액터를 배치하는 중이야.");
-        }
-        if (CommandType == TEXT("delete_actor"))
-        {
-            return TEXT("레벨의 액터를 정리하는 중이야.");
-        }
-        if (CommandType == TEXT("set_actor_transform") || CommandType == TEXT("set_actor_property"))
-        {
-            return TEXT("액터 설정을 바꾸는 중이야.");
-        }
-        if (CommandType.Contains(TEXT("blueprint")))
-        {
-            return TEXT("블루프린트 작업을 처리하는 중이야.");
-        }
-        if (CommandType.Contains(TEXT("widget")) || CommandType.Contains(TEXT("umg")))
-        {
-            return TEXT("위젯 작업을 처리하는 중이야.");
-        }
-        return TEXT("MCP 작업 요청을 처리하는 중이야.");
-    }
-
-    static FString BuildParamsSummary(const TSharedPtr<FJsonObject>& Params)
-    {
-        if (!Params.IsValid() || Params->Values.Num() == 0)
-        {
-            return FString();
-        }
-
-        FString ParamsString;
-        TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ParamsString);
-        FJsonSerializer::Serialize(Params.ToSharedRef(), Writer);
-        ParamsString.ReplaceInline(TEXT("\r"), TEXT(""));
-        ParamsString.ReplaceInline(TEXT("\n"), TEXT(" "));
-
-        constexpr int32 MaxParamsLength = 220;
-        if (ParamsString.Len() > MaxParamsLength)
-        {
-            ParamsString = ParamsString.Left(MaxParamsLength - 3) + TEXT("...");
-        }
-
-        return ParamsString;
-    }
-
-    static FText BuildProcessingBodyText(const FString& CommandType)
-    {
-        const FString EffectiveCommand = CommandType.IsEmpty() ? TEXT("ieta_status") : CommandType;
-        return FText::FromString(FString::Printf(
-            TEXT("확인 중\n")
-            TEXT("명령: %s"),
-            *EffectiveCommand));
-    }
-
-    static void SetProcessingStatus(const FString& CommandType)
-    {
-        if (BodyTextBlock.IsValid())
-        {
-            BodyTextBlock->SetText(BuildProcessingBodyText(CommandType));
-        }
-
-        if (ProgressBar.IsValid())
-        {
-            ProgressBar->SetVisibility(EVisibility::Visible);
-            ProgressBar->SetPercent(0.25f);
-        }
-    }
-
-    static void FlushSlateWindowNow(const TSharedRef<SWindow>& Window)
-    {
-        FSlateApplication& SlateApplication = FSlateApplication::Get();
-        SlateApplication.PumpMessages();
-        SlateApplication.ForceRedrawWindow(Window);
-    }
-
-    static void OnStatusWindowClosed(const TSharedRef<SWindow>& ClosedWindow)
-    {
-        if (StatusWindow.IsValid() && StatusWindow.Get() == &ClosedWindow.Get())
-        {
-            StatusWindow.Reset();
-            AvatarBrush.Reset();
-            BodyTextBlock.Reset();
-            ProgressBar.Reset();
-        }
-    }
-
-    static constexpr double CompletionVisibleSeconds = 3.0;
-    static double LastShowTime;
-    static TSharedPtr<SWindow> StatusWindow;
-    static TSharedPtr<STextBlock> BodyTextBlock;
-    static TSharedPtr<SProgressBar> ProgressBar;
-    static TSharedPtr<FSlateBrush> AvatarBrush;
-    static UTexture2D* AvatarTexture;
-    static FString PendingParamsSummary;
-    static bool bUsePendingParamsOnNextShow;
-    static uint64 CloseRequestGeneration;
-};
-
-double FIetaMCPStatusWindow::LastShowTime = 0.0;
-TSharedPtr<SWindow> FIetaMCPStatusWindow::StatusWindow;
-TSharedPtr<STextBlock> FIetaMCPStatusWindow::BodyTextBlock;
-TSharedPtr<SProgressBar> FIetaMCPStatusWindow::ProgressBar;
-TSharedPtr<FSlateBrush> FIetaMCPStatusWindow::AvatarBrush;
-UTexture2D* FIetaMCPStatusWindow::AvatarTexture = nullptr;
-FString FIetaMCPStatusWindow::PendingParamsSummary;
-bool FIetaMCPStatusWindow::bUsePendingParamsOnNextShow = false;
-uint64 FIetaMCPStatusWindow::CloseRequestGeneration = 0;
-
-static FString BuildIetaEditorLogStatusText()
-{
-    const FString EditorLogPath = FPaths::Combine(FPaths::ProjectLogDir(), FString::Printf(TEXT("%s.log"), FApp::GetProjectName()));
-    TArray<FString> Lines;
-    if (!FPaths::FileExists(EditorLogPath) || !FFileHelper::LoadFileToStringArray(Lines, *EditorLogPath))
-    {
-        return TEXT("로그는 아직 못 읽었어. 나중에 확인해봐.");
-    }
-
-    int32 ErrorLineCount = 0;
-    for (const FString& Line : Lines)
-    {
-        if (Line.Contains(TEXT("Error:"), ESearchCase::CaseSensitive))
-        {
-            ++ErrorLineCount;
-        }
-    }
-
-    if (ErrorLineCount > 0)
-    {
-        return FString::Printf(TEXT("흠, 로그 오류가 %d줄 보여. 확인해봐."), ErrorLineCount);
-    }
-
-    return TEXT("흥, 로그 오류는 안 보여. 작업 잘 해라.");
-}
-
-}
-
 UUnrealMCPBridge::UUnrealMCPBridge()
 {
     EditorCommands = MakeShared<FUnrealMCPEditorCommands>();
     BlueprintCommands = MakeShared<FUnrealMCPBlueprintCommands>();
     BlueprintNodeCommands = MakeShared<FUnrealMCPBlueprintNodeCommands>();
+    MaterialCommands = MakeShared<FUnrealMCPMaterialCommands>();
     NiagaraCommands = MakeShared<FUnrealMCPNiagaraCommands>();
+    PCGCommands = MakeShared<FUnrealMCPPCGCommands>();
     ProjectCommands = MakeShared<FUnrealMCPProjectCommands>();
     UMGCommands = MakeShared<FUnrealMCPUMGCommands>();
 }
@@ -579,7 +84,9 @@ UUnrealMCPBridge::~UUnrealMCPBridge()
     EditorCommands.Reset();
     BlueprintCommands.Reset();
     BlueprintNodeCommands.Reset();
+    MaterialCommands.Reset();
     NiagaraCommands.Reset();
+    PCGCommands.Reset();
     ProjectCommands.Reset();
     UMGCommands.Reset();
 }
@@ -592,6 +99,7 @@ void UUnrealMCPBridge::Initialize(FSubsystemCollectionBase& Collection)
     bIsRunning = false;
     ListenerSocket = nullptr;
     ConnectionSocket = nullptr;
+    ServerRunnable = nullptr;
     ServerThread = nullptr;
     Port = MCP_SERVER_PORT;
     FIPv4Address::Parse(MCP_SERVER_HOST, ServerAddress);
@@ -657,8 +165,9 @@ void UUnrealMCPBridge::StartServer()
     UE_LOG(LogTemp, Display, TEXT("UnrealMCPBridge: Server started on %s:%d"), *ServerAddress.ToString(), Port);
 
     // Start server thread
+    ServerRunnable = new FMCPServerRunnable(this, ListenerSocket);
     ServerThread = FRunnableThread::Create(
-        new FMCPServerRunnable(this, ListenerSocket),
+        ServerRunnable,
         TEXT("UnrealMCPServerThread"),
         0, TPri_Normal
     );
@@ -666,6 +175,8 @@ void UUnrealMCPBridge::StartServer()
     if (!ServerThread)
     {
         UE_LOG(LogTemp, Error, TEXT("UnrealMCPBridge: Failed to create server thread"));
+        delete ServerRunnable;
+        ServerRunnable = nullptr;
         StopServer();
         return;
     }
@@ -684,21 +195,28 @@ void UUnrealMCPBridge::StopServer()
     // Clean up thread
     if (ServerThread)
     {
-        ServerThread->Kill(true);
+        if (ServerRunnable)
+        {
+            ServerRunnable->Stop();
+        }
+        ServerThread->WaitForCompletion();
         delete ServerThread;
         ServerThread = nullptr;
     }
 
+    delete ServerRunnable;
+    ServerRunnable = nullptr;
+
     // Close sockets
     if (ConnectionSocket.IsValid())
     {
-        ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->DestroySocket(ConnectionSocket.Get());
+        ConnectionSocket->Close();
         ConnectionSocket.Reset();
     }
 
     if (ListenerSocket.IsValid())
     {
-        ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->DestroySocket(ListenerSocket.Get());
+        ListenerSocket->Close();
         ListenerSocket.Reset();
     }
 
@@ -718,9 +236,9 @@ void UUnrealMCPBridge::ScheduleStartupIetaStatusSequence()
         constexpr double StartupCheckSeconds = 2.0;
         const double StartTime = FPlatformTime::Seconds();
         const FString ConnectingText = TEXT("흥, 연결 확인 중이야. 잠깐만 기다려.");
-        FIetaMCPStatusWindow::UpdateStatus(ConnectingText, TEXT("ieta_status"), TOptional<float>(0.0f));
+        FIetaMCPStatusWindow::UpdateStatus(ConnectingText, TEXT("ieta_status"));
 
-        FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([WeakThis, StartTime, ConnectingText](float)
+        FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([WeakThis, StartTime](float)
         {
             if (!WeakThis.IsValid())
             {
@@ -728,23 +246,32 @@ void UUnrealMCPBridge::ScheduleStartupIetaStatusSequence()
             }
 
             const double ElapsedSeconds = FPlatformTime::Seconds() - StartTime;
-            const float Progress = FMath::Clamp(static_cast<float>(ElapsedSeconds / StartupCheckSeconds), 0.0f, 1.0f);
-            if (Progress < 1.0f)
+            if (ElapsedSeconds < StartupCheckSeconds)
             {
-                FIetaMCPStatusWindow::UpdateStatus(ConnectingText, TEXT("ieta_status"), TOptional<float>(Progress));
                 return true;
             }
 
             const bool bConnected = WeakThis->IsRunning();
-            const FString LogStatusText = BuildIetaEditorLogStatusText();
+            const FString MCPStatusText = bConnected
+                ? FString::Printf(
+                    TEXT("현재 접속된 MCP: unrealMCP / UnrealMCP Editor bridge (%s:%d)"),
+                    *WeakThis->ServerAddress.ToString(),
+                    WeakThis->Port)
+                : TEXT("현재 접속된 MCP: 없음");
+            const FString EditorLogStatusText = FIetaMCPStatusWindow::BuildEditorLogStatusText();
+            const FString LogStatusText = EditorLogStatusText.IsEmpty()
+                ? MCPStatusText
+                : FString::Printf(
+                    TEXT("%s\n%s"),
+                    *MCPStatusText,
+                    *EditorLogStatusText);
             const FString StatusText = bConnected
                 ? FString::Printf(TEXT("연결 완료야. Unreal MCP 준비됐어.\n%s"), *LogStatusText)
                 : FString::Printf(TEXT("연결 실패야. 서버가 안 떠 있어. 이 창은 닫지 않을게.\n%s"), *LogStatusText);
 
             FIetaMCPStatusWindow::UpdateStatus(
                 StatusText,
-                TEXT("ieta_status"),
-                TOptional<float>(bConnected ? 1.0f : 0.0f));
+                TEXT("ieta_status"));
             if (bConnected)
             {
                 FIetaMCPStatusWindow::Hide();
@@ -781,12 +308,10 @@ FString UUnrealMCPBridge::ExecuteCommand(const FString& CommandType, const TShar
             {
                 FString StatusText;
                 FString StatusCommand;
-                double ProgressValue = -1.0;
                 if (Params.IsValid())
                 {
                     Params->TryGetStringField(TEXT("text"), StatusText);
                     Params->TryGetStringField(TEXT("command"), StatusCommand);
-                    Params->TryGetNumberField(TEXT("progress"), ProgressValue);
                 }
 
                 if (StatusText.IsEmpty())
@@ -801,17 +326,12 @@ FString UUnrealMCPBridge::ExecuteCommand(const FString& CommandType, const TShar
 
                 FIetaMCPStatusWindow::UpdateStatus(
                     StatusText,
-                    StatusCommand,
-                    ProgressValue >= 0.0 ? TOptional<float>(static_cast<float>(ProgressValue)) : TOptional<float>());
+                    StatusCommand);
 
                 ResultJson = MakeShareable(new FJsonObject);
                 ResultJson->SetBoolField(TEXT("success"), true);
                 ResultJson->SetStringField(TEXT("text"), StatusText);
                 ResultJson->SetStringField(TEXT("command"), StatusCommand);
-                if (ProgressValue >= 0.0)
-                {
-                    ResultJson->SetNumberField(TEXT("progress"), ProgressValue);
-                }
             }
             // Editor Commands (including actor manipulation)
             else if (CommandType == TEXT("get_actors_in_level") || 
@@ -824,16 +344,30 @@ FString UUnrealMCPBridge::ExecuteCommand(const FString& CommandType, const TShar
                      CommandType == TEXT("set_actor_property") ||
                      CommandType == TEXT("spawn_blueprint_actor") ||
                      CommandType == TEXT("focus_viewport") || 
-                     CommandType == TEXT("take_screenshot"))
+                     CommandType == TEXT("take_screenshot") ||
+                     CommandType == TEXT("list_viewport_bookmarks") ||
+                     CommandType == TEXT("capture_viewport_bookmark_screenshot") ||
+                     CommandType == TEXT("open_editor_level") ||
+                     CommandType == TEXT("open_niagara_preview_player") ||
+                     CommandType == TEXT("get_niagara_preview_player_state") ||
+                     CommandType == TEXT("get_niagara_preview_lab_state") ||
+                     CommandType == TEXT("cleanup_niagara_preview_lab") ||
+                     CommandType == TEXT("capture_niagara_preview_lab_view") ||
+                     CommandType == TEXT("preview_niagara_system_in_preview_lab") ||
+                     CommandType == TEXT("sample_niagara_system_in_preview_lab"))
             {
                 ResultJson = EditorCommands->HandleCommand(CommandType, Params);
             }
             // Blueprint Commands
             else if (CommandType == TEXT("create_blueprint") || 
-                     CommandType == TEXT("add_component_to_blueprint") || 
+                     CommandType == TEXT("add_component_to_blueprint") ||
+                     CommandType == TEXT("list_blueprint_components") ||
                      CommandType == TEXT("set_component_property") || 
-                     CommandType == TEXT("set_physics_properties") || 
+                     CommandType == TEXT("get_component_property") ||
+                     CommandType == TEXT("set_physics_properties") ||
                      CommandType == TEXT("compile_blueprint") || 
+                     CommandType == TEXT("compile_and_save_blueprint") ||
+                     CommandType == TEXT("compile_and_validate_blueprint") ||
                      CommandType == TEXT("set_blueprint_property") || 
                      CommandType == TEXT("set_static_mesh_properties") ||
                      CommandType == TEXT("set_pawn_properties"))
@@ -842,16 +376,67 @@ FString UUnrealMCPBridge::ExecuteCommand(const FString& CommandType, const TShar
             }
             // Blueprint Node Commands
             else if (CommandType == TEXT("connect_blueprint_nodes") || 
+                     CommandType == TEXT("resolve_blueprint") ||
+                     CommandType == TEXT("list_blueprint_graphs") ||
+                     CommandType == TEXT("resolve_blueprint_graph") ||
+                     CommandType == TEXT("list_blueprint_nodes") ||
                      CommandType == TEXT("add_blueprint_get_self_component_reference") ||
                      CommandType == TEXT("add_blueprint_self_reference") ||
                      CommandType == TEXT("find_blueprint_nodes") ||
                      CommandType == TEXT("add_blueprint_event_node") ||
+                     CommandType == TEXT("add_blueprint_branch_node") ||
+                     CommandType == TEXT("add_blueprint_sequence_node") ||
+                     CommandType == TEXT("add_blueprint_return_node") ||
+                     CommandType == TEXT("add_blueprint_dynamic_cast_node") ||
+                     CommandType == TEXT("add_blueprint_loop_node") ||
+                     CommandType == TEXT("add_blueprint_array_function_node") ||
+                     CommandType == TEXT("add_blueprint_make_array_node") ||
                      CommandType == TEXT("add_blueprint_input_action_node") ||
+                     CommandType == TEXT("add_blueprint_input_axis_event_node") ||
+                     CommandType == TEXT("add_blueprint_enhanced_input_action_node") ||
                      CommandType == TEXT("add_blueprint_function_node") ||
-                     CommandType == TEXT("add_blueprint_get_component_node") ||
+                     CommandType == TEXT("add_blueprint_call_function_node") ||
+                     CommandType == TEXT("add_blueprint_variable_get_node") ||
+                     CommandType == TEXT("add_blueprint_variable_set_node") ||
+                     CommandType == TEXT("add_blueprint_event_dispatcher") ||
+                     CommandType == TEXT("add_blueprint_event_dispatcher_call_node") ||
+                     CommandType == TEXT("add_blueprint_custom_event_node") ||
+                     CommandType == TEXT("add_blueprint_event_dispatcher_bind_node") ||
+                     CommandType == TEXT("add_blueprint_event_dispatcher_unbind_node") ||
+                     CommandType == TEXT("add_blueprint_event_dispatcher_clear_node") ||
+                     CommandType == TEXT("add_blueprint_event_dispatcher_assign_node") ||
+                     CommandType == TEXT("add_blueprint_math_node") ||
+                     CommandType == TEXT("add_blueprint_compare_node") ||
+                     CommandType == TEXT("add_blueprint_boolean_node") ||
+                     CommandType == TEXT("add_blueprint_select_node") ||
+                     CommandType == TEXT("add_blueprint_literal_node") ||
+                     CommandType == TEXT("add_blueprint_enum_literal_node") ||
+                     CommandType == TEXT("add_blueprint_is_valid_node") ||
+                     CommandType == TEXT("add_blueprint_make_struct_node") ||
+                     CommandType == TEXT("add_blueprint_break_struct_node") ||
+                     CommandType == TEXT("add_blueprint_switch_int_node") ||
+                     CommandType == TEXT("add_blueprint_switch_enum_node") ||
+                     CommandType == TEXT("set_blueprint_pin_default") ||
+                     CommandType == TEXT("add_blueprint_function_parameter") ||
+                     CommandType == TEXT("add_blueprint_local_variable") ||
                      CommandType == TEXT("add_blueprint_variable"))
             {
                 ResultJson = BlueprintNodeCommands->HandleCommand(CommandType, Params);
+            }
+            // Material Graph Commands
+            else if (CommandType == TEXT("resolve_material_graph") ||
+                     CommandType == TEXT("list_material_nodes") ||
+                     CommandType == TEXT("analyze_material_graph") ||
+                     CommandType == TEXT("add_material_node") ||
+                     CommandType == TEXT("add_custom_material_node") ||
+                     CommandType == TEXT("set_material_node_property") ||
+                     CommandType == TEXT("connect_material_nodes") ||
+                     CommandType == TEXT("connect_material_property") ||
+                     CommandType == TEXT("delete_material_node") ||
+                     CommandType == TEXT("layout_material_nodes") ||
+                     CommandType == TEXT("compile_and_save_material"))
+            {
+                ResultJson = MaterialCommands->HandleCommand(CommandType, Params);
             }
             // Niagara Commands
             else if (CommandType == TEXT("analyze_niagara_system") ||
@@ -873,9 +458,25 @@ FString UUnrealMCPBridge::ExecuteCommand(const FString& CommandType, const TShar
             {
                 ResultJson = NiagaraCommands->HandleCommand(CommandType, Params);
             }
+            // PCG Graph Commands
+            else if (CommandType == TEXT("resolve_pcg_graph") ||
+                     CommandType == TEXT("list_pcg_graph_nodes") ||
+                     CommandType == TEXT("add_pcg_node") ||
+                     CommandType == TEXT("connect_pcg_nodes") ||
+                     CommandType == TEXT("set_pcg_node_setting") ||
+                     CommandType == TEXT("compile_or_notify_pcg_graph") ||
+                     CommandType == TEXT("save_pcg_graph"))
+            {
+                ResultJson = PCGCommands->HandleCommand(CommandType, Params);
+            }
             // Project Commands
             else if (CommandType == TEXT("create_input_mapping") ||
-                     CommandType == TEXT("execute_python"))
+                     CommandType == TEXT("execute_python") ||
+                     CommandType == TEXT("recreate_content_folder_mcp") ||
+                     CommandType == TEXT("postprocess_content_folder_mcp") ||
+                     CommandType == TEXT("repair_world_actor_instances_mcp") ||
+                     CommandType == TEXT("run_content_validation_pipeline_mcp") ||
+                     CommandType == TEXT("analyze_blueprint_widget_fallbacks_mcp"))
             {
                 ResultJson = ProjectCommands->HandleCommand(CommandType, Params);
             }
@@ -912,6 +513,29 @@ FString UUnrealMCPBridge::ExecuteCommand(const FString& CommandType, const TShar
                 {
                     ErrorMessage = ResultJson->GetStringField(TEXT("error"));
                 }
+                if (!bSuccess && ErrorMessage.IsEmpty() && ResultJson->HasField(TEXT("command_result")))
+                {
+                    ErrorMessage = ResultJson->GetStringField(TEXT("command_result"));
+                }
+                if (!bSuccess && ErrorMessage.IsEmpty() && ResultJson->HasTypedField<EJson::Array>(TEXT("logs")))
+                {
+                    const TArray<TSharedPtr<FJsonValue>>* Logs = nullptr;
+                    if (ResultJson->TryGetArrayField(TEXT("logs"), Logs) && Logs)
+                    {
+                        for (const TSharedPtr<FJsonValue>& LogValue : *Logs)
+                        {
+                            const TSharedPtr<FJsonObject> LogObject = LogValue.IsValid() ? LogValue->AsObject() : nullptr;
+                            if (LogObject.IsValid() && LogObject->HasField(TEXT("output")))
+                            {
+                                ErrorMessage = LogObject->GetStringField(TEXT("output"));
+                                if (!ErrorMessage.IsEmpty())
+                                {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
                 if (!bSuccess && ErrorMessage.IsEmpty())
                 {
                     ErrorMessage = FString::Printf(TEXT("Command '%s' reported failure without details"), *CommandType);
@@ -934,8 +558,20 @@ FString UUnrealMCPBridge::ExecuteCommand(const FString& CommandType, const TShar
         }
         catch (const std::exception& e)
         {
+            const FString ExceptionMessage = UTF8_TO_TCHAR(e.what());
+            const FString SafeExceptionMessage = ExceptionMessage.IsEmpty()
+                ? FString::Printf(TEXT("Command '%s' threw std::exception with empty message"), *CommandType)
+                : ExceptionMessage;
+            UE_LOG(LogTemp, Error, TEXT("UnrealMCPBridge: Command %s threw std::exception: %s"), *CommandType, *SafeExceptionMessage);
             ResponseJson->SetStringField(TEXT("status"), TEXT("error"));
-            ResponseJson->SetStringField(TEXT("error"), UTF8_TO_TCHAR(e.what()));
+            ResponseJson->SetStringField(TEXT("error"), SafeExceptionMessage);
+        }
+        catch (...)
+        {
+            const FString ErrorMessage = FString::Printf(TEXT("Command '%s' threw an unknown exception"), *CommandType);
+            UE_LOG(LogTemp, Error, TEXT("UnrealMCPBridge: %s"), *ErrorMessage);
+            ResponseJson->SetStringField(TEXT("status"), TEXT("error"));
+            ResponseJson->SetStringField(TEXT("error"), ErrorMessage);
         }
         
         if (bShowIetaSlate)
@@ -949,16 +585,28 @@ FString UUnrealMCPBridge::ExecuteCommand(const FString& CommandType, const TShar
         Promise->SetValue(ResultString);
     };
 
+    bool bUseTickerDispatch = false;
+    if (CommandType == TEXT("execute_python") && Params.IsValid() && Params->HasField(TEXT("defer_to_ticker")))
+    {
+        bUseTickerDispatch = Params->GetBoolField(TEXT("defer_to_ticker"));
+    }
+
     // Queue execution on Game Thread. The assistant window is reserved for
     // explicit ieta_status checks so background work stays out of the way.
-    // Python import workflows can enter UE's Interchange pipeline, which must
-    // not run inside a TaskGraph task because it may wait on TaskGraph work
-    // internally.
-    AsyncTask(ENamedThreads::GameThread, [CommandType, Params, RunCommand, bShowIetaSlate]()
+    // Most MCP commands run immediately once they reach the game thread. A
+    // small set of Python workflows can opt into ticker dispatch when they need
+    // to avoid running inside the TaskGraph callback itself.
+    AsyncTask(ENamedThreads::GameThread, [CommandType, Params, RunCommand, bShowIetaSlate, bUseTickerDispatch]()
     {
         if (bShowIetaSlate)
         {
             FIetaMCPStatusWindow::ShowWithParams(CommandType, Params);
+        }
+
+        if (!bUseTickerDispatch)
+        {
+            RunCommand();
+            return;
         }
 
         FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([RunCommand](float)
@@ -968,5 +616,23 @@ FString UUnrealMCPBridge::ExecuteCommand(const FString& CommandType, const TShar
         }));
     });
     
+    constexpr double CommandTimeoutSeconds = 120.0;
+    if (!Future.WaitFor(FTimespan::FromSeconds(CommandTimeoutSeconds)))
+    {
+        UE_LOG(LogTemp, Error, TEXT("UnrealMCPBridge: Command %s timed out after %.0f seconds"), *CommandType, CommandTimeoutSeconds);
+
+        TSharedPtr<FJsonObject> TimeoutResponse = MakeShared<FJsonObject>();
+        TimeoutResponse->SetStringField(TEXT("status"), TEXT("error"));
+        TimeoutResponse->SetStringField(TEXT("error"), FString::Printf(
+            TEXT("Command '%s' timed out after %.0f seconds"),
+            *CommandType,
+            CommandTimeoutSeconds));
+
+        FString TimeoutResultString;
+        TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&TimeoutResultString);
+        FJsonSerializer::Serialize(TimeoutResponse.ToSharedRef(), Writer);
+        return TimeoutResultString;
+    }
+
     return Future.Get();
 }

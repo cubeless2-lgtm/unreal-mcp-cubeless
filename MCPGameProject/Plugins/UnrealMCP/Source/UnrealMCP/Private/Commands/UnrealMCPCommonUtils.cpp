@@ -25,6 +25,91 @@
 #include "BlueprintActionDatabase.h"
 #include "Dom/JsonObject.h"
 #include "Dom/JsonValue.h"
+#include "Misc/PackageName.h"
+
+namespace
+{
+const FBPVariableDescription* FindLocalVariableDescription(UBlueprint* Blueprint, UEdGraph* Graph, const FName& VarName, FGuid& OutVarGuid, UEdGraph*& OutTopLevelGraph)
+{
+    OutVarGuid.Invalidate();
+    OutTopLevelGraph = nullptr;
+
+    if (!Blueprint || !Graph)
+    {
+        return nullptr;
+    }
+
+    OutTopLevelGraph = FBlueprintEditorUtils::GetTopLevelGraph(Graph);
+    if (!OutTopLevelGraph || !FBlueprintEditorUtils::DoesSupportLocalVariables(OutTopLevelGraph))
+    {
+        return nullptr;
+    }
+
+    OutVarGuid = FBlueprintEditorUtils::FindLocalVariableGuidByName(Blueprint, OutTopLevelGraph, VarName);
+    if (!OutVarGuid.IsValid())
+    {
+        return nullptr;
+    }
+
+    return FBlueprintEditorUtils::FindLocalVariable(Blueprint, OutTopLevelGraph, VarName);
+}
+
+FString NormalizeBlueprintObjectPath(const FString& BlueprintNameOrPath)
+{
+    FString Path = FPackageName::ExportTextPathToObjectPath(BlueprintNameOrPath).TrimStartAndEnd();
+    Path.TrimQuotesInline();
+
+    if (Path.EndsWith(TEXT("_C")))
+    {
+        Path.LeftChopInline(2);
+    }
+
+    if ((Path.StartsWith(TEXT("/Game/")) || Path.StartsWith(TEXT("/Engine/"))) && !Path.Contains(TEXT(".")))
+    {
+        const FString AssetName = FPackageName::GetShortName(Path);
+        Path = FString::Printf(TEXT("%s.%s"), *Path, *AssetName);
+    }
+
+    return Path;
+}
+
+UBlueprint* LoadBlueprintFromObjectPath(const FString& ObjectPath)
+{
+    if (ObjectPath.IsEmpty())
+    {
+        return nullptr;
+    }
+
+    const FString PackageName = FPackageName::ObjectPathToPackageName(ObjectPath);
+    FText InvalidPackageReason;
+    if (PackageName.IsEmpty() ||
+        ObjectPath.Contains(TEXT("//")) ||
+        PackageName.Contains(TEXT("//")) ||
+        !FPackageName::IsValidLongPackageName(PackageName, true, &InvalidPackageReason))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Skipping invalid blueprint object path '%s': %s"), *ObjectPath, *InvalidPackageReason.ToString());
+        return nullptr;
+    }
+
+    if (UBlueprint* Blueprint = LoadObject<UBlueprint>(nullptr, *ObjectPath))
+    {
+        return Blueprint;
+    }
+
+    FString ClassPath = ObjectPath;
+    if (!ClassPath.EndsWith(TEXT("_C")))
+    {
+        ClassPath += TEXT("_C");
+    }
+
+    if (UClass* BlueprintClass = LoadObject<UClass>(nullptr, *ClassPath))
+    {
+        return Cast<UBlueprint>(BlueprintClass->ClassGeneratedBy);
+    }
+
+    return nullptr;
+}
+}
 
 // JSON Utilities
 TSharedPtr<FJsonObject> FUnrealMCPCommonUtils::CreateErrorResponse(const FString& Message)
@@ -153,8 +238,75 @@ UBlueprint* FUnrealMCPCommonUtils::FindBlueprint(const FString& BlueprintName)
 
 UBlueprint* FUnrealMCPCommonUtils::FindBlueprintByName(const FString& BlueprintName)
 {
-    FString AssetPath = TEXT("/Game/Blueprints/") + BlueprintName;
-    return LoadObject<UBlueprint>(nullptr, *AssetPath);
+    const FString NormalizedPath = NormalizeBlueprintObjectPath(BlueprintName);
+    if (UBlueprint* DirectBlueprint = LoadBlueprintFromObjectPath(NormalizedPath))
+    {
+        return DirectBlueprint;
+    }
+
+    const bool bIsPathLikeInput = BlueprintName.Contains(TEXT("/")) || BlueprintName.Contains(TEXT("."));
+    if (!bIsPathLikeInput)
+    {
+        const FString LegacyObjectPath = FString::Printf(TEXT("/Game/Blueprints/%s.%s"), *BlueprintName, *BlueprintName);
+        if (UBlueprint* LegacyBlueprint = LoadBlueprintFromObjectPath(LegacyObjectPath))
+        {
+            return LegacyBlueprint;
+        }
+    }
+
+    const TArray<FString> CandidatePaths = FindBlueprintAssetPaths(BlueprintName);
+    if (CandidatePaths.Num() == 1)
+    {
+        return LoadBlueprintFromObjectPath(CandidatePaths[0]);
+    }
+
+    if (CandidatePaths.Num() > 1)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Ambiguous blueprint name '%s'. Use a full asset path. Candidates:"), *BlueprintName);
+        for (const FString& CandidatePath : CandidatePaths)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("  - %s"), *CandidatePath);
+        }
+    }
+
+    return nullptr;
+}
+
+TArray<FString> FUnrealMCPCommonUtils::FindBlueprintAssetPaths(const FString& BlueprintNameOrPath)
+{
+    TArray<FString> CandidatePaths;
+    const FString Query = NormalizeBlueprintObjectPath(BlueprintNameOrPath);
+
+    if (Query.StartsWith(TEXT("/Game/")) || Query.StartsWith(TEXT("/Engine/")))
+    {
+        if (LoadBlueprintFromObjectPath(Query))
+        {
+            CandidatePaths.Add(Query);
+            return CandidatePaths;
+        }
+    }
+
+    FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
+    TArray<FAssetData> BlueprintAssets;
+    AssetRegistryModule.Get().GetAssetsByClass(UBlueprint::StaticClass()->GetClassPathName(), BlueprintAssets, true);
+
+    const FString ShortQuery = FPackageName::GetShortName(Query);
+    for (const FAssetData& AssetData : BlueprintAssets)
+    {
+        const FString AssetName = AssetData.AssetName.ToString();
+        const FString PackageName = AssetData.PackageName.ToString();
+        const FString ObjectPath = AssetData.GetObjectPathString();
+
+        if (AssetName.Equals(BlueprintNameOrPath, ESearchCase::IgnoreCase) ||
+            AssetName.Equals(ShortQuery, ESearchCase::IgnoreCase) ||
+            PackageName.Equals(BlueprintNameOrPath, ESearchCase::IgnoreCase) ||
+            ObjectPath.Equals(Query, ESearchCase::IgnoreCase))
+        {
+            CandidatePaths.Add(ObjectPath);
+        }
+    }
+
+    return CandidatePaths;
 }
 
 UEdGraph* FUnrealMCPCommonUtils::FindOrCreateEventGraph(UBlueprint* Blueprint)
@@ -219,9 +371,10 @@ UK2Node_Event* FUnrealMCPCommonUtils::CreateEventNode(UEdGraph* Graph, const FSt
         EventNode->NodePosX = Position.X;
         EventNode->NodePosY = Position.Y;
         Graph->AddNode(EventNode, true);
+        EventNode->CreateNewGuid();
         EventNode->PostPlacedNewNode();
         EventNode->AllocateDefaultPins();
-        UE_LOG(LogTemp, Display, TEXT("Created new event node with name %s (ID: %s)"), 
+        UE_LOG(LogTemp, Display, TEXT("Created new event node with name %s (ID: %s)"),
             *EventName, *EventNode->NodeGuid.ToString());
     }
     else
@@ -265,12 +418,32 @@ UK2Node_VariableGet* FUnrealMCPCommonUtils::CreateVariableGetNode(UEdGraph* Grap
     
     if (Property)
     {
-        VariableGetNode->VariableReference.SetFromField<FProperty>(Property, false);
+        const bool bSelfContext = Property->GetOwnerClass() && Blueprint->GeneratedClass && Blueprint->GeneratedClass->IsChildOf(Property->GetOwnerClass());
+        VariableGetNode->VariableReference.SetFromField<FProperty>(Property, bSelfContext);
         VariableGetNode->NodePosX = Position.X;
         VariableGetNode->NodePosY = Position.Y;
         Graph->AddNode(VariableGetNode, true);
+        VariableGetNode->CreateNewGuid();
         VariableGetNode->PostPlacedNewNode();
         VariableGetNode->AllocateDefaultPins();
+
+        return VariableGetNode;
+    }
+
+    FGuid LocalVarGuid;
+    UEdGraph* TopLevelGraph = nullptr;
+    if (const FBPVariableDescription* LocalVariable = FindLocalVariableDescription(Blueprint, Graph, VarName, LocalVarGuid, TopLevelGraph))
+    {
+        VariableGetNode->VariableReference.SetLocalMember(VarName, TopLevelGraph->GetName(), LocalVarGuid);
+        VariableGetNode->NodePosX = Position.X;
+        VariableGetNode->NodePosY = Position.Y;
+        Graph->AddNode(VariableGetNode, true);
+        VariableGetNode->CreateNewGuid();
+        VariableGetNode->PostPlacedNewNode();
+
+        UEdGraphPin* VariablePin = VariableGetNode->CreatePin(EGPD_Output, NAME_None, LocalVariable->VarName);
+        VariablePin->PinType = LocalVariable->VarType;
+        GetDefault<UEdGraphSchema_K2>()->SetPinAutogeneratedDefaultValueBasedOnType(VariablePin);
         
         return VariableGetNode;
     }
@@ -292,12 +465,40 @@ UK2Node_VariableSet* FUnrealMCPCommonUtils::CreateVariableSetNode(UEdGraph* Grap
     
     if (Property)
     {
-        VariableSetNode->VariableReference.SetFromField<FProperty>(Property, false);
+        const bool bSelfContext = Property->GetOwnerClass() && Blueprint->GeneratedClass && Blueprint->GeneratedClass->IsChildOf(Property->GetOwnerClass());
+        VariableSetNode->VariableReference.SetFromField<FProperty>(Property, bSelfContext);
         VariableSetNode->NodePosX = Position.X;
         VariableSetNode->NodePosY = Position.Y;
         Graph->AddNode(VariableSetNode, true);
+        VariableSetNode->CreateNewGuid();
         VariableSetNode->PostPlacedNewNode();
         VariableSetNode->AllocateDefaultPins();
+
+        return VariableSetNode;
+    }
+
+    FGuid LocalVarGuid;
+    UEdGraph* TopLevelGraph = nullptr;
+    if (const FBPVariableDescription* LocalVariable = FindLocalVariableDescription(Blueprint, Graph, VarName, LocalVarGuid, TopLevelGraph))
+    {
+        const UEdGraphSchema_K2* K2Schema = GetDefault<UEdGraphSchema_K2>();
+        VariableSetNode->VariableReference.SetLocalMember(VarName, TopLevelGraph->GetName(), LocalVarGuid);
+        VariableSetNode->NodePosX = Position.X;
+        VariableSetNode->NodePosY = Position.Y;
+        Graph->AddNode(VariableSetNode, true);
+        VariableSetNode->CreateNewGuid();
+        VariableSetNode->PostPlacedNewNode();
+
+        VariableSetNode->CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Exec, UEdGraphSchema_K2::PN_Execute);
+        VariableSetNode->CreatePin(EGPD_Output, UEdGraphSchema_K2::PC_Exec, UEdGraphSchema_K2::PN_Then);
+
+        UEdGraphPin* ValuePin = VariableSetNode->CreatePin(EGPD_Input, NAME_None, LocalVariable->VarName);
+        ValuePin->PinType = LocalVariable->VarType;
+        K2Schema->SetPinAutogeneratedDefaultValueBasedOnType(ValuePin);
+
+        UEdGraphPin* OutputPin = VariableSetNode->CreatePin(EGPD_Output, NAME_None, TEXT("Output_Get"));
+        OutputPin->PinType = LocalVariable->VarType;
+        K2Schema->SetPinAutogeneratedDefaultValueBasedOnType(OutputPin);
         
         return VariableSetNode;
     }
@@ -706,4 +907,4 @@ bool FUnrealMCPCommonUtils::SetObjectProperty(UObject* Object, const FString& Pr
     OutErrorMessage = FString::Printf(TEXT("Unsupported property type: %s for property %s"), 
                                     *Property->GetClass()->GetName(), *PropertyName);
     return false;
-} 
+}

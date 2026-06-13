@@ -11,7 +11,9 @@
 #include "Commands/UnrealMCPEditorCommands.h"
 #include "Commands/UnrealMCPBlueprintCommands.h"
 #include "Commands/UnrealMCPBlueprintNodeCommands.h"
+#include "Commands/UnrealMCPMaterialCommands.h"
 #include "Commands/UnrealMCPNiagaraCommands.h"
+#include "Commands/UnrealMCPPCGCommands.h"
 #include "Commands/UnrealMCPProjectCommands.h"
 #include "Commands/UnrealMCPUMGCommands.h"
 #include "UnrealMCPBridge.generated.h"
@@ -52,6 +54,7 @@ private:
 	bool bIsRunning;
 	TSharedPtr<FSocket> ListenerSocket;
 	TSharedPtr<FSocket> ConnectionSocket;
+	FMCPServerRunnable* ServerRunnable;
 	FRunnableThread* ServerThread;
 
 	// Server configuration
@@ -62,7 +65,9 @@ private:
 	TSharedPtr<FUnrealMCPEditorCommands> EditorCommands;
 	TSharedPtr<FUnrealMCPBlueprintCommands> BlueprintCommands;
 	TSharedPtr<FUnrealMCPBlueprintNodeCommands> BlueprintNodeCommands;
+	TSharedPtr<FUnrealMCPMaterialCommands> MaterialCommands;
 	TSharedPtr<FUnrealMCPNiagaraCommands> NiagaraCommands;
+	TSharedPtr<FUnrealMCPPCGCommands> PCGCommands;
 	TSharedPtr<FUnrealMCPProjectCommands> ProjectCommands;
 	TSharedPtr<FUnrealMCPUMGCommands> UMGCommands;
 };

@@ -34,7 +34,8 @@ public class UnrealMCP : ModuleRules
 				"HTTP",
 				"Json",
 				"JsonUtilities",
-				"DeveloperSettings"
+				"DeveloperSettings",
+				"RHI"
 			}
 		);
 		
@@ -51,10 +52,16 @@ public class UnrealMCP : ModuleRules
 				"Kismet",
 				"KismetCompiler",
 				"BlueprintGraph",
+				"EnhancedInput",
+				"InputBlueprintNodes",
+				"MaterialEditor",
 				"Niagara",
 				"NiagaraEditor",
+				"PCG",
 				"Projects",
-				"AssetRegistry"
+				"AssetRegistry",
+				"MeshDescription",
+				"PhysicsCore"
 			}
 		);
 		
