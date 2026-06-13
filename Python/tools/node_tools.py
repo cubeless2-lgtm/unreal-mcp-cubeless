@@ -671,6 +671,7 @@ def register_blueprint_node_tools(mcp: FastMCP):
         custom_event_name: str,
         node_position = None,
         signature_source_dispatcher_name: str = "",
+        call_in_editor: Optional[bool] = None,
         graph_name: str = "",
         graph_id: str = "",
         graph_type: str = "",
@@ -684,6 +685,7 @@ def register_blueprint_node_tools(mcp: FastMCP):
             custom_event_name: Name of the custom event
             node_position: Optional [X, Y] position in the graph
             signature_source_dispatcher_name: Optional Event Dispatcher whose signature should be copied
+            call_in_editor: Optional value for the custom event's Call In Editor flag
             graph_name: Optional target graph name
             graph_id: Optional target graph id
             graph_type: Optional target graph type; custom events require an event graph
@@ -702,6 +704,8 @@ def register_blueprint_node_tools(mcp: FastMCP):
         }
         if signature_source_dispatcher_name:
             params["signature_source_dispatcher_name"] = signature_source_dispatcher_name
+        if call_in_editor is not None:
+            params["call_in_editor"] = call_in_editor
         add_graph_selector(params, graph_name, graph_id, graph_type, create_graph_if_missing)
 
         try:

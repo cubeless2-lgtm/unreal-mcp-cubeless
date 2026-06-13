@@ -530,6 +530,7 @@ Add a custom event node to a Blueprint event graph. When `signature_source_dispa
 - `custom_event_name` (string) - Name of the custom event
 - `node_position` (array, optional) - [X, Y] position in the graph
 - `signature_source_dispatcher_name` (string, optional) - Event Dispatcher whose signature should be copied
+- `call_in_editor` (boolean, optional) - Set the custom event's Call In Editor flag. Existing custom events are reused, and this flag is updated only when provided.
 - `graph_name` (string, optional) - Target graph name
 - `graph_id` (string, optional) - Target graph id
 - `graph_type` (string, optional) - Must resolve to an event graph for custom event nodes
@@ -546,6 +547,7 @@ Add a custom event node to a Blueprint event graph. When `signature_source_dispa
     "blueprint_name": "MyActor",
     "custom_event_name": "HandleScoreChanged",
     "signature_source_dispatcher_name": "OnScoreChanged",
+    "call_in_editor": true,
     "node_position": [600, 300],
     "graph_type": "event"
   }
