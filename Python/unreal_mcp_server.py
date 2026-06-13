@@ -404,6 +404,8 @@ def info():
     - `delete_material_node(material_path, node_id)` - Delete an expression node using node_key/node_id
     - `layout_material_nodes(material_path)` - Layout expression nodes
     - `compile_and_save_material(material_path)` - Recompile/update and save a Material or Material Function
+    - `expand_material_function_calls(material_path)` - Expand Material Function Call nodes into the owning Material graph; partial saves require allow_partial_save=True
+    - `get_material_parameter_collection_values(collection_path)` - Read MPC asset defaults and current editor-world runtime values
 
     ## AI Texture Generation
     - `get_static_mesh_uv_layout(mesh_path, uv_channel, output_path)` - Export a Static Mesh UV wireframe PNG

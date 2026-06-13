@@ -390,4 +390,73 @@ def register_material_tools(mcp: FastMCP):
             logger.error(error_msg)
             return {"success": False, "message": error_msg}
 
+    @mcp.tool()
+    def expand_material_function_calls(
+        ctx: Context,
+        material_path: str,
+        node_id: str = "",
+        recursive: bool = True,
+        exclude_engine_functions: bool = True,
+        max_passes: int = 8,
+        save: bool = True,
+        allow_partial_save: bool = False,
+    ) -> Dict[str, Any]:
+        """
+        Expand Material Function Call nodes inside a Material graph.
+
+        Args:
+            material_path: Material name/path
+            node_id: Optional node_key/node_id for a single function call
+            recursive: Keep expanding newly-created function calls until none remain or max_passes is reached
+            exclude_engine_functions: Skip /Engine and /Script functions
+            max_passes: Recursive expansion pass limit
+            save: Whether to save the material after expanding
+            allow_partial_save: Save successful partial expansions even if some requested expansions reported errors
+        """
+        try:
+            params = {
+                "material_path": material_path,
+                "node_id": node_id,
+                "recursive": recursive,
+                "exclude_engine_functions": exclude_engine_functions,
+                "max_passes": max_passes,
+                "save": save,
+                "allow_partial_save": allow_partial_save,
+            }
+            return send_material_command("expand_material_function_calls", params)
+        except Exception as e:
+            error_msg = f"Error expanding material function calls: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def get_material_parameter_collection_values(
+        ctx: Context,
+        collection_path: str,
+        parameter_names: List[str] | None = None,
+        include_asset_defaults: bool = True,
+        include_runtime: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Read Material Parameter Collection defaults and current editor-world runtime values.
+
+        Args:
+            collection_path: Material Parameter Collection name/path
+            parameter_names: Optional list of scalar/vector parameter names to return
+            include_asset_defaults: Include values stored on the MPC asset
+            include_runtime: Include the current editor/PIE world MPC instance values
+        """
+        try:
+            params = {
+                "collection_path": collection_path,
+                "parameter_names": parameter_names or [],
+                "include_asset_defaults": include_asset_defaults,
+                "include_runtime": include_runtime,
+            }
+            return send_material_command("get_material_parameter_collection_values", params)
+        except Exception as e:
+            error_msg = f"Error reading material parameter collection values: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
     logger.info("Material tools registered successfully")
