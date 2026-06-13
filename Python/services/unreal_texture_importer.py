@@ -13,7 +13,11 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 Color = Tuple[int, int, int, int]
 
 
-def run_unreal_python_json(code_body: str, result_name: str = "texture_tools") -> Dict[str, Any]:
+def run_unreal_python_json(
+    code_body: str,
+    result_name: str = "texture_tools",
+    defer_to_ticker: bool = False,
+) -> Dict[str, Any]:
     """Run Unreal Python code that writes a RESULT object to a temp JSON file."""
     from unreal_mcp_server import get_unreal_connection
 
@@ -40,7 +44,10 @@ with open(RESULT_PATH, "w", encoding="utf-8") as result_file:
     if not unreal:
         return {"success": False, "message": "Failed to connect to Unreal Engine"}
 
-    response = unreal.send_command("execute_python", {"code": wrapped_code, "mode": "ExecuteFile"})
+    response = unreal.send_command(
+        "execute_python",
+        {"code": wrapped_code, "mode": "ExecuteFile", "defer_to_ticker": defer_to_ticker},
+    )
     if not response or response.get("status") == "error":
         return response or {"success": False, "message": "No response from Unreal Engine"}
 
@@ -306,7 +313,7 @@ else:
             "imported_paths": imported_paths,
         }}
 """
-    return run_unreal_python_json(code, "import_texture")
+    return run_unreal_python_json(code, "import_texture", defer_to_ticker=True)
 
 
 def create_material_instance_with_texture(
