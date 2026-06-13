@@ -383,6 +383,7 @@ def info():
     - `add_blueprint_dynamic_cast_node(blueprint_name, target_class)` - Add Dynamic Cast node
     - `connect_blueprint_nodes(blueprint_name, source_node_id, source_pin, target_node_id, target_pin)` - Connect nodes
     - `add_blueprint_variable(blueprint_name, variable_name, variable_type, default_value=None)` - Add member variables with defaults/metadata
+    - `set_blueprint_variable_metadata(blueprint_name, variable_name, metadata)` - Update metadata on existing member variables
     - `add_blueprint_function_parameter(blueprint_name, parameter_name, parameter_type, direction="input")` - Add function input/output pins
     - `add_blueprint_local_variable(blueprint_name, variable_name, variable_type)` - Add function-scoped local variables
     - `add_blueprint_get_self_component_reference(blueprint_name, component_name)` - Add component refs

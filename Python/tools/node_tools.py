@@ -422,6 +422,57 @@ def register_blueprint_node_tools(mcp: FastMCP):
             return {"success": False, "message": error_msg}
 
     @mcp.tool()
+    def set_blueprint_variable_metadata(
+        ctx: Context,
+        blueprint_name: str,
+        variable_name: str,
+        metadata: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """
+        Set metadata on an existing Blueprint member variable.
+
+        Args:
+            blueprint_name: Name or asset path of the target Blueprint.
+            variable_name: Existing Blueprint member variable name.
+            metadata: Metadata key/value pairs, such as ClampMin, ClampMax, UIMin, UIMax, or ToolTip.
+
+        Returns:
+            Response containing applied and verified metadata.
+        """
+        from unreal_mcp_server import get_unreal_connection
+
+        try:
+            params = {
+                "blueprint_name": blueprint_name,
+                "variable_name": variable_name,
+                "metadata": metadata,
+            }
+
+            unreal = get_unreal_connection()
+            if not unreal:
+                logger.error("Failed to connect to Unreal Engine")
+                return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+            logger.info(
+                "Setting metadata on variable '%s' in blueprint '%s'",
+                variable_name,
+                blueprint_name,
+            )
+            response = unreal.send_command("set_blueprint_variable_metadata", params)
+
+            if not response:
+                logger.error("No response from Unreal Engine")
+                return {"success": False, "message": "No response from Unreal Engine"}
+
+            logger.info(f"Variable metadata response: {response}")
+            return response
+
+        except Exception as e:
+            error_msg = f"Error setting variable metadata: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
     def add_blueprint_function_parameter(
         ctx: Context,
         blueprint_name: str,
