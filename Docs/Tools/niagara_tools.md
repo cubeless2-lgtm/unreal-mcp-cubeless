@@ -46,11 +46,21 @@ Use Python/editor scripting for asset duplication, preview capture, and broad or
   - Reads per-script Niagara compile statuses, warning/error counts, and outstanding compile request state.
   - `request_compile=true` is blocked for source assets unless `allow_source_compile=true` is explicitly passed.
   - `wait_for_completion=true` polls outstanding compile requests up to `timeout_seconds` and reports `wait_timed_out`.
+- `inspect_niagara_simulation_stages(system_path, include_compile_data=true, include_script_compile_status=true, max_stages=128)`
+  - Reads emitter SimulationStage objects, generic stage settings, Data Interface bindings, iteration settings, dispatch settings, optional script compile status, and optional `FillCompilationData()` output.
+  - This is read-only and is intended for RenderTarget/Data Interface workflows where Niagara editor UI fields are protected or awkward to inspect manually.
 - `inspect_niagara_module_inputs(system_path, include_linked_sources=true, include_resolved_stack_inputs=false, max_modules=200, max_candidates_per_module=24, max_resolved_inputs_per_module=8, max_top_candidates=80)`
   - Reads module input candidates for generation planning.
+- `inspect_niagara_data_interface_overrides(system_path, input_name="", emitter_index=None, emitter_name="", module_index=None, module_name="", module_node_guid="", max_modules=200, max_inputs_per_module=64)`
+  - Reads Data Interface module input override graph nodes, including linked input nodes, RenderTarget2D Data Interface User parameter bindings, and current User object defaults.
+  - This is read-only and is intended for RenderTarget/Grid2D workflows where RapidIteration inspection cannot see object-valued Data Interface overrides.
 - `create_niagara_module_input_override(system_path, input_name, value, emitter_index=None, emitter_name="", module_index=None, module_name="", module_node_guid="", overwrite_existing=false, allow_source_edit=false, save=true)`
   - Creates a missing RapidIteration module input override on an existing module input.
   - Refuses source assets by default and refuses to overwrite an existing override unless `overwrite_existing=true` is passed.
+- `set_niagara_render_target2d_module_input(system_path, input_name, user_parameter_name="User.RT_IF_Deform", render_target_asset_path="", emitter_index=None, emitter_name="", module_index=None, module_name="", module_node_guid="", inherit_user_parameter_settings=true, overwrite_existing=false, allow_source_edit=false, save=true, request_compile=true)`
+  - Creates a Niagara stack override for a RenderTarget2D Data Interface module input and binds it to a `UTextureRenderTarget` User parameter.
+  - Use this for inputs such as `RenderGrid.Render Target 2D`; RapidIteration module-input tools cannot author Data Interface object inputs.
+  - Refuses source assets by default and refuses to replace an existing linked override unless `overwrite_existing=true` is passed.
 - `set_niagara_module_inputs_batch(system_path, edits, operation="set_existing", overwrite_existing=false, continue_on_error=false, allow_source_edit=false, save=true)`
   - Applies multiple RapidIteration module input edits in one command and saves once after successful edits.
   - `operation` may be `set_existing`, `create_override`, or `upsert`; each edit object may override the operation and selectors.
@@ -67,7 +77,10 @@ Use Python/editor scripting for asset duplication, preview capture, and broad or
 - Emitter attach/duplicate writes are target-temp-system only by default through `duplicate_or_attach_emitter_from_source`.
 - Scratch Pad duplication and stack insertion writes are target-temp-system only by default through `create_or_duplicate_scratch_pad_module` and `add_scratch_pad_module_to_stack`.
 - New RapidIteration override creation is available through `create_niagara_module_input_override`, guarded to generated/temp Niagara systems by default.
+- RenderTarget2D Data Interface input binding is available through `set_niagara_render_target2d_module_input`, guarded to generated/temp Niagara systems by default unless `allow_source_edit=true` is passed.
 - Compile-status inspection is read-only by default. Compile requests are allowed by default only under `/Game/_MCP_Temp/NiagaraGenerated/`.
+- SimulationStage inspection is read-only and safe for source assets; it does not request compile, save, or mutate Niagara assets.
+- Data Interface override inspection is read-only and safe for source assets; it does not request compile, save, or mutate Niagara assets.
 
 ## Maintenance
 

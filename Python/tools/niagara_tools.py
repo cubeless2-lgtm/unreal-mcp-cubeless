@@ -549,6 +549,38 @@ def register_niagara_tools(mcp: FastMCP):
             return {"success": False, "message": error_msg}
 
     @mcp.tool()
+    def inspect_niagara_simulation_stages(
+        ctx: Context,
+        system_path: str,
+        include_compile_data: bool = True,
+        include_script_compile_status: bool = True,
+        max_stages: int = 128,
+    ) -> Dict[str, Any]:
+        """
+        Inspect Niagara SimulationStage settings and compiled stage data.
+
+        Args:
+            system_path: Niagara System package path or object path
+            include_compile_data: Include FillCompilationData output for generic stages
+            include_script_compile_status: Include per-stage script compile status
+            max_stages: Maximum SimulationStages to include across all emitters
+        """
+        try:
+            return send_niagara_command(
+                "inspect_niagara_simulation_stages",
+                {
+                    "system_path": system_path,
+                    "include_compile_data": include_compile_data,
+                    "include_script_compile_status": include_script_compile_status,
+                    "max_stages": max_stages,
+                },
+            )
+        except Exception as e:
+            error_msg = f"Error inspecting Niagara simulation stages: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
     def inspect_niagara_module_inputs(
         ctx: Context,
         system_path: str,
@@ -586,6 +618,53 @@ def register_niagara_tools(mcp: FastMCP):
             )
         except Exception as e:
             error_msg = f"Error inspecting Niagara module inputs: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def inspect_niagara_data_interface_overrides(
+        ctx: Context,
+        system_path: str,
+        input_name: str = "",
+        emitter_index: int | None = None,
+        emitter_name: str = "",
+        module_index: int | None = None,
+        module_name: str = "",
+        module_node_guid: str = "",
+        max_modules: int = 200,
+        max_inputs_per_module: int = 64,
+    ) -> Dict[str, Any]:
+        """
+        Inspect Niagara Data Interface module input overrides and User object bindings.
+
+        Args:
+            system_path: Niagara System package path or object path
+            input_name: Optional module input name filter, with or without the Module. prefix
+            emitter_index: Optional target emitter index
+            emitter_name: Optional target emitter name
+            module_index: Optional target module index from inspect_niagara_module_inputs
+            module_name: Optional target module name
+            module_node_guid: Optional target module node GUID
+            max_modules: Maximum matching modules to include per emitter
+            max_inputs_per_module: Maximum Data Interface inputs to include per module
+        """
+        try:
+            params: Dict[str, Any] = {
+                "system_path": system_path,
+                "input_name": input_name,
+                "emitter_name": emitter_name,
+                "module_name": module_name,
+                "module_node_guid": module_node_guid,
+                "max_modules": max_modules,
+                "max_inputs_per_module": max_inputs_per_module,
+            }
+            if emitter_index is not None:
+                params["emitter_index"] = emitter_index
+            if module_index is not None:
+                params["module_index"] = module_index
+            return send_niagara_command("inspect_niagara_data_interface_overrides", params)
+        except Exception as e:
+            error_msg = f"Error inspecting Niagara data interface overrides: {e}"
             logger.error(error_msg)
             return {"success": False, "message": error_msg}
 
@@ -689,6 +768,68 @@ def register_niagara_tools(mcp: FastMCP):
             return send_niagara_command("create_niagara_module_input_override", params)
         except Exception as e:
             error_msg = f"Error creating Niagara module input override: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def set_niagara_render_target2d_module_input(
+        ctx: Context,
+        system_path: str,
+        input_name: str,
+        user_parameter_name: str = "User.RT_IF_Deform",
+        render_target_asset_path: str = "",
+        emitter_index: int | None = None,
+        emitter_name: str = "",
+        module_index: int | None = None,
+        module_name: str = "",
+        module_node_guid: str = "",
+        inherit_user_parameter_settings: bool = True,
+        overwrite_existing: bool = False,
+        allow_source_edit: bool = False,
+        save: bool = True,
+        request_compile: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Bind a Niagara RenderTarget2D data-interface module input to a User render target parameter.
+
+        Args:
+            system_path: Niagara System package path or object path
+            input_name: RenderTarget2D module input name, with or without the Module. prefix
+            user_parameter_name: User render target parameter, default User.RT_IF_Deform
+            render_target_asset_path: Optional TextureRenderTarget asset to store as the User parameter default
+            emitter_index: Optional target emitter index
+            emitter_name: Optional target emitter name
+            module_index: Optional target module index from inspect_niagara_module_inputs
+            module_name: Optional target module name
+            module_node_guid: Optional target module node GUID
+            inherit_user_parameter_settings: Use size/format/settings from the User render target asset
+            overwrite_existing: Replace an existing linked override for the module input
+            allow_source_edit: Allow edits outside /Game/_MCP_Temp
+            save: Save the Niagara System after editing
+            request_compile: Request Niagara compile after editing
+        """
+        try:
+            params: Dict[str, Any] = {
+                "system_path": system_path,
+                "input_name": input_name,
+                "user_parameter_name": user_parameter_name,
+                "render_target_asset_path": render_target_asset_path,
+                "emitter_name": emitter_name,
+                "module_name": module_name,
+                "module_node_guid": module_node_guid,
+                "inherit_user_parameter_settings": inherit_user_parameter_settings,
+                "overwrite_existing": overwrite_existing,
+                "allow_source_edit": allow_source_edit,
+                "save": save,
+                "request_compile": request_compile,
+            }
+            if emitter_index is not None:
+                params["emitter_index"] = emitter_index
+            if module_index is not None:
+                params["module_index"] = module_index
+            return send_niagara_command("set_niagara_render_target2d_module_input", params)
+        except Exception as e:
+            error_msg = f"Error binding Niagara RenderTarget2D module input: {e}"
             logger.error(error_msg)
             return {"success": False, "message": error_msg}
 
