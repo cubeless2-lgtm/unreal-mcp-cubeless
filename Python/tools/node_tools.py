@@ -343,6 +343,55 @@ def register_blueprint_node_tools(mcp: FastMCP):
             error_msg = f"Error connecting nodes: {e}"
             logger.error(error_msg)
             return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def delete_blueprint_node(
+        ctx: Context,
+        blueprint_name: str,
+        node_id: str,
+        graph_name: str = "",
+        graph_id: str = "",
+        graph_type: str = "",
+        expected_node_name: str = "",
+        expected_node_class: str = "",
+        expected_title_contains: str = "",
+        allow_non_exec_linked_delete: bool = False,
+        allow_exec_linked_delete: bool = False,
+        allow_any_linked_delete: bool = False,
+    ) -> Dict[str, Any]:
+        """
+        Delete one Blueprint graph node by GUID with safety guards.
+
+        Args:
+            blueprint_name: Name or asset path of the target Blueprint
+            node_id: Node GUID to delete
+            graph_name: Optional target graph name
+            graph_id: Optional target graph GUID
+            graph_type: Optional target graph type
+            expected_node_name: Optional exact node object name guard
+            expected_node_class: Optional node class guard, such as K2Node_VariableSet
+            expected_title_contains: Optional title substring guard
+            allow_non_exec_linked_delete: Allow deleting a node with data links
+            allow_exec_linked_delete: Allow deleting a node with execution links
+            allow_any_linked_delete: Allow deleting any linked node
+        """
+        try:
+            params: Dict[str, Any] = {
+                "blueprint_name": blueprint_name,
+                "node_id": node_id,
+                "expected_node_name": expected_node_name,
+                "expected_node_class": expected_node_class,
+                "expected_title_contains": expected_title_contains,
+                "allow_non_exec_linked_delete": allow_non_exec_linked_delete,
+                "allow_exec_linked_delete": allow_exec_linked_delete,
+                "allow_any_linked_delete": allow_any_linked_delete,
+            }
+            add_graph_selector(params, graph_name, graph_id, graph_type)
+            return send_node_command("delete_blueprint_node", params)
+        except Exception as e:
+            error_msg = f"Error deleting Blueprint node: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
     
     @mcp.tool()
     def add_blueprint_variable(
@@ -426,18 +475,24 @@ def register_blueprint_node_tools(mcp: FastMCP):
         ctx: Context,
         blueprint_name: str,
         variable_name: str,
-        metadata: Dict[str, Any],
+        metadata: Optional[Dict[str, Any]] = None,
+        is_editable: Optional[bool] = None,
+        instance_editable: Optional[bool] = None,
+        expose_on_spawn: Optional[bool] = None,
     ) -> Dict[str, Any]:
         """
-        Set metadata on an existing Blueprint member variable.
+        Set metadata or editor exposure flags on an existing Blueprint member variable.
 
         Args:
             blueprint_name: Name or asset path of the target Blueprint.
             variable_name: Existing Blueprint member variable name.
             metadata: Metadata key/value pairs, such as ClampMin, ClampMax, UIMin, UIMax, or ToolTip.
+            is_editable: Optional alias for making the variable editable on instances.
+            instance_editable: Optional explicit Instance Editable flag.
+            expose_on_spawn: Optional Expose on Spawn flag.
 
         Returns:
-            Response containing applied and verified metadata.
+            Response containing applied metadata, verified metadata, and flag edits.
         """
         from unreal_mcp_server import get_unreal_connection
 
@@ -445,8 +500,15 @@ def register_blueprint_node_tools(mcp: FastMCP):
             params = {
                 "blueprint_name": blueprint_name,
                 "variable_name": variable_name,
-                "metadata": metadata,
             }
+            if metadata:
+                params["metadata"] = metadata
+            if is_editable is not None:
+                params["is_editable"] = is_editable
+            if instance_editable is not None:
+                params["instance_editable"] = instance_editable
+            if expose_on_spawn is not None:
+                params["expose_on_spawn"] = expose_on_spawn
 
             unreal = get_unreal_connection()
             if not unreal:
@@ -1484,6 +1546,7 @@ def register_blueprint_node_tools(mcp: FastMCP):
         blueprint_name: str,
         variable_name: str,
         node_position = None,
+        target_class: str = "",
         graph_name: str = "",
         graph_id: str = "",
         graph_type: str = "",
@@ -1496,6 +1559,7 @@ def register_blueprint_node_tools(mcp: FastMCP):
             blueprint_name: Blueprint name or path
             variable_name: Variable or component member name
             node_position: Optional [X, Y] position in the graph
+            target_class: Optional class path/name for external object member variables
 
         Returns:
             Response containing the created node metadata
@@ -1508,6 +1572,8 @@ def register_blueprint_node_tools(mcp: FastMCP):
                 "variable_name": variable_name,
                 "node_position": node_position
             }
+            if target_class:
+                params["target_class"] = target_class
             add_graph_selector(params, graph_name, graph_id, graph_type, create_graph_if_missing)
             return send_node_command("add_blueprint_variable_get_node", params)
         except Exception as e:

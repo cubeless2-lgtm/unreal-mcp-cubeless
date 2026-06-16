@@ -290,6 +290,30 @@ Add a function-scoped local variable declaration.
 
 After declaring a local variable, `add_blueprint_variable_get_node` and `add_blueprint_variable_set_node` can target that same function graph and resolve the local variable by name when no member variable with that name exists.
 
+### add_blueprint_variable_get_node
+
+Add a variable getter node to a Blueprint graph.
+
+**Parameters:**
+- `blueprint_name` (string) - Blueprint name or path
+- `variable_name` (string) - Variable or component member name
+- `node_position` (array or string, optional) - `[X, Y]` position in the graph. String forms such as `"120, 240"` are accepted by the Unreal bridge.
+- `target_class` (string, optional) - Class path/name for an external object member variable, for example a component Blueprint generated class. When omitted, the command resolves member or local variables on `blueprint_name`.
+- graph selector fields - Optional target graph selector
+
+**External member example:**
+```json
+{
+  "command": "add_blueprint_variable_get_node",
+  "params": {
+    "blueprint_name": "/Game/Field/BP_Field",
+    "variable_name": "Radius",
+    "target_class": "/Game/Field/BPC_InteractionSource.BPC_InteractionSource_C",
+    "node_position": [600, 240]
+  }
+}
+```
+
 ## Node Tools
 
 ### add_blueprint_event_node
@@ -428,6 +452,23 @@ Connect two nodes in a Blueprint's event graph.
 }
 ```
 
+### delete_blueprint_node
+
+Delete one Blueprint graph node by GUID with explicit safety guards.
+
+**Parameters:**
+- `blueprint_name` (string) - Name or asset path of the target Blueprint
+- `node_id` (string) - Node GUID to delete
+- `graph_name` / `graph_id` / `graph_type` (optional) - Target graph selector
+- `expected_node_name` (string, optional) - Exact node object name guard
+- `expected_node_class` (string, optional) - Node class guard, for example `K2Node_VariableSet`
+- `expected_title_contains` (string, optional) - Node title substring guard
+- `allow_non_exec_linked_delete` (boolean, optional) - Allow deletion when data pins are linked
+- `allow_exec_linked_delete` (boolean, optional) - Allow deletion when execution pins are linked
+- `allow_any_linked_delete` (boolean, optional) - Bypass link-type guards
+
+By default the command refuses any linked node. Structural Event/Entry/Return nodes are always refused; this command is for ordinary graph cleanup nodes only. For cleanup of an unexecuted data-linked node, pass `allow_non_exec_linked_delete=true` and keep an `expected_node_class` or title guard.
+
 ### add_blueprint_variable
 
 Add a variable to a Blueprint.
@@ -458,6 +499,32 @@ Add a variable to a Blueprint.
     "variable_type": "Float",
     "default_value": 100.0,
     "is_exposed": true
+  }
+}
+```
+
+### set_blueprint_variable_metadata
+
+Set metadata or editor exposure flags on an existing Blueprint member variable.
+
+**Parameters:**
+- `blueprint_name` (string) - Blueprint name or path
+- `variable_name` (string) - Existing Blueprint member variable name
+- `metadata` (object, optional) - String/number/bool metadata values
+- `is_editable` (boolean, optional) - Alias for making the variable editable on instances
+- `instance_editable` (boolean, optional) - Explicit Instance Editable flag. `true` sets `CPF_Edit` and clears `CPF_DisableEditOnInstance`
+- `expose_on_spawn` (boolean, optional) - Set or clear Expose on Spawn metadata and property flag
+
+At least one of `metadata`, `is_editable`, `instance_editable`, or `expose_on_spawn` must be provided. This command is useful when a Blueprint variable already exists but needs to become editable on placed actors or component templates.
+
+**Example:**
+```json
+{
+  "command": "set_blueprint_variable_metadata",
+  "params": {
+    "blueprint_name": "/Game/Field/BP_Field",
+    "variable_name": "FollowTarget",
+    "instance_editable": true
   }
 }
 ```

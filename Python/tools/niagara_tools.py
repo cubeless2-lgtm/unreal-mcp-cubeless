@@ -508,6 +508,347 @@ def register_niagara_tools(mcp: FastMCP):
             return {"success": False, "message": error_msg}
 
     @mcp.tool()
+    def set_niagara_scratch_pad_function_input_default(
+        ctx: Context,
+        system_path: str,
+        function_name: str = "",
+        input_pin_name: str = "",
+        value: Any | None = None,
+        default_value: str = "",
+        function_node_guid: str = "",
+        function_node_index: int | None = None,
+        function_call_index: int | None = None,
+        scratch_pad_script_path: str = "",
+        scratch_pad_owner_kind: str = "system",
+        scratch_pad_script_index: int | None = None,
+        scratch_pad_name: str = "",
+        scratch_pad_emitter_index: int | None = None,
+        scratch_pad_emitter_name: str = "",
+        break_links: bool = True,
+        allow_multi_link_break: bool = False,
+        allow_source_edit: bool = False,
+        save: bool = True,
+        request_compile: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Set a Scratch Pad internal function-call input pin default value.
+
+        Args:
+            system_path: Niagara System package path or object path
+            function_name: Target internal function name, for example SetRenderTargetValue
+            input_pin_name: Target function input pin name, for example Value
+            value: JSON value converted to a Niagara pin default string
+            default_value: Raw Unreal pin default string; takes precedence over value
+            function_node_guid: Optional target function node GUID
+            function_node_index: Optional graph node index from inspect_niagara_graph
+            function_call_index: Optional function-call-only index inside the Scratch Pad graph
+            scratch_pad_script_path: Direct target Scratch Pad script path; required unless name or index is provided
+            scratch_pad_owner_kind: system or emitter
+            scratch_pad_script_index: Scratch Pad script index; required unless path or name is provided
+            scratch_pad_name: Scratch Pad script name; required unless path or index is provided
+            scratch_pad_emitter_index: Optional emitter index for emitter-owned Scratch Pads
+            scratch_pad_emitter_name: Optional emitter name for emitter-owned Scratch Pads
+            break_links: Break existing links from the target input pin after setting its default
+            allow_multi_link_break: Allow breaking more than one existing link
+            allow_source_edit: Allow edits outside /Game/_MCP_Temp
+            save: Save the Niagara System after editing
+            request_compile: Request Niagara compile after editing
+        """
+        try:
+            params: Dict[str, Any] = {
+                "system_path": system_path,
+                "function_name": function_name,
+                "function_node_guid": function_node_guid,
+                "input_pin_name": input_pin_name,
+                "scratch_pad_script_path": scratch_pad_script_path,
+                "scratch_pad_owner_kind": scratch_pad_owner_kind,
+                "scratch_pad_name": scratch_pad_name,
+                "scratch_pad_emitter_name": scratch_pad_emitter_name,
+                "break_links": break_links,
+                "allow_multi_link_break": allow_multi_link_break,
+                "allow_source_edit": allow_source_edit,
+                "save": save,
+                "request_compile": request_compile,
+            }
+            if default_value:
+                params["default_value"] = default_value
+            else:
+                params["value"] = value
+            if function_node_index is not None:
+                params["function_node_index"] = function_node_index
+            if function_call_index is not None:
+                params["function_call_index"] = function_call_index
+            if scratch_pad_script_index is not None:
+                params["scratch_pad_script_index"] = scratch_pad_script_index
+            if scratch_pad_emitter_index is not None:
+                params["scratch_pad_emitter_index"] = scratch_pad_emitter_index
+            return send_niagara_command("set_niagara_scratch_pad_function_input_default", params)
+        except Exception as e:
+            error_msg = f"Error setting Niagara Scratch Pad function input default: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def link_niagara_scratch_pad_pin_to_user_parameter(
+        ctx: Context,
+        system_path: str,
+        target_pin_name: str,
+        user_parameter_name: str,
+        scratch_pad_script_path: str = "",
+        scratch_pad_owner_kind: str = "system",
+        scratch_pad_script_index: int | None = None,
+        scratch_pad_name: str = "",
+        scratch_pad_emitter_index: int | None = None,
+        scratch_pad_emitter_name: str = "",
+        target_node_guid: str = "",
+        target_node_index: int | None = None,
+        parameter_map_set_index: int | None = None,
+        default_value: Any = None,
+        overwrite_existing: bool = False,
+        allow_multi_link_break: bool = False,
+        allow_source_edit: bool = False,
+        save: bool = True,
+        request_compile: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Link a Scratch Pad ParameterMapSet input pin to a Vector2D User parameter.
+
+        Args:
+            system_path: Niagara System package path or object path
+            target_pin_name: Target ParameterMapSet input pin, e.g. Local.Module.AdvectionAmount
+            user_parameter_name: User parameter name, with or without User. prefix
+            scratch_pad_script_path: Direct target Scratch Pad script path; required unless name or index is provided
+            scratch_pad_owner_kind: system or emitter
+            scratch_pad_script_index: Scratch Pad script index; required unless path or name is provided
+            scratch_pad_name: Scratch Pad script name; required unless path or index is provided
+            scratch_pad_emitter_index: Optional emitter index for emitter-owned Scratch Pads
+            scratch_pad_emitter_name: Optional emitter name for emitter-owned Scratch Pads
+            target_node_guid: Optional target ParameterMapSet node GUID
+            target_node_index: Optional graph node index from inspect_niagara_graph
+            parameter_map_set_index: Optional ParameterMapSet-only index in the Scratch Pad graph
+            default_value: Optional Vector2D default value such as [0, 0]
+            overwrite_existing: Replace existing links on the target pin
+            allow_multi_link_break: Allow breaking more than one existing link
+            allow_source_edit: Allow edits outside /Game/_MCP_Temp
+            save: Save the Niagara System after editing
+            request_compile: Request Niagara compile after editing
+        """
+        try:
+            params: Dict[str, Any] = {
+                "system_path": system_path,
+                "target_pin_name": target_pin_name,
+                "user_parameter_name": user_parameter_name,
+                "scratch_pad_script_path": scratch_pad_script_path,
+                "scratch_pad_owner_kind": scratch_pad_owner_kind,
+                "scratch_pad_name": scratch_pad_name,
+                "scratch_pad_emitter_name": scratch_pad_emitter_name,
+                "target_node_guid": target_node_guid,
+                "overwrite_existing": overwrite_existing,
+                "allow_multi_link_break": allow_multi_link_break,
+                "allow_source_edit": allow_source_edit,
+                "save": save,
+                "request_compile": request_compile,
+            }
+            if scratch_pad_script_index is not None:
+                params["scratch_pad_script_index"] = scratch_pad_script_index
+            if scratch_pad_emitter_index is not None:
+                params["scratch_pad_emitter_index"] = scratch_pad_emitter_index
+            if target_node_index is not None:
+                params["target_node_index"] = target_node_index
+            if parameter_map_set_index is not None:
+                params["parameter_map_set_index"] = parameter_map_set_index
+            if default_value is not None:
+                params["default_value"] = default_value
+            return send_niagara_command("link_niagara_scratch_pad_pin_to_user_parameter", params)
+        except Exception as e:
+            error_msg = f"Error linking Niagara Scratch Pad pin to User parameter: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def wrap_niagara_scratch_pad_output_with_stack_context(
+        ctx: Context,
+        system_path: str,
+        target_pin_name: str = "StackContext.RGBA",
+        scratch_pad_script_path: str = "",
+        scratch_pad_owner_kind: str = "system",
+        scratch_pad_script_index: int | None = None,
+        scratch_pad_name: str = "RenderCircleToGrid",
+        scratch_pad_emitter_index: int | None = None,
+        scratch_pad_emitter_name: str = "",
+        target_node_guid: str = "",
+        target_node_index: int | None = None,
+        parameter_map_set_index: int | None = None,
+        previous_stack_value_pin_name: str = "PreviousStackValue",
+        local_value_pin_name: str = "LocalStampValue",
+        expression: str = "max(PreviousStackValue, LocalStampValue)",
+        skip_if_already_wrapped: bool = True,
+        replace_existing_custom: bool = True,
+        allow_source_edit: bool = False,
+        save: bool = True,
+        request_compile: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Wrap a Scratch Pad ParameterMapSet value input with a Custom HLSL accumulator.
+
+        The existing linked value becomes local_value_pin_name, while the expression can
+        read the incoming StackContext through the dynamic input's ParameterMap.
+
+        Args:
+            system_path: Niagara System package path or object path
+            target_pin_name: ParameterMapSet input pin to wrap, defaults to StackContext.RGBA
+            scratch_pad_script_path: Direct target Scratch Pad script path
+            scratch_pad_owner_kind: system or emitter
+            scratch_pad_script_index: Scratch Pad script index
+            scratch_pad_name: Scratch Pad script name, defaults to RenderCircleToGrid
+            scratch_pad_emitter_index: Optional emitter index for emitter-owned Scratch Pads
+            scratch_pad_emitter_name: Optional emitter name for emitter-owned Scratch Pads
+            target_node_guid: Optional target ParameterMapSet node GUID
+            target_node_index: Optional graph node index from inspect_niagara_graph
+            parameter_map_set_index: Optional ParameterMapSet-only index in the Scratch Pad graph
+            previous_stack_value_pin_name: Custom HLSL input name for the incoming StackContext value
+            local_value_pin_name: Custom HLSL input name for the previous linked value
+            expression: Dynamic Custom HLSL expression, defaults to max(PreviousStackValue, LocalStampValue)
+            skip_if_already_wrapped: Return success when the same Custom HLSL wrapper already exists
+            replace_existing_custom: Replace an existing Custom HLSL wrapper while preserving local_value_pin_name
+            allow_source_edit: Allow edits outside /Game/_MCP_Temp
+            save: Save the Niagara System after editing
+            request_compile: Request Niagara compile after editing
+        """
+        try:
+            params: Dict[str, Any] = {
+                "system_path": system_path,
+                "target_pin_name": target_pin_name,
+                "scratch_pad_script_path": scratch_pad_script_path,
+                "scratch_pad_owner_kind": scratch_pad_owner_kind,
+                "scratch_pad_name": scratch_pad_name,
+                "scratch_pad_emitter_name": scratch_pad_emitter_name,
+                "target_node_guid": target_node_guid,
+                "previous_stack_value_pin_name": previous_stack_value_pin_name,
+                "local_value_pin_name": local_value_pin_name,
+                "expression": expression,
+                "skip_if_already_wrapped": skip_if_already_wrapped,
+                "replace_existing_custom": replace_existing_custom,
+                "allow_source_edit": allow_source_edit,
+                "save": save,
+                "request_compile": request_compile,
+            }
+            if scratch_pad_script_index is not None:
+                params["scratch_pad_script_index"] = scratch_pad_script_index
+            if scratch_pad_emitter_index is not None:
+                params["scratch_pad_emitter_index"] = scratch_pad_emitter_index
+            if target_node_index is not None:
+                params["target_node_index"] = target_node_index
+            if parameter_map_set_index is not None:
+                params["parameter_map_set_index"] = parameter_map_set_index
+            return send_niagara_command("wrap_niagara_scratch_pad_output_with_stack_context", params)
+        except Exception as e:
+            error_msg = f"Error wrapping Niagara Scratch Pad output with StackContext accumulator: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def insert_niagara_scratch_pad_custom_hlsl_for_pin(
+        ctx: Context,
+        system_path: str,
+        target_pin_name: str,
+        expression: str,
+        scratch_pad_script_path: str = "",
+        scratch_pad_owner_kind: str = "system",
+        scratch_pad_script_index: int | None = None,
+        scratch_pad_name: str = "RenderGrid",
+        scratch_pad_emitter_index: int | None = None,
+        scratch_pad_emitter_name: str = "",
+        target_node_guid: str = "",
+        target_node_name: str = "",
+        target_node_index: int | None = None,
+        preserve_existing_link_as: str = "BaseValue",
+        output_pin_name: str = "CustomHLSLOutput",
+        signature_name: str = "IF_CustomPinValue",
+        inputs: list[dict[str, Any]] | None = None,
+        user_parameter_inputs: list[dict[str, Any]] | None = None,
+        skip_if_already_inserted: bool = True,
+        replace_existing_custom: bool = False,
+        rebuild_existing_custom: bool = False,
+        requires_context: bool = False,
+        delete_unlinked_custom_nodes: bool = False,
+        delete_unlinked_custom_input_source_nodes: bool = False,
+        allow_source_edit: bool = False,
+        save: bool = True,
+        request_compile: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Insert or replace a Custom HLSL dynamic input for a Scratch Pad input pin.
+
+        Args:
+            system_path: Niagara System package path or object path
+            target_pin_name: Target input pin to wrap with Custom HLSL
+            expression: Custom HLSL expression body
+            scratch_pad_script_path: Direct target Scratch Pad script path
+            scratch_pad_owner_kind: system or emitter
+            scratch_pad_script_index: Scratch Pad script index
+            scratch_pad_name: Scratch Pad script name, defaults to RenderGrid
+            scratch_pad_emitter_index: Optional emitter index for emitter-owned Scratch Pads
+            scratch_pad_emitter_name: Optional emitter name for emitter-owned Scratch Pads
+            target_node_guid: Optional target node GUID
+            target_node_name: Optional target node name
+            target_node_index: Optional target graph node index
+            preserve_existing_link_as: Custom input name for the existing target-pin value link
+            output_pin_name: Custom HLSL output pin name
+            signature_name: Custom HLSL function signature name
+            inputs: Extra inputs linked from existing Scratch Pad graph pins
+            user_parameter_inputs: Extra inputs created from User.* ParameterMapGet nodes
+            skip_if_already_inserted: Return success when the same expression is already present
+            replace_existing_custom: Replace an existing Custom HLSL wrapper
+            rebuild_existing_custom: Preserve the existing base-value input when replacing a Custom node
+            requires_context: Mark the Custom HLSL signature as context-requiring
+            delete_unlinked_custom_nodes: Delete unlinked Custom HLSL nodes after insertion
+            delete_unlinked_custom_input_source_nodes: Delete now-unlinked input source nodes that belonged to the replaced Custom node
+            allow_source_edit: Allow edits outside /Game/_MCP_Temp
+            save: Save the Niagara System after editing
+            request_compile: Request Niagara compile after editing
+        """
+        try:
+            params: Dict[str, Any] = {
+                "system_path": system_path,
+                "target_pin_name": target_pin_name,
+                "expression": expression,
+                "scratch_pad_script_path": scratch_pad_script_path,
+                "scratch_pad_owner_kind": scratch_pad_owner_kind,
+                "scratch_pad_name": scratch_pad_name,
+                "scratch_pad_emitter_name": scratch_pad_emitter_name,
+                "target_node_guid": target_node_guid,
+                "target_node_name": target_node_name,
+                "preserve_existing_link_as": preserve_existing_link_as,
+                "output_pin_name": output_pin_name,
+                "signature_name": signature_name,
+                "skip_if_already_inserted": skip_if_already_inserted,
+                "replace_existing_custom": replace_existing_custom,
+                "rebuild_existing_custom": rebuild_existing_custom,
+                "requires_context": requires_context,
+                "delete_unlinked_custom_nodes": delete_unlinked_custom_nodes,
+                "delete_unlinked_custom_input_source_nodes": delete_unlinked_custom_input_source_nodes,
+                "allow_source_edit": allow_source_edit,
+                "save": save,
+                "request_compile": request_compile,
+            }
+            if scratch_pad_script_index is not None:
+                params["scratch_pad_script_index"] = scratch_pad_script_index
+            if scratch_pad_emitter_index is not None:
+                params["scratch_pad_emitter_index"] = scratch_pad_emitter_index
+            if target_node_index is not None:
+                params["target_node_index"] = target_node_index
+            if inputs is not None:
+                params["inputs"] = inputs
+            if user_parameter_inputs is not None:
+                params["user_parameter_inputs"] = user_parameter_inputs
+            return send_niagara_command("insert_niagara_scratch_pad_custom_hlsl_for_pin", params)
+        except Exception as e:
+            error_msg = f"Error inserting Niagara Scratch Pad Custom HLSL for pin: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
     def inspect_niagara_compile_status(
         ctx: Context,
         system_path: str,
@@ -581,6 +922,98 @@ def register_niagara_tools(mcp: FastMCP):
             return {"success": False, "message": error_msg}
 
     @mcp.tool()
+    def set_niagara_simulation_stage_settings(
+        ctx: Context,
+        system_path: str,
+        emitter_index: int | None = None,
+        emitter_name: str = "",
+        stage_index: int | None = None,
+        stage_name: str = "",
+        enabled: bool | None = None,
+        iteration_source: str = "",
+        direct_dispatch_type: str = "",
+        direct_dispatch_element_type: str = "",
+        execute_behavior: str = "",
+        element_count: list[int] | None = None,
+        element_count_x: int | None = None,
+        element_count_y: int | None = None,
+        element_count_z: int | None = None,
+        num_iterations: int | None = None,
+        gpu_dispatch_force_linear: bool | None = None,
+        override_gpu_dispatch_num_threads: bool | None = None,
+        allow_source_edit: bool = False,
+        save: bool = True,
+        request_compile: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Edit a target-local Niagara generic SimulationStage setting.
+
+        Args:
+            system_path: Niagara System package path or object path
+            emitter_index: Optional target emitter index
+            emitter_name: Optional target emitter name
+            stage_index: Optional SimulationStage index
+            stage_name: Optional SimulationStage name
+            enabled: Optional stage enabled state
+            iteration_source: Optional Particles, DataInterface, or DirectSet
+            direct_dispatch_type: Optional OneD, TwoD, or ThreeD
+            direct_dispatch_element_type: Optional NumThreads, NumThreadsNoClipping, or NumGroups
+            execute_behavior: Optional Always, OnSimulationReset, or NotOnSimulationReset
+            element_count: Optional 1-3 integer array for direct dispatch
+            element_count_x: Optional direct dispatch element count X
+            element_count_y: Optional direct dispatch element count Y
+            element_count_z: Optional direct dispatch element count Z
+            num_iterations: Optional number of stage iterations
+            gpu_dispatch_force_linear: Optional force-linear GPU dispatch flag
+            override_gpu_dispatch_num_threads: Optional custom thread-group override flag
+            allow_source_edit: Allow edits outside /Game/_MCP_Temp
+            save: Save the Niagara System after editing
+            request_compile: Request Niagara compile after editing
+        """
+        try:
+            params: Dict[str, Any] = {
+                "system_path": system_path,
+                "emitter_name": emitter_name,
+                "stage_name": stage_name,
+                "allow_source_edit": allow_source_edit,
+                "save": save,
+                "request_compile": request_compile,
+            }
+            if emitter_index is not None:
+                params["emitter_index"] = emitter_index
+            if stage_index is not None:
+                params["stage_index"] = stage_index
+            if enabled is not None:
+                params["enabled"] = enabled
+            if iteration_source:
+                params["iteration_source"] = iteration_source
+            if direct_dispatch_type:
+                params["direct_dispatch_type"] = direct_dispatch_type
+            if direct_dispatch_element_type:
+                params["direct_dispatch_element_type"] = direct_dispatch_element_type
+            if execute_behavior:
+                params["execute_behavior"] = execute_behavior
+            if element_count is not None:
+                params["element_count"] = element_count
+            if element_count_x is not None:
+                params["element_count_x"] = element_count_x
+            if element_count_y is not None:
+                params["element_count_y"] = element_count_y
+            if element_count_z is not None:
+                params["element_count_z"] = element_count_z
+            if num_iterations is not None:
+                params["num_iterations"] = num_iterations
+            if gpu_dispatch_force_linear is not None:
+                params["gpu_dispatch_force_linear"] = gpu_dispatch_force_linear
+            if override_gpu_dispatch_num_threads is not None:
+                params["override_gpu_dispatch_num_threads"] = override_gpu_dispatch_num_threads
+            return send_niagara_command("set_niagara_simulation_stage_settings", params)
+        except Exception as e:
+            error_msg = f"Error setting Niagara simulation stage settings: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
     def inspect_niagara_module_inputs(
         ctx: Context,
         system_path: str,
@@ -633,6 +1066,9 @@ def register_niagara_tools(mcp: FastMCP):
         module_node_guid: str = "",
         max_modules: int = 200,
         max_inputs_per_module: int = 64,
+        include_data_interface_properties: bool = False,
+        max_data_interface_properties: int = 120,
+        max_data_interface_property_value_length: int = 512,
     ) -> Dict[str, Any]:
         """
         Inspect Niagara Data Interface module input overrides and User object bindings.
@@ -647,6 +1083,9 @@ def register_niagara_tools(mcp: FastMCP):
             module_node_guid: Optional target module node GUID
             max_modules: Maximum matching modules to include per emitter
             max_inputs_per_module: Maximum Data Interface inputs to include per module
+            include_data_interface_properties: Include reflected editable Data Interface properties
+            max_data_interface_properties: Maximum reflected Data Interface properties to include
+            max_data_interface_property_value_length: Maximum reflected property value string length
         """
         try:
             params: Dict[str, Any] = {
@@ -657,6 +1096,9 @@ def register_niagara_tools(mcp: FastMCP):
                 "module_node_guid": module_node_guid,
                 "max_modules": max_modules,
                 "max_inputs_per_module": max_inputs_per_module,
+                "include_data_interface_properties": include_data_interface_properties,
+                "max_data_interface_properties": max_data_interface_properties,
+                "max_data_interface_property_value_length": max_data_interface_property_value_length,
             }
             if emitter_index is not None:
                 params["emitter_index"] = emitter_index
@@ -830,6 +1272,122 @@ def register_niagara_tools(mcp: FastMCP):
             return send_niagara_command("set_niagara_render_target2d_module_input", params)
         except Exception as e:
             error_msg = f"Error binding Niagara RenderTarget2D module input: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def set_niagara_module_input_user_parameter(
+        ctx: Context,
+        system_path: str,
+        input_name: str,
+        user_parameter_name: str,
+        default_value: Any | None = None,
+        emitter_index: int | None = None,
+        emitter_name: str = "",
+        module_index: int | None = None,
+        module_name: str = "",
+        module_node_guid: str = "",
+        overwrite_existing: bool = False,
+        allow_source_edit: bool = False,
+        save: bool = True,
+        request_compile: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Bind a Niagara scalar/vector/color/bool module input to a User parameter.
+
+        Args:
+            system_path: Niagara System package path or object path
+            input_name: Module input name, with or without the Module. prefix
+            user_parameter_name: User parameter name, with or without the User. prefix
+            default_value: Optional default value for the User parameter
+            emitter_index: Optional target emitter index
+            emitter_name: Optional target emitter name
+            module_index: Optional target module index from inspect_niagara_module_inputs
+            module_name: Optional target module name
+            module_node_guid: Optional target module node GUID
+            overwrite_existing: Replace an existing linked override for the module input
+            allow_source_edit: Allow edits outside /Game/_MCP_Temp
+            save: Save the Niagara System after editing
+            request_compile: Request Niagara compile after editing
+        """
+        try:
+            params: Dict[str, Any] = {
+                "system_path": system_path,
+                "input_name": input_name,
+                "user_parameter_name": user_parameter_name,
+                "emitter_name": emitter_name,
+                "module_name": module_name,
+                "module_node_guid": module_node_guid,
+                "overwrite_existing": overwrite_existing,
+                "allow_source_edit": allow_source_edit,
+                "save": save,
+                "request_compile": request_compile,
+            }
+            if default_value is not None:
+                params["default_value"] = default_value
+            if emitter_index is not None:
+                params["emitter_index"] = emitter_index
+            if module_index is not None:
+                params["module_index"] = module_index
+            return send_niagara_command("set_niagara_module_input_user_parameter", params)
+        except Exception as e:
+            error_msg = f"Error binding Niagara module input to User parameter: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def set_niagara_module_input_linked_parameter(
+        ctx: Context,
+        system_path: str,
+        input_name: str,
+        linked_parameter_name: str,
+        emitter_index: int | None = None,
+        emitter_name: str = "",
+        module_index: int | None = None,
+        module_name: str = "",
+        module_node_guid: str = "",
+        overwrite_existing: bool = False,
+        allow_source_edit: bool = False,
+        save: bool = True,
+        request_compile: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Link a Niagara module input to an existing namespaced Niagara parameter.
+
+        Args:
+            system_path: Niagara System package path or object path
+            input_name: Module input name, with or without the Module. prefix
+            linked_parameter_name: Existing parameter name, e.g. Emitter.Grid2D Collection
+            emitter_index: Optional target emitter index
+            emitter_name: Optional target emitter name
+            module_index: Optional target module index from inspect_niagara_module_inputs
+            module_name: Optional target module name
+            module_node_guid: Optional target module node GUID
+            overwrite_existing: Replace an existing linked override for the module input
+            allow_source_edit: Allow edits outside /Game/_MCP_Temp
+            save: Save the Niagara System after editing
+            request_compile: Request Niagara compile after editing
+        """
+        try:
+            params: Dict[str, Any] = {
+                "system_path": system_path,
+                "input_name": input_name,
+                "linked_parameter_name": linked_parameter_name,
+                "emitter_name": emitter_name,
+                "module_name": module_name,
+                "module_node_guid": module_node_guid,
+                "overwrite_existing": overwrite_existing,
+                "allow_source_edit": allow_source_edit,
+                "save": save,
+                "request_compile": request_compile,
+            }
+            if emitter_index is not None:
+                params["emitter_index"] = emitter_index
+            if module_index is not None:
+                params["module_index"] = module_index
+            return send_niagara_command("set_niagara_module_input_linked_parameter", params)
+        except Exception as e:
+            error_msg = f"Error linking Niagara module input to parameter: {e}"
             logger.error(error_msg)
             return {"success": False, "message": error_msg}
 

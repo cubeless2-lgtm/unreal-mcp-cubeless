@@ -22,6 +22,7 @@ def register_python_tools(mcp: FastMCP):
         code: str,
         mode: str = "ExecuteFile",
         defer_to_ticker: bool = False,
+        allow_unsafe_editor_scripting_during_pie: bool = False,
     ) -> Dict[str, Any]:
         """
         Execute Python inside the running Unreal Editor.
@@ -30,6 +31,7 @@ def register_python_tools(mcp: FastMCP):
             code: Python code to execute in Unreal.
             mode: Python execution mode. ExecuteFile supports multiline TA scripts.
             defer_to_ticker: Run through Unreal ticker instead of directly on the game thread.
+            allow_unsafe_editor_scripting_during_pie: Permit known unsafe editor actor cleanup calls during PIE/SIE.
 
         Returns:
             Response from Unreal, including Python logs and command_result.
@@ -43,7 +45,12 @@ def register_python_tools(mcp: FastMCP):
 
             response = unreal.send_command(
                 "execute_python",
-                {"code": code, "mode": mode, "defer_to_ticker": defer_to_ticker},
+                {
+                    "code": code,
+                    "mode": mode,
+                    "defer_to_ticker": defer_to_ticker,
+                    "allow_unsafe_editor_scripting_during_pie": allow_unsafe_editor_scripting_during_pie,
+                },
             )
             return response or {"success": False, "message": "No response from Unreal Engine"}
         except Exception as exc:

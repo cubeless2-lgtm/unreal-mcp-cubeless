@@ -64,7 +64,8 @@ The extension deliberately avoids adding a separate C++ command for every TA ope
 
 ## Added MCP Tools
 
-- `execute_unreal_python(code, mode="ExecuteFile")`
+- `execute_unreal_python(code, mode="ExecuteFile", defer_to_ticker=false, allow_unsafe_editor_scripting_during_pie=false)`
+  - Unsafe editor actor cleanup calls such as `EditorLevelLibrary.destroy_actor` are blocked during PIE/SIE by default.
 - `list_pcg_assets(root_path="/Game")`
 - `list_pcg_components()`
 - `refresh_pcg_components(actor_name="", selected_only=false, cleanup=true, generate=true, wait_until_complete=false, timeout_seconds=10.0, poll_interval_seconds=0.05, max_components=1000)`
