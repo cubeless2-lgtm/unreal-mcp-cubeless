@@ -15,21 +15,21 @@ def register_editor_tools(mcp: FastMCP):
     """Register editor tools with the MCP server."""
     
     @mcp.tool()
-    def get_actors_in_level(ctx: Context) -> List[Dict[str, Any]]:
-        """Get a list of all actors in the current level."""
+    def get_actors_in_level(ctx: Context) -> Dict[str, Any]:
+        """Get all actors in the current level as structured JSON with actor_count and actors."""
         from unreal_mcp_server import get_unreal_connection
         
         try:
             unreal = get_unreal_connection()
             if not unreal:
                 logger.warning("Failed to connect to Unreal Engine")
-                return []
+                return {"success": False, "message": "Failed to connect to Unreal Engine", "actor_count": 0, "actors": []}
                 
             response = unreal.send_command("get_actors_in_level", {})
             
             if not response:
                 logger.warning("No response from Unreal Engine")
-                return []
+                return {"success": False, "message": "No response from Unreal Engine", "actor_count": 0, "actors": []}
                 
             # Log the complete response for debugging
             logger.info(f"Complete response from Unreal: {response}")
@@ -38,42 +38,58 @@ def register_editor_tools(mcp: FastMCP):
             if "result" in response and "actors" in response["result"]:
                 actors = response["result"]["actors"]
                 logger.info(f"Found {len(actors)} actors in level")
-                return actors
+                return {"success": True, "actor_count": len(actors), "actors": actors, "unreal_response": response}
             elif "actors" in response:
                 actors = response["actors"]
                 logger.info(f"Found {len(actors)} actors in level")
-                return actors
+                return {"success": True, "actor_count": len(actors), "actors": actors, "unreal_response": response}
                 
             logger.warning(f"Unexpected response format: {response}")
-            return []
+            return {
+                "success": False,
+                "message": "Unexpected response format from Unreal Engine",
+                "actor_count": 0,
+                "actors": [],
+                "unreal_response": response,
+            }
             
         except Exception as e:
             logger.error(f"Error getting actors: {e}")
-            return []
+            return {"success": False, "message": str(e), "actor_count": 0, "actors": []}
 
     @mcp.tool()
-    def find_actors_by_name(ctx: Context, pattern: str) -> List[str]:
-        """Find actors by name pattern."""
+    def find_actors_by_name(ctx: Context, pattern: str) -> Dict[str, Any]:
+        """
+        Find actors by name pattern and return structured actor data.
+
+        Args:
+            pattern: Substring to match against actor object names.
+        """
         from unreal_mcp_server import get_unreal_connection
         
         try:
             unreal = get_unreal_connection()
             if not unreal:
                 logger.warning("Failed to connect to Unreal Engine")
-                return []
+                return {"success": False, "message": "Failed to connect to Unreal Engine", "actor_count": 0, "actors": []}
                 
             response = unreal.send_command("find_actors_by_name", {
                 "pattern": pattern
             })
             
             if not response:
-                return []
-                
-            return response.get("actors", [])
+                return {"success": False, "message": "No response from Unreal Engine", "actor_count": 0, "actors": []}
+
+            if "result" in response and "actors" in response["result"]:
+                actors = response["result"]["actors"]
+            else:
+                actors = response.get("actors", [])
+
+            return {"success": True, "actor_count": len(actors), "actors": actors, "unreal_response": response}
             
         except Exception as e:
             logger.error(f"Error finding actors: {e}")
-            return []
+            return {"success": False, "message": str(e), "actor_count": 0, "actors": []}
     
     @mcp.tool()
     def spawn_actor(
@@ -259,13 +275,39 @@ def register_editor_tools(mcp: FastMCP):
             logger.error(error_msg)
             return {"success": False, "message": error_msg}
 
-    # @mcp.tool() commented out because it's buggy
+    @mcp.tool()
+    def take_screenshot(
+        ctx: Context,
+        filepath: str,
+    ) -> Dict[str, Any]:
+        """
+        Capture the active editor viewport to a PNG file through the legacy bridge command.
+
+        Args:
+            filepath: Absolute or project-relative PNG output path. .png is appended if omitted.
+        """
+        from unreal_mcp_server import get_unreal_connection
+
+        try:
+            unreal = get_unreal_connection()
+            if not unreal:
+                logger.error("Failed to connect to Unreal Engine")
+                return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+            response = unreal.send_command("take_screenshot", {"filepath": filepath})
+            return response or {"success": False, "message": "No response from Unreal Engine"}
+
+        except Exception as e:
+            logger.error(f"Error taking screenshot: {e}")
+            return {"success": False, "message": str(e)}
+
+    @mcp.tool()
     def focus_viewport(
         ctx: Context,
-        target: str = None,
-        location: List[float] = None,
+        target: Optional[str] = None,
+        location: Optional[List[float]] = None,
         distance: float = 1000.0,
-        orientation: List[float] = None
+        orientation: Optional[List[float]] = None
     ) -> Dict[str, Any]:
         """
         Focus the viewport on a specific actor or location.

@@ -2,12 +2,13 @@
 
 import logging
 import os
+import re
 import tempfile
+from pathlib import Path
 from typing import Any, Dict
 
 from mcp.server.fastmcp import Context, FastMCP
 
-from services.openai_image_service import ensure_png_path, generate_texture_png, sanitize_output_name
 from services.unreal_texture_importer import (
     apply_material_to_mesh as unreal_apply_material_to_mesh,
     create_material_instance_with_texture as unreal_create_material_instance_with_texture,
@@ -31,6 +32,21 @@ def _default_output_dir() -> str:
     return os.path.join(tempfile.gettempdir(), "unreal_mcp_ai_textures")
 
 
+def sanitize_output_name(output_name: str) -> str:
+    """Return a filesystem-friendly PNG basename without an extension."""
+    name = re.sub(r"[^A-Za-z0-9_.-]+", "_", output_name.strip())
+    name = name.strip("._")
+    return name or "AI_Texture"
+
+
+def ensure_png_path(output_dir: str, output_name: str) -> str:
+    """Build an absolute PNG path and create its parent directory."""
+    safe_name = sanitize_output_name(output_name)
+    output_path = Path(output_dir).expanduser().resolve() / f"{safe_name}.png"
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    return str(output_path)
+
+
 def _material_name_from_output(output_name: str) -> str:
     safe_name = sanitize_output_name(output_name)
     if safe_name.startswith("T_"):
@@ -40,8 +56,32 @@ def _material_name_from_output(output_name: str) -> str:
     return "M_" + safe_name
 
 
+def _builtin_image_generation_required(
+    prompt: str,
+    output_path: str,
+    size: str,
+    reference_image_path: str = "",
+) -> Dict[str, Any]:
+    return {
+        "success": False,
+        "stage": "builtin_image_generation_required",
+        "api_route_disabled": True,
+        "billing_route": "none",
+        "image_generation_route": "codex_builtin_image_generation",
+        "message": (
+            "OpenAI API-key based image generation is disabled for this project. "
+            "Use Codex built-in image generation to create the PNG, then call "
+            "import_texture_to_unreal/create_material_instance_with_texture/apply_material_to_mesh."
+        ),
+        "prompt": prompt,
+        "requested_size": size,
+        "expected_output_path": output_path,
+        "reference_image_path": reference_image_path,
+    }
+
+
 def register_texture_generation_tools(mcp: FastMCP):
-    """Register AI texture generation tools."""
+    """Register texture helper tools that avoid API-key image generation."""
 
     @mcp.tool()
     def get_static_mesh_uv_layout(
@@ -73,7 +113,9 @@ def register_texture_generation_tools(mcp: FastMCP):
         size: str = "1024x1024",
     ) -> Dict[str, Any]:
         """
-        Generate a BaseColor texture PNG from a prompt using GPT Image.
+        Prepare a BaseColor texture request for Codex built-in image generation.
+
+        This tool does not call API-key based or external image services.
 
         Args:
             prompt: Text prompt for the image model.
@@ -82,9 +124,7 @@ def register_texture_generation_tools(mcp: FastMCP):
             size: Image size, for example 1024x1024.
         """
         output_path = ensure_png_path(output_dir, output_name)
-        result = generate_texture_png(prompt, output_path, size=size)
-        result["output_path"] = output_path
-        return result
+        return _builtin_image_generation_required(prompt, output_path, size)
 
     @mcp.tool()
     def generate_texture_for_mesh_uv(
@@ -97,7 +137,9 @@ def register_texture_generation_tools(mcp: FastMCP):
         size: str = "1024x1024",
     ) -> Dict[str, Any]:
         """
-        Export a mesh UV layout, then use it as a guide image for GPT Image texture generation.
+        Export a mesh UV layout and prepare a Codex built-in image generation request.
+
+        This tool does not call API-key based or external image services.
 
         Args:
             mesh_path: Static Mesh asset path.
@@ -115,31 +157,21 @@ def register_texture_generation_tools(mcp: FastMCP):
 
         output_path = ensure_png_path(local_output_dir, output_name)
         guided_prompt = f"{prompt.strip()}\n\n{UV_GUIDED_PROMPT_SUFFIX}"
-        image_result = generate_texture_png(guided_prompt, output_path, size=size, reference_image_path=uv_path)
-        if not image_result.get("success"):
-            image_result.update(
-                {
-                    "stage": "image_generation",
-                    "uv_layout_path": uv_result.get("output_path"),
-                    "guide": (
-                        "UV layout export succeeded, but GPT Image guided generation failed. "
-                        "If your OpenAI Images API/model does not support image inputs, use "
-                        "generate_texture_from_prompt without a UV guide or enable a GPT Image model that supports edits."
-                    ),
-                }
-            )
-            return image_result
-
-        return {
-            "success": True,
-            "image_path": image_result.get("image_path"),
-            "uv_layout_path": uv_result.get("output_path"),
-            "mesh_path": mesh_path,
-            "uv_channel": uv_channel,
-            "prompt": guided_prompt,
-            "image_result": image_result,
-            "uv_result": uv_result,
-        }
+        result = _builtin_image_generation_required(
+            guided_prompt,
+            output_path,
+            size,
+            reference_image_path=uv_result.get("output_path", uv_path),
+        )
+        result.update(
+            {
+                "uv_layout_path": uv_result.get("output_path"),
+                "mesh_path": mesh_path,
+                "uv_channel": uv_channel,
+                "uv_result": uv_result,
+            }
+        )
+        return result
 
     @mcp.tool()
     def import_texture_to_unreal(
@@ -210,7 +242,11 @@ def register_texture_generation_tools(mcp: FastMCP):
         size: str = "1024x1024",
     ) -> Dict[str, Any]:
         """
-        Generate a UV-guided BaseColor texture, import it, create a material, and apply it.
+        Prepare the UV-guided texture workflow without calling API-key image generation.
+
+        This returns a built-in image-generation handoff. After the PNG exists,
+        call import_texture_to_unreal, create_material_instance_with_texture, and
+        apply_material_to_mesh.
 
         Args:
             target: "selected", an actor label/path/name, or a Static Mesh asset path.
@@ -240,7 +276,16 @@ def register_texture_generation_tools(mcp: FastMCP):
         )
         logs.append({"stage": "generate_texture", "result": texture_generation})
         if not texture_generation.get("success"):
-            return {"success": False, "stage": "generate_texture", "logs": logs}
+            return {
+                "success": False,
+                "stage": "builtin_image_generation_required",
+                "logs": logs,
+                "next_steps": [
+                    "Generate the PNG with Codex built-in image generation using the returned prompt and UV layout.",
+                    "Save it to expected_output_path.",
+                    "Then call import_texture_to_unreal, create_material_instance_with_texture, and apply_material_to_mesh.",
+                ],
+            }
 
         texture_folder = f"{unreal_folder.rstrip('/')}/Textures"
         material_folder = f"{unreal_folder.rstrip('/')}/Materials"

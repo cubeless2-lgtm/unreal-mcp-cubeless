@@ -236,5 +236,142 @@ def register_project_tools(mcp: FastMCP):
             error_msg = f"Error repairing world actor instances: {e}"
             logger.error(error_msg)
             return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def analyze_blueprint_widget_fallbacks_mcp(
+        ctx: Context,
+        source_root: str,
+        target_root: str,
+        suffix: str = "_MCP",
+    ) -> Dict[str, Any]:
+        """
+        Analyze whether recreated Blueprint/Widget assets still need duplicate fallback handling.
+
+        Args:
+            source_root: Source content folder under /Game
+            target_root: Recreated/target content folder under /Game
+            suffix: Target asset suffix used to pair source and target assets
+        """
+        from unreal_mcp_server import get_unreal_connection
+
+        try:
+            unreal = get_unreal_connection()
+            if not unreal:
+                return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+            params = {
+                "source_root": source_root,
+                "target_root": target_root,
+                "suffix": suffix,
+            }
+            response = unreal.send_command("analyze_blueprint_widget_fallbacks_mcp", params)
+            return response or {"success": False, "message": "No response from Unreal Engine"}
+        except Exception as e:
+            error_msg = f"Error analyzing Blueprint/Widget fallback state: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def run_content_validation_pipeline_mcp(
+        ctx: Context,
+        source_root: str,
+        target_root: str,
+        suffix: str = "_MCP",
+        map_path: str = "",
+        continue_on_failure: bool = False,
+        run_world_repair: bool = False,
+        allow_fallback_duplicate: bool = True,
+        dry_run: bool = False,
+        overwrite_existing: bool = True,
+        delete_target_root_first: bool = True,
+        remap_references: bool = True,
+        compile_blueprints: bool = True,
+        refresh_blueprint_nodes: bool = False,
+        refresh_failed_blueprint_nodes: bool = True,
+        save_assets: bool = True,
+        repair_level_actors: bool = True,
+        force_repair_level_actors: bool = True,
+        compile_passes: int = 3,
+        check_editor_log_health: bool = True,
+        fail_on_editor_log_issues: bool = True,
+        suppress_editor_prompts: bool = True,
+        save_map: bool = True,
+        repair_actor_classes: bool = True,
+        repair_component_classes: bool = True,
+        remap_actor_references: bool = True,
+        remove_source_object_map_keys: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Run recreate, postprocess, optional world repair, and verification as one MCP pipeline.
+
+        Args:
+            source_root: Source content folder under /Game
+            target_root: Generated/target content folder under /Game
+            suffix: Target asset suffix used by recreation and validation
+            map_path: Optional target map path for world actor repair
+            continue_on_failure: Continue later pipeline steps after an earlier failure
+            run_world_repair: Run map actor/component repair; requires map_path
+            allow_fallback_duplicate: Permit duplicate fallback for assets that cannot be freshly recreated
+            dry_run: Run without applying destructive content changes where supported
+            overwrite_existing: Overwrite existing generated target assets
+            delete_target_root_first: Delete target_root before recreation
+            remap_references: Remap source asset references to generated targets
+            compile_blueprints: Compile Blueprints during recreation/postprocess
+            refresh_blueprint_nodes: Refresh all Blueprint nodes
+            refresh_failed_blueprint_nodes: Refresh nodes only after compile failures
+            save_assets: Save changed generated assets
+            repair_level_actors: Repair level actor instances during recreation
+            force_repair_level_actors: Force level actor repair even when heuristics are uncertain
+            compile_passes: Blueprint compile/postprocess pass count
+            check_editor_log_health: Include editor log health checks
+            fail_on_editor_log_issues: Treat editor log issues as validation failure
+            suppress_editor_prompts: Suppress editor prompts during batch work
+            save_map: Save the map when world repair changes it
+            repair_actor_classes: Remap actor classes during world repair
+            repair_component_classes: Remap component classes during world repair
+            remap_actor_references: Remap actor/object references during world repair
+            remove_source_object_map_keys: Remove stale source keys from object maps
+        """
+        from unreal_mcp_server import get_unreal_connection
+
+        try:
+            unreal = get_unreal_connection()
+            if not unreal:
+                return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+            params = {
+                "source_root": source_root,
+                "target_root": target_root,
+                "suffix": suffix,
+                "map_path": map_path,
+                "continue_on_failure": continue_on_failure,
+                "run_world_repair": run_world_repair,
+                "allow_fallback_duplicate": allow_fallback_duplicate,
+                "dry_run": dry_run,
+                "overwrite_existing": overwrite_existing,
+                "delete_target_root_first": delete_target_root_first,
+                "remap_references": remap_references,
+                "compile_blueprints": compile_blueprints,
+                "refresh_blueprint_nodes": refresh_blueprint_nodes,
+                "refresh_failed_blueprint_nodes": refresh_failed_blueprint_nodes,
+                "save_assets": save_assets,
+                "repair_level_actors": repair_level_actors,
+                "force_repair_level_actors": force_repair_level_actors,
+                "compile_passes": compile_passes,
+                "check_editor_log_health": check_editor_log_health,
+                "fail_on_editor_log_issues": fail_on_editor_log_issues,
+                "suppress_editor_prompts": suppress_editor_prompts,
+                "save_map": save_map,
+                "repair_actor_classes": repair_actor_classes,
+                "repair_component_classes": repair_component_classes,
+                "remap_actor_references": remap_actor_references,
+                "remove_source_object_map_keys": remove_source_object_map_keys,
+            }
+            response = unreal.send_command("run_content_validation_pipeline_mcp", params)
+            return response or {"success": False, "message": "No response from Unreal Engine"}
+        except Exception as e:
+            error_msg = f"Error running content validation pipeline: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
     
     logger.info("Project tools registered successfully")

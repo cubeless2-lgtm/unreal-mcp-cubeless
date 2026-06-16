@@ -5,7 +5,7 @@ This module provides tools for creating and manipulating Blueprint assets in Unr
 """
 
 import logging
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 from mcp.server.fastmcp import FastMCP, Context
 
 # Get logger
@@ -518,19 +518,18 @@ def register_blueprint_tools(mcp: FastMCP):
             logger.error(error_msg)
             return {"success": False, "message": error_msg}
 
-    # @mcp.tool() commented out, just use set_component_property instead
+    @mcp.tool()
     def set_pawn_properties(
         ctx: Context,
         blueprint_name: str,
         auto_possess_player: str = "",
-        use_controller_rotation_yaw: bool = None,
-        use_controller_rotation_pitch: bool = None,
-        use_controller_rotation_roll: bool = None,
-        can_be_damaged: bool = None
+        use_controller_rotation_yaw: Optional[bool] = None,
+        use_controller_rotation_pitch: Optional[bool] = None,
+        use_controller_rotation_roll: Optional[bool] = None,
+        can_be_damaged: Optional[bool] = None
     ) -> Dict[str, Any]:
         """
-        Set common Pawn properties on a Blueprint.
-        This is a utility function that sets multiple pawn-related properties at once.
+        Set common Pawn/Character defaults on a Blueprint through the native bridge command.
         
         Args:
             blueprint_name: Name of the target Blueprint (must be a Pawn or Character)
@@ -568,37 +567,12 @@ def register_blueprint_tools(mcp: FastMCP):
                 
             if not properties:
                 logger.warning("No properties specified to set")
-                return {"success": True, "message": "No properties specified to set", "results": {}}
-            
-            # Set each property using the generic set_blueprint_property function
-            results = {}
-            overall_success = True
-            
-            for prop_name, prop_value in properties.items():
-                params = {
-                    "blueprint_name": blueprint_name,
-                    "property_name": prop_name,
-                    "property_value": prop_value
-                }
-                
-                logger.info(f"Setting pawn property {prop_name} to {prop_value}")
-                response = unreal.send_command("set_blueprint_property", params)
-                
-                if not response:
-                    logger.error(f"No response from Unreal Engine for property {prop_name}")
-                    results[prop_name] = {"success": False, "message": "No response from Unreal Engine"}
-                    overall_success = False
-                    continue
-                
-                results[prop_name] = response
-                if not response.get("success", False):
-                    overall_success = False
-            
-            return {
-                "success": overall_success,
-                "message": "Pawn properties set" if overall_success else "Some pawn properties failed to set",
-                "results": results
-            }
+                return {"success": False, "message": "No pawn properties specified to set"}
+
+            params = {"blueprint_name": blueprint_name}
+            params.update(properties)
+            response = unreal.send_command("set_pawn_properties", params)
+            return response or {"success": False, "message": "No response from Unreal Engine"}
             
         except Exception as e:
             error_msg = f"Error setting pawn properties: {e}"

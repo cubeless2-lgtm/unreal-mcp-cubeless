@@ -9,16 +9,53 @@ import os
 import socket
 import sys
 import json
+import time
 from contextlib import asynccontextmanager
+from logging.handlers import RotatingFileHandler
 from typing import AsyncIterator, Dict, Any, Optional
 from mcp.server.fastmcp import FastMCP
 
+
+def _get_int_env(name: str, default: int) -> int:
+    try:
+        return int(os.environ.get(name, str(default)))
+    except (TypeError, ValueError):
+        return default
+
+
+class LockedSafeRotatingFileHandler(RotatingFileHandler):
+    """RotatingFileHandler that tolerates Windows log-file locks."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._rollover_retry_after = 0.0
+
+    def shouldRollover(self, record):
+        if self._rollover_retry_after and time.monotonic() < self._rollover_retry_after:
+            return False
+        return super().shouldRollover(record)
+
+    def doRollover(self):
+        try:
+            super().doRollover()
+            self._rollover_retry_after = 0.0
+        except OSError:
+            self._rollover_retry_after = time.monotonic() + 60.0
+
+
 # Configure logging with more detailed format
+_log_max_bytes = max(1024, _get_int_env("UNREAL_MCP_LOG_MAX_BYTES", 5 * 1024 * 1024))
+_log_backup_count = max(1, _get_int_env("UNREAL_MCP_LOG_BACKUP_COUNT", 3))
 logging.basicConfig(
-    level=os.environ.get("UNREAL_MCP_LOG_LEVEL", "INFO").upper(),
+    level=os.environ.get("UNREAL_MCP_LOG_LEVEL", "WARNING").upper(),
     format='%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s',
     handlers=[
-        logging.FileHandler('unreal_mcp.log'),
+        LockedSafeRotatingFileHandler(
+            'unreal_mcp.log',
+            maxBytes=_log_max_bytes,
+            backupCount=_log_backup_count,
+            encoding='utf-8',
+        ),
         # logging.StreamHandler(sys.stdout) # Remove this handler to unexpected non-whitespace characters in JSON
     ]
 )
@@ -284,7 +321,6 @@ from tools.material_tools import register_material_tools
 from tools.niagara_tools import register_niagara_tools
 from tools.texture_generation import register_texture_generation_tools
 from tools.ieta_tools import register_ieta_tools
-from tools.niagara_tools import register_niagara_tools
 
 # Register tools
 register_editor_tools(mcp)
@@ -298,7 +334,6 @@ register_material_tools(mcp)
 register_niagara_tools(mcp)
 register_texture_generation_tools(mcp)
 register_ieta_tools(mcp)
-register_niagara_tools(mcp)
 
 @mcp.prompt()
 def info():
@@ -323,7 +358,8 @@ def info():
     ## Editor Tools
     ### Viewport and Screenshots
     - `focus_viewport(target, location, distance, orientation)` - Focus viewport
-    - `take_screenshot(filename, show_ui, resolution)` - Capture screenshots
+    - `take_screenshot(filepath)` - Capture the active editor viewport to a PNG through the legacy bridge command
+    - `capture_viewport_bookmark_screenshot(filepath, bookmark_index=-1)` - Capture the active editor viewport with bookmark-aware framing
     - `open_niagara_preview_player(system_path="")` - Open the level-independent Niagara Preview Player Slate drop surface and optionally load a Niagara System
     - `get_niagara_preview_player_state()` - Inspect Niagara Preview Player window and latest dropped asset/actor state
     - `get_niagara_preview_lab_state()` - Inspect Niagara Preview Lab map, dirty, and preview actor safety state
@@ -403,6 +439,8 @@ def info():
     
     ## Project Tools
     - `create_input_mapping(action_name, key, input_type)` - Create input mappings
+    - `analyze_blueprint_widget_fallbacks_mcp(source_root, target_root)` - Diagnose Blueprint/Widget duplicate fallback safety for MCP-generated content
+    - `run_content_validation_pipeline_mcp(source_root, target_root, map_path="")` - Run the MCP recreate/postprocess/world-repair validation pipeline
 
     ## Material Graph Management
     - `resolve_material_graph(material_path, graph_type="auto")` - Resolve a Material or Material Function
@@ -416,17 +454,25 @@ def info():
     - `delete_material_node(material_path, node_id)` - Delete an expression node using node_key/node_id
     - `layout_material_nodes(material_path)` - Layout expression nodes
     - `compile_and_save_material(material_path)` - Recompile/update and save a Material or Material Function
+    - `list_material_collection_parameter_nodes(material_path)` - Inspect MPC collection parameter nodes and stale ParameterId mismatches
+    - `mirror_material_parameter_collection(source_collection_path, target_collection_path)` - Copy same-name MPC parameters/defaults/ids into another MPC
+    - `replace_material_collection_references(material_path, target_collection_path)` - Retarget MPC collection parameter nodes to another collection
+    - `replace_material_collection_parameters(material_path)` - Bake MPC collection parameter nodes into normal scalar/vector parameter nodes
+    - `replace_material_texture_references(material_path, replacements)` - Replace texture references in material texture sample nodes
+    - `refresh_material_cached_expression_data(material_path)` - Refresh cached material dependencies after graph surgery
     - `expand_material_function_calls(material_path)` - Expand Material Function Call nodes into the owning Material graph; partial saves require allow_partial_save=True
     - `get_material_parameter_collection_values(collection_path)` - Read MPC asset defaults and current editor-world runtime values
+    - `set_material_parameter_collection_values(collection_path, scalars, vectors)` - Set MPC asset defaults and/or runtime values
+    - `set_material_parameter_collection_sync(action, source_collection_path, target_collection_path)` - Start/stop/status runtime MPC value sync
 
     ## AI Texture Generation
     - `get_static_mesh_uv_layout(mesh_path, uv_channel, output_path)` - Export a Static Mesh UV wireframe PNG
-    - `generate_texture_from_prompt(prompt, output_name, output_dir, size)` - Generate a BaseColor PNG with GPT Image
-    - `generate_texture_for_mesh_uv(mesh_path, prompt, uv_channel, output_name, output_dir, size)` - Generate a UV-guided texture PNG
+    - `generate_texture_from_prompt(prompt, output_name, output_dir, size)` - Prepare a BaseColor PNG request for Codex built-in image generation; does not call API-key image services
+    - `generate_texture_for_mesh_uv(mesh_path, prompt, uv_channel, output_name, output_dir, size)` - Export a UV guide and prepare a built-in image generation handoff; does not call API-key image services
     - `import_texture_to_unreal(image_path, unreal_folder, asset_name)` - Import a PNG as Texture2D
     - `create_material_instance_with_texture(texture_asset_path, material_name, unreal_folder, base_material_path)` - Create a BaseColor material/material instance
     - `apply_material_to_mesh(target, material_asset_path, material_slot)` - Apply a material to selected/named mesh targets
-    - `generate_and_apply_ai_texture(target, prompt, output_name, unreal_folder, uv_channel, size)` - Run the full BaseColor texture pipeline
+    - `generate_and_apply_ai_texture(target, prompt, output_name, unreal_folder, uv_channel, size)` - Prepare the full texture pipeline handoff; import/apply steps run after the built-in image PNG exists
 
     ## Niagara Inspection and Validation
     - `list_niagara_assets(root_path="/Game", include_scripts=False, include_parameter_collections=False)` - List Niagara Systems/Emitters and optional related assets

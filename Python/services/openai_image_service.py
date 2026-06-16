@@ -1,53 +1,13 @@
-"""OpenAI image generation service for Unreal MCP.
+"""Disabled compatibility shim for legacy API-key image generation imports.
 
-This module is intentionally independent from MCP and Unreal. It only knows how
-to call the OpenAI Images API and write PNG files.
+Project policy requires texture source art to use Codex built-in image
+generation or local/procedural generation, not API-key based image calls.
+Keep these helpers so old imports fail safely instead of sending network calls.
 """
 
-import base64
-import os
 import re
 from pathlib import Path
 from typing import Any, Dict, Optional
-
-import requests
-
-
-OPENAI_IMAGES_GENERATIONS_URL = "https://api.openai.com/v1/images/generations"
-OPENAI_IMAGES_EDITS_URL = "https://api.openai.com/v1/images/edits"
-DEFAULT_IMAGE_MODEL = "gpt-image-1"
-
-
-def get_openai_api_key() -> Optional[str]:
-    """Read the OpenAI API key from process env, then Windows user/machine env."""
-    api_key = os.environ.get("OPENAI_API_KEY")
-    if api_key:
-        return api_key
-
-    if os.name != "nt":
-        return None
-
-    try:
-        import winreg
-    except ImportError:
-        return None
-
-    locations = [
-        (winreg.HKEY_CURRENT_USER, r"Environment"),
-        (
-            winreg.HKEY_LOCAL_MACHINE,
-            r"SYSTEM\CurrentControlSet\Control\Session Manager\Environment",
-        ),
-    ]
-    for hive, key_path in locations:
-        try:
-            with winreg.OpenKey(hive, key_path) as key:
-                value, _ = winreg.QueryValueEx(key, "OPENAI_API_KEY")
-                if value:
-                    return str(value)
-        except OSError:
-            continue
-    return None
 
 
 def sanitize_output_name(output_name: str) -> str:
@@ -65,69 +25,6 @@ def ensure_png_path(output_dir: str, output_name: str) -> str:
     return str(output_path)
 
 
-def _headers(api_key: str) -> Dict[str, str]:
-    return {"Authorization": f"Bearer {api_key}"}
-
-
-def _decode_image_response(response: requests.Response, output_path: str) -> Dict[str, Any]:
-    try:
-        payload = response.json()
-    except ValueError:
-        return {
-            "success": False,
-            "message": "OpenAI image response was not JSON",
-            "status_code": response.status_code,
-            "body": response.text[:1000],
-        }
-
-    if response.status_code >= 400:
-        error = payload.get("error", {})
-        return {
-            "success": False,
-            "message": error.get("message", "OpenAI image request failed"),
-            "status_code": response.status_code,
-            "error": error,
-        }
-
-    data = payload.get("data") or []
-    if not data:
-        return {"success": False, "message": "OpenAI image response did not include image data"}
-
-    image_item = data[0]
-    image_bytes: Optional[bytes] = None
-
-    if image_item.get("b64_json"):
-        image_bytes = base64.b64decode(image_item["b64_json"])
-    elif image_item.get("url"):
-        image_url = image_item["url"]
-        image_response = requests.get(image_url, timeout=120)
-        if image_response.status_code >= 400:
-            return {
-                "success": False,
-                "message": "Failed to download generated image URL",
-                "status_code": image_response.status_code,
-            }
-        image_bytes = image_response.content
-
-    if not image_bytes:
-        return {
-            "success": False,
-            "message": "OpenAI image response did not include b64_json or url",
-            "response_keys": list(image_item.keys()),
-        }
-
-    with open(output_path, "wb") as image_file:
-        image_file.write(image_bytes)
-
-    return {
-        "success": True,
-        "image_path": output_path,
-        "model": payload.get("model"),
-        "revised_prompt": image_item.get("revised_prompt"),
-        "size_bytes": len(image_bytes),
-    }
-
-
 def generate_texture_png(
     prompt: str,
     output_path: str,
@@ -135,62 +32,21 @@ def generate_texture_png(
     reference_image_path: Optional[str] = None,
     model: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """Generate a PNG image with GPT Image.
-
-    If reference_image_path is provided, the Images edits endpoint is used so
-    the UV layout can act as a guide image. If that endpoint is not available
-    for the caller's model/org, the error is returned without falling back to a
-    misleading text-only result.
-    """
-    api_key = get_openai_api_key()
-    if not api_key:
-        return {
-            "success": False,
-            "message": "OPENAI_API_KEY is not set. Set it in the MCP server environment before generating textures.",
-            "error_code": "missing_openai_api_key",
-        }
-
-    selected_model = model or os.environ.get("OPENAI_IMAGE_MODEL", DEFAULT_IMAGE_MODEL)
-    Path(output_path).expanduser().resolve().parent.mkdir(parents=True, exist_ok=True)
-
-    try:
-        if reference_image_path:
-            reference_path = Path(reference_image_path).expanduser().resolve()
-            if not reference_path.exists():
-                return {
-                    "success": False,
-                    "message": f"Reference image does not exist: {reference_path}",
-                    "error_code": "missing_reference_image",
-                }
-
-            with open(reference_path, "rb") as image_file:
-                response = requests.post(
-                    OPENAI_IMAGES_EDITS_URL,
-                    headers=_headers(api_key),
-                    data={
-                        "model": selected_model,
-                        "prompt": prompt,
-                        "size": size,
-                        "n": "1",
-                    },
-                    files={"image": (reference_path.name, image_file, "image/png")},
-                    timeout=300,
-                )
-        else:
-            response = requests.post(
-                OPENAI_IMAGES_GENERATIONS_URL,
-                headers={**_headers(api_key), "Content-Type": "application/json"},
-                json={
-                    "model": selected_model,
-                    "prompt": prompt,
-                    "size": size,
-                    "n": 1,
-                },
-                timeout=300,
-            )
-    except requests.RequestException as exc:
-        return {"success": False, "message": f"OpenAI image request failed: {exc}"}
-
-    result = _decode_image_response(response, output_path)
-    result.setdefault("model", selected_model)
-    return result
+    """Return a structured refusal instead of calling an API-key image route."""
+    return {
+        "success": False,
+        "stage": "builtin_image_generation_required",
+        "api_route_disabled": True,
+        "billing_route": "none",
+        "image_generation_route": "codex_builtin_image_generation",
+        "message": (
+            "API-key based image generation is disabled for this project. "
+            "Use Codex built-in image generation to create the PNG, then import "
+            "the generated file through UnrealMCP texture import tools."
+        ),
+        "prompt": prompt,
+        "expected_output_path": output_path,
+        "requested_size": size,
+        "reference_image_path": reference_image_path or "",
+        "requested_model_ignored": model or "",
+    }
