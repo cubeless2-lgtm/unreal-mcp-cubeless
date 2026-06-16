@@ -122,6 +122,156 @@ def register_material_tools(mcp: FastMCP):
             return {"success": False, "message": error_msg}
 
     @mcp.tool()
+    def list_material_collection_parameter_nodes(
+        ctx: Context,
+        material_path: str,
+        graph_type: str = "auto",
+    ) -> Dict[str, Any]:
+        """
+        List MaterialExpressionCollectionParameter nodes with their MPC parameter names and types.
+
+        Args:
+            material_path: Material or Material Function name/path
+            graph_type: auto, material, or function
+        """
+        try:
+            params = {
+                "material_path": material_path,
+                "graph_type": graph_type,
+            }
+            return send_material_command("list_material_collection_parameter_nodes", params)
+        except Exception as e:
+            error_msg = f"Error listing material collection parameter nodes: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def mirror_material_parameter_collection(
+        ctx: Context,
+        source_collection_path: str,
+        target_collection_path: str,
+        parameter_names: List[str] | None = None,
+        copy_defaults: bool = True,
+        preserve_ids: bool = True,
+        save: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Ensure a target MPC has same-name parameters from a source MPC.
+
+        Args:
+            source_collection_path: Source Material Parameter Collection path
+            target_collection_path: Target Material Parameter Collection path
+            parameter_names: Optional scalar/vector parameter names to mirror
+            copy_defaults: Copy source asset default values into target
+            preserve_ids: Preserve source parameter IDs for CollectionParameter node compatibility
+            save: Save the target collection after mirroring
+        """
+        try:
+            params = {
+                "source_collection_path": source_collection_path,
+                "target_collection_path": target_collection_path,
+                "parameter_names": parameter_names or [],
+                "copy_defaults": copy_defaults,
+                "preserve_ids": preserve_ids,
+                "save": save,
+            }
+            return send_material_command("mirror_material_parameter_collection", params)
+        except Exception as e:
+            error_msg = f"Error mirroring material parameter collection: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def replace_material_collection_references(
+        ctx: Context,
+        material_path: str,
+        target_collection_path: str,
+        source_collection_path: str = "",
+        graph_type: str = "auto",
+        save: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Retarget MaterialExpressionCollectionParameter nodes to another MPC.
+
+        Args:
+            material_path: Material or Material Function name/path
+            target_collection_path: Target Material Parameter Collection path
+            source_collection_path: Optional source MPC filter; blank retargets all collection nodes
+            graph_type: auto, material, or function
+            save: Whether to save the material after retargeting
+        """
+        try:
+            params = {
+                "material_path": material_path,
+                "target_collection_path": target_collection_path,
+                "source_collection_path": source_collection_path,
+                "graph_type": graph_type,
+                "save": save,
+            }
+            return send_material_command("replace_material_collection_references", params)
+        except Exception as e:
+            error_msg = f"Error replacing material collection references: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def replace_material_collection_parameters(
+        ctx: Context,
+        material_path: str,
+        use_runtime_values: bool = True,
+        save: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Replace MaterialExpressionCollectionParameter nodes with ordinary scalar/vector parameter nodes.
+
+        Args:
+            material_path: Material path
+            use_runtime_values: Use current editor-world MPC runtime values before falling back to asset defaults
+            save: Whether to save the material after replacing and compiling
+        """
+        try:
+            params = {
+                "material_path": material_path,
+                "use_runtime_values": use_runtime_values,
+                "save": save,
+            }
+            return send_material_command("replace_material_collection_parameters", params)
+        except Exception as e:
+            error_msg = f"Error replacing material collection parameters: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def replace_material_texture_references(
+        ctx: Context,
+        material_path: str,
+        replacements: Dict[str, str],
+        graph_type: str = "auto",
+        save: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Replace texture references on MaterialExpressionTextureBase nodes in a Material or Material Function graph.
+
+        Args:
+            material_path: Material or Material Function name/path
+            replacements: Mapping of source texture path/package path to replacement texture path
+            graph_type: auto, material, or function
+            save: Whether to save the material after replacing and compiling
+        """
+        try:
+            params = {
+                "material_path": material_path,
+                "replacements": replacements,
+                "graph_type": graph_type,
+                "save": save,
+            }
+            return send_material_command("replace_material_texture_references", params)
+        except Exception as e:
+            error_msg = f"Error replacing material texture references: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
     def add_material_node(
         ctx: Context,
         material_path: str,
@@ -391,6 +541,29 @@ def register_material_tools(mcp: FastMCP):
             return {"success": False, "message": error_msg}
 
     @mcp.tool()
+    def refresh_material_cached_expression_data(
+        ctx: Context,
+        material_path: str,
+        save: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Rebuild a Material asset's cached expression data, then compile/save and report dependencies.
+
+        Use this after expanding Material Function calls or replacing texture/function references
+        when Asset Registry dependencies still show stale Material Function packages.
+        """
+        try:
+            params = {
+                "material_path": material_path,
+                "save": save,
+            }
+            return send_material_command("refresh_material_cached_expression_data", params)
+        except Exception as e:
+            error_msg = f"Error refreshing material cached expression data: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
     def expand_material_function_calls(
         ctx: Context,
         material_path: str,
@@ -456,6 +629,83 @@ def register_material_tools(mcp: FastMCP):
             return send_material_command("get_material_parameter_collection_values", params)
         except Exception as e:
             error_msg = f"Error reading material parameter collection values: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def set_material_parameter_collection_values(
+        ctx: Context,
+        collection_path: str,
+        scalars: Dict[str, float] | None = None,
+        vectors: Dict[str, Dict[str, float]] | None = None,
+        set_asset_defaults: bool = True,
+        set_runtime: bool = True,
+        save: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Set Material Parameter Collection scalar/vector values by parameter name.
+
+        Args:
+            collection_path: Material Parameter Collection name/path
+            scalars: Mapping of scalar parameter names to float values
+            vectors: Mapping of vector parameter names to {r,g,b,a} or {x,y,z,w}
+            set_asset_defaults: Update values stored on the MPC asset
+            set_runtime: Update current editor/PIE runtime collection instance
+            save: Save the collection asset after updating defaults
+        """
+        try:
+            params = {
+                "collection_path": collection_path,
+                "scalars": scalars or {},
+                "vectors": vectors or {},
+                "set_asset_defaults": set_asset_defaults,
+                "set_runtime": set_runtime,
+                "save": save,
+            }
+            return send_material_command("set_material_parameter_collection_values", params)
+        except Exception as e:
+            error_msg = f"Error setting material parameter collection values: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def set_material_parameter_collection_sync(
+        ctx: Context,
+        action: str = "status",
+        source_collection_path: str = "",
+        target_collection_path: str = "",
+        parameter_names: List[str] | None = None,
+        interval_seconds: float = 0.1,
+        set_asset_defaults_on_enable: bool = False,
+        save_on_enable: bool = False,
+    ) -> Dict[str, Any]:
+        """
+        Start, stop, or inspect same-name runtime MPC value sync between two collections.
+
+        Args:
+            action: status, enable/start, or disable/stop
+            source_collection_path: Source MPC path for enable/start
+            target_collection_path: Target MPC path for enable/start
+            parameter_names: Optional same-name parameter filter
+            interval_seconds: Sync interval while enabled
+            set_asset_defaults_on_enable: Also copy runtime values into target asset defaults once
+            save_on_enable: Save target asset if defaults are copied on enable
+        """
+        try:
+            params = {
+                "action": action,
+                "parameter_names": parameter_names or [],
+                "interval_seconds": interval_seconds,
+                "set_asset_defaults_on_enable": set_asset_defaults_on_enable,
+                "save_on_enable": save_on_enable,
+            }
+            if source_collection_path:
+                params["source_collection_path"] = source_collection_path
+            if target_collection_path:
+                params["target_collection_path"] = target_collection_path
+            return send_material_command("set_material_parameter_collection_sync", params)
+        except Exception as e:
+            error_msg = f"Error controlling material parameter collection sync: {e}"
             logger.error(error_msg)
             return {"success": False, "message": error_msg}
 
