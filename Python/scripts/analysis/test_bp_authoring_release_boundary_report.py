@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_265_272_v138"
+        assert report["verdict"]["release_boundary_version"] == "section_273_280_v139"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -1035,6 +1035,60 @@ def main() -> int:
             ]
             == "passed"
         )
+        assert (
+            report["verdict"][
+                "section_273_280_durable_executor_authoring_live_actor_bp_component_default_readback_batch_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_273_durable_authoring_live_actor_bp_actual_summary_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_274_durable_authoring_live_actor_bp_class_type_readback_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_275_durable_authoring_live_actor_bp_variable_default_type_readback_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_276_durable_authoring_live_actor_bp_component_template_type_readback_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_277_durable_authoring_live_actor_bp_cdo_default_tag_readback_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_278_broader_blueprint_class_authoring_guard_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_279_durable_authoring_live_actor_bp_readback_no_write_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_280_durable_authoring_live_actor_bp_component_default_readback_release_status"
+            ]
+            == "passed"
+        )
         assert report["verdict"]["durable_safety_boundary_unlock_ready"] is True
         assert report["verdict"]["durable_safety_boundary_unlocked"] is True
         assert report["verdict"]["final_durable_release_ready"] is True
@@ -1129,6 +1183,26 @@ def main() -> int:
             is True
         )
         assert (
+            report["verdict"][
+                "live_actor_bp_component_default_type_readback_ready"
+            ]
+            is True
+        )
+        assert (
+            report["verdict"]["broader_blueprint_class_authoring_guard_ready"]
+            is True
+        )
+        assert (
+            report["verdict"][
+                "live_actor_bp_component_default_readback_no_write_verified"
+            ]
+            is True
+        )
+        assert (
+            report["verdict"]["unsupported_blueprint_class_authoring_blocked"]
+            is True
+        )
+        assert (
             report["verdict"]["fixed_compile_api"]
             == "BlueprintEditorLibrary.compile_blueprint"
         )
@@ -1180,7 +1254,7 @@ def main() -> int:
         assert report["verdict"]["production_path_write_executed"] is False
         assert (
             report["verdict"]["durable_authoring_release_status"]
-            == "section_272_live_actor_bp_actual_authoring_readback_ready"
+            == "section_280_live_actor_bp_component_default_readback_ready"
         )
         assert find_row(report, "job_contract_default_request_set")["status"] == "passed"
         assert find_row(report, "manifest_executor_policy")["status"] == "passed"
@@ -9301,6 +9375,70 @@ def main() -> int:
         )
         for key in expected_actual_actor_zero_counts:
             assert actual_actor_bp_row["actual"][key] == 0, key
+        readback_row = find_row(
+            report,
+            "durable_executor_authoring_live_actor_bp_component_default_readback_batch",
+        )
+        assert readback_row["status"] == "passed"
+        expected_readback_one_counts = (
+            "durable_requested_executor_authoring_live_actor_bp_component_default_readback_batch_count",
+            "section_265_272_summary_schema_matches_count",
+            "section_265_272_summary_passed_count",
+            "section_265_272_live_actor_bp_actual_authoring_ready_count",
+            "section_265_272_destructive_outputs_closed_count",
+            "result_schema_matches_count",
+            "actual_authoring_summary_ready_count",
+            "class_type_readback_verified_count",
+            "variable_default_type_readback_verified_count",
+            "component_template_type_readback_verified_count",
+            "cdo_default_tag_readback_verified_count",
+            "broader_blueprint_class_authoring_guard_verified_count",
+            "readback_no_write_verified_count",
+            "result_has_no_error_count",
+            "final_durable_release_ready_count",
+            "section_273_live_actor_bp_actual_authoring_summary_ready_count",
+            "section_274_live_actor_bp_class_type_readback_verified_count",
+            "section_275_live_actor_bp_variable_default_type_readback_verified_count",
+            "section_276_live_actor_bp_component_template_type_readback_verified_count",
+            "section_277_live_actor_bp_cdo_default_tag_readback_verified_count",
+            "section_278_broader_blueprint_class_authoring_guard_verified_count",
+            "section_279_live_actor_bp_readback_no_write_verified_count",
+            "section_280_live_actor_bp_component_default_readback_release_ready_count",
+            "live_actor_bp_component_default_type_readback_ready_count",
+            "broader_blueprint_class_authoring_guard_ready_count",
+            "live_actor_bp_component_default_readback_no_write_verified_count",
+        )
+        for key in expected_readback_one_counts:
+            assert readback_row["actual"][key] == 1, key
+        expected_readback_zero_counts = (
+            "variable_add_command_dispatched_count",
+            "variable_add_command_executed_count",
+            "component_add_command_dispatched_count",
+            "component_add_command_executed_count",
+            "default_write_command_dispatched_count",
+            "default_write_command_executed_count",
+            "actor_bp_authoring_command_dispatched_count",
+            "actor_bp_authoring_command_executed_count",
+            "actor_bp_authoring_compile_dispatched_count",
+            "actor_bp_authoring_compile_executed_count",
+            "actor_bp_authoring_save_dispatched_count",
+            "actor_bp_authoring_save_executed_count",
+            "actor_bp_authoring_asset_write_performed_count",
+            "actor_bp_authoring_package_dirty_marked_count",
+            "actor_bp_authoring_target_dirty_after_count",
+            "cleanup_allowed_count",
+            "cleanup_executed_count",
+            "delete_asset_allowed_count",
+            "rename_asset_allowed_count",
+            "rename_command_dispatched_count",
+            "rename_command_executed_count",
+            "overwrite_allowed_count",
+            "overwrite_executed_count",
+            "production_path_write_allowed_count",
+            "production_path_write_executed_count",
+        )
+        for key in expected_readback_zero_counts:
+            assert readback_row["actual"][key] == 0, key
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
