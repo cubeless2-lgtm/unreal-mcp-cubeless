@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_529_536_v171"
+        assert report["verdict"]["release_boundary_version"] == "section_537_544_v172"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -2817,6 +2817,60 @@ def main() -> int:
             ]
             == "passed"
         )
+        assert (
+            report["verdict"][
+                "section_537_544_durable_executor_authoring_correct_workspace_bridge_verification_evidence_validation_execution_dry_run_envelope_batch_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_537_durable_authoring_validation_execution_dry_run_envelope_checkpoint_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_538_durable_authoring_validation_execution_scope_recorded_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_539_durable_authoring_real_evidence_payload_required_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_540_durable_authoring_validation_rule_set_binding_required_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_541_durable_authoring_validation_execution_authorization_still_required_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_542_durable_authoring_validation_result_admission_still_blocked_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_543_durable_authoring_validation_execution_dry_run_no_write_boundary_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_544_durable_authoring_validation_execution_dry_run_release_status"
+            ]
+            == "passed"
+        )
         assert report["verdict"]["durable_safety_boundary_unlock_ready"] is True
         assert report["verdict"]["durable_safety_boundary_unlocked"] is True
         assert report["verdict"]["final_durable_release_ready"] is True
@@ -3238,7 +3292,7 @@ def main() -> int:
         assert report["verdict"]["production_path_write_executed"] is False
         assert (
             report["verdict"]["durable_authoring_release_status"]
-            == "section_536_correct_workspace_bridge_verification_evidence_validation_rule_dry_run_ready"
+            == "section_544_correct_workspace_bridge_verification_evidence_validation_execution_dry_run_envelope_ready"
         )
         assert find_row(report, "job_contract_default_request_set")["status"] == "passed"
         assert find_row(report, "manifest_executor_policy")["status"] == "passed"
@@ -13558,6 +13612,81 @@ def main() -> int:
                 verification_evidence_validation_rule_dry_run_row["actual"][key]
                 == 0
             ), key
+        validation_execution_envelope_row = find_row(
+            report,
+            "durable_executor_authoring_correct_workspace_bridge_verification_evidence_validation_execution_dry_run_envelope_batch",
+        )
+        assert validation_execution_envelope_row["status"] == "passed"
+        expected_validation_execution_envelope_one_counts = (
+            "durable_requested_executor_authoring_correct_workspace_bridge_verification_evidence_validation_execution_dry_run_envelope_batch_count",
+            "section_529_536_summary_schema_matches_count",
+            "section_529_536_summary_passed_count",
+            "section_529_536_verification_evidence_validation_rule_dry_run_ready_count",
+            "section_529_536_outputs_closed_count",
+            "result_schema_matches_count",
+            "validation_execution_dry_run_envelope_checkpoint_satisfied_count",
+            "validation_execution_scope_recorded_count",
+            "real_evidence_payload_required_count",
+            "validation_rule_set_binding_required_count",
+            "validation_execution_authorization_still_required_count",
+            "validation_result_admission_still_blocked_count",
+            "validation_execution_dry_run_no_write_boundary_verified_count",
+            "validation_execution_dry_run_compile_save_write_outputs_blocked_count",
+            "result_has_no_error_count",
+            "final_durable_release_ready_count",
+            "section_537_validation_execution_dry_run_envelope_checkpoint_satisfied_count",
+            "section_538_validation_execution_scope_recorded_count",
+            "section_539_real_evidence_payload_required_count",
+            "section_540_validation_rule_set_binding_required_count",
+            "section_541_validation_execution_authorization_still_required_count",
+            "section_542_validation_result_admission_still_blocked_count",
+            "section_543_validation_execution_dry_run_no_write_boundary_verified_count",
+            "section_544_validation_execution_dry_run_release_ready_count",
+            "correct_workspace_bridge_verification_evidence_validation_execution_dry_run_envelope_ready_count",
+            "verification_evidence_validation_execution_still_blocked_count",
+        )
+        for key in expected_validation_execution_envelope_one_counts:
+            assert validation_execution_envelope_row["actual"][key] == 1, key
+        expected_validation_execution_envelope_zero_counts = (
+            "validation_execution_command_dispatched_count",
+            "validation_execution_command_executed_count",
+            "validation_result_recorded_count",
+            "evidence_payload_received_count",
+            "evidence_payload_ingested_count",
+            "evidence_schema_validation_executed_count",
+            "evidence_schema_validation_passed_count",
+            "verification_evidence_admitted_count",
+            "correct_workspace_bridge_verified_count",
+            "read_only_probe_result_accepted_count",
+            "post_verification_authoring_allowed_count",
+            "live_command_dispatched_count",
+            "live_command_executed_count",
+            "widget_tree_mutation_command_dispatched_count",
+            "widget_tree_mutation_command_executed_count",
+            "non_actor_actual_temp_checkpoint_command_dispatched_count",
+            "non_actor_actual_temp_checkpoint_command_executed_count",
+            "data_asset_actual_temp_create_command_dispatched_count",
+            "data_asset_actual_temp_create_command_executed_count",
+            "bfl_actual_temp_create_command_dispatched_count",
+            "bfl_actual_temp_create_command_executed_count",
+            "compile_executed_count",
+            "save_executed_count",
+            "asset_write_performed_count",
+            "package_dirty_marked_count",
+            "cleanup_allowed_count",
+            "cleanup_executed_count",
+            "delete_asset_allowed_count",
+            "delete_asset_executed_output_count",
+            "rename_asset_allowed_count",
+            "rename_command_dispatched_count",
+            "rename_command_executed_count",
+            "overwrite_allowed_count",
+            "overwrite_executed_count",
+            "production_path_write_allowed_count",
+            "production_path_write_executed_count",
+        )
+        for key in expected_validation_execution_envelope_zero_counts:
+            assert validation_execution_envelope_row["actual"][key] == 0, key
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
