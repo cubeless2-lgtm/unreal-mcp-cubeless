@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_409_416_v156"
+        assert report["verdict"]["release_boundary_version"] == "section_417_424_v157"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -2007,6 +2007,60 @@ def main() -> int:
             ]
             == "passed"
         )
+        assert (
+            report["verdict"][
+                "section_417_424_durable_executor_authoring_user_widget_widget_tree_mutation_route_preflight_batch_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_417_durable_authoring_user_widget_widget_tree_route_preflight_checkpoint_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_418_durable_authoring_user_widget_actual_temp_asset_readonly_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_419_durable_authoring_python_widget_tree_mutation_route_blocked_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_420_durable_authoring_unreal_mcp_umg_cpp_route_detected_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_421_durable_authoring_umg_cpp_route_safe_gate_hardening_required_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_422_durable_authoring_widget_tree_mutation_execution_outputs_blocked_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_423_durable_authoring_user_widget_widget_tree_route_preflight_no_write_boundary_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_424_durable_authoring_user_widget_widget_tree_mutation_route_preflight_release_status"
+            ]
+            == "passed"
+        )
         assert report["verdict"]["durable_safety_boundary_unlock_ready"] is True
         assert report["verdict"]["durable_safety_boundary_unlocked"] is True
         assert report["verdict"]["final_durable_release_ready"] is True
@@ -2356,6 +2410,20 @@ def main() -> int:
             is True
         )
         assert report["verdict"]["user_widget_temp_package_file_confirmed"] is True
+        assert (
+            report["verdict"]["user_widget_widget_tree_mutation_route_preflight_ready"]
+            is True
+        )
+        assert report["verdict"]["python_widget_tree_mutation_route_blocked"] is True
+        assert report["verdict"]["unreal_mcp_umg_cpp_route_detected"] is True
+        assert (
+            report["verdict"]["umg_cpp_route_safe_gate_hardening_required"]
+            is True
+        )
+        assert (
+            report["verdict"]["user_widget_widget_tree_actual_mutation_still_blocked"]
+            is True
+        )
         assert report["verdict"]["graph_repair_command_dispatched"] is False
         assert report["verdict"]["graph_repair_command_executed"] is False
         assert report["verdict"]["graph_layout_mutation_performed"] is False
@@ -2414,7 +2482,7 @@ def main() -> int:
         assert report["verdict"]["production_path_write_executed"] is False
         assert (
             report["verdict"]["durable_authoring_release_status"]
-            == "section_416_user_widget_actual_asset_creation_checkpoint_ready"
+            == "section_424_user_widget_widget_tree_mutation_route_preflight_ready"
         )
         assert find_row(report, "job_contract_default_request_set")["status"] == "passed"
         assert find_row(report, "manifest_executor_policy")["status"] == "passed"
@@ -11706,6 +11774,68 @@ def main() -> int:
         )
         for key in expected_user_widget_actual_zero_counts:
             assert user_widget_actual_row["actual"][key] == 0, key
+        user_widget_route_row = find_row(
+            report,
+            "durable_executor_authoring_user_widget_widget_tree_mutation_route_preflight_batch",
+        )
+        assert user_widget_route_row["status"] == "passed"
+        expected_user_widget_route_one_counts = (
+            "durable_requested_executor_authoring_user_widget_widget_tree_mutation_route_preflight_batch_count",
+            "section_409_416_summary_schema_matches_count",
+            "section_409_416_summary_passed_count",
+            "section_409_416_user_widget_actual_checkpoint_ready_count",
+            "section_409_416_outputs_closed_count",
+            "result_schema_matches_count",
+            "user_widget_widget_tree_route_preflight_checkpoint_satisfied_count",
+            "user_widget_actual_temp_asset_readonly_confirmed_count",
+            "python_widget_tree_mutation_route_blocked_count",
+            "unreal_mcp_umg_cpp_route_detected_count",
+            "umg_cpp_route_safe_gate_hardening_required_count",
+            "widget_tree_mutation_execution_outputs_blocked_count",
+            "user_widget_widget_tree_route_preflight_no_write_boundary_verified_count",
+            "result_has_no_error_count",
+            "final_durable_release_ready_count",
+            "section_417_user_widget_widget_tree_route_preflight_checkpoint_satisfied_count",
+            "section_418_user_widget_actual_temp_asset_readonly_confirmed_count",
+            "section_419_python_widget_tree_mutation_route_blocked_count",
+            "section_420_unreal_mcp_umg_cpp_route_detected_count",
+            "section_421_umg_cpp_route_safe_gate_hardening_required_count",
+            "section_422_widget_tree_mutation_execution_outputs_blocked_count",
+            "section_423_user_widget_widget_tree_route_preflight_no_write_boundary_verified_count",
+            "section_424_user_widget_widget_tree_mutation_route_preflight_release_ready_count",
+            "user_widget_widget_tree_mutation_route_preflight_ready_count",
+            "user_widget_widget_tree_actual_mutation_still_blocked_count",
+            "cpp_route_hardening_required_count",
+        )
+        for key in expected_user_widget_route_one_counts:
+            assert user_widget_route_row["actual"][key] == 1, key
+        expected_user_widget_route_zero_counts = (
+            "compile_executed_count",
+            "save_executed_count",
+            "asset_write_performed_count",
+            "package_dirty_marked_count",
+            "widget_tree_mutation_command_dispatched_count",
+            "widget_tree_mutation_command_executed_count",
+            "widget_tree_mutation_performed_count",
+            "root_widget_created_count",
+            "child_widget_added_count",
+            "widget_slot_mutation_performed_count",
+            "widget_binding_mutation_performed_count",
+            "event_graph_mutation_performed_count",
+            "delete_asset_allowed_count",
+            "delete_asset_executed_output_count",
+            "rename_asset_allowed_count",
+            "rename_command_dispatched_count",
+            "rename_command_executed_count",
+            "overwrite_allowed_count",
+            "overwrite_executed_count",
+            "cleanup_allowed_count",
+            "cleanup_executed_count",
+            "production_path_write_allowed_count",
+            "production_path_write_executed_count",
+        )
+        for key in expected_user_widget_route_zero_counts:
+            assert user_widget_route_row["actual"][key] == 0, key
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
