@@ -115,6 +115,7 @@ import bp_authoring_durable_executor_authoring_live_actual_save_execution_batch_
 import bp_authoring_durable_executor_authoring_live_save_stability_batch_contract as durable_executor_authoring_live_save_stability_batch
 import bp_authoring_durable_executor_authoring_cleanup_delete_dry_run_batch_contract as durable_executor_authoring_cleanup_delete_dry_run_batch
 import bp_authoring_durable_executor_authoring_rename_overwrite_dry_run_batch_contract as durable_executor_authoring_rename_overwrite_dry_run_batch
+import bp_authoring_durable_executor_authoring_actor_bp_expansion_dry_run_batch_contract as durable_executor_authoring_actor_bp_expansion_dry_run_batch
 import bp_authoring_durable_executor_authoring_enable_contract as durable_executor_authoring_enable
 import bp_authoring_durable_executor_authoring_enable_after_open_contract as durable_executor_authoring_enable_after_open
 import bp_authoring_durable_executor_authoring_activation_readiness_contract as durable_executor_authoring_activation_readiness
@@ -152,7 +153,7 @@ import bp_authoring_durable_save_gate_final_review_contract as save_gate_final_r
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_241_248_bp_authoring_release_boundary_v135"
+REPORT_SCHEMA = "section_249_256_bp_authoring_release_boundary_v136"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -14120,6 +14121,88 @@ def build_durable_executor_authoring_rename_overwrite_dry_run_batch_row(
     )
 
 
+def build_durable_executor_authoring_actor_bp_expansion_dry_run_batch_row(
+    contract_summary: Dict[str, Any],
+    executor_summary: Dict[str, Any],
+    project_root: Path,
+    planner_report: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    rename_row = (
+        build_durable_executor_authoring_rename_overwrite_dry_run_batch_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        )
+    )
+    rename_summary = _summary_from_row_actual(rename_row)
+    rename_summary["schema"] = (
+        durable_executor_authoring_rename_overwrite_dry_run_batch
+        .DURABLE_EXECUTOR_AUTHORING_RENAME_OVERWRITE_DRY_RUN_BATCH_SUMMARY_SCHEMA
+    )
+    actor_result = durable_executor_authoring_actor_bp_expansion_dry_run_batch.build_actor_bp_expansion_dry_run_result()
+    contract = durable_executor_authoring_actor_bp_expansion_dry_run_batch.build_durable_executor_authoring_actor_bp_expansion_dry_run_batch_contract(
+        requested=True,
+        section_241_248_rename_overwrite_dry_run_summary=rename_summary,
+        actor_bp_expansion_dry_run_result=actor_result,
+    )
+    summary = durable_executor_authoring_actor_bp_expansion_dry_run_batch.summarize_durable_executor_authoring_actor_bp_expansion_dry_run_batches(
+        [contract]
+    )
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_executor_authoring_actor_bp_expansion_dry_run_batch_count": 1,
+        "section_241_248_summary_schema_matches_count": 1,
+        "section_241_248_summary_passed_count": 1,
+        "section_241_248_rename_overwrite_dry_run_ready_count": 1,
+        "section_241_248_destructive_outputs_closed_count": 1,
+        "result_schema_matches_count": 1,
+        "actor_blueprint_scope_confirmed_count": 1,
+        "variable_authoring_plan_accepted_count": 1,
+        "component_authoring_plan_accepted_count": 1,
+        "default_authoring_plan_accepted_count": 1,
+        "compile_save_dependency_declared_count": 1,
+        "temp_package_mutation_boundary_clean_count": 1,
+        "actor_authoring_readback_dry_run_ready_count": 1,
+        "dry_run_blocks_actual_actor_authoring_outputs_count": 1,
+        "result_has_no_error_count": 1,
+        "final_durable_release_ready_count": 1,
+        "rename_overwrite_dry_run_ready_count": 1,
+        "actor_bp_expansion_dry_run_allowed_count": 1,
+        "actor_bp_expansion_dry_run_ready_count": 1,
+        "actual_actor_bp_authoring_requires_final_user_checkpoint_count": 1,
+    }
+    for key in (
+        durable_executor_authoring_actor_bp_expansion_dry_run_batch
+        .ACTOR_BP_EXPANSION_DRY_RUN_PATH_COUNT_KEYS
+    ):
+        expected[key] = 1
+    expected.update(
+        {
+            key: 0
+            for key in (
+                durable_executor_authoring_actor_bp_expansion_dry_run_batch
+                .BLOCKED_ACTOR_BP_AUTHORING_OUTPUT_COUNT_KEYS
+            )
+        }
+    )
+    actual = {
+        key: summary.get(key) if key != "summary_status" else summary.get("status")
+        for key in expected
+    }
+    return row(
+        "durable_executor_authoring_actor_bp_expansion_dry_run_batch",
+        "Sections 249-256 durable executor actor Blueprint expansion dry-run batch",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "Sections 249-256 prove Actor Blueprint variable/component/default authoring dry-run readiness under /Game/_MCP_Temp.",
+            "The batch does not dispatch or execute Blueprint mutation, compile, save, delete, rename, overwrite, or production writes.",
+        ),
+    )
+
+
 def build_section_51_58_consolidation_row(
     contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -14391,7 +14474,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     lyra_report = read_json(lyra_report_path)
     preliminary_verdict = {
         "status": "passed",
-        "release_boundary_version": "section_241_248_v135",
+        "release_boundary_version": "section_249_256_v136",
         "durable_authoring_enabled": False,
     }
     decision_contract = mvp_decision.build_mvp_decision_contract(
@@ -15152,6 +15235,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             project_root,
             planner_report,
         ),
+        build_durable_executor_authoring_actor_bp_expansion_dry_run_batch_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        ),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -15172,7 +15261,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
-            "release_boundary_version": "section_241_248_v135",
+            "release_boundary_version": "section_249_256_v136",
             "mvp_decision_status": decision_contract["decision_status"],
             "temporary_blueprint_authoring_mvp_ready": decision_contract[
                 "temporary_blueprint_authoring_mvp_ready"
@@ -15183,7 +15272,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "ready_for_main_push": not failed_blocking,
             "durable_authoring_enabled": not failed_blocking,
             "durable_authoring_release_status": (
-                "section_248_rename_overwrite_dry_run_ready_actual_rename_closed"
+                "section_256_actor_bp_expansion_dry_run_ready_actual_actor_authoring_closed"
                 if not failed_blocking
                 else "failed"
             ),
@@ -15752,6 +15841,33 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "section_248_durable_authoring_actual_rename_overwrite_final_checkpoint_status": (
                 "passed" if not failed_blocking else "failed"
             ),
+            "section_249_256_durable_executor_authoring_actor_bp_expansion_dry_run_batch_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_249_durable_authoring_actor_blueprint_scope_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_250_durable_authoring_variable_plan_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_251_durable_authoring_component_plan_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_252_durable_authoring_default_plan_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_253_durable_authoring_compile_save_dependency_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_254_durable_authoring_temp_package_mutation_boundary_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_255_durable_authoring_actor_readback_dry_run_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_256_durable_authoring_actual_actor_authoring_final_checkpoint_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
             "durable_executor_opened": not failed_blocking,
             "durable_authoring_command_no_save_execution_ready": not failed_blocking,
             "final_no_save_release_ready": not failed_blocking,
@@ -15775,6 +15891,11 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "rename_overwrite_dry_run_allowed": not failed_blocking,
             "rename_overwrite_dry_run_ready": not failed_blocking,
             "actual_rename_overwrite_requires_final_user_checkpoint": (
+                not failed_blocking
+            ),
+            "actor_bp_expansion_dry_run_allowed": not failed_blocking,
+            "actor_bp_expansion_dry_run_ready": not failed_blocking,
+            "actual_actor_bp_authoring_requires_final_user_checkpoint": (
                 not failed_blocking
             ),
             "fixed_compile_api": (
@@ -15804,6 +15925,20 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "rename_command_executed": False,
             "overwrite_allowed": False,
             "overwrite_executed": False,
+            "variable_add_command_dispatched": False,
+            "variable_add_command_executed": False,
+            "component_add_command_dispatched": False,
+            "component_add_command_executed": False,
+            "default_write_command_dispatched": False,
+            "default_write_command_executed": False,
+            "actor_bp_authoring_command_dispatched": False,
+            "actor_bp_authoring_command_executed": False,
+            "actor_bp_authoring_compile_dispatched": False,
+            "actor_bp_authoring_compile_executed": False,
+            "actor_bp_authoring_save_dispatched": False,
+            "actor_bp_authoring_save_executed": False,
+            "actor_bp_authoring_asset_write_performed": False,
+            "actor_bp_authoring_package_dirty_marked": False,
             "production_path_write_allowed": False,
             "production_path_write_executed": False,
             "durable_safety_boundary_unlock_ready": not failed_blocking,
@@ -15876,11 +16011,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
                 "_and_section_225_232_durable_executor_authoring_live_save_stability_ready_cleanup_delete_rename_closed"
                 "_and_section_233_240_durable_executor_authoring_cleanup_delete_dry_run_ready_actual_delete_closed"
                 "_and_section_241_248_durable_executor_authoring_rename_overwrite_dry_run_ready_actual_rename_closed"
+                "_and_section_249_256_durable_executor_authoring_actor_bp_expansion_dry_run_ready_actual_actor_authoring_closed"
             ),
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
-            "Actor Blueprint variable/component/default authoring expansion under _MCP_Temp",
+            "live Actor Blueprint variable/component/default authoring under _MCP_Temp requires final user checkpoint",
             "component default/type readback expansion for broader Blueprint classes",
             "function call diagnostics and graph layout repair suggestions",
         ],
