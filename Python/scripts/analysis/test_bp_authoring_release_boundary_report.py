@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_433_440_v159"
+        assert report["verdict"]["release_boundary_version"] == "section_441_448_v160"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -2169,6 +2169,60 @@ def main() -> int:
             ]
             == "passed"
         )
+        assert (
+            report["verdict"][
+                "section_441_448_durable_executor_authoring_user_widget_bridge_port_ownership_preflight_batch_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_441_durable_authoring_user_widget_bridge_port_ownership_checkpoint_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_442_durable_authoring_primary_bridge_port_probe_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_443_durable_authoring_wrong_workspace_port_owner_detected_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_444_durable_authoring_correct_workspace_bridge_port_unavailable_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_445_durable_authoring_correct_workspace_bridge_start_blocked_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_446_durable_authoring_live_user_widget_mutation_bridge_blocked_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_447_durable_authoring_user_widget_bridge_port_no_dispatch_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_448_durable_authoring_user_widget_bridge_port_ownership_preflight_release_status"
+            ]
+            == "passed"
+        )
         assert report["verdict"]["durable_safety_boundary_unlock_ready"] is True
         assert report["verdict"]["durable_safety_boundary_unlocked"] is True
         assert report["verdict"]["final_durable_release_ready"] is True
@@ -2590,7 +2644,7 @@ def main() -> int:
         assert report["verdict"]["production_path_write_executed"] is False
         assert (
             report["verdict"]["durable_authoring_release_status"]
-            == "section_440_user_widget_correct_workspace_reload_preflight_ready"
+            == "section_448_user_widget_bridge_port_ownership_preflight_ready"
         )
         assert find_row(report, "job_contract_default_request_set")["status"] == "passed"
         assert find_row(report, "manifest_executor_policy")["status"] == "passed"
@@ -12070,6 +12124,71 @@ def main() -> int:
         )
         for key in expected_correct_workspace_reload_zero_counts:
             assert correct_workspace_reload_row["actual"][key] == 0, key
+        bridge_port_row = find_row(
+            report,
+            "durable_executor_authoring_user_widget_bridge_port_ownership_preflight_batch",
+        )
+        assert bridge_port_row["status"] == "passed"
+        expected_bridge_port_one_counts = (
+            "durable_requested_executor_authoring_user_widget_bridge_port_ownership_preflight_batch_count",
+            "section_433_440_summary_schema_matches_count",
+            "section_433_440_summary_passed_count",
+            "section_433_440_user_widget_reload_preflight_ready_count",
+            "section_433_440_outputs_closed_count",
+            "result_schema_matches_count",
+            "user_widget_bridge_port_ownership_checkpoint_satisfied_count",
+            "primary_bridge_port_probe_recorded_count",
+            "wrong_workspace_port_owner_detected_count",
+            "correct_workspace_bridge_port_unavailable_count",
+            "correct_workspace_bridge_start_blocked_count",
+            "live_user_widget_mutation_bridge_blocked_count",
+            "user_widget_bridge_port_no_dispatch_verified_count",
+            "result_has_no_error_count",
+            "final_durable_release_ready_count",
+            "section_441_user_widget_bridge_port_ownership_checkpoint_satisfied_count",
+            "section_442_primary_bridge_port_probe_recorded_count",
+            "section_443_wrong_workspace_port_owner_detected_count",
+            "section_444_correct_workspace_bridge_port_unavailable_count",
+            "section_445_correct_workspace_bridge_start_blocked_count",
+            "section_446_live_user_widget_mutation_bridge_blocked_count",
+            "section_447_user_widget_bridge_port_no_dispatch_verified_count",
+            "section_448_user_widget_bridge_port_ownership_preflight_release_ready_count",
+            "user_widget_bridge_port_ownership_preflight_ready_count",
+            "correct_workspace_bridge_port_release_still_required_count",
+        )
+        for key in expected_bridge_port_one_counts:
+            assert bridge_port_row["actual"][key] == 1, key
+        expected_bridge_port_zero_counts = (
+            "correct_workspace_bridge_started_count",
+            "correct_workspace_bridge_verified_count",
+            "live_command_dispatched_count",
+            "live_command_executed_count",
+            "widget_tree_mutation_command_dispatched_count",
+            "widget_tree_mutation_command_executed_count",
+            "widget_tree_mutation_performed_count",
+            "root_widget_created_count",
+            "child_widget_added_count",
+            "widget_slot_mutation_performed_count",
+            "widget_binding_mutation_performed_count",
+            "event_graph_mutation_performed_count",
+            "compile_executed_count",
+            "save_executed_count",
+            "asset_write_performed_count",
+            "package_dirty_marked_count",
+            "delete_asset_allowed_count",
+            "delete_asset_executed_output_count",
+            "rename_asset_allowed_count",
+            "rename_command_dispatched_count",
+            "rename_command_executed_count",
+            "overwrite_allowed_count",
+            "overwrite_executed_count",
+            "cleanup_allowed_count",
+            "cleanup_executed_count",
+            "production_path_write_allowed_count",
+            "production_path_write_executed_count",
+        )
+        for key in expected_bridge_port_zero_counts:
+            assert bridge_port_row["actual"][key] == 0, key
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False

@@ -139,6 +139,7 @@ import bp_authoring_durable_executor_authoring_user_widget_actual_asset_creation
 import bp_authoring_durable_executor_authoring_user_widget_widget_tree_mutation_route_preflight_batch_contract as durable_executor_authoring_user_widget_widget_tree_mutation_route_preflight_batch
 import bp_authoring_durable_executor_authoring_user_widget_widget_tree_umg_cpp_route_hardening_batch_contract as durable_executor_authoring_user_widget_widget_tree_umg_cpp_route_hardening_batch
 import bp_authoring_durable_executor_authoring_user_widget_correct_workspace_reload_preflight_batch_contract as durable_executor_authoring_user_widget_correct_workspace_reload_preflight_batch
+import bp_authoring_durable_executor_authoring_user_widget_bridge_port_ownership_preflight_batch_contract as durable_executor_authoring_user_widget_bridge_port_ownership_preflight_batch
 import bp_authoring_durable_executor_authoring_enable_contract as durable_executor_authoring_enable
 import bp_authoring_durable_executor_authoring_enable_after_open_contract as durable_executor_authoring_enable_after_open
 import bp_authoring_durable_executor_authoring_activation_readiness_contract as durable_executor_authoring_activation_readiness
@@ -176,7 +177,7 @@ import bp_authoring_durable_save_gate_final_review_contract as save_gate_final_r
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_433_440_bp_authoring_release_boundary_v159"
+REPORT_SCHEMA = "section_441_448_bp_authoring_release_boundary_v160"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -16051,6 +16052,81 @@ def build_durable_executor_authoring_user_widget_correct_workspace_reload_prefli
     )
 
 
+def build_durable_executor_authoring_user_widget_bridge_port_ownership_preflight_batch_row(
+    contract_summary: Dict[str, Any],
+    executor_summary: Dict[str, Any],
+    project_root: Path,
+    planner_report: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    reload_row = build_durable_executor_authoring_user_widget_correct_workspace_reload_preflight_batch_row(
+        contract_summary,
+        executor_summary,
+        project_root,
+        planner_report,
+    )
+    reload_summary = _summary_from_row_actual(reload_row)
+    reload_summary["schema"] = (
+        durable_executor_authoring_user_widget_correct_workspace_reload_preflight_batch
+        .DURABLE_EXECUTOR_AUTHORING_USER_WIDGET_CORRECT_WORKSPACE_RELOAD_PREFLIGHT_BATCH_SUMMARY_SCHEMA
+    )
+    port_result = durable_executor_authoring_user_widget_bridge_port_ownership_preflight_batch.build_user_widget_bridge_port_ownership_preflight_result()
+    contract = durable_executor_authoring_user_widget_bridge_port_ownership_preflight_batch.build_durable_executor_authoring_user_widget_bridge_port_ownership_preflight_batch_contract(
+        requested=True,
+        section_433_440_user_widget_correct_workspace_reload_preflight_summary=reload_summary,
+        user_widget_bridge_port_ownership_preflight_result=port_result,
+    )
+    summary = durable_executor_authoring_user_widget_bridge_port_ownership_preflight_batch.summarize_durable_executor_authoring_user_widget_bridge_port_ownership_preflight_batches(
+        [contract]
+    )
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_executor_authoring_user_widget_bridge_port_ownership_preflight_batch_count": 1,
+        "section_433_440_summary_schema_matches_count": 1,
+        "section_433_440_summary_passed_count": 1,
+        "section_433_440_user_widget_reload_preflight_ready_count": 1,
+        "section_433_440_outputs_closed_count": 1,
+        "result_schema_matches_count": 1,
+        "user_widget_bridge_port_ownership_checkpoint_satisfied_count": 1,
+        "primary_bridge_port_probe_recorded_count": 1,
+        "wrong_workspace_port_owner_detected_count": 1,
+        "correct_workspace_bridge_port_unavailable_count": 1,
+        "correct_workspace_bridge_start_blocked_count": 1,
+        "live_user_widget_mutation_bridge_blocked_count": 1,
+        "user_widget_bridge_port_no_dispatch_verified_count": 1,
+        "result_has_no_error_count": 1,
+        "final_durable_release_ready_count": 1,
+    }
+    for key in (
+        durable_executor_authoring_user_widget_bridge_port_ownership_preflight_batch
+        .USER_WIDGET_BRIDGE_PORT_OWNERSHIP_PREFLIGHT_PATH_COUNT_KEYS
+    ):
+        expected[key] = 1
+    expected.update(
+        {
+            key: 0
+            for key in (
+                durable_executor_authoring_user_widget_bridge_port_ownership_preflight_batch
+                .BLOCKED_USER_WIDGET_BRIDGE_PORT_OWNERSHIP_PREFLIGHT_OUTPUT_COUNT_KEYS
+            )
+        }
+    )
+    actual = {
+        key: summary.get(key) if key != "summary_status" else summary.get("status")
+        for key in expected
+    }
+    return row(
+        "durable_executor_authoring_user_widget_bridge_port_ownership_preflight_batch",
+        "Sections 441-448 durable executor UserWidget bridge port ownership preflight batch",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "Sections 441-448 record that 127.0.0.1:55557 is owned by the wrong workspace Unreal Editor process.",
+            "The batch keeps correct-workspace bridge start and live UserWidget WidgetTree mutation dispatch blocked until that port is released or owned by the managed CubelessStylized editor.",
+        ),
+    )
+
+
 def build_section_51_58_consolidation_row(
     contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -16322,7 +16398,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     lyra_report = read_json(lyra_report_path)
     preliminary_verdict = {
         "status": "passed",
-        "release_boundary_version": "section_433_440_v159",
+        "release_boundary_version": "section_441_448_v160",
         "durable_authoring_enabled": False,
     }
     decision_contract = mvp_decision.build_mvp_decision_contract(
@@ -17227,6 +17303,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             project_root,
             planner_report,
         ),
+        build_durable_executor_authoring_user_widget_bridge_port_ownership_preflight_batch_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        ),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -17247,7 +17329,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
-            "release_boundary_version": "section_433_440_v159",
+            "release_boundary_version": "section_441_448_v160",
             "mvp_decision_status": decision_contract["decision_status"],
             "temporary_blueprint_authoring_mvp_ready": decision_contract[
                 "temporary_blueprint_authoring_mvp_ready"
@@ -17258,7 +17340,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "ready_for_main_push": not failed_blocking,
             "durable_authoring_enabled": not failed_blocking,
             "durable_authoring_release_status": (
-                "section_440_user_widget_correct_workspace_reload_preflight_ready"
+                "section_448_user_widget_bridge_port_ownership_preflight_ready"
                 if not failed_blocking
                 else "failed"
             ),
@@ -18475,6 +18557,33 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "section_440_durable_authoring_user_widget_correct_workspace_reload_preflight_release_status": (
                 "passed" if not failed_blocking else "failed"
             ),
+            "section_441_448_durable_executor_authoring_user_widget_bridge_port_ownership_preflight_batch_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_441_durable_authoring_user_widget_bridge_port_ownership_checkpoint_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_442_durable_authoring_primary_bridge_port_probe_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_443_durable_authoring_wrong_workspace_port_owner_detected_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_444_durable_authoring_correct_workspace_bridge_port_unavailable_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_445_durable_authoring_correct_workspace_bridge_start_blocked_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_446_durable_authoring_live_user_widget_mutation_bridge_blocked_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_447_durable_authoring_user_widget_bridge_port_no_dispatch_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_448_durable_authoring_user_widget_bridge_port_ownership_preflight_release_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
             "durable_executor_opened": not failed_blocking,
             "durable_authoring_command_no_save_execution_ready": not failed_blocking,
             "final_no_save_release_ready": not failed_blocking,
@@ -18833,13 +18942,14 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
                 "_and_section_417_424_durable_executor_authoring_user_widget_widget_tree_mutation_route_preflight_ready"
                 "_and_section_425_432_durable_executor_authoring_user_widget_widget_tree_umg_cpp_route_hardening_ready"
                 "_and_section_433_440_durable_executor_authoring_user_widget_correct_workspace_reload_preflight_ready"
+                "_and_section_441_448_durable_executor_authoring_user_widget_bridge_port_ownership_preflight_ready"
             ),
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
-            "Restart or launch the correct D:/Git/CubelessStylized editor session so it loads the hardened UnrealMCP DLL, then run the UserWidget root/child WidgetTree mutation checkpoint under _MCP_Temp",
+            "Release 127.0.0.1:55557 from the wrong workspace editor, then launch the correct D:/Git/CubelessStylized editor session with the hardened UnrealMCP DLL loaded",
+            "Run the UserWidget root/child WidgetTree mutation checkpoint under _MCP_Temp after the correct bridge owns 127.0.0.1:55557",
             "DataAsset and Blueprint Function Library live authoring class-specific admission gates",
-            "UserWidget event binding and text binding live preflight after WidgetTree mutation checkpoint",
         ],
     }
 
@@ -18872,7 +18982,7 @@ def render_markdown(report: Dict[str, Any]) -> str:
             "",
             "## Decision",
             "",
-            "This boundary records the staged durable authoring gates through Section 440. The UserWidget UMG C++ route is hardened and build-verified, but the current live editor is attached to a different workspace, so live WidgetTree mutation dispatch remains blocked until the correct CubelessStylized editor session loads the hardened UnrealMCP DLL.",
+            "This boundary records the staged durable authoring gates through Section 448. The UserWidget UMG C++ route is hardened and build-verified, but 127.0.0.1:55557 is owned by a different workspace editor, so correct-workspace bridge start and live WidgetTree mutation dispatch remain blocked until the port is released and owned by the managed CubelessStylized editor.",
             "",
             "## Next Reinforcement Candidates",
             "",
