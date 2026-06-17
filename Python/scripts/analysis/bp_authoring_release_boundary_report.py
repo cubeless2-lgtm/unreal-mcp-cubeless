@@ -128,6 +128,7 @@ import bp_authoring_durable_executor_authoring_post_recreation_actor_bp_readback
 import bp_authoring_durable_executor_authoring_post_recreation_function_diagnostics_refresh_batch_contract as durable_executor_authoring_post_recreation_function_diagnostics_refresh_batch
 import bp_authoring_durable_executor_authoring_broader_non_actor_blueprint_dry_run_batch_contract as durable_executor_authoring_broader_non_actor_blueprint_dry_run_batch
 import bp_authoring_durable_executor_authoring_graph_repair_execution_dry_run_batch_contract as durable_executor_authoring_graph_repair_execution_dry_run_batch
+import bp_authoring_durable_executor_authoring_post_recreation_non_empty_graph_fixture_batch_contract as durable_executor_authoring_post_recreation_non_empty_graph_fixture_batch
 import bp_authoring_durable_executor_authoring_enable_contract as durable_executor_authoring_enable
 import bp_authoring_durable_executor_authoring_enable_after_open_contract as durable_executor_authoring_enable_after_open
 import bp_authoring_durable_executor_authoring_activation_readiness_contract as durable_executor_authoring_activation_readiness
@@ -165,7 +166,7 @@ import bp_authoring_durable_save_gate_final_review_contract as save_gate_final_r
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_345_352_bp_authoring_release_boundary_v148"
+REPORT_SCHEMA = "section_353_360_bp_authoring_release_boundary_v149"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -15208,6 +15209,81 @@ def build_durable_executor_authoring_graph_repair_execution_dry_run_batch_row(
     )
 
 
+def build_durable_executor_authoring_post_recreation_non_empty_graph_fixture_batch_row(
+    contract_summary: Dict[str, Any],
+    executor_summary: Dict[str, Any],
+    project_root: Path,
+    planner_report: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    graph_repair_row = build_durable_executor_authoring_graph_repair_execution_dry_run_batch_row(
+        contract_summary,
+        executor_summary,
+        project_root,
+        planner_report,
+    )
+    graph_repair_summary = _summary_from_row_actual(graph_repair_row)
+    graph_repair_summary["schema"] = (
+        durable_executor_authoring_graph_repair_execution_dry_run_batch
+        .DURABLE_EXECUTOR_AUTHORING_GRAPH_REPAIR_EXECUTION_DRY_RUN_BATCH_SUMMARY_SCHEMA
+    )
+    fixture_result = durable_executor_authoring_post_recreation_non_empty_graph_fixture_batch.build_post_recreation_non_empty_graph_fixture_result()
+    contract = durable_executor_authoring_post_recreation_non_empty_graph_fixture_batch.build_durable_executor_authoring_post_recreation_non_empty_graph_fixture_batch_contract(
+        requested=True,
+        section_345_352_graph_repair_execution_dry_run_summary=graph_repair_summary,
+        post_recreation_non_empty_graph_fixture_result=fixture_result,
+    )
+    summary = durable_executor_authoring_post_recreation_non_empty_graph_fixture_batch.summarize_durable_executor_authoring_post_recreation_non_empty_graph_fixture_batches(
+        [contract]
+    )
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_executor_authoring_post_recreation_non_empty_graph_fixture_batch_count": 1,
+        "section_345_352_summary_schema_matches_count": 1,
+        "section_345_352_summary_passed_count": 1,
+        "section_345_352_graph_repair_execution_dry_run_ready_count": 1,
+        "section_345_352_outputs_closed_count": 1,
+        "result_schema_matches_count": 1,
+        "non_empty_graph_fixture_checkpoint_satisfied_count": 1,
+        "fixture_target_scope_verified_count": 1,
+        "fixture_actor_blueprint_create_or_update_executed_count": 1,
+        "function_graph_inventory_non_empty_verified_count": 1,
+        "fixture_compile_save_readback_verified_count": 1,
+        "node_level_repair_still_blocked_count": 1,
+        "non_fixture_outputs_closed_count": 1,
+        "result_has_no_error_count": 1,
+        "final_durable_release_ready_count": 1,
+    }
+    for key in (
+        durable_executor_authoring_post_recreation_non_empty_graph_fixture_batch
+        .POST_RECREATION_NON_EMPTY_GRAPH_FIXTURE_PATH_COUNT_KEYS
+    ):
+        expected[key] = 1
+    expected.update(
+        {
+            key: 0
+            for key in (
+                durable_executor_authoring_post_recreation_non_empty_graph_fixture_batch
+                .BLOCKED_NON_EMPTY_GRAPH_FIXTURE_OUTPUT_COUNT_KEYS
+            )
+        }
+    )
+    actual = {
+        key: summary.get(key) if key != "summary_status" else summary.get("status")
+        for key in expected
+    }
+    return row(
+        "durable_executor_authoring_post_recreation_non_empty_graph_fixture_batch",
+        "Sections 353-360 durable executor post-recreation non-empty graph fixture batch",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "Sections 353-360 admit only a scoped /Game/_MCP_Temp/DurableSaveGate Actor Blueprint fixture with a named function graph for non-empty diagnostics inventory.",
+            "The batch proves node-level graph repair remains blocked: graph repair dispatch, node movement, pin rewiring, delete, rename, overwrite, cleanup, and production writes stay closed.",
+        ),
+    )
+
+
 def build_section_51_58_consolidation_row(
     contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -15479,7 +15555,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     lyra_report = read_json(lyra_report_path)
     preliminary_verdict = {
         "status": "passed",
-        "release_boundary_version": "section_345_352_v148",
+        "release_boundary_version": "section_353_360_v149",
         "durable_authoring_enabled": False,
     }
     decision_contract = mvp_decision.build_mvp_decision_contract(
@@ -16318,6 +16394,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             project_root,
             planner_report,
         ),
+        build_durable_executor_authoring_post_recreation_non_empty_graph_fixture_batch_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        ),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -16338,7 +16420,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
-            "release_boundary_version": "section_345_352_v148",
+            "release_boundary_version": "section_353_360_v149",
             "mvp_decision_status": decision_contract["decision_status"],
             "temporary_blueprint_authoring_mvp_ready": decision_contract[
                 "temporary_blueprint_authoring_mvp_ready"
@@ -16349,7 +16431,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "ready_for_main_push": not failed_blocking,
             "durable_authoring_enabled": not failed_blocking,
             "durable_authoring_release_status": (
-                "section_352_graph_repair_execution_dry_run_ready"
+                "section_360_post_recreation_non_empty_graph_fixture_ready"
                 if not failed_blocking
                 else "failed"
             ),
@@ -17269,6 +17351,33 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "section_352_durable_authoring_graph_repair_execution_dry_run_release_status": (
                 "passed" if not failed_blocking else "failed"
             ),
+            "section_353_360_durable_executor_authoring_post_recreation_non_empty_graph_fixture_batch_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_353_durable_authoring_non_empty_graph_fixture_checkpoint_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_354_durable_authoring_fixture_target_scope_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_355_durable_authoring_fixture_actor_blueprint_create_or_update_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_356_durable_authoring_function_graph_inventory_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_357_durable_authoring_fixture_compile_save_readback_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_358_durable_authoring_node_level_repair_blocked_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_359_durable_authoring_non_fixture_outputs_closed_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_360_durable_authoring_non_empty_graph_fixture_release_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
             "durable_executor_opened": not failed_blocking,
             "durable_authoring_command_no_save_execution_ready": not failed_blocking,
             "final_no_save_release_ready": not failed_blocking,
@@ -17408,6 +17517,15 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             ),
             "graph_repair_dry_run_noop_verified": not failed_blocking,
             "graph_repair_dry_run_no_write_verified": not failed_blocking,
+            "post_recreation_non_empty_graph_fixture_ready": (
+                not failed_blocking
+            ),
+            "post_recreation_function_graph_inventory_non_empty_verified": (
+                not failed_blocking
+            ),
+            "post_recreation_node_level_repair_fixture_still_missing": (
+                not failed_blocking
+            ),
             "graph_repair_command_dispatched": False,
             "graph_repair_command_executed": False,
             "graph_layout_mutation_performed": False,
@@ -17541,13 +17659,14 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
                 "_and_section_329_336_durable_executor_authoring_post_recreation_function_diagnostics_refreshed"
                 "_and_section_337_344_durable_executor_authoring_broader_non_actor_blueprint_dry_run_ready"
                 "_and_section_345_352_durable_executor_authoring_graph_repair_execution_dry_run_ready"
+                "_and_section_353_360_durable_executor_authoring_post_recreation_non_empty_graph_fixture_ready"
             ),
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
-            "post-recreation non-empty graph diagnostics fixture",
+            "node-level graph diagnostics fixture with actual nodes",
             "broader non-Actor Blueprint live read-only preflight",
-            "graph repair actual execution checkpoint after non-empty fixture",
+            "graph repair actual execution checkpoint after node-level fixture",
         ],
     }
 

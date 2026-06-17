@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_345_352_v148"
+        assert report["verdict"]["release_boundary_version"] == "section_353_360_v149"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -1575,6 +1575,60 @@ def main() -> int:
             ]
             == "passed"
         )
+        assert (
+            report["verdict"][
+                "section_353_360_durable_executor_authoring_post_recreation_non_empty_graph_fixture_batch_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_353_durable_authoring_non_empty_graph_fixture_checkpoint_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_354_durable_authoring_fixture_target_scope_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_355_durable_authoring_fixture_actor_blueprint_create_or_update_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_356_durable_authoring_function_graph_inventory_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_357_durable_authoring_fixture_compile_save_readback_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_358_durable_authoring_node_level_repair_blocked_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_359_durable_authoring_non_fixture_outputs_closed_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_360_durable_authoring_non_empty_graph_fixture_release_status"
+            ]
+            == "passed"
+        )
         assert report["verdict"]["durable_safety_boundary_unlock_ready"] is True
         assert report["verdict"]["durable_safety_boundary_unlocked"] is True
         assert report["verdict"]["final_durable_release_ready"] is True
@@ -1816,6 +1870,22 @@ def main() -> int:
         )
         assert report["verdict"]["graph_repair_dry_run_noop_verified"] is True
         assert report["verdict"]["graph_repair_dry_run_no_write_verified"] is True
+        assert (
+            report["verdict"]["post_recreation_non_empty_graph_fixture_ready"]
+            is True
+        )
+        assert (
+            report["verdict"][
+                "post_recreation_function_graph_inventory_non_empty_verified"
+            ]
+            is True
+        )
+        assert (
+            report["verdict"][
+                "post_recreation_node_level_repair_fixture_still_missing"
+            ]
+            is True
+        )
         assert report["verdict"]["graph_repair_command_dispatched"] is False
         assert report["verdict"]["graph_repair_command_executed"] is False
         assert report["verdict"]["graph_layout_mutation_performed"] is False
@@ -1874,7 +1944,7 @@ def main() -> int:
         assert report["verdict"]["production_path_write_executed"] is False
         assert (
             report["verdict"]["durable_authoring_release_status"]
-            == "section_352_graph_repair_execution_dry_run_ready"
+            == "section_360_post_recreation_non_empty_graph_fixture_ready"
         )
         assert find_row(report, "job_contract_default_request_set")["status"] == "passed"
         assert find_row(report, "manifest_executor_policy")["status"] == "passed"
@@ -10648,6 +10718,60 @@ def main() -> int:
         )
         for key in expected_graph_repair_dry_run_zero_counts:
             assert graph_repair_dry_run_row["actual"][key] == 0, key
+        non_empty_graph_fixture_row = find_row(
+            report,
+            "durable_executor_authoring_post_recreation_non_empty_graph_fixture_batch",
+        )
+        assert non_empty_graph_fixture_row["status"] == "passed"
+        expected_non_empty_graph_fixture_one_counts = (
+            "durable_requested_executor_authoring_post_recreation_non_empty_graph_fixture_batch_count",
+            "section_345_352_summary_schema_matches_count",
+            "section_345_352_summary_passed_count",
+            "section_345_352_graph_repair_execution_dry_run_ready_count",
+            "section_345_352_outputs_closed_count",
+            "result_schema_matches_count",
+            "non_empty_graph_fixture_checkpoint_satisfied_count",
+            "fixture_target_scope_verified_count",
+            "fixture_actor_blueprint_create_or_update_executed_count",
+            "function_graph_inventory_non_empty_verified_count",
+            "fixture_compile_save_readback_verified_count",
+            "node_level_repair_still_blocked_count",
+            "non_fixture_outputs_closed_count",
+            "result_has_no_error_count",
+            "final_durable_release_ready_count",
+            "section_353_non_empty_graph_fixture_checkpoint_satisfied_count",
+            "section_354_fixture_target_scope_verified_count",
+            "section_355_fixture_actor_blueprint_create_or_update_executed_count",
+            "section_356_function_graph_inventory_non_empty_verified_count",
+            "section_357_fixture_compile_save_readback_verified_count",
+            "section_358_node_level_repair_still_blocked_count",
+            "section_359_non_fixture_outputs_closed_count",
+            "section_360_non_empty_graph_fixture_release_ready_count",
+            "post_recreation_non_empty_graph_fixture_ready_count",
+            "post_recreation_node_level_repair_fixture_still_missing_count",
+        )
+        for key in expected_non_empty_graph_fixture_one_counts:
+            assert non_empty_graph_fixture_row["actual"][key] == 1, key
+        expected_non_empty_graph_fixture_zero_counts = (
+            "graph_repair_command_dispatched_count",
+            "graph_repair_command_executed_count",
+            "graph_layout_mutation_performed_count",
+            "node_position_write_performed_count",
+            "pin_connection_write_performed_count",
+            "cleanup_allowed_count",
+            "cleanup_executed_count",
+            "delete_asset_allowed_count",
+            "delete_asset_executed_output_count",
+            "rename_asset_allowed_count",
+            "rename_command_dispatched_count",
+            "rename_command_executed_count",
+            "overwrite_allowed_count",
+            "overwrite_executed_count",
+            "production_path_write_allowed_count",
+            "production_path_write_executed_count",
+        )
+        for key in expected_non_empty_graph_fixture_zero_counts:
+            assert non_empty_graph_fixture_row["actual"][key] == 0, key
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
