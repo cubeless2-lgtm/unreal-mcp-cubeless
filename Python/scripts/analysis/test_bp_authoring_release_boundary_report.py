@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_449_456_v161"
+        assert report["verdict"]["release_boundary_version"] == "section_457_464_v162"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -2277,6 +2277,60 @@ def main() -> int:
             ]
             == "passed"
         )
+        assert (
+            report["verdict"][
+                "section_457_464_durable_executor_authoring_data_asset_default_authoring_dry_run_admission_batch_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_457_durable_authoring_data_asset_authoring_dry_run_checkpoint_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_458_durable_authoring_data_asset_dry_run_scope_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_459_durable_authoring_data_asset_default_value_plan_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_460_durable_authoring_data_asset_default_readback_plan_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_461_durable_authoring_data_asset_default_mutation_command_blocked_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_462_durable_authoring_data_asset_compile_save_write_outputs_blocked_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_463_durable_authoring_data_asset_authoring_dry_run_no_write_boundary_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_464_durable_authoring_data_asset_authoring_dry_run_admission_release_status"
+            ]
+            == "passed"
+        )
         assert report["verdict"]["durable_safety_boundary_unlock_ready"] is True
         assert report["verdict"]["durable_safety_boundary_unlocked"] is True
         assert report["verdict"]["final_durable_release_ready"] is True
@@ -2698,7 +2752,7 @@ def main() -> int:
         assert report["verdict"]["production_path_write_executed"] is False
         assert (
             report["verdict"]["durable_authoring_release_status"]
-            == "section_456_data_asset_default_readonly_preflight_ready"
+            == "section_464_data_asset_default_authoring_dry_run_admission_ready"
         )
         assert find_row(report, "job_contract_default_request_set")["status"] == "passed"
         assert find_row(report, "manifest_executor_policy")["status"] == "passed"
@@ -12304,6 +12358,71 @@ def main() -> int:
         )
         for key in expected_data_asset_zero_counts:
             assert data_asset_row["actual"][key] == 0, key
+        data_asset_dry_run_row = find_row(
+            report,
+            "durable_executor_authoring_data_asset_default_authoring_dry_run_admission_batch",
+        )
+        assert data_asset_dry_run_row["status"] == "passed"
+        expected_data_asset_dry_run_one_counts = (
+            "durable_requested_executor_authoring_data_asset_default_authoring_dry_run_admission_batch_count",
+            "section_449_456_summary_schema_matches_count",
+            "section_449_456_summary_passed_count",
+            "section_449_456_data_asset_default_readonly_preflight_ready_count",
+            "section_449_456_outputs_closed_count",
+            "result_schema_matches_count",
+            "data_asset_authoring_dry_run_checkpoint_satisfied_count",
+            "data_asset_dry_run_scope_verified_count",
+            "data_asset_default_value_plan_classified_count",
+            "data_asset_default_readback_plan_recorded_count",
+            "data_asset_default_mutation_command_blocked_count",
+            "data_asset_compile_save_write_outputs_blocked_count",
+            "data_asset_authoring_dry_run_no_write_boundary_verified_count",
+            "result_has_no_error_count",
+            "final_durable_release_ready_count",
+            "section_457_data_asset_authoring_dry_run_checkpoint_satisfied_count",
+            "section_458_data_asset_dry_run_scope_verified_count",
+            "section_459_data_asset_default_value_plan_classified_count",
+            "section_460_data_asset_default_readback_plan_recorded_count",
+            "section_461_data_asset_default_mutation_command_blocked_count",
+            "section_462_data_asset_compile_save_write_outputs_blocked_count",
+            "section_463_data_asset_authoring_dry_run_no_write_boundary_verified_count",
+            "section_464_data_asset_authoring_dry_run_admission_release_ready_count",
+            "data_asset_default_authoring_dry_run_admission_ready_count",
+            "data_asset_default_actual_authoring_still_blocked_count",
+        )
+        for key in expected_data_asset_dry_run_one_counts:
+            assert data_asset_dry_run_row["actual"][key] == 1, key
+        expected_data_asset_dry_run_zero_counts = (
+            "data_asset_authoring_admission_command_dispatched_count",
+            "data_asset_authoring_admission_command_executed_count",
+            "data_asset_blueprint_create_command_dispatched_count",
+            "data_asset_blueprint_create_command_executed_count",
+            "data_asset_default_mutation_command_dispatched_count",
+            "data_asset_default_mutation_command_executed_count",
+            "data_asset_default_value_changed_count",
+            "data_asset_cdo_mutation_performed_count",
+            "data_asset_property_added_count",
+            "data_asset_property_removed_count",
+            "data_asset_readback_command_dispatched_count",
+            "data_asset_readback_command_executed_count",
+            "compile_executed_count",
+            "save_executed_count",
+            "asset_write_performed_count",
+            "package_dirty_marked_count",
+            "cleanup_allowed_count",
+            "cleanup_executed_count",
+            "delete_asset_allowed_count",
+            "delete_asset_executed_output_count",
+            "rename_asset_allowed_count",
+            "rename_command_dispatched_count",
+            "rename_command_executed_count",
+            "overwrite_allowed_count",
+            "overwrite_executed_count",
+            "production_path_write_allowed_count",
+            "production_path_write_executed_count",
+        )
+        for key in expected_data_asset_dry_run_zero_counts:
+            assert data_asset_dry_run_row["actual"][key] == 0, key
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
