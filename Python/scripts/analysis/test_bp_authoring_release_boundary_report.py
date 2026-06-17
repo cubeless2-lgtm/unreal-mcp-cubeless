@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_369_376_v151"
+        assert report["verdict"]["release_boundary_version"] == "section_377_384_v152"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -1737,6 +1737,60 @@ def main() -> int:
             ]
             == "passed"
         )
+        assert (
+            report["verdict"][
+                "section_377_384_durable_executor_authoring_broader_non_actor_live_readonly_preflight_batch_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_377_durable_authoring_broader_non_actor_live_readonly_checkpoint_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_378_durable_authoring_correct_project_headless_non_actor_readonly_probe_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_379_durable_authoring_user_widget_readonly_prerequisites_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_380_durable_authoring_data_asset_readonly_prerequisites_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_381_durable_authoring_anim_blueprint_readonly_prerequisites_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_382_durable_authoring_non_actor_creation_mutation_outputs_blocked_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_383_durable_authoring_broader_non_actor_live_readonly_no_write_boundary_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_384_durable_authoring_broader_non_actor_live_readonly_preflight_release_status"
+            ]
+            == "passed"
+        )
         assert report["verdict"]["durable_safety_boundary_unlock_ready"] is True
         assert report["verdict"]["durable_safety_boundary_unlocked"] is True
         assert report["verdict"]["final_durable_release_ready"] is True
@@ -2014,6 +2068,22 @@ def main() -> int:
         )
         assert report["verdict"]["mcp_config_preflight_verified"] is True
         assert report["verdict"]["live_bridge_correct_project_not_verified"] is True
+        assert (
+            report["verdict"][
+                "broader_non_actor_live_readonly_preflight_ready"
+            ]
+            is True
+        )
+        assert (
+            report["verdict"][
+                "broader_non_actor_actual_authoring_still_blocked"
+            ]
+            is True
+        )
+        assert (
+            report["verdict"]["non_actor_factory_prerequisites_verified"]
+            is True
+        )
         assert report["verdict"]["graph_repair_command_dispatched"] is False
         assert report["verdict"]["graph_repair_command_executed"] is False
         assert report["verdict"]["graph_layout_mutation_performed"] is False
@@ -2072,7 +2142,7 @@ def main() -> int:
         assert report["verdict"]["production_path_write_executed"] is False
         assert (
             report["verdict"]["durable_authoring_release_status"]
-            == "section_376_correct_project_live_mcp_route_preflight_ready"
+            == "section_384_broader_non_actor_live_readonly_preflight_ready"
         )
         assert find_row(report, "job_contract_default_request_set")["status"] == "passed"
         assert find_row(report, "manifest_executor_policy")["status"] == "passed"
@@ -11029,6 +11099,77 @@ def main() -> int:
         )
         for key in expected_correct_project_live_route_zero_counts:
             assert correct_project_live_route_row["actual"][key] == 0, key
+        broader_non_actor_live_readonly_row = find_row(
+            report,
+            "durable_executor_authoring_broader_non_actor_live_readonly_preflight_batch",
+        )
+        assert broader_non_actor_live_readonly_row["status"] == "passed"
+        expected_broader_non_actor_live_readonly_one_counts = (
+            "durable_requested_executor_authoring_broader_non_actor_live_readonly_preflight_batch_count",
+            "section_369_376_summary_schema_matches_count",
+            "section_369_376_summary_passed_count",
+            "section_369_376_correct_project_live_route_preflight_ready_count",
+            "section_369_376_outputs_closed_count",
+            "result_schema_matches_count",
+            "broader_non_actor_live_readonly_checkpoint_satisfied_count",
+            "correct_project_headless_non_actor_readonly_probe_recorded_count",
+            "non_actor_factory_prerequisites_verified_count",
+            "user_widget_readonly_prerequisites_verified_count",
+            "data_asset_readonly_prerequisites_verified_count",
+            "anim_blueprint_readonly_prerequisites_verified_count",
+            "non_actor_creation_mutation_outputs_blocked_count",
+            "broader_non_actor_live_readonly_no_write_boundary_verified_count",
+            "result_has_no_error_count",
+            "final_durable_release_ready_count",
+            "section_377_broader_non_actor_live_readonly_checkpoint_satisfied_count",
+            "section_378_correct_project_headless_non_actor_readonly_probe_recorded_count",
+            "section_379_user_widget_readonly_prerequisites_verified_count",
+            "section_380_data_asset_readonly_prerequisites_verified_count",
+            "section_381_anim_blueprint_readonly_prerequisites_verified_count",
+            "section_382_non_actor_creation_mutation_outputs_blocked_count",
+            "section_383_broader_non_actor_live_readonly_no_write_boundary_verified_count",
+            "section_384_broader_non_actor_live_readonly_preflight_release_ready_count",
+            "broader_non_actor_live_readonly_preflight_ready_count",
+            "broader_non_actor_actual_authoring_still_blocked_count",
+        )
+        for key in expected_broader_non_actor_live_readonly_one_counts:
+            assert broader_non_actor_live_readonly_row["actual"][key] == 1, key
+        expected_broader_non_actor_live_readonly_zero_counts = (
+            "user_widget_blueprint_create_command_dispatched_count",
+            "user_widget_blueprint_create_command_executed_count",
+            "data_asset_blueprint_create_command_dispatched_count",
+            "data_asset_blueprint_create_command_executed_count",
+            "anim_blueprint_create_command_dispatched_count",
+            "anim_blueprint_create_command_executed_count",
+            "non_actor_blueprint_creation_command_dispatched_count",
+            "non_actor_blueprint_creation_command_executed_count",
+            "widget_tree_mutation_performed_count",
+            "data_asset_default_mutation_performed_count",
+            "animation_graph_mutation_performed_count",
+            "non_actor_blueprint_compile_dispatched_count",
+            "non_actor_blueprint_compile_executed_count",
+            "non_actor_blueprint_save_dispatched_count",
+            "non_actor_blueprint_save_executed_count",
+            "non_actor_blueprint_asset_write_performed_count",
+            "non_actor_blueprint_package_dirty_marked_count",
+            "compile_executed_count",
+            "save_executed_count",
+            "asset_write_performed_count",
+            "package_dirty_marked_count",
+            "cleanup_allowed_count",
+            "cleanup_executed_count",
+            "delete_asset_allowed_count",
+            "delete_asset_executed_output_count",
+            "rename_asset_allowed_count",
+            "rename_command_dispatched_count",
+            "rename_command_executed_count",
+            "overwrite_allowed_count",
+            "overwrite_executed_count",
+            "production_path_write_allowed_count",
+            "production_path_write_executed_count",
+        )
+        for key in expected_broader_non_actor_live_readonly_zero_counts:
+            assert broader_non_actor_live_readonly_row["actual"][key] == 0, key
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
