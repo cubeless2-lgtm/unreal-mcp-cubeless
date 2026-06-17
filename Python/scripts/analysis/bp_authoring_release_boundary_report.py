@@ -116,6 +116,7 @@ import bp_authoring_durable_executor_authoring_live_save_stability_batch_contrac
 import bp_authoring_durable_executor_authoring_cleanup_delete_dry_run_batch_contract as durable_executor_authoring_cleanup_delete_dry_run_batch
 import bp_authoring_durable_executor_authoring_rename_overwrite_dry_run_batch_contract as durable_executor_authoring_rename_overwrite_dry_run_batch
 import bp_authoring_durable_executor_authoring_actor_bp_expansion_dry_run_batch_contract as durable_executor_authoring_actor_bp_expansion_dry_run_batch
+import bp_authoring_durable_executor_authoring_live_actor_bp_authoring_preflight_batch_contract as durable_executor_authoring_live_actor_bp_authoring_preflight_batch
 import bp_authoring_durable_executor_authoring_enable_contract as durable_executor_authoring_enable
 import bp_authoring_durable_executor_authoring_enable_after_open_contract as durable_executor_authoring_enable_after_open
 import bp_authoring_durable_executor_authoring_activation_readiness_contract as durable_executor_authoring_activation_readiness
@@ -153,7 +154,7 @@ import bp_authoring_durable_save_gate_final_review_contract as save_gate_final_r
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_249_256_bp_authoring_release_boundary_v136"
+REPORT_SCHEMA = "section_257_264_bp_authoring_release_boundary_v137"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -14203,6 +14204,88 @@ def build_durable_executor_authoring_actor_bp_expansion_dry_run_batch_row(
     )
 
 
+def build_durable_executor_authoring_live_actor_bp_authoring_preflight_batch_row(
+    contract_summary: Dict[str, Any],
+    executor_summary: Dict[str, Any],
+    project_root: Path,
+    planner_report: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    actor_row = (
+        build_durable_executor_authoring_actor_bp_expansion_dry_run_batch_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        )
+    )
+    actor_summary = _summary_from_row_actual(actor_row)
+    actor_summary["schema"] = (
+        durable_executor_authoring_actor_bp_expansion_dry_run_batch
+        .DURABLE_EXECUTOR_AUTHORING_ACTOR_BP_EXPANSION_DRY_RUN_BATCH_SUMMARY_SCHEMA
+    )
+    preflight_result = durable_executor_authoring_live_actor_bp_authoring_preflight_batch.build_live_actor_bp_authoring_preflight_result()
+    contract = durable_executor_authoring_live_actor_bp_authoring_preflight_batch.build_durable_executor_authoring_live_actor_bp_authoring_preflight_batch_contract(
+        requested=True,
+        section_249_256_actor_bp_expansion_dry_run_summary=actor_summary,
+        live_actor_bp_authoring_preflight_result=preflight_result,
+    )
+    summary = durable_executor_authoring_live_actor_bp_authoring_preflight_batch.summarize_durable_executor_authoring_live_actor_bp_authoring_preflight_batches(
+        [contract]
+    )
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_executor_authoring_live_actor_bp_authoring_preflight_batch_count": 1,
+        "section_249_256_summary_schema_matches_count": 1,
+        "section_249_256_summary_passed_count": 1,
+        "section_249_256_actor_bp_expansion_dry_run_ready_count": 1,
+        "section_249_256_actor_bp_mutation_outputs_closed_count": 1,
+        "result_schema_matches_count": 1,
+        "live_actor_bp_command_envelope_scoped_count": 1,
+        "live_actor_bp_read_only_target_preflight_ready_count": 1,
+        "live_actor_bp_mutation_sequence_planned_count": 1,
+        "live_actor_bp_compile_save_ordering_verified_count": 1,
+        "live_actor_bp_rollback_boundary_revalidated_count": 1,
+        "live_actor_bp_readback_evidence_plan_ready_count": 1,
+        "live_actor_bp_final_checkpoint_required_count": 1,
+        "dry_run_blocks_actual_live_actor_authoring_outputs_count": 1,
+        "result_has_no_error_count": 1,
+        "final_durable_release_ready_count": 1,
+        "actor_bp_expansion_dry_run_ready_count": 1,
+        "live_actor_bp_authoring_preflight_allowed_count": 1,
+        "live_actor_bp_authoring_checkpoint_ready_count": 1,
+        "actual_live_actor_bp_authoring_requires_final_user_checkpoint_count": 1,
+    }
+    for key in (
+        durable_executor_authoring_live_actor_bp_authoring_preflight_batch
+        .LIVE_ACTOR_BP_AUTHORING_PREFLIGHT_PATH_COUNT_KEYS
+    ):
+        expected[key] = 1
+    expected.update(
+        {
+            key: 0
+            for key in (
+                durable_executor_authoring_live_actor_bp_authoring_preflight_batch
+                .BLOCKED_LIVE_ACTOR_BP_AUTHORING_OUTPUT_COUNT_KEYS
+            )
+        }
+    )
+    actual = {
+        key: summary.get(key) if key != "summary_status" else summary.get("status")
+        for key in expected
+    }
+    return row(
+        "durable_executor_authoring_live_actor_bp_authoring_preflight_batch",
+        "Sections 257-264 durable executor live Actor Blueprint authoring preflight batch",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "Sections 257-264 prove the live Actor Blueprint authoring command envelope, read-only target preflight, compile/save order, rollback boundary, and readback evidence plan.",
+            "The batch keeps actual variable/component/default mutation, compile, save, delete, rename, overwrite, and production writes closed until a final user checkpoint.",
+        ),
+    )
+
+
 def build_section_51_58_consolidation_row(
     contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -14474,7 +14557,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     lyra_report = read_json(lyra_report_path)
     preliminary_verdict = {
         "status": "passed",
-        "release_boundary_version": "section_249_256_v136",
+        "release_boundary_version": "section_257_264_v137",
         "durable_authoring_enabled": False,
     }
     decision_contract = mvp_decision.build_mvp_decision_contract(
@@ -15241,6 +15324,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             project_root,
             planner_report,
         ),
+        build_durable_executor_authoring_live_actor_bp_authoring_preflight_batch_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        ),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -15261,7 +15350,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
-            "release_boundary_version": "section_249_256_v136",
+            "release_boundary_version": "section_257_264_v137",
             "mvp_decision_status": decision_contract["decision_status"],
             "temporary_blueprint_authoring_mvp_ready": decision_contract[
                 "temporary_blueprint_authoring_mvp_ready"
@@ -15272,7 +15361,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "ready_for_main_push": not failed_blocking,
             "durable_authoring_enabled": not failed_blocking,
             "durable_authoring_release_status": (
-                "section_256_actor_bp_expansion_dry_run_ready_actual_actor_authoring_closed"
+                "section_264_live_actor_bp_authoring_checkpoint_ready_actual_authoring_closed"
                 if not failed_blocking
                 else "failed"
             ),
@@ -15868,6 +15957,33 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "section_256_durable_authoring_actual_actor_authoring_final_checkpoint_status": (
                 "passed" if not failed_blocking else "failed"
             ),
+            "section_257_264_durable_executor_authoring_live_actor_bp_authoring_preflight_batch_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_257_durable_authoring_live_actor_bp_command_envelope_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_258_durable_authoring_live_actor_bp_read_only_target_preflight_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_259_durable_authoring_live_actor_bp_mutation_sequence_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_260_durable_authoring_live_actor_bp_compile_save_order_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_261_durable_authoring_live_actor_bp_rollback_boundary_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_262_durable_authoring_live_actor_bp_readback_evidence_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_263_durable_authoring_live_actor_bp_final_checkpoint_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_264_durable_authoring_live_actor_bp_actual_authoring_closed_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
             "durable_executor_opened": not failed_blocking,
             "durable_authoring_command_no_save_execution_ready": not failed_blocking,
             "final_no_save_release_ready": not failed_blocking,
@@ -15896,6 +16012,11 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "actor_bp_expansion_dry_run_allowed": not failed_blocking,
             "actor_bp_expansion_dry_run_ready": not failed_blocking,
             "actual_actor_bp_authoring_requires_final_user_checkpoint": (
+                not failed_blocking
+            ),
+            "live_actor_bp_authoring_preflight_allowed": not failed_blocking,
+            "live_actor_bp_authoring_checkpoint_ready": not failed_blocking,
+            "actual_live_actor_bp_authoring_requires_final_user_checkpoint": (
                 not failed_blocking
             ),
             "fixed_compile_api": (
@@ -16012,11 +16133,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
                 "_and_section_233_240_durable_executor_authoring_cleanup_delete_dry_run_ready_actual_delete_closed"
                 "_and_section_241_248_durable_executor_authoring_rename_overwrite_dry_run_ready_actual_rename_closed"
                 "_and_section_249_256_durable_executor_authoring_actor_bp_expansion_dry_run_ready_actual_actor_authoring_closed"
+                "_and_section_257_264_durable_executor_authoring_live_actor_bp_authoring_checkpoint_ready_actual_authoring_closed"
             ),
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
-            "live Actor Blueprint variable/component/default authoring under _MCP_Temp requires final user checkpoint",
+            "actual live Actor Blueprint variable/component/default authoring under _MCP_Temp requires final user checkpoint",
             "component default/type readback expansion for broader Blueprint classes",
             "function call diagnostics and graph layout repair suggestions",
         ],
