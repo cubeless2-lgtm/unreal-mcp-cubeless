@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_257_264_v137"
+        assert report["verdict"]["release_boundary_version"] == "section_265_272_v138"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -981,6 +981,60 @@ def main() -> int:
             ]
             == "passed"
         )
+        assert (
+            report["verdict"][
+                "section_265_272_durable_executor_authoring_live_actor_bp_actual_authoring_batch_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_265_durable_authoring_live_actor_bp_actual_execution_checkpoint_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_266_durable_authoring_live_actor_bp_target_scope_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_267_durable_authoring_live_actor_bp_variable_authoring_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_268_durable_authoring_live_actor_bp_component_authoring_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_269_durable_authoring_live_actor_bp_default_authoring_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_270_durable_authoring_live_actor_bp_compile_save_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_271_durable_authoring_live_actor_bp_readback_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_272_durable_authoring_live_actor_bp_dirty_baseline_status"
+            ]
+            == "passed"
+        )
         assert report["verdict"]["durable_safety_boundary_unlock_ready"] is True
         assert report["verdict"]["durable_safety_boundary_unlocked"] is True
         assert report["verdict"]["final_durable_release_ready"] is True
@@ -1051,6 +1105,27 @@ def main() -> int:
             report["verdict"][
                 "actual_live_actor_bp_authoring_requires_final_user_checkpoint"
             ]
+            is False
+        )
+        assert (
+            report["verdict"][
+                "actual_live_actor_bp_authoring_final_checkpoint_satisfied"
+            ]
+            is True
+        )
+        assert (
+            report["verdict"]["live_actor_bp_actual_authoring_executed"]
+            is True
+        )
+        assert report["verdict"]["live_actor_bp_actual_authoring_saved"] is True
+        assert (
+            report["verdict"][
+                "live_actor_bp_actual_authoring_readback_verified"
+            ]
+            is True
+        )
+        assert (
+            report["verdict"]["actor_bp_authoring_external_dirty_preserved"]
             is True
         )
         assert (
@@ -1080,31 +1155,32 @@ def main() -> int:
         assert report["verdict"]["rename_command_executed"] is False
         assert report["verdict"]["overwrite_allowed"] is False
         assert report["verdict"]["overwrite_executed"] is False
-        assert report["verdict"]["variable_add_command_dispatched"] is False
-        assert report["verdict"]["variable_add_command_executed"] is False
-        assert report["verdict"]["component_add_command_dispatched"] is False
-        assert report["verdict"]["component_add_command_executed"] is False
-        assert report["verdict"]["default_write_command_dispatched"] is False
-        assert report["verdict"]["default_write_command_executed"] is False
-        assert report["verdict"]["actor_bp_authoring_command_dispatched"] is False
-        assert report["verdict"]["actor_bp_authoring_command_executed"] is False
-        assert report["verdict"]["actor_bp_authoring_compile_dispatched"] is False
-        assert report["verdict"]["actor_bp_authoring_compile_executed"] is False
-        assert report["verdict"]["actor_bp_authoring_save_dispatched"] is False
-        assert report["verdict"]["actor_bp_authoring_save_executed"] is False
+        assert report["verdict"]["variable_add_command_dispatched"] is True
+        assert report["verdict"]["variable_add_command_executed"] is True
+        assert report["verdict"]["component_add_command_dispatched"] is True
+        assert report["verdict"]["component_add_command_executed"] is True
+        assert report["verdict"]["default_write_command_dispatched"] is True
+        assert report["verdict"]["default_write_command_executed"] is True
+        assert report["verdict"]["actor_bp_authoring_command_dispatched"] is True
+        assert report["verdict"]["actor_bp_authoring_command_executed"] is True
+        assert report["verdict"]["actor_bp_authoring_compile_dispatched"] is True
+        assert report["verdict"]["actor_bp_authoring_compile_executed"] is True
+        assert report["verdict"]["actor_bp_authoring_save_dispatched"] is True
+        assert report["verdict"]["actor_bp_authoring_save_executed"] is True
         assert (
             report["verdict"]["actor_bp_authoring_asset_write_performed"]
-            is False
+            is True
         )
         assert (
             report["verdict"]["actor_bp_authoring_package_dirty_marked"]
-            is False
+            is True
         )
+        assert report["verdict"]["actor_bp_authoring_target_dirty_after"] is False
         assert report["verdict"]["production_path_write_allowed"] is False
         assert report["verdict"]["production_path_write_executed"] is False
         assert (
             report["verdict"]["durable_authoring_release_status"]
-            == "section_264_live_actor_bp_authoring_checkpoint_ready_actual_authoring_closed"
+            == "section_272_live_actor_bp_actual_authoring_readback_ready"
         )
         assert find_row(report, "job_contract_default_request_set")["status"] == "passed"
         assert find_row(report, "manifest_executor_policy")["status"] == "passed"
@@ -9156,6 +9232,75 @@ def main() -> int:
         )
         for key in expected_live_actor_zero_counts:
             assert live_actor_bp_preflight_row["actual"][key] == 0, key
+        actual_actor_bp_row = find_row(
+            report,
+            "durable_executor_authoring_live_actor_bp_actual_authoring_batch",
+        )
+        assert actual_actor_bp_row["status"] == "passed"
+        expected_actual_actor_one_counts = (
+            "durable_requested_executor_authoring_live_actor_bp_actual_authoring_batch_count",
+            "section_257_264_summary_schema_matches_count",
+            "section_257_264_summary_passed_count",
+            "section_257_264_live_actor_bp_preflight_ready_count",
+            "section_257_264_mutation_outputs_closed_count",
+            "result_schema_matches_count",
+            "actual_execution_checkpoint_satisfied_count",
+            "target_scope_reconfirmed_count",
+            "variable_authoring_executed_count",
+            "component_authoring_executed_count",
+            "default_authoring_executed_count",
+            "compile_save_executed_count",
+            "readback_verified_count",
+            "dirty_baseline_preserved_count",
+            "destructive_outputs_closed_count",
+            "result_has_no_error_count",
+            "final_durable_release_ready_count",
+            "actual_live_actor_bp_authoring_final_checkpoint_satisfied_count",
+            "variable_add_command_dispatched_count",
+            "variable_add_command_executed_count",
+            "component_add_command_dispatched_count",
+            "component_add_command_executed_count",
+            "default_write_command_dispatched_count",
+            "default_write_command_executed_count",
+            "actor_bp_authoring_command_dispatched_count",
+            "actor_bp_authoring_command_executed_count",
+            "actor_bp_authoring_compile_dispatched_count",
+            "actor_bp_authoring_compile_executed_count",
+            "actor_bp_authoring_save_dispatched_count",
+            "actor_bp_authoring_save_executed_count",
+            "actor_bp_authoring_asset_write_performed_count",
+            "actor_bp_authoring_package_dirty_marked_count",
+            "actor_bp_authoring_external_dirty_preserved_count",
+            "section_265_live_actor_bp_actual_execution_checkpoint_satisfied_count",
+            "section_266_live_actor_bp_target_scope_reconfirmed_count",
+            "section_267_live_actor_bp_variable_authoring_executed_count",
+            "section_268_live_actor_bp_component_authoring_executed_count",
+            "section_269_live_actor_bp_default_authoring_executed_count",
+            "section_270_live_actor_bp_compile_save_executed_count",
+            "section_271_live_actor_bp_readback_verified_count",
+            "section_272_live_actor_bp_dirty_baseline_preserved_count",
+            "live_actor_bp_actual_authoring_executed_count",
+            "live_actor_bp_actual_authoring_saved_count",
+            "live_actor_bp_actual_authoring_readback_verified_count",
+        )
+        for key in expected_actual_actor_one_counts:
+            assert actual_actor_bp_row["actual"][key] == 1, key
+        expected_actual_actor_zero_counts = (
+            "actual_live_actor_bp_authoring_requires_final_user_checkpoint_count",
+            "actor_bp_authoring_target_dirty_after_count",
+            "cleanup_allowed_count",
+            "cleanup_executed_count",
+            "delete_asset_allowed_count",
+            "rename_asset_allowed_count",
+            "rename_command_dispatched_count",
+            "rename_command_executed_count",
+            "overwrite_allowed_count",
+            "overwrite_executed_count",
+            "production_path_write_allowed_count",
+            "production_path_write_executed_count",
+        )
+        for key in expected_actual_actor_zero_counts:
+            assert actual_actor_bp_row["actual"][key] == 0, key
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
