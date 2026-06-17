@@ -135,6 +135,7 @@ import bp_authoring_durable_executor_authoring_broader_non_actor_live_readonly_p
 import bp_authoring_durable_executor_authoring_broader_non_actor_live_authoring_admission_dry_run_batch_contract as durable_executor_authoring_broader_non_actor_live_authoring_admission_dry_run_batch
 import bp_authoring_durable_executor_authoring_user_widget_widget_tree_live_readonly_preflight_batch_contract as durable_executor_authoring_user_widget_widget_tree_live_readonly_preflight_batch
 import bp_authoring_durable_executor_authoring_user_widget_widget_tree_authoring_dry_run_admission_batch_contract as durable_executor_authoring_user_widget_widget_tree_authoring_dry_run_admission_batch
+import bp_authoring_durable_executor_authoring_user_widget_actual_asset_creation_checkpoint_batch_contract as durable_executor_authoring_user_widget_actual_asset_creation_checkpoint_batch
 import bp_authoring_durable_executor_authoring_enable_contract as durable_executor_authoring_enable
 import bp_authoring_durable_executor_authoring_enable_after_open_contract as durable_executor_authoring_enable_after_open
 import bp_authoring_durable_executor_authoring_activation_readiness_contract as durable_executor_authoring_activation_readiness
@@ -172,7 +173,7 @@ import bp_authoring_durable_save_gate_final_review_contract as save_gate_final_r
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_401_408_bp_authoring_release_boundary_v155"
+REPORT_SCHEMA = "section_409_416_bp_authoring_release_boundary_v156"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -15745,6 +15746,82 @@ def build_durable_executor_authoring_user_widget_widget_tree_authoring_dry_run_a
     )
 
 
+def build_durable_executor_authoring_user_widget_actual_asset_creation_checkpoint_batch_row(
+    contract_summary: Dict[str, Any],
+    executor_summary: Dict[str, Any],
+    project_root: Path,
+    planner_report: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    dry_run_row = build_durable_executor_authoring_user_widget_widget_tree_authoring_dry_run_admission_batch_row(
+        contract_summary,
+        executor_summary,
+        project_root,
+        planner_report,
+    )
+    dry_run_summary = _summary_from_row_actual(dry_run_row)
+    dry_run_summary["schema"] = (
+        durable_executor_authoring_user_widget_widget_tree_authoring_dry_run_admission_batch
+        .DURABLE_EXECUTOR_AUTHORING_USER_WIDGET_WIDGET_TREE_AUTHORING_DRY_RUN_ADMISSION_BATCH_SUMMARY_SCHEMA
+    )
+    actual_result = durable_executor_authoring_user_widget_actual_asset_creation_checkpoint_batch.build_user_widget_actual_asset_creation_checkpoint_result()
+    contract = durable_executor_authoring_user_widget_actual_asset_creation_checkpoint_batch.build_durable_executor_authoring_user_widget_actual_asset_creation_checkpoint_batch_contract(
+        requested=True,
+        section_401_408_user_widget_dry_run_admission_summary=dry_run_summary,
+        user_widget_actual_asset_creation_checkpoint_result=actual_result,
+    )
+    summary = durable_executor_authoring_user_widget_actual_asset_creation_checkpoint_batch.summarize_durable_executor_authoring_user_widget_actual_asset_creation_checkpoint_batches(
+        [contract]
+    )
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_executor_authoring_user_widget_actual_asset_creation_checkpoint_batch_count": 1,
+        "section_401_408_summary_schema_matches_count": 1,
+        "section_401_408_summary_passed_count": 1,
+        "section_401_408_user_widget_dry_run_ready_count": 1,
+        "section_401_408_outputs_closed_count": 1,
+        "result_schema_matches_count": 1,
+        "user_widget_actual_creation_checkpoint_satisfied_count": 1,
+        "user_widget_actual_target_scope_verified_count": 1,
+        "widget_blueprint_create_or_reuse_executed_count": 1,
+        "widget_blueprint_compile_save_verified_count": 1,
+        "widget_blueprint_readback_package_confirmed_count": 1,
+        "widget_tree_mutation_still_blocked_count": 1,
+        "user_widget_delete_rename_cleanup_production_blocked_count": 1,
+        "user_widget_actual_creation_no_dirty_leftover_count": 1,
+        "result_has_no_error_count": 1,
+        "final_durable_release_ready_count": 1,
+    }
+    for key in (
+        durable_executor_authoring_user_widget_actual_asset_creation_checkpoint_batch
+        .USER_WIDGET_ACTUAL_ASSET_CREATION_CHECKPOINT_PATH_COUNT_KEYS
+    ):
+        expected[key] = 1
+    expected.update(
+        {
+            key: 0
+            for key in (
+                durable_executor_authoring_user_widget_actual_asset_creation_checkpoint_batch
+                .BLOCKED_USER_WIDGET_ACTUAL_ASSET_OUTPUT_COUNT_KEYS
+            )
+        }
+    )
+    actual = {
+        key: summary.get(key) if key != "summary_status" else summary.get("status")
+        for key in expected
+    }
+    return row(
+        "durable_executor_authoring_user_widget_actual_asset_creation_checkpoint_batch",
+        "Sections 409-416 durable executor UserWidget actual temp asset creation checkpoint batch",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "Sections 409-416 record the approved correct-project headless Unreal temp Widget Blueprint create-or-reuse, compile, save, and readback checkpoint under _MCP_Temp.",
+            "The batch keeps WidgetTree mutation, root/child widget authoring, slot/binding mutation, delete, rename, overwrite, cleanup, and production writes closed.",
+        ),
+    )
+
+
 def build_section_51_58_consolidation_row(
     contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -16016,7 +16093,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     lyra_report = read_json(lyra_report_path)
     preliminary_verdict = {
         "status": "passed",
-        "release_boundary_version": "section_401_408_v155",
+        "release_boundary_version": "section_409_416_v156",
         "durable_authoring_enabled": False,
     }
     decision_contract = mvp_decision.build_mvp_decision_contract(
@@ -16897,6 +16974,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             project_root,
             planner_report,
         ),
+        build_durable_executor_authoring_user_widget_actual_asset_creation_checkpoint_batch_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        ),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -16917,7 +17000,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
-            "release_boundary_version": "section_401_408_v155",
+            "release_boundary_version": "section_409_416_v156",
             "mvp_decision_status": decision_contract["decision_status"],
             "temporary_blueprint_authoring_mvp_ready": decision_contract[
                 "temporary_blueprint_authoring_mvp_ready"
@@ -16928,7 +17011,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "ready_for_main_push": not failed_blocking,
             "durable_authoring_enabled": not failed_blocking,
             "durable_authoring_release_status": (
-                "section_408_user_widget_widget_tree_authoring_dry_run_admission_ready"
+                "section_416_user_widget_actual_asset_creation_checkpoint_ready"
                 if not failed_blocking
                 else "failed"
             ),
@@ -18037,6 +18120,33 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "section_408_durable_authoring_user_widget_authoring_dry_run_admission_release_status": (
                 "passed" if not failed_blocking else "failed"
             ),
+            "section_409_416_durable_executor_authoring_user_widget_actual_asset_creation_checkpoint_batch_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_409_durable_authoring_user_widget_actual_creation_checkpoint_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_410_durable_authoring_user_widget_actual_target_scope_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_411_durable_authoring_widget_blueprint_create_or_reuse_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_412_durable_authoring_widget_blueprint_compile_save_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_413_durable_authoring_widget_blueprint_readback_package_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_414_durable_authoring_widget_tree_mutation_still_blocked_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_415_durable_authoring_user_widget_delete_rename_cleanup_production_blocked_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_416_durable_authoring_user_widget_actual_asset_creation_checkpoint_release_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
             "durable_executor_opened": not failed_blocking,
             "durable_authoring_command_no_save_execution_ready": not failed_blocking,
             "final_no_save_release_ready": not failed_blocking,
@@ -18235,6 +18345,13 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             ),
             "widget_blueprint_dry_run_scope_verified": not failed_blocking,
             "widget_binding_event_graph_plan_blocked": not failed_blocking,
+            "user_widget_actual_asset_creation_checkpoint_ready": (
+                not failed_blocking
+            ),
+            "user_widget_widget_tree_mutation_still_blocked": (
+                not failed_blocking
+            ),
+            "user_widget_temp_package_file_confirmed": not failed_blocking,
             "graph_repair_command_dispatched": False,
             "graph_repair_command_executed": False,
             "graph_layout_mutation_performed": False,
@@ -18375,12 +18492,13 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
                 "_and_section_385_392_durable_executor_authoring_broader_non_actor_live_authoring_admission_dry_run_ready"
                 "_and_section_393_400_durable_executor_authoring_user_widget_widget_tree_live_readonly_preflight_ready"
                 "_and_section_401_408_durable_executor_authoring_user_widget_widget_tree_authoring_dry_run_admission_ready"
+                "_and_section_409_416_durable_executor_authoring_user_widget_actual_asset_creation_checkpoint_ready"
             ),
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
-            "UserWidget temp Widget Blueprint actual creation checkpoint under _MCP_Temp",
-            "correct-project live MCP node-authoring bridge activation after bridge/project alignment",
+            "UserWidget widget-tree mutation API bridge or C++ command route preflight",
+            "UserWidget root/child widget tree mutation checkpoint under _MCP_Temp after API route is validated",
             "DataAsset and Blueprint Function Library live authoring class-specific admission gates",
         ],
     }

@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_401_408_v155"
+        assert report["verdict"]["release_boundary_version"] == "section_409_416_v156"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -1953,6 +1953,60 @@ def main() -> int:
             ]
             == "passed"
         )
+        assert (
+            report["verdict"][
+                "section_409_416_durable_executor_authoring_user_widget_actual_asset_creation_checkpoint_batch_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_409_durable_authoring_user_widget_actual_creation_checkpoint_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_410_durable_authoring_user_widget_actual_target_scope_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_411_durable_authoring_widget_blueprint_create_or_reuse_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_412_durable_authoring_widget_blueprint_compile_save_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_413_durable_authoring_widget_blueprint_readback_package_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_414_durable_authoring_widget_tree_mutation_still_blocked_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_415_durable_authoring_user_widget_delete_rename_cleanup_production_blocked_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_416_durable_authoring_user_widget_actual_asset_creation_checkpoint_release_status"
+            ]
+            == "passed"
+        )
         assert report["verdict"]["durable_safety_boundary_unlock_ready"] is True
         assert report["verdict"]["durable_safety_boundary_unlocked"] is True
         assert report["verdict"]["final_durable_release_ready"] is True
@@ -2293,6 +2347,15 @@ def main() -> int:
         )
         assert report["verdict"]["widget_blueprint_dry_run_scope_verified"] is True
         assert report["verdict"]["widget_binding_event_graph_plan_blocked"] is True
+        assert (
+            report["verdict"]["user_widget_actual_asset_creation_checkpoint_ready"]
+            is True
+        )
+        assert (
+            report["verdict"]["user_widget_widget_tree_mutation_still_blocked"]
+            is True
+        )
+        assert report["verdict"]["user_widget_temp_package_file_confirmed"] is True
         assert report["verdict"]["graph_repair_command_dispatched"] is False
         assert report["verdict"]["graph_repair_command_executed"] is False
         assert report["verdict"]["graph_layout_mutation_performed"] is False
@@ -2351,7 +2414,7 @@ def main() -> int:
         assert report["verdict"]["production_path_write_executed"] is False
         assert (
             report["verdict"]["durable_authoring_release_status"]
-            == "section_408_user_widget_widget_tree_authoring_dry_run_admission_ready"
+            == "section_416_user_widget_actual_asset_creation_checkpoint_ready"
         )
         assert find_row(report, "job_contract_default_request_set")["status"] == "passed"
         assert find_row(report, "manifest_executor_policy")["status"] == "passed"
@@ -11586,6 +11649,63 @@ def main() -> int:
         )
         for key in expected_user_widget_dry_run_zero_counts:
             assert user_widget_dry_run_row["actual"][key] == 0, key
+        user_widget_actual_row = find_row(
+            report,
+            "durable_executor_authoring_user_widget_actual_asset_creation_checkpoint_batch",
+        )
+        assert user_widget_actual_row["status"] == "passed"
+        expected_user_widget_actual_one_counts = (
+            "durable_requested_executor_authoring_user_widget_actual_asset_creation_checkpoint_batch_count",
+            "section_401_408_summary_schema_matches_count",
+            "section_401_408_summary_passed_count",
+            "section_401_408_user_widget_dry_run_ready_count",
+            "section_401_408_outputs_closed_count",
+            "result_schema_matches_count",
+            "user_widget_actual_creation_checkpoint_satisfied_count",
+            "user_widget_actual_target_scope_verified_count",
+            "widget_blueprint_create_or_reuse_executed_count",
+            "widget_blueprint_compile_save_verified_count",
+            "widget_blueprint_readback_package_confirmed_count",
+            "widget_tree_mutation_still_blocked_count",
+            "user_widget_delete_rename_cleanup_production_blocked_count",
+            "user_widget_actual_creation_no_dirty_leftover_count",
+            "result_has_no_error_count",
+            "final_durable_release_ready_count",
+            "section_409_user_widget_actual_creation_checkpoint_satisfied_count",
+            "section_410_user_widget_actual_target_scope_verified_count",
+            "section_411_widget_blueprint_create_or_reuse_executed_count",
+            "section_412_widget_blueprint_compile_save_verified_count",
+            "section_413_widget_blueprint_readback_package_confirmed_count",
+            "section_414_widget_tree_mutation_still_blocked_count",
+            "section_415_user_widget_delete_rename_cleanup_production_blocked_count",
+            "section_416_user_widget_actual_asset_creation_checkpoint_release_ready_count",
+            "user_widget_actual_asset_creation_checkpoint_ready_count",
+            "user_widget_widget_tree_mutation_still_blocked_count",
+        )
+        for key in expected_user_widget_actual_one_counts:
+            assert user_widget_actual_row["actual"][key] == 1, key
+        expected_user_widget_actual_zero_counts = (
+            "widget_tree_mutation_attempted_count",
+            "widget_tree_mutation_performed_count",
+            "root_widget_created_count",
+            "child_widget_added_count",
+            "widget_slot_mutation_performed_count",
+            "widget_binding_mutation_performed_count",
+            "event_graph_mutation_performed_count",
+            "delete_asset_allowed_count",
+            "delete_asset_executed_output_count",
+            "rename_asset_allowed_count",
+            "rename_command_dispatched_count",
+            "rename_command_executed_count",
+            "overwrite_allowed_count",
+            "overwrite_executed_count",
+            "cleanup_allowed_count",
+            "cleanup_executed_count",
+            "production_path_write_allowed_count",
+            "production_path_write_executed_count",
+        )
+        for key in expected_user_widget_actual_zero_counts:
+            assert user_widget_actual_row["actual"][key] == 0, key
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
