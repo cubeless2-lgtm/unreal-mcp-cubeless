@@ -143,6 +143,7 @@ import bp_authoring_durable_executor_authoring_user_widget_bridge_port_ownership
 import bp_authoring_durable_executor_authoring_data_asset_default_readonly_preflight_batch_contract as durable_executor_authoring_data_asset_default_readonly_preflight_batch
 import bp_authoring_durable_executor_authoring_data_asset_default_authoring_dry_run_admission_batch_contract as durable_executor_authoring_data_asset_default_authoring_dry_run_admission_batch
 import bp_authoring_durable_executor_authoring_blueprint_function_library_readonly_preflight_batch_contract as durable_executor_authoring_blueprint_function_library_readonly_preflight_batch
+import bp_authoring_durable_executor_authoring_blueprint_function_library_authoring_dry_run_admission_batch_contract as durable_executor_authoring_blueprint_function_library_authoring_dry_run_admission_batch
 import bp_authoring_durable_executor_authoring_enable_contract as durable_executor_authoring_enable
 import bp_authoring_durable_executor_authoring_enable_after_open_contract as durable_executor_authoring_enable_after_open
 import bp_authoring_durable_executor_authoring_activation_readiness_contract as durable_executor_authoring_activation_readiness
@@ -180,7 +181,7 @@ import bp_authoring_durable_save_gate_final_review_contract as save_gate_final_r
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_465_472_bp_authoring_release_boundary_v163"
+REPORT_SCHEMA = "section_473_480_bp_authoring_release_boundary_v164"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -16355,6 +16356,81 @@ def build_durable_executor_authoring_blueprint_function_library_readonly_preflig
     )
 
 
+def build_durable_executor_authoring_blueprint_function_library_authoring_dry_run_admission_batch_row(
+    contract_summary: Dict[str, Any],
+    executor_summary: Dict[str, Any],
+    project_root: Path,
+    planner_report: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    preflight_row = build_durable_executor_authoring_blueprint_function_library_readonly_preflight_batch_row(
+        contract_summary,
+        executor_summary,
+        project_root,
+        planner_report,
+    )
+    preflight_summary = _summary_from_row_actual(preflight_row)
+    preflight_summary["schema"] = (
+        durable_executor_authoring_blueprint_function_library_readonly_preflight_batch
+        .DURABLE_EXECUTOR_AUTHORING_BLUEPRINT_FUNCTION_LIBRARY_READONLY_PREFLIGHT_BATCH_SUMMARY_SCHEMA
+    )
+    dry_run_result = durable_executor_authoring_blueprint_function_library_authoring_dry_run_admission_batch.build_blueprint_function_library_authoring_dry_run_admission_result()
+    contract = durable_executor_authoring_blueprint_function_library_authoring_dry_run_admission_batch.build_durable_executor_authoring_blueprint_function_library_authoring_dry_run_admission_batch_contract(
+        requested=True,
+        section_465_472_blueprint_function_library_readonly_preflight_summary=preflight_summary,
+        blueprint_function_library_authoring_dry_run_admission_result=dry_run_result,
+    )
+    summary = durable_executor_authoring_blueprint_function_library_authoring_dry_run_admission_batch.summarize_durable_executor_authoring_blueprint_function_library_authoring_dry_run_admission_batches(
+        [contract]
+    )
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_executor_authoring_blueprint_function_library_authoring_dry_run_admission_batch_count": 1,
+        "section_465_472_summary_schema_matches_count": 1,
+        "section_465_472_summary_passed_count": 1,
+        "section_465_472_blueprint_function_library_readonly_preflight_ready_count": 1,
+        "section_465_472_outputs_closed_count": 1,
+        "result_schema_matches_count": 1,
+        "blueprint_function_library_authoring_dry_run_checkpoint_satisfied_count": 1,
+        "blueprint_function_library_dry_run_scope_verified_count": 1,
+        "blueprint_function_library_function_signature_plan_classified_count": 1,
+        "blueprint_function_library_graph_node_plan_classified_count": 1,
+        "blueprint_function_library_graph_mutation_command_blocked_count": 1,
+        "blueprint_function_library_compile_save_write_outputs_blocked_count": 1,
+        "blueprint_function_library_authoring_dry_run_no_write_boundary_verified_count": 1,
+        "result_has_no_error_count": 1,
+        "final_durable_release_ready_count": 1,
+    }
+    for key in (
+        durable_executor_authoring_blueprint_function_library_authoring_dry_run_admission_batch
+        .BLUEPRINT_FUNCTION_LIBRARY_AUTHORING_DRY_RUN_ADMISSION_PATH_COUNT_KEYS
+    ):
+        expected[key] = 1
+    expected.update(
+        {
+            key: 0
+            for key in (
+                durable_executor_authoring_blueprint_function_library_authoring_dry_run_admission_batch
+                .BLOCKED_BLUEPRINT_FUNCTION_LIBRARY_AUTHORING_DRY_RUN_OUTPUT_COUNT_KEYS
+            )
+        }
+    )
+    actual = {
+        key: summary.get(key) if key != "summary_status" else summary.get("status")
+        for key in expected
+    }
+    return row(
+        "durable_executor_authoring_blueprint_function_library_authoring_dry_run_admission_batch",
+        "Sections 473-480 durable executor Blueprint Function Library authoring dry-run admission batch",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "Sections 473-480 admit only an offline dry-run plan for a disposable Blueprint Function Library under _MCP_Temp.",
+            "The batch records function signature and graph node plans while keeping BFL creation/mutation/compile/save/write closed.",
+        ),
+    )
+
+
 def build_section_51_58_consolidation_row(
     contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -16626,7 +16702,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     lyra_report = read_json(lyra_report_path)
     preliminary_verdict = {
         "status": "passed",
-        "release_boundary_version": "section_465_472_v163",
+        "release_boundary_version": "section_473_480_v164",
         "durable_authoring_enabled": False,
     }
     decision_contract = mvp_decision.build_mvp_decision_contract(
@@ -17555,6 +17631,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             project_root,
             planner_report,
         ),
+        build_durable_executor_authoring_blueprint_function_library_authoring_dry_run_admission_batch_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        ),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -17575,7 +17657,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
-            "release_boundary_version": "section_465_472_v163",
+            "release_boundary_version": "section_473_480_v164",
             "mvp_decision_status": decision_contract["decision_status"],
             "temporary_blueprint_authoring_mvp_ready": decision_contract[
                 "temporary_blueprint_authoring_mvp_ready"
@@ -17586,7 +17668,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "ready_for_main_push": not failed_blocking,
             "durable_authoring_enabled": not failed_blocking,
             "durable_authoring_release_status": (
-                "section_472_blueprint_function_library_readonly_preflight_ready"
+                "section_480_blueprint_function_library_authoring_dry_run_admission_ready"
                 if not failed_blocking
                 else "failed"
             ),
@@ -18911,6 +18993,33 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "section_472_durable_authoring_blueprint_function_library_readonly_preflight_release_status": (
                 "passed" if not failed_blocking else "failed"
             ),
+            "section_473_480_durable_executor_authoring_blueprint_function_library_authoring_dry_run_admission_batch_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_473_durable_authoring_blueprint_function_library_authoring_dry_run_checkpoint_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_474_durable_authoring_blueprint_function_library_dry_run_scope_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_475_durable_authoring_blueprint_function_library_function_signature_plan_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_476_durable_authoring_blueprint_function_library_graph_node_plan_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_477_durable_authoring_blueprint_function_library_graph_mutation_command_blocked_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_478_durable_authoring_blueprint_function_library_compile_save_write_outputs_blocked_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_479_durable_authoring_blueprint_function_library_authoring_dry_run_no_write_boundary_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_480_durable_authoring_blueprint_function_library_authoring_dry_run_admission_release_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
             "durable_executor_opened": not failed_blocking,
             "durable_authoring_command_no_save_execution_ready": not failed_blocking,
             "final_no_save_release_ready": not failed_blocking,
@@ -19137,6 +19246,21 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "blueprint_function_library_creation_graph_outputs_blocked": (
                 not failed_blocking
             ),
+            "blueprint_function_library_authoring_dry_run_admission_ready": (
+                not failed_blocking
+            ),
+            "blueprint_function_library_dry_run_scope_verified": (
+                not failed_blocking
+            ),
+            "blueprint_function_library_function_signature_plan_classified": (
+                not failed_blocking
+            ),
+            "blueprint_function_library_graph_node_plan_classified": (
+                not failed_blocking
+            ),
+            "blueprint_function_library_graph_mutation_command_blocked": (
+                not failed_blocking
+            ),
             "user_widget_widget_tree_live_readonly_preflight_ready": (
                 not failed_blocking
             ),
@@ -19316,13 +19440,14 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
                 "_and_section_449_456_durable_executor_authoring_data_asset_default_readonly_preflight_ready"
                 "_and_section_457_464_durable_executor_authoring_data_asset_default_authoring_dry_run_admission_ready"
                 "_and_section_465_472_durable_executor_authoring_blueprint_function_library_readonly_preflight_ready"
+                "_and_section_473_480_durable_executor_authoring_blueprint_function_library_authoring_dry_run_admission_ready"
             ),
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
             "Release 127.0.0.1:55557 from the wrong workspace editor, then launch the correct D:/Git/CubelessStylized editor session with the hardened UnrealMCP DLL loaded",
             "Run the UserWidget root/child WidgetTree mutation checkpoint under _MCP_Temp after the correct bridge owns 127.0.0.1:55557",
-            "DataAsset actual temp asset creation checkpoint and Blueprint Function Library dry-run admission gate",
+            "DataAsset or Blueprint Function Library actual temp asset creation checkpoint after live route and approval conditions are explicit",
         ],
     }
 
@@ -19355,7 +19480,7 @@ def render_markdown(report: Dict[str, Any]) -> str:
             "",
             "## Decision",
             "",
-            "This boundary records the staged durable authoring gates through Section 472. The UserWidget UMG C++ route is hardened and build-verified, but 127.0.0.1:55557 is owned by a different workspace editor, so correct-workspace bridge start and live WidgetTree mutation dispatch remain blocked until the port is released and owned by the managed CubelessStylized editor. The DataAsset default-authoring route is only dry-run admitted, and the Blueprint Function Library route is only read-only preflighted; creation, graph/default mutation, compile, save, cleanup, delete, rename, overwrite, and production writes remain closed.",
+            "This boundary records the staged durable authoring gates through Section 480. The UserWidget UMG C++ route is hardened and build-verified, but 127.0.0.1:55557 is owned by a different workspace editor, so correct-workspace bridge start and live WidgetTree mutation dispatch remain blocked until the port is released and owned by the managed CubelessStylized editor. The DataAsset default-authoring and Blueprint Function Library routes are only dry-run admitted; creation, graph/default mutation, compile, save, cleanup, delete, rename, overwrite, and production writes remain closed.",
             "",
             "## Next Reinforcement Candidates",
             "",
