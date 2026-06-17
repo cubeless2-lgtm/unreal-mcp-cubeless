@@ -129,6 +129,7 @@ import bp_authoring_durable_executor_authoring_post_recreation_function_diagnost
 import bp_authoring_durable_executor_authoring_broader_non_actor_blueprint_dry_run_batch_contract as durable_executor_authoring_broader_non_actor_blueprint_dry_run_batch
 import bp_authoring_durable_executor_authoring_graph_repair_execution_dry_run_batch_contract as durable_executor_authoring_graph_repair_execution_dry_run_batch
 import bp_authoring_durable_executor_authoring_post_recreation_non_empty_graph_fixture_batch_contract as durable_executor_authoring_post_recreation_non_empty_graph_fixture_batch
+import bp_authoring_durable_executor_authoring_node_level_graph_fixture_route_preflight_batch_contract as durable_executor_authoring_node_level_graph_fixture_route_preflight_batch
 import bp_authoring_durable_executor_authoring_enable_contract as durable_executor_authoring_enable
 import bp_authoring_durable_executor_authoring_enable_after_open_contract as durable_executor_authoring_enable_after_open
 import bp_authoring_durable_executor_authoring_activation_readiness_contract as durable_executor_authoring_activation_readiness
@@ -166,7 +167,7 @@ import bp_authoring_durable_save_gate_final_review_contract as save_gate_final_r
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_353_360_bp_authoring_release_boundary_v149"
+REPORT_SCHEMA = "section_361_368_bp_authoring_release_boundary_v150"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -15284,6 +15285,84 @@ def build_durable_executor_authoring_post_recreation_non_empty_graph_fixture_bat
     )
 
 
+def build_durable_executor_authoring_node_level_graph_fixture_route_preflight_batch_row(
+    contract_summary: Dict[str, Any],
+    executor_summary: Dict[str, Any],
+    project_root: Path,
+    planner_report: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    non_empty_fixture_row = build_durable_executor_authoring_post_recreation_non_empty_graph_fixture_batch_row(
+        contract_summary,
+        executor_summary,
+        project_root,
+        planner_report,
+    )
+    non_empty_fixture_summary = _summary_from_row_actual(non_empty_fixture_row)
+    non_empty_fixture_summary["schema"] = (
+        durable_executor_authoring_post_recreation_non_empty_graph_fixture_batch
+        .DURABLE_EXECUTOR_AUTHORING_POST_RECREATION_NON_EMPTY_GRAPH_FIXTURE_BATCH_SUMMARY_SCHEMA
+    )
+    route_result = durable_executor_authoring_node_level_graph_fixture_route_preflight_batch.build_node_level_graph_fixture_route_preflight_result()
+    contract = durable_executor_authoring_node_level_graph_fixture_route_preflight_batch.build_durable_executor_authoring_node_level_graph_fixture_route_preflight_batch_contract(
+        requested=True,
+        section_353_360_non_empty_graph_fixture_summary=(
+            non_empty_fixture_summary
+        ),
+        node_level_graph_fixture_route_preflight_result=route_result,
+    )
+    summary = durable_executor_authoring_node_level_graph_fixture_route_preflight_batch.summarize_durable_executor_authoring_node_level_graph_fixture_route_preflight_batches(
+        [contract]
+    )
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_executor_authoring_node_level_graph_fixture_route_preflight_batch_count": 1,
+        "section_353_360_summary_schema_matches_count": 1,
+        "section_353_360_summary_passed_count": 1,
+        "section_353_360_non_empty_graph_fixture_ready_count": 1,
+        "section_353_360_outputs_closed_count": 1,
+        "result_schema_matches_count": 1,
+        "node_level_route_preflight_checkpoint_satisfied_count": 1,
+        "fixture_target_scope_verified_count": 1,
+        "headless_fixture_readback_verified_count": 1,
+        "python_node_object_construction_probe_recorded_count": 1,
+        "python_node_mutation_api_absent_verified_count": 1,
+        "live_mcp_correct_project_route_blocked_count": 1,
+        "actual_node_authoring_outputs_blocked_count": 1,
+        "node_level_preflight_no_write_boundary_verified_count": 1,
+        "result_has_no_error_count": 1,
+        "final_durable_release_ready_count": 1,
+    }
+    for key in (
+        durable_executor_authoring_node_level_graph_fixture_route_preflight_batch
+        .NODE_LEVEL_GRAPH_FIXTURE_ROUTE_PREFLIGHT_PATH_COUNT_KEYS
+    ):
+        expected[key] = 1
+    expected.update(
+        {
+            key: 0
+            for key in (
+                durable_executor_authoring_node_level_graph_fixture_route_preflight_batch
+                .BLOCKED_NODE_LEVEL_GRAPH_FIXTURE_ROUTE_PREFLIGHT_OUTPUT_COUNT_KEYS
+            )
+        }
+    )
+    actual = {
+        key: summary.get(key) if key != "summary_status" else summary.get("status")
+        for key in expected
+    }
+    return row(
+        "durable_executor_authoring_node_level_graph_fixture_route_preflight_batch",
+        "Sections 361-368 durable executor node-level graph fixture route preflight batch",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "Sections 361-368 record the node-level graph fixture route preflight after the non-empty temp graph fixture.",
+            "The batch proves actual node authoring stays blocked because headless Python lacks valid K2 node mutation APIs and the live MCP route cannot verify the correct-project fixture.",
+        ),
+    )
+
+
 def build_section_51_58_consolidation_row(
     contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -15555,7 +15634,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     lyra_report = read_json(lyra_report_path)
     preliminary_verdict = {
         "status": "passed",
-        "release_boundary_version": "section_353_360_v149",
+        "release_boundary_version": "section_361_368_v150",
         "durable_authoring_enabled": False,
     }
     decision_contract = mvp_decision.build_mvp_decision_contract(
@@ -16400,6 +16479,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             project_root,
             planner_report,
         ),
+        build_durable_executor_authoring_node_level_graph_fixture_route_preflight_batch_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        ),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -16420,7 +16505,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
-            "release_boundary_version": "section_353_360_v149",
+            "release_boundary_version": "section_361_368_v150",
             "mvp_decision_status": decision_contract["decision_status"],
             "temporary_blueprint_authoring_mvp_ready": decision_contract[
                 "temporary_blueprint_authoring_mvp_ready"
@@ -16431,7 +16516,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "ready_for_main_push": not failed_blocking,
             "durable_authoring_enabled": not failed_blocking,
             "durable_authoring_release_status": (
-                "section_360_post_recreation_non_empty_graph_fixture_ready"
+                "section_368_node_level_graph_fixture_route_preflight_ready"
                 if not failed_blocking
                 else "failed"
             ),
@@ -17378,6 +17463,33 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "section_360_durable_authoring_non_empty_graph_fixture_release_status": (
                 "passed" if not failed_blocking else "failed"
             ),
+            "section_361_368_durable_executor_authoring_node_level_graph_fixture_route_preflight_batch_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_361_durable_authoring_node_level_route_preflight_checkpoint_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_362_durable_authoring_headless_fixture_readback_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_363_durable_authoring_python_node_object_construction_probe_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_364_durable_authoring_python_node_mutation_api_absent_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_365_durable_authoring_live_mcp_correct_project_route_blocked_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_366_durable_authoring_actual_node_authoring_outputs_blocked_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_367_durable_authoring_node_level_preflight_no_write_boundary_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_368_durable_authoring_node_level_graph_fixture_route_preflight_release_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
             "durable_executor_opened": not failed_blocking,
             "durable_authoring_command_no_save_execution_ready": not failed_blocking,
             "final_no_save_release_ready": not failed_blocking,
@@ -17526,6 +17638,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "post_recreation_node_level_repair_fixture_still_missing": (
                 not failed_blocking
             ),
+            "node_level_graph_fixture_route_preflight_ready": (
+                not failed_blocking
+            ),
+            "node_level_actual_fixture_still_blocked": not failed_blocking,
+            "python_node_mutation_api_absent_verified": not failed_blocking,
+            "live_mcp_node_authoring_route_blocked": not failed_blocking,
             "graph_repair_command_dispatched": False,
             "graph_repair_command_executed": False,
             "graph_layout_mutation_performed": False,
@@ -17660,13 +17778,14 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
                 "_and_section_337_344_durable_executor_authoring_broader_non_actor_blueprint_dry_run_ready"
                 "_and_section_345_352_durable_executor_authoring_graph_repair_execution_dry_run_ready"
                 "_and_section_353_360_durable_executor_authoring_post_recreation_non_empty_graph_fixture_ready"
+                "_and_section_361_368_durable_executor_authoring_node_level_graph_fixture_route_preflight_ready"
             ),
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
-            "node-level graph diagnostics fixture with actual nodes",
+            "correct-project live MCP node-authoring bridge activation",
+            "node-level graph diagnostics fixture with actual nodes through the validated MCP route",
             "broader non-Actor Blueprint live read-only preflight",
-            "graph repair actual execution checkpoint after node-level fixture",
         ],
     }
 

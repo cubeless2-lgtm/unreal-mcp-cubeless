@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_353_360_v149"
+        assert report["verdict"]["release_boundary_version"] == "section_361_368_v150"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -1629,6 +1629,60 @@ def main() -> int:
             ]
             == "passed"
         )
+        assert (
+            report["verdict"][
+                "section_361_368_durable_executor_authoring_node_level_graph_fixture_route_preflight_batch_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_361_durable_authoring_node_level_route_preflight_checkpoint_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_362_durable_authoring_headless_fixture_readback_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_363_durable_authoring_python_node_object_construction_probe_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_364_durable_authoring_python_node_mutation_api_absent_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_365_durable_authoring_live_mcp_correct_project_route_blocked_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_366_durable_authoring_actual_node_authoring_outputs_blocked_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_367_durable_authoring_node_level_preflight_no_write_boundary_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_368_durable_authoring_node_level_graph_fixture_route_preflight_release_status"
+            ]
+            == "passed"
+        )
         assert report["verdict"]["durable_safety_boundary_unlock_ready"] is True
         assert report["verdict"]["durable_safety_boundary_unlocked"] is True
         assert report["verdict"]["final_durable_release_ready"] is True
@@ -1886,6 +1940,16 @@ def main() -> int:
             ]
             is True
         )
+        assert (
+            report["verdict"]["node_level_graph_fixture_route_preflight_ready"]
+            is True
+        )
+        assert report["verdict"]["node_level_actual_fixture_still_blocked"] is True
+        assert (
+            report["verdict"]["python_node_mutation_api_absent_verified"]
+            is True
+        )
+        assert report["verdict"]["live_mcp_node_authoring_route_blocked"] is True
         assert report["verdict"]["graph_repair_command_dispatched"] is False
         assert report["verdict"]["graph_repair_command_executed"] is False
         assert report["verdict"]["graph_layout_mutation_performed"] is False
@@ -1944,7 +2008,7 @@ def main() -> int:
         assert report["verdict"]["production_path_write_executed"] is False
         assert (
             report["verdict"]["durable_authoring_release_status"]
-            == "section_360_post_recreation_non_empty_graph_fixture_ready"
+            == "section_368_node_level_graph_fixture_route_preflight_ready"
         )
         assert find_row(report, "job_contract_default_request_set")["status"] == "passed"
         assert find_row(report, "manifest_executor_policy")["status"] == "passed"
@@ -10772,6 +10836,70 @@ def main() -> int:
         )
         for key in expected_non_empty_graph_fixture_zero_counts:
             assert non_empty_graph_fixture_row["actual"][key] == 0, key
+        node_level_route_preflight_row = find_row(
+            report,
+            "durable_executor_authoring_node_level_graph_fixture_route_preflight_batch",
+        )
+        assert node_level_route_preflight_row["status"] == "passed"
+        expected_node_level_route_preflight_one_counts = (
+            "durable_requested_executor_authoring_node_level_graph_fixture_route_preflight_batch_count",
+            "section_353_360_summary_schema_matches_count",
+            "section_353_360_summary_passed_count",
+            "section_353_360_non_empty_graph_fixture_ready_count",
+            "section_353_360_outputs_closed_count",
+            "result_schema_matches_count",
+            "node_level_route_preflight_checkpoint_satisfied_count",
+            "fixture_target_scope_verified_count",
+            "headless_fixture_readback_verified_count",
+            "python_node_object_construction_probe_recorded_count",
+            "python_node_mutation_api_absent_verified_count",
+            "live_mcp_correct_project_route_blocked_count",
+            "actual_node_authoring_outputs_blocked_count",
+            "node_level_preflight_no_write_boundary_verified_count",
+            "result_has_no_error_count",
+            "final_durable_release_ready_count",
+            "section_361_node_level_route_preflight_checkpoint_satisfied_count",
+            "section_362_headless_fixture_readback_verified_count",
+            "section_363_python_node_object_construction_probe_recorded_count",
+            "section_364_python_node_mutation_api_absent_verified_count",
+            "section_365_live_mcp_correct_project_route_blocked_count",
+            "section_366_actual_node_authoring_outputs_blocked_count",
+            "section_367_node_level_preflight_no_write_boundary_verified_count",
+            "section_368_node_level_graph_fixture_route_preflight_release_ready_count",
+            "node_level_graph_fixture_route_preflight_ready_count",
+            "node_level_actual_fixture_still_blocked_count",
+        )
+        for key in expected_node_level_route_preflight_one_counts:
+            assert node_level_route_preflight_row["actual"][key] == 1, key
+        expected_node_level_route_preflight_zero_counts = (
+            "node_authoring_command_dispatched_count",
+            "node_authoring_command_executed_count",
+            "add_blueprint_call_function_node_dispatched_count",
+            "add_blueprint_call_function_node_executed_count",
+            "graph_node_added_count",
+            "graph_layout_mutation_performed_count",
+            "node_position_write_performed_count",
+            "pin_connection_write_performed_count",
+            "compile_executed_count",
+            "save_executed_count",
+            "asset_write_performed_count",
+            "package_dirty_marked_count",
+            "graph_repair_command_dispatched_count",
+            "graph_repair_command_executed_count",
+            "cleanup_allowed_count",
+            "cleanup_executed_count",
+            "delete_asset_allowed_count",
+            "delete_asset_executed_output_count",
+            "rename_asset_allowed_count",
+            "rename_command_dispatched_count",
+            "rename_command_executed_count",
+            "overwrite_allowed_count",
+            "overwrite_executed_count",
+            "production_path_write_allowed_count",
+            "production_path_write_executed_count",
+        )
+        for key in expected_node_level_route_preflight_zero_counts:
+            assert node_level_route_preflight_row["actual"][key] == 0, key
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
