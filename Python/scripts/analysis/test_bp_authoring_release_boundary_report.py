@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_537_544_v172"
+        assert report["verdict"]["release_boundary_version"] == "section_545_552_v173"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -2871,6 +2871,60 @@ def main() -> int:
             ]
             == "passed"
         )
+        assert (
+            report["verdict"][
+                "section_545_552_durable_executor_authoring_correct_workspace_bridge_verification_evidence_validation_result_schema_batch_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_545_durable_authoring_validation_result_schema_checkpoint_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_546_durable_authoring_validation_result_fields_recorded_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_547_durable_authoring_validation_pass_fail_semantics_recorded_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_548_durable_authoring_validation_rejection_reason_fields_recorded_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_549_durable_authoring_validation_result_requires_execution_evidence_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_550_durable_authoring_validation_result_admission_still_blocked_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_551_durable_authoring_validation_result_schema_no_write_boundary_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_552_durable_authoring_validation_result_schema_release_status"
+            ]
+            == "passed"
+        )
         assert report["verdict"]["durable_safety_boundary_unlock_ready"] is True
         assert report["verdict"]["durable_safety_boundary_unlocked"] is True
         assert report["verdict"]["final_durable_release_ready"] is True
@@ -3292,7 +3346,7 @@ def main() -> int:
         assert report["verdict"]["production_path_write_executed"] is False
         assert (
             report["verdict"]["durable_authoring_release_status"]
-            == "section_544_correct_workspace_bridge_verification_evidence_validation_execution_dry_run_envelope_ready"
+            == "section_552_correct_workspace_bridge_verification_evidence_validation_result_schema_ready"
         )
         assert find_row(report, "job_contract_default_request_set")["status"] == "passed"
         assert find_row(report, "manifest_executor_policy")["status"] == "passed"
@@ -13687,6 +13741,84 @@ def main() -> int:
         )
         for key in expected_validation_execution_envelope_zero_counts:
             assert validation_execution_envelope_row["actual"][key] == 0, key
+        validation_result_schema_row = find_row(
+            report,
+            "durable_executor_authoring_correct_workspace_bridge_verification_evidence_validation_result_schema_batch",
+        )
+        assert validation_result_schema_row["status"] == "passed"
+        expected_validation_result_schema_one_counts = (
+            "durable_requested_executor_authoring_correct_workspace_bridge_verification_evidence_validation_result_schema_batch_count",
+            "section_537_544_summary_schema_matches_count",
+            "section_537_544_summary_passed_count",
+            "section_537_544_validation_execution_dry_run_envelope_ready_count",
+            "section_537_544_outputs_closed_count",
+            "result_schema_matches_count",
+            "validation_result_schema_checkpoint_satisfied_count",
+            "validation_result_fields_recorded_count",
+            "validation_pass_fail_semantics_recorded_count",
+            "validation_rejection_reason_fields_recorded_count",
+            "validation_result_requires_execution_evidence_count",
+            "validation_result_admission_still_blocked_count",
+            "validation_result_schema_no_write_boundary_verified_count",
+            "validation_result_schema_compile_save_write_outputs_blocked_count",
+            "result_has_no_error_count",
+            "final_durable_release_ready_count",
+            "section_545_validation_result_schema_checkpoint_satisfied_count",
+            "section_546_validation_result_fields_recorded_count",
+            "section_547_validation_pass_fail_semantics_recorded_count",
+            "section_548_validation_rejection_reason_fields_recorded_count",
+            "section_549_validation_result_requires_execution_evidence_count",
+            "section_550_validation_result_admission_still_blocked_count",
+            "section_551_validation_result_schema_no_write_boundary_verified_count",
+            "section_552_validation_result_schema_release_ready_count",
+            "correct_workspace_bridge_verification_evidence_validation_result_schema_ready_count",
+            "verification_validation_result_still_missing_count",
+        )
+        for key in expected_validation_result_schema_one_counts:
+            assert validation_result_schema_row["actual"][key] == 1, key
+        expected_validation_result_schema_zero_counts = (
+            "validation_execution_command_dispatched_count",
+            "validation_execution_command_executed_count",
+            "validation_result_recorded_count",
+            "validation_result_schema_validation_executed_count",
+            "validation_result_schema_validation_passed_count",
+            "validation_result_admitted_count",
+            "evidence_payload_received_count",
+            "evidence_payload_ingested_count",
+            "evidence_schema_validation_executed_count",
+            "evidence_schema_validation_passed_count",
+            "verification_evidence_admitted_count",
+            "correct_workspace_bridge_verified_count",
+            "read_only_probe_result_accepted_count",
+            "post_verification_authoring_allowed_count",
+            "live_command_dispatched_count",
+            "live_command_executed_count",
+            "widget_tree_mutation_command_dispatched_count",
+            "widget_tree_mutation_command_executed_count",
+            "non_actor_actual_temp_checkpoint_command_dispatched_count",
+            "non_actor_actual_temp_checkpoint_command_executed_count",
+            "data_asset_actual_temp_create_command_dispatched_count",
+            "data_asset_actual_temp_create_command_executed_count",
+            "bfl_actual_temp_create_command_dispatched_count",
+            "bfl_actual_temp_create_command_executed_count",
+            "compile_executed_count",
+            "save_executed_count",
+            "asset_write_performed_count",
+            "package_dirty_marked_count",
+            "cleanup_allowed_count",
+            "cleanup_executed_count",
+            "delete_asset_allowed_count",
+            "delete_asset_executed_output_count",
+            "rename_asset_allowed_count",
+            "rename_command_dispatched_count",
+            "rename_command_executed_count",
+            "overwrite_allowed_count",
+            "overwrite_executed_count",
+            "production_path_write_allowed_count",
+            "production_path_write_executed_count",
+        )
+        for key in expected_validation_result_schema_zero_counts:
+            assert validation_result_schema_row["actual"][key] == 0, key
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
