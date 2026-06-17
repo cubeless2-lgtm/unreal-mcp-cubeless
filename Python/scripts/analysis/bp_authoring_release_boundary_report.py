@@ -132,6 +132,7 @@ import bp_authoring_durable_executor_authoring_post_recreation_non_empty_graph_f
 import bp_authoring_durable_executor_authoring_node_level_graph_fixture_route_preflight_batch_contract as durable_executor_authoring_node_level_graph_fixture_route_preflight_batch
 import bp_authoring_durable_executor_authoring_correct_project_live_mcp_route_preflight_batch_contract as durable_executor_authoring_correct_project_live_mcp_route_preflight_batch
 import bp_authoring_durable_executor_authoring_broader_non_actor_live_readonly_preflight_batch_contract as durable_executor_authoring_broader_non_actor_live_readonly_preflight_batch
+import bp_authoring_durable_executor_authoring_broader_non_actor_live_authoring_admission_dry_run_batch_contract as durable_executor_authoring_broader_non_actor_live_authoring_admission_dry_run_batch
 import bp_authoring_durable_executor_authoring_enable_contract as durable_executor_authoring_enable
 import bp_authoring_durable_executor_authoring_enable_after_open_contract as durable_executor_authoring_enable_after_open
 import bp_authoring_durable_executor_authoring_activation_readiness_contract as durable_executor_authoring_activation_readiness
@@ -169,7 +170,7 @@ import bp_authoring_durable_save_gate_final_review_contract as save_gate_final_r
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_377_384_bp_authoring_release_boundary_v152"
+REPORT_SCHEMA = "section_385_392_bp_authoring_release_boundary_v153"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -15516,6 +15517,82 @@ def build_durable_executor_authoring_broader_non_actor_live_readonly_preflight_b
     )
 
 
+def build_durable_executor_authoring_broader_non_actor_live_authoring_admission_dry_run_batch_row(
+    contract_summary: Dict[str, Any],
+    executor_summary: Dict[str, Any],
+    project_root: Path,
+    planner_report: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    readonly_row = build_durable_executor_authoring_broader_non_actor_live_readonly_preflight_batch_row(
+        contract_summary,
+        executor_summary,
+        project_root,
+        planner_report,
+    )
+    readonly_summary = _summary_from_row_actual(readonly_row)
+    readonly_summary["schema"] = (
+        durable_executor_authoring_broader_non_actor_live_readonly_preflight_batch
+        .DURABLE_EXECUTOR_AUTHORING_BROADER_NON_ACTOR_LIVE_READONLY_PREFLIGHT_BATCH_SUMMARY_SCHEMA
+    )
+    admission_result = durable_executor_authoring_broader_non_actor_live_authoring_admission_dry_run_batch.build_broader_non_actor_live_authoring_admission_dry_run_result()
+    contract = durable_executor_authoring_broader_non_actor_live_authoring_admission_dry_run_batch.build_durable_executor_authoring_broader_non_actor_live_authoring_admission_dry_run_batch_contract(
+        requested=True,
+        section_377_384_broader_non_actor_live_readonly_preflight_summary=readonly_summary,
+        broader_non_actor_live_authoring_admission_dry_run_result=admission_result,
+    )
+    summary = durable_executor_authoring_broader_non_actor_live_authoring_admission_dry_run_batch.summarize_durable_executor_authoring_broader_non_actor_live_authoring_admission_dry_run_batches(
+        [contract]
+    )
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_executor_authoring_broader_non_actor_live_authoring_admission_dry_run_batch_count": 1,
+        "section_377_384_summary_schema_matches_count": 1,
+        "section_377_384_summary_passed_count": 1,
+        "section_377_384_broader_non_actor_live_readonly_preflight_ready_count": 1,
+        "section_377_384_outputs_closed_count": 1,
+        "result_schema_matches_count": 1,
+        "live_authoring_admission_dry_run_checkpoint_satisfied_count": 1,
+        "admission_request_scope_classified_count": 1,
+        "user_widget_admission_blocked_pending_widget_tree_contract_count": 1,
+        "data_asset_admission_blocked_pending_default_contract_count": 1,
+        "anim_blueprint_admission_blocked_pending_skeleton_contract_count": 1,
+        "function_library_interface_admission_blocked_pending_graph_contract_count": 1,
+        "live_non_actor_creation_outputs_blocked_count": 1,
+        "live_non_actor_authoring_admission_no_write_boundary_verified_count": 1,
+        "result_has_no_error_count": 1,
+        "final_durable_release_ready_count": 1,
+    }
+    for key in (
+        durable_executor_authoring_broader_non_actor_live_authoring_admission_dry_run_batch
+        .BROADER_NON_ACTOR_LIVE_AUTHORING_ADMISSION_DRY_RUN_PATH_COUNT_KEYS
+    ):
+        expected[key] = 1
+    expected.update(
+        {
+            key: 0
+            for key in (
+                durable_executor_authoring_broader_non_actor_live_authoring_admission_dry_run_batch
+                .BLOCKED_BROADER_NON_ACTOR_LIVE_AUTHORING_ADMISSION_OUTPUT_COUNT_KEYS
+            )
+        }
+    )
+    actual = {
+        key: summary.get(key) if key != "summary_status" else summary.get("status")
+        for key in expected
+    }
+    return row(
+        "durable_executor_authoring_broader_non_actor_live_authoring_admission_dry_run_batch",
+        "Sections 385-392 durable executor broader non-Actor live authoring admission dry-run batch",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "Sections 385-392 admit only offline admission dry-run classification for broader non-Actor live authoring after the correct-project read-only preflight.",
+            "The batch keeps UserWidget, DataAsset-style Blueprint, AnimBlueprint, Blueprint Function Library, and Blueprint Interface creation/mutation blocked until their class-specific contracts exist.",
+        ),
+    )
+
+
 def build_section_51_58_consolidation_row(
     contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -15787,7 +15864,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     lyra_report = read_json(lyra_report_path)
     preliminary_verdict = {
         "status": "passed",
-        "release_boundary_version": "section_377_384_v152",
+        "release_boundary_version": "section_385_392_v153",
         "durable_authoring_enabled": False,
     }
     decision_contract = mvp_decision.build_mvp_decision_contract(
@@ -16650,6 +16727,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             project_root,
             planner_report,
         ),
+        build_durable_executor_authoring_broader_non_actor_live_authoring_admission_dry_run_batch_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        ),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -16670,7 +16753,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
-            "release_boundary_version": "section_377_384_v152",
+            "release_boundary_version": "section_385_392_v153",
             "mvp_decision_status": decision_contract["decision_status"],
             "temporary_blueprint_authoring_mvp_ready": decision_contract[
                 "temporary_blueprint_authoring_mvp_ready"
@@ -16681,7 +16764,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "ready_for_main_push": not failed_blocking,
             "durable_authoring_enabled": not failed_blocking,
             "durable_authoring_release_status": (
-                "section_384_broader_non_actor_live_readonly_preflight_ready"
+                "section_392_broader_non_actor_live_authoring_admission_dry_run_ready"
                 if not failed_blocking
                 else "failed"
             ),
@@ -17709,6 +17792,33 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "section_384_durable_authoring_broader_non_actor_live_readonly_preflight_release_status": (
                 "passed" if not failed_blocking else "failed"
             ),
+            "section_385_392_durable_executor_authoring_broader_non_actor_live_authoring_admission_dry_run_batch_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_385_durable_authoring_broader_non_actor_live_authoring_admission_checkpoint_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_386_durable_authoring_non_actor_live_authoring_admission_request_scope_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_387_durable_authoring_user_widget_admission_blocked_pending_widget_tree_contract_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_388_durable_authoring_data_asset_admission_blocked_pending_default_contract_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_389_durable_authoring_anim_blueprint_admission_blocked_pending_skeleton_contract_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_390_durable_authoring_function_library_interface_admission_blocked_pending_graph_contract_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_391_durable_authoring_live_non_actor_creation_outputs_blocked_no_write_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_392_durable_authoring_broader_non_actor_live_authoring_admission_dry_run_release_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
             "durable_executor_opened": not failed_blocking,
             "durable_authoring_command_no_save_execution_ready": not failed_blocking,
             "final_no_save_release_ready": not failed_blocking,
@@ -17880,6 +17990,18 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "non_actor_factory_prerequisites_verified": (
                 not failed_blocking
             ),
+            "broader_non_actor_live_authoring_admission_dry_run_ready": (
+                not failed_blocking
+            ),
+            "broader_non_actor_live_authoring_still_blocked": (
+                not failed_blocking
+            ),
+            "non_actor_live_authoring_admission_scope_classified": (
+                not failed_blocking
+            ),
+            "non_actor_class_specific_contracts_still_required": (
+                not failed_blocking
+            ),
             "graph_repair_command_dispatched": False,
             "graph_repair_command_executed": False,
             "graph_layout_mutation_performed": False,
@@ -18017,13 +18139,14 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
                 "_and_section_361_368_durable_executor_authoring_node_level_graph_fixture_route_preflight_ready"
                 "_and_section_369_376_durable_executor_authoring_correct_project_live_mcp_route_preflight_ready"
                 "_and_section_377_384_durable_executor_authoring_broader_non_actor_live_readonly_preflight_ready"
+                "_and_section_385_392_durable_executor_authoring_broader_non_actor_live_authoring_admission_dry_run_ready"
             ),
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
             "correct-project live MCP node-authoring bridge activation after bridge/project alignment",
-            "node-level graph diagnostics fixture with actual nodes through the validated MCP route",
-            "broader non-Actor Blueprint live authoring admission dry run",
+            "UserWidget live authoring widget-tree preflight with actual creation still gated",
+            "DataAsset and Blueprint Function Library live authoring class-specific admission gates",
         ],
     }
 

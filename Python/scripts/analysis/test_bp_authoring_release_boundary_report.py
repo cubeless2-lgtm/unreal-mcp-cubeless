@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_377_384_v152"
+        assert report["verdict"]["release_boundary_version"] == "section_385_392_v153"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -1791,6 +1791,60 @@ def main() -> int:
             ]
             == "passed"
         )
+        assert (
+            report["verdict"][
+                "section_385_392_durable_executor_authoring_broader_non_actor_live_authoring_admission_dry_run_batch_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_385_durable_authoring_broader_non_actor_live_authoring_admission_checkpoint_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_386_durable_authoring_non_actor_live_authoring_admission_request_scope_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_387_durable_authoring_user_widget_admission_blocked_pending_widget_tree_contract_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_388_durable_authoring_data_asset_admission_blocked_pending_default_contract_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_389_durable_authoring_anim_blueprint_admission_blocked_pending_skeleton_contract_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_390_durable_authoring_function_library_interface_admission_blocked_pending_graph_contract_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_391_durable_authoring_live_non_actor_creation_outputs_blocked_no_write_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_392_durable_authoring_broader_non_actor_live_authoring_admission_dry_run_release_status"
+            ]
+            == "passed"
+        )
         assert report["verdict"]["durable_safety_boundary_unlock_ready"] is True
         assert report["verdict"]["durable_safety_boundary_unlocked"] is True
         assert report["verdict"]["final_durable_release_ready"] is True
@@ -2084,6 +2138,28 @@ def main() -> int:
             report["verdict"]["non_actor_factory_prerequisites_verified"]
             is True
         )
+        assert (
+            report["verdict"][
+                "broader_non_actor_live_authoring_admission_dry_run_ready"
+            ]
+            is True
+        )
+        assert (
+            report["verdict"]["broader_non_actor_live_authoring_still_blocked"]
+            is True
+        )
+        assert (
+            report["verdict"][
+                "non_actor_live_authoring_admission_scope_classified"
+            ]
+            is True
+        )
+        assert (
+            report["verdict"][
+                "non_actor_class_specific_contracts_still_required"
+            ]
+            is True
+        )
         assert report["verdict"]["graph_repair_command_dispatched"] is False
         assert report["verdict"]["graph_repair_command_executed"] is False
         assert report["verdict"]["graph_layout_mutation_performed"] is False
@@ -2142,7 +2218,7 @@ def main() -> int:
         assert report["verdict"]["production_path_write_executed"] is False
         assert (
             report["verdict"]["durable_authoring_release_status"]
-            == "section_384_broader_non_actor_live_readonly_preflight_ready"
+            == "section_392_broader_non_actor_live_authoring_admission_dry_run_ready"
         )
         assert find_row(report, "job_contract_default_request_set")["status"] == "passed"
         assert find_row(report, "manifest_executor_policy")["status"] == "passed"
@@ -11170,6 +11246,89 @@ def main() -> int:
         )
         for key in expected_broader_non_actor_live_readonly_zero_counts:
             assert broader_non_actor_live_readonly_row["actual"][key] == 0, key
+        non_actor_admission_dry_run_row = find_row(
+            report,
+            "durable_executor_authoring_broader_non_actor_live_authoring_admission_dry_run_batch",
+        )
+        assert non_actor_admission_dry_run_row["status"] == "passed"
+        expected_non_actor_admission_dry_run_one_counts = (
+            "durable_requested_executor_authoring_broader_non_actor_live_authoring_admission_dry_run_batch_count",
+            "section_377_384_summary_schema_matches_count",
+            "section_377_384_summary_passed_count",
+            "section_377_384_broader_non_actor_live_readonly_preflight_ready_count",
+            "section_377_384_outputs_closed_count",
+            "result_schema_matches_count",
+            "live_authoring_admission_dry_run_checkpoint_satisfied_count",
+            "admission_request_scope_classified_count",
+            "user_widget_admission_blocked_pending_widget_tree_contract_count",
+            "data_asset_admission_blocked_pending_default_contract_count",
+            "anim_blueprint_admission_blocked_pending_skeleton_contract_count",
+            "function_library_interface_admission_blocked_pending_graph_contract_count",
+            "live_non_actor_creation_outputs_blocked_count",
+            "live_non_actor_authoring_admission_no_write_boundary_verified_count",
+            "result_has_no_error_count",
+            "final_durable_release_ready_count",
+            "section_385_broader_non_actor_live_authoring_admission_checkpoint_satisfied_count",
+            "section_386_non_actor_live_authoring_admission_request_scope_classified_count",
+            "section_387_user_widget_admission_blocked_pending_widget_tree_contract_count",
+            "section_388_data_asset_admission_blocked_pending_default_contract_count",
+            "section_389_anim_blueprint_admission_blocked_pending_skeleton_contract_count",
+            "section_390_function_library_interface_admission_blocked_pending_graph_contract_count",
+            "section_391_live_non_actor_creation_outputs_blocked_no_write_verified_count",
+            "section_392_broader_non_actor_live_authoring_admission_dry_run_release_ready_count",
+            "broader_non_actor_live_authoring_admission_dry_run_ready_count",
+            "broader_non_actor_live_authoring_still_blocked_count",
+        )
+        for key in expected_non_actor_admission_dry_run_one_counts:
+            assert non_actor_admission_dry_run_row["actual"][key] == 1, key
+        expected_non_actor_admission_dry_run_zero_counts = (
+            "live_non_actor_authoring_admission_command_dispatched_count",
+            "live_non_actor_authoring_admission_command_executed_count",
+            "user_widget_live_authoring_admitted_count",
+            "user_widget_live_authoring_executed_count",
+            "data_asset_live_authoring_admitted_count",
+            "data_asset_live_authoring_executed_count",
+            "anim_blueprint_live_authoring_admitted_count",
+            "anim_blueprint_live_authoring_executed_count",
+            "function_library_live_authoring_admitted_count",
+            "function_library_live_authoring_executed_count",
+            "blueprint_interface_live_authoring_admitted_count",
+            "blueprint_interface_live_authoring_executed_count",
+            "user_widget_blueprint_create_command_dispatched_count",
+            "user_widget_blueprint_create_command_executed_count",
+            "data_asset_blueprint_create_command_dispatched_count",
+            "data_asset_blueprint_create_command_executed_count",
+            "anim_blueprint_create_command_dispatched_count",
+            "anim_blueprint_create_command_executed_count",
+            "function_library_blueprint_create_command_dispatched_count",
+            "function_library_blueprint_create_command_executed_count",
+            "blueprint_interface_create_command_dispatched_count",
+            "blueprint_interface_create_command_executed_count",
+            "widget_tree_mutation_performed_count",
+            "data_asset_default_mutation_performed_count",
+            "animation_graph_mutation_performed_count",
+            "function_library_graph_mutation_performed_count",
+            "blueprint_interface_function_mutation_performed_count",
+            "non_actor_blueprint_compile_dispatched_count",
+            "non_actor_blueprint_compile_executed_count",
+            "non_actor_blueprint_save_dispatched_count",
+            "non_actor_blueprint_save_executed_count",
+            "non_actor_blueprint_asset_write_performed_count",
+            "non_actor_blueprint_package_dirty_marked_count",
+            "cleanup_allowed_count",
+            "cleanup_executed_count",
+            "delete_asset_allowed_count",
+            "delete_asset_executed_output_count",
+            "rename_asset_allowed_count",
+            "rename_command_dispatched_count",
+            "rename_command_executed_count",
+            "overwrite_allowed_count",
+            "overwrite_executed_count",
+            "production_path_write_allowed_count",
+            "production_path_write_executed_count",
+        )
+        for key in expected_non_actor_admission_dry_run_zero_counts:
+            assert non_actor_admission_dry_run_row["actual"][key] == 0, key
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
