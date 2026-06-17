@@ -73,6 +73,7 @@ The extension deliberately avoids adding a separate C++ command for every TA ope
 - `list_viewport_bookmarks()`
 - `capture_viewport_bookmark_screenshot(filepath, bookmark_index=-1, redraw_count=2)`
 - `open_editor_level(level_path, dry_run=true, allow_dirty_packages=false, load_as_template=false, show_progress=true)`
+- `safe_new_preview_map(map_path, dry_run=true, allow_dirty_packages=false, overwrite_existing=false, allow_non_temp_path=false, required_root="/Game/_MCP_Temp", is_partitioned_world=false)`
 - `set_pcg_debug_enabled(enabled=false, actor_name="", selected_only=false)`
 - `resave_pcg_assets(root_path="/Game")`
 - `get_static_mesh_uv_layout(mesh_path, uv_channel=0, output_path="")`
@@ -97,6 +98,12 @@ returns target existence, current world, dirty package blockers, and whether a
 real load would be attempted. Real loads are blocked by default when dirty
 packages exist, avoiding the previous Python-frame world-reference crash path
 and avoiding silent loss of unsaved editor state.
+
+New temporary preview maps should use `safe_new_preview_map` instead of Python
+`new_blank_map` or `new_map_from_template` calls. The command defaults to
+`dry_run=true`, requires targets under `/Game/_MCP_Temp` unless explicitly
+overridden, blocks dirty-package creation by default, and creates/saves the map
+through the native C++ bridge.
 
 The AI texture tools are BaseColor-first. They do not claim to create full PBR material sets. Normal, Roughness, AO, and Metallic generation should stay as separate TODO/stub work until deliberately implemented.
 

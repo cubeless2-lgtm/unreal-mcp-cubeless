@@ -126,6 +126,41 @@ Safely preflight or open an editor level through the native UnrealMCP bridge. Th
 }
 ```
 
+### safe_new_preview_map
+
+Safely preflight or create a new blank preview map through the native UnrealMCP bridge. The default is `dry_run=true`, and normal use should keep targets under `/Game/_MCP_Temp`.
+
+Use this for MCP-driven preview-map creation instead of calling `EditorLoadingAndSavingUtils.new_blank_map` or related map APIs from generic `execute_python`.
+
+**Parameters:**
+- `map_path` (string, required) - Long package path, object path, or `.umap` filename for the new map
+- `dry_run` (boolean, optional) - Validate only, default `true`
+- `allow_dirty_packages` (boolean, optional) - Allow real creation while dirty packages exist, default `false`
+- `overwrite_existing` (boolean, optional) - Allow overwriting an existing target map, default `false`
+- `allow_non_temp_path` (boolean, optional) - Allow targets outside `required_root`, default `false`
+- `required_root` (string, optional) - Required package root for temporary preview maps, default `/Game/_MCP_Temp`
+- `is_partitioned_world` (boolean, optional) - Forwarded to `GEditor->NewMap`, default `false`
+
+**Returns:**
+- `target_long_package_name`, `target_filename`, `target_exists`
+- `target_package_exists`, `target_file_exists`
+- `required_root`, `target_under_required_root`
+- `current_world_package_name`
+- `can_create`, `blocked_reasons`
+- `dirty_package_count_before`, `dirty_packages_before`
+- `create_attempted`, `created`, `saved`
+
+**Example:**
+```json
+{
+  "command": "safe_new_preview_map",
+  "params": {
+    "map_path": "/Game/_MCP_Temp/CubelessWaterPrototype/Map_CL_WaterPrototype",
+    "dry_run": true
+  }
+}
+```
+
 ### open_niagara_preview_player
 
 Open the level-independent Niagara Preview Player window. The current MVP is a

@@ -486,6 +486,59 @@ def register_editor_tools(mcp: FastMCP):
             return {"success": False, "message": str(e)}
 
     @mcp.tool()
+    def safe_new_preview_map(
+        ctx: Context,
+        map_path: str,
+        dry_run: bool = True,
+        allow_dirty_packages: bool = False,
+        overwrite_existing: bool = False,
+        allow_non_temp_path: bool = False,
+        required_root: str = "/Game/_MCP_Temp",
+        is_partitioned_world: bool = False,
+    ) -> Dict[str, Any]:
+        """
+        Safely preflight or create a new blank preview map through the native bridge.
+
+        Args:
+            map_path: Long package path, object path, or .umap filename for the new map.
+            dry_run: If true, only validate the creation request and report blockers.
+            allow_dirty_packages: If false, block real creation when dirty packages exist.
+            overwrite_existing: If false, block when the target map already exists.
+            allow_non_temp_path: If false, require the target to be under required_root.
+            required_root: Required package root for temporary preview maps.
+            is_partitioned_world: Forwarded to GEditor->NewMap for real creation.
+
+        Returns:
+            Dict with target path, current world, dirty package summary,
+            can_create, blocked_reasons, create_attempted, created, and saved.
+        """
+        from unreal_mcp_server import get_unreal_connection
+
+        try:
+            unreal = get_unreal_connection()
+            if not unreal:
+                logger.error("Failed to connect to Unreal Engine")
+                return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+            response = unreal.send_command(
+                "safe_new_preview_map",
+                {
+                    "map_path": map_path,
+                    "dry_run": dry_run,
+                    "allow_dirty_packages": allow_dirty_packages,
+                    "overwrite_existing": overwrite_existing,
+                    "allow_non_temp_path": allow_non_temp_path,
+                    "required_root": required_root,
+                    "is_partitioned_world": is_partitioned_world,
+                },
+            )
+            return response or {}
+
+        except Exception as e:
+            logger.error(f"Error creating preview map: {e}")
+            return {"success": False, "message": str(e)}
+
+    @mcp.tool()
     def spawn_blueprint_actor(
         ctx: Context,
         blueprint_name: str,
