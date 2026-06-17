@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_217_224_v132"
+        assert report["verdict"]["release_boundary_version"] == "section_225_232_v133"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -711,6 +711,60 @@ def main() -> int:
             ]
             == "passed"
         )
+        assert (
+            report["verdict"][
+                "section_225_232_durable_executor_authoring_live_save_stability_batch_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_225_durable_authoring_live_compile_api_fixed_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_226_durable_authoring_live_legacy_compile_helper_mismatch_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_227_durable_authoring_live_partial_save_recovery_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_228_durable_authoring_live_idempotent_resave_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_229_durable_authoring_live_save_readback_schema_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_230_durable_authoring_live_dirty_package_stability_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_231_durable_authoring_live_production_path_boundary_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_232_durable_authoring_cleanup_delete_rename_gate_status"
+            ]
+            == "passed"
+        )
         assert report["verdict"]["durable_safety_boundary_unlock_ready"] is True
         assert report["verdict"]["durable_safety_boundary_unlocked"] is True
         assert report["verdict"]["final_durable_release_ready"] is True
@@ -747,6 +801,11 @@ def main() -> int:
         )
         assert report["verdict"]["actual_save_final_checkpoint_satisfied"] is True
         assert report["verdict"]["live_actual_save_execution_ready"] is True
+        assert report["verdict"]["live_save_stability_ready"] is True
+        assert (
+            report["verdict"]["fixed_compile_api"]
+            == "BlueprintEditorLibrary.compile_blueprint"
+        )
         assert (
             report["verdict"]["saved_temp_blueprint_asset_path"]
             == "/Game/_MCP_Temp/DurableSaveGate/BP_DurableSaveGatePrep"
@@ -761,12 +820,16 @@ def main() -> int:
         assert report["verdict"]["live_durable_authoring_allowed"] is True
         assert report["verdict"]["live_command_dispatched"] is True
         assert report["verdict"]["live_command_executed"] is True
+        assert report["verdict"]["cleanup_allowed"] is False
+        assert report["verdict"]["cleanup_executed"] is False
         assert report["verdict"]["save_delete_rename_allowed"] is False
         assert report["verdict"]["delete_asset_allowed"] is False
         assert report["verdict"]["rename_asset_allowed"] is False
+        assert report["verdict"]["production_path_write_allowed"] is False
+        assert report["verdict"]["production_path_write_executed"] is False
         assert (
             report["verdict"]["durable_authoring_release_status"]
-            == "section_224_live_actual_save_execution_readback_ready"
+            == "section_232_live_save_stability_ready_cleanup_delete_rename_closed"
         )
         assert find_row(report, "job_contract_default_request_set")["status"] == "passed"
         assert find_row(report, "manifest_executor_policy")["status"] == "passed"
@@ -8532,6 +8595,69 @@ def main() -> int:
         )
         for key in expected_zero_counts:
             assert live_actual_save_execution_row["actual"][key] == 0, key
+        live_save_stability_row = find_row(
+            report,
+            "durable_executor_authoring_live_save_stability_batch",
+        )
+        assert live_save_stability_row["status"] == "passed"
+        expected_stability_one_counts = (
+            "durable_requested_executor_authoring_live_save_stability_batch_count",
+            "section_217_224_summary_schema_matches_count",
+            "section_217_224_summary_passed_count",
+            "section_217_224_actual_save_ready_count",
+            "section_217_224_delete_rename_closed_count",
+            "stability_result_schema_matches_count",
+            "target_path_matches_count",
+            "target_directory_matches_count",
+            "compile_api_fixed_count",
+            "legacy_compile_helper_mismatch_documented_count",
+            "partial_save_recovery_verified_count",
+            "idempotent_resave_verified_count",
+            "save_readback_schema_strengthened_count",
+            "dirty_package_stability_verified_count",
+            "production_path_untouched_count",
+            "delete_rename_cleanup_still_gated_count",
+            "stability_has_no_error_count",
+            "durable_authoring_enabled_count",
+            "durable_executor_opened_count",
+            "durable_authoring_allowed_count",
+            "save_gate_open_allowed_count",
+            "save_gate_opened_count",
+            "save_command_admitted_count",
+            "save_command_dispatched_count",
+            "save_command_executed_count",
+            "save_true_allowed_count",
+            "save_asset_allowed_count",
+            "compile_save_allowed_count",
+            "asset_write_performed_count",
+            "package_dirty_marked_count",
+            "live_durable_authoring_allowed_count",
+            "live_command_dispatched_count",
+            "live_command_executed_count",
+            "final_durable_release_ready_count",
+            "section_225_live_compile_api_fixed_count",
+            "section_226_live_legacy_compile_helper_mismatch_documented_count",
+            "section_227_live_partial_save_recovery_verified_count",
+            "section_228_live_idempotent_resave_verified_count",
+            "section_229_live_save_readback_schema_strengthened_count",
+            "section_230_live_dirty_package_stability_verified_count",
+            "section_231_live_production_path_untouched_count",
+            "section_232_live_delete_rename_cleanup_still_gated_count",
+            "live_save_stability_ready_count",
+        )
+        for key in expected_stability_one_counts:
+            assert live_save_stability_row["actual"][key] == 1, key
+        expected_stability_zero_counts = (
+            "cleanup_allowed_count",
+            "cleanup_executed_count",
+            "save_delete_rename_allowed_count",
+            "delete_asset_allowed_count",
+            "rename_asset_allowed_count",
+            "production_path_write_allowed_count",
+            "production_path_write_executed_count",
+        )
+        for key in expected_stability_zero_counts:
+            assert live_save_stability_row["actual"][key] == 0, key
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
