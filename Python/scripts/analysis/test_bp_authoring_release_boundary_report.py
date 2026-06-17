@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_225_232_v133"
+        assert report["verdict"]["release_boundary_version"] == "section_233_240_v134"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -765,6 +765,60 @@ def main() -> int:
             ]
             == "passed"
         )
+        assert (
+            report["verdict"][
+                "section_233_240_durable_executor_authoring_cleanup_delete_dry_run_batch_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_233_durable_authoring_cleanup_target_scope_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_234_durable_authoring_saved_asset_pre_delete_readback_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_235_durable_authoring_cleanup_delete_dry_run_plan_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_236_durable_authoring_delete_target_isolation_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_237_durable_authoring_no_delete_dirty_package_boundary_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_238_durable_authoring_delete_dispatch_dry_run_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_239_durable_authoring_delete_result_readback_dry_run_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_240_durable_authoring_actual_delete_final_checkpoint_status"
+            ]
+            == "passed"
+        )
         assert report["verdict"]["durable_safety_boundary_unlock_ready"] is True
         assert report["verdict"]["durable_safety_boundary_unlocked"] is True
         assert report["verdict"]["final_durable_release_ready"] is True
@@ -802,6 +856,14 @@ def main() -> int:
         assert report["verdict"]["actual_save_final_checkpoint_satisfied"] is True
         assert report["verdict"]["live_actual_save_execution_ready"] is True
         assert report["verdict"]["live_save_stability_ready"] is True
+        assert report["verdict"]["cleanup_delete_dry_run_allowed"] is True
+        assert report["verdict"]["cleanup_delete_dry_run_ready"] is True
+        assert (
+            report["verdict"][
+                "actual_delete_execution_requires_final_user_checkpoint"
+            ]
+            is True
+        )
         assert (
             report["verdict"]["fixed_compile_api"]
             == "BlueprintEditorLibrary.compile_blueprint"
@@ -829,7 +891,7 @@ def main() -> int:
         assert report["verdict"]["production_path_write_executed"] is False
         assert (
             report["verdict"]["durable_authoring_release_status"]
-            == "section_232_live_save_stability_ready_cleanup_delete_rename_closed"
+            == "section_240_cleanup_delete_dry_run_ready_actual_delete_closed"
         )
         assert find_row(report, "job_contract_default_request_set")["status"] == "passed"
         assert find_row(report, "manifest_executor_policy")["status"] == "passed"
@@ -8658,6 +8720,56 @@ def main() -> int:
         )
         for key in expected_stability_zero_counts:
             assert live_save_stability_row["actual"][key] == 0, key
+        cleanup_delete_dry_run_row = find_row(
+            report,
+            "durable_executor_authoring_cleanup_delete_dry_run_batch",
+        )
+        assert cleanup_delete_dry_run_row["status"] == "passed"
+        expected_cleanup_one_counts = (
+            "durable_requested_executor_authoring_cleanup_delete_dry_run_batch_count",
+            "section_225_232_summary_schema_matches_count",
+            "section_225_232_summary_passed_count",
+            "section_225_232_save_stability_ready_count",
+            "section_225_232_cleanup_delete_closed_count",
+            "result_schema_matches_count",
+            "cleanup_target_scope_confirmed_count",
+            "saved_asset_pre_delete_readback_confirmed_count",
+            "cleanup_delete_dry_run_plan_accepted_count",
+            "delete_target_isolation_proved_count",
+            "dirty_package_no_delete_boundary_clean_count",
+            "delete_command_dispatch_dry_run_ready_count",
+            "delete_result_readback_dry_run_ready_count",
+            "dry_run_blocks_actual_delete_outputs_count",
+            "result_has_no_error_count",
+            "final_durable_release_ready_count",
+            "live_save_stability_ready_count",
+            "cleanup_delete_dry_run_allowed_count",
+            "cleanup_delete_dry_run_ready_count",
+            "section_233_cleanup_target_scope_confirmed_count",
+            "section_234_saved_asset_pre_delete_readback_confirmed_count",
+            "section_235_cleanup_delete_dry_run_plan_accepted_count",
+            "section_236_delete_target_isolation_proved_count",
+            "section_237_dirty_package_no_delete_boundary_clean_count",
+            "section_238_delete_command_dispatch_dry_run_ready_count",
+            "section_239_delete_result_readback_dry_run_ready_count",
+            "section_240_actual_delete_requires_final_user_checkpoint_count",
+            "actual_delete_execution_requires_final_user_checkpoint_count",
+        )
+        for key in expected_cleanup_one_counts:
+            assert cleanup_delete_dry_run_row["actual"][key] == 1, key
+        expected_cleanup_zero_counts = (
+            "cleanup_allowed_count",
+            "cleanup_executed_count",
+            "delete_command_dispatched_count",
+            "delete_command_executed_count",
+            "save_delete_rename_allowed_count",
+            "delete_asset_allowed_count",
+            "rename_asset_allowed_count",
+            "production_path_write_allowed_count",
+            "production_path_write_executed_count",
+        )
+        for key in expected_cleanup_zero_counts:
+            assert cleanup_delete_dry_run_row["actual"][key] == 0, key
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
