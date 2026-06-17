@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_489_496_v166"
+        assert report["verdict"]["release_boundary_version"] == "section_497_504_v167"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -2547,6 +2547,60 @@ def main() -> int:
             ]
             == "passed"
         )
+        assert (
+            report["verdict"][
+                "section_497_504_durable_executor_authoring_correct_workspace_bridge_takeover_execution_dry_run_envelope_batch_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_497_durable_authoring_correct_workspace_bridge_takeover_execution_dry_run_checkpoint_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_498_durable_authoring_takeover_execution_scope_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_499_durable_authoring_takeover_execution_authorization_still_required_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_500_durable_authoring_wrong_workspace_release_command_blocked_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_501_durable_authoring_correct_workspace_editor_launch_command_blocked_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_502_durable_authoring_correct_workspace_bridge_verification_command_blocked_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_503_durable_authoring_takeover_execution_dry_run_no_write_boundary_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_504_durable_authoring_takeover_execution_dry_run_release_status"
+            ]
+            == "passed"
+        )
         assert report["verdict"]["durable_safety_boundary_unlock_ready"] is True
         assert report["verdict"]["durable_safety_boundary_unlocked"] is True
         assert report["verdict"]["final_durable_release_ready"] is True
@@ -2968,7 +3022,7 @@ def main() -> int:
         assert report["verdict"]["production_path_write_executed"] is False
         assert (
             report["verdict"]["durable_authoring_release_status"]
-            == "section_496_correct_workspace_bridge_takeover_handoff_ready"
+            == "section_504_correct_workspace_bridge_takeover_execution_dry_run_envelope_ready"
         )
         assert find_row(report, "job_contract_default_request_set")["status"] == "passed"
         assert find_row(report, "manifest_executor_policy")["status"] == "passed"
@@ -12913,6 +12967,84 @@ def main() -> int:
         )
         for key in expected_bridge_takeover_handoff_zero_counts:
             assert bridge_takeover_handoff_row["actual"][key] == 0, key
+        bridge_takeover_envelope_row = find_row(
+            report,
+            "durable_executor_authoring_correct_workspace_bridge_takeover_execution_dry_run_envelope_batch",
+        )
+        assert bridge_takeover_envelope_row["status"] == "passed"
+        expected_bridge_takeover_envelope_one_counts = (
+            "durable_requested_executor_authoring_correct_workspace_bridge_takeover_execution_dry_run_envelope_batch_count",
+            "section_489_496_summary_schema_matches_count",
+            "section_489_496_summary_passed_count",
+            "section_489_496_correct_workspace_bridge_takeover_handoff_ready_count",
+            "section_489_496_outputs_closed_count",
+            "result_schema_matches_count",
+            "correct_workspace_bridge_takeover_execution_dry_run_checkpoint_satisfied_count",
+            "takeover_execution_scope_recorded_count",
+            "takeover_execution_authorization_still_required_count",
+            "wrong_workspace_release_command_blocked_count",
+            "correct_workspace_editor_launch_command_blocked_count",
+            "correct_workspace_bridge_verification_command_blocked_count",
+            "live_durable_dispatch_after_takeover_execution_blocked_count",
+            "takeover_execution_dry_run_no_write_boundary_verified_count",
+            "takeover_execution_compile_save_write_outputs_blocked_count",
+            "result_has_no_error_count",
+            "final_durable_release_ready_count",
+            "section_497_correct_workspace_bridge_takeover_execution_dry_run_checkpoint_satisfied_count",
+            "section_498_takeover_execution_scope_recorded_count",
+            "section_499_takeover_execution_authorization_still_required_count",
+            "section_500_wrong_workspace_release_command_blocked_count",
+            "section_501_correct_workspace_editor_launch_command_blocked_count",
+            "section_502_correct_workspace_bridge_verification_command_blocked_count",
+            "section_503_takeover_execution_dry_run_no_write_boundary_verified_count",
+            "section_504_takeover_execution_dry_run_release_ready_count",
+            "correct_workspace_bridge_takeover_execution_dry_run_envelope_ready_count",
+            "correct_workspace_bridge_takeover_execution_still_blocked_count",
+        )
+        for key in expected_bridge_takeover_envelope_one_counts:
+            assert bridge_takeover_envelope_row["actual"][key] == 1, key
+        expected_bridge_takeover_envelope_zero_counts = (
+            "process_termination_command_dispatched_count",
+            "wrong_workspace_editor_stopped_count",
+            "bridge_port_released_count",
+            "correct_workspace_editor_launch_command_dispatched_count",
+            "correct_workspace_editor_started_count",
+            "mcp_server_start_command_dispatched_count",
+            "mcp_server_started_count",
+            "correct_workspace_bridge_start_command_dispatched_count",
+            "correct_workspace_bridge_started_count",
+            "correct_workspace_bridge_verify_command_dispatched_count",
+            "correct_workspace_bridge_verified_count",
+            "read_only_probe_command_dispatched_count",
+            "read_only_probe_executed_count",
+            "live_command_dispatched_count",
+            "live_command_executed_count",
+            "widget_tree_mutation_command_dispatched_count",
+            "widget_tree_mutation_command_executed_count",
+            "non_actor_actual_temp_checkpoint_command_dispatched_count",
+            "non_actor_actual_temp_checkpoint_command_executed_count",
+            "data_asset_actual_temp_create_command_dispatched_count",
+            "data_asset_actual_temp_create_command_executed_count",
+            "bfl_actual_temp_create_command_dispatched_count",
+            "bfl_actual_temp_create_command_executed_count",
+            "compile_executed_count",
+            "save_executed_count",
+            "asset_write_performed_count",
+            "package_dirty_marked_count",
+            "cleanup_allowed_count",
+            "cleanup_executed_count",
+            "delete_asset_allowed_count",
+            "delete_asset_executed_output_count",
+            "rename_asset_allowed_count",
+            "rename_command_dispatched_count",
+            "rename_command_executed_count",
+            "overwrite_allowed_count",
+            "overwrite_executed_count",
+            "production_path_write_allowed_count",
+            "production_path_write_executed_count",
+        )
+        for key in expected_bridge_takeover_envelope_zero_counts:
+            assert bridge_takeover_envelope_row["actual"][key] == 0, key
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
