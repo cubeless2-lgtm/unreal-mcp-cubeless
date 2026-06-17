@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_281_288_v140"
+        assert report["verdict"]["release_boundary_version"] == "section_289_296_v141"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -1143,6 +1143,60 @@ def main() -> int:
             ]
             == "passed"
         )
+        assert (
+            report["verdict"][
+                "section_289_296_durable_executor_authoring_cleanup_delete_actual_execution_batch_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_289_durable_authoring_cleanup_delete_actual_checkpoint_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_290_durable_authoring_delete_target_scope_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_291_durable_authoring_delete_preflight_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_292_durable_authoring_delete_asset_execution_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_293_durable_authoring_delete_readback_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_294_durable_authoring_external_dirty_baseline_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_295_durable_authoring_non_delete_destructive_outputs_closed_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_296_durable_authoring_cleanup_delete_actual_release_status"
+            ]
+            == "passed"
+        )
         assert report["verdict"]["durable_safety_boundary_unlock_ready"] is True
         assert report["verdict"]["durable_safety_boundary_unlocked"] is True
         assert report["verdict"]["final_durable_release_ready"] is True
@@ -1270,6 +1324,14 @@ def main() -> int:
             is True
         )
         assert report["verdict"]["auto_graph_repair_execution_blocked"] is True
+        assert report["verdict"]["cleanup_delete_actual_execution_ready"] is True
+        assert report["verdict"]["cleanup_delete_actual_target_deleted"] is True
+        assert (
+            report["verdict"][
+                "cleanup_delete_actual_external_dirty_preserved"
+            ]
+            is True
+        )
         assert report["verdict"]["graph_repair_command_dispatched"] is False
         assert report["verdict"]["graph_repair_command_executed"] is False
         assert report["verdict"]["graph_layout_mutation_performed"] is False
@@ -1296,7 +1358,8 @@ def main() -> int:
         assert report["verdict"]["cleanup_allowed"] is False
         assert report["verdict"]["cleanup_executed"] is False
         assert report["verdict"]["save_delete_rename_allowed"] is False
-        assert report["verdict"]["delete_asset_allowed"] is False
+        assert report["verdict"]["delete_asset_allowed"] is True
+        assert report["verdict"]["delete_asset_executed"] is True
         assert report["verdict"]["rename_asset_allowed"] is False
         assert report["verdict"]["rename_command_dispatched"] is False
         assert report["verdict"]["rename_command_executed"] is False
@@ -1327,7 +1390,7 @@ def main() -> int:
         assert report["verdict"]["production_path_write_executed"] is False
         assert (
             report["verdict"]["durable_authoring_release_status"]
-            == "section_288_function_diagnostics_graph_layout_repair_suggestions_ready"
+            == "section_296_cleanup_delete_actual_execution_readback_ready"
         )
         assert find_row(report, "job_contract_default_request_set")["status"] == "passed"
         assert find_row(report, "manifest_executor_policy")["status"] == "passed"
@@ -9572,6 +9635,62 @@ def main() -> int:
         )
         for key in expected_diagnostics_zero_counts:
             assert diagnostics_row["actual"][key] == 0, key
+        cleanup_delete_actual_row = find_row(
+            report,
+            "durable_executor_authoring_cleanup_delete_actual_execution_batch",
+        )
+        assert cleanup_delete_actual_row["status"] == "passed"
+        expected_cleanup_delete_actual_one_counts = (
+            "durable_requested_executor_authoring_cleanup_delete_actual_execution_batch_count",
+            "section_281_288_summary_schema_matches_count",
+            "section_281_288_summary_passed_count",
+            "section_281_288_function_diagnostics_graph_layout_ready_count",
+            "section_281_288_outputs_closed_count",
+            "result_schema_matches_count",
+            "actual_checkpoint_satisfied_count",
+            "delete_target_scope_isolated_count",
+            "delete_preflight_verified_count",
+            "delete_asset_executed_count",
+            "delete_readback_verified_count",
+            "external_dirty_baseline_preserved_count",
+            "non_delete_destructive_outputs_closed_count",
+            "result_has_no_error_count",
+            "final_durable_release_ready_count",
+            "delete_asset_allowed_count",
+            "delete_asset_executed_output_count",
+            "section_289_cleanup_delete_actual_checkpoint_satisfied_count",
+            "section_290_delete_target_scope_isolated_count",
+            "section_291_delete_preflight_verified_count",
+            "section_292_delete_asset_executed_count",
+            "section_293_delete_readback_verified_count",
+            "section_294_external_dirty_baseline_preserved_count",
+            "section_295_non_delete_destructive_outputs_closed_count",
+            "section_296_cleanup_delete_actual_release_ready_count",
+            "cleanup_delete_actual_execution_ready_count",
+            "cleanup_delete_actual_target_deleted_count",
+            "cleanup_delete_actual_external_dirty_preserved_count",
+        )
+        for key in expected_cleanup_delete_actual_one_counts:
+            assert cleanup_delete_actual_row["actual"][key] == 1, key
+        expected_cleanup_delete_actual_zero_counts = (
+            "cleanup_allowed_count",
+            "cleanup_executed_count",
+            "rename_asset_allowed_count",
+            "rename_command_dispatched_count",
+            "rename_command_executed_count",
+            "overwrite_allowed_count",
+            "overwrite_executed_count",
+            "actor_bp_authoring_compile_dispatched_count",
+            "actor_bp_authoring_compile_executed_count",
+            "actor_bp_authoring_save_dispatched_count",
+            "actor_bp_authoring_save_executed_count",
+            "actor_bp_authoring_asset_write_performed_count",
+            "actor_bp_authoring_package_dirty_marked_count",
+            "production_path_write_allowed_count",
+            "production_path_write_executed_count",
+        )
+        for key in expected_cleanup_delete_actual_zero_counts:
+            assert cleanup_delete_actual_row["actual"][key] == 0, key
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
