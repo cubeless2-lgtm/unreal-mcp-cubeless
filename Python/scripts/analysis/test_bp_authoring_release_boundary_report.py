@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_425_432_v158"
+        assert report["verdict"]["release_boundary_version"] == "section_433_440_v159"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -2115,6 +2115,60 @@ def main() -> int:
             ]
             == "passed"
         )
+        assert (
+            report["verdict"][
+                "section_433_440_durable_executor_authoring_user_widget_correct_workspace_reload_preflight_batch_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_433_durable_authoring_user_widget_correct_workspace_reload_checkpoint_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_434_durable_authoring_hardened_unreal_mcp_dll_on_disk_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_435_durable_authoring_running_editor_workspace_mismatch_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_436_durable_authoring_running_editor_unreal_mcp_module_mismatch_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_437_durable_authoring_correct_workspace_live_bridge_blocked_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_438_durable_authoring_correct_workspace_editor_restart_required_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_439_durable_authoring_user_widget_live_mutation_command_no_dispatch_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_440_durable_authoring_user_widget_correct_workspace_reload_preflight_release_status"
+            ]
+            == "passed"
+        )
         assert report["verdict"]["durable_safety_boundary_unlock_ready"] is True
         assert report["verdict"]["durable_safety_boundary_unlocked"] is True
         assert report["verdict"]["final_durable_release_ready"] is True
@@ -2536,7 +2590,7 @@ def main() -> int:
         assert report["verdict"]["production_path_write_executed"] is False
         assert (
             report["verdict"]["durable_authoring_release_status"]
-            == "section_432_user_widget_widget_tree_umg_cpp_route_hardening_ready"
+            == "section_440_user_widget_correct_workspace_reload_preflight_ready"
         )
         assert find_row(report, "job_contract_default_request_set")["status"] == "passed"
         assert find_row(report, "manifest_executor_policy")["status"] == "passed"
@@ -11953,6 +12007,69 @@ def main() -> int:
         )
         for key in expected_user_widget_hardening_zero_counts:
             assert user_widget_hardening_row["actual"][key] == 0, key
+        correct_workspace_reload_row = find_row(
+            report,
+            "durable_executor_authoring_user_widget_correct_workspace_reload_preflight_batch",
+        )
+        assert correct_workspace_reload_row["status"] == "passed"
+        expected_correct_workspace_reload_one_counts = (
+            "durable_requested_executor_authoring_user_widget_correct_workspace_reload_preflight_batch_count",
+            "section_425_432_summary_schema_matches_count",
+            "section_425_432_summary_passed_count",
+            "section_425_432_user_widget_umg_cpp_route_hardening_ready_count",
+            "section_425_432_outputs_closed_count",
+            "result_schema_matches_count",
+            "user_widget_correct_workspace_reload_checkpoint_satisfied_count",
+            "hardened_unreal_mcp_dll_on_disk_verified_count",
+            "running_editor_workspace_mismatch_detected_count",
+            "running_editor_unreal_mcp_module_mismatch_detected_count",
+            "correct_workspace_live_bridge_blocked_count",
+            "correct_workspace_editor_restart_required_recorded_count",
+            "user_widget_live_mutation_command_no_dispatch_verified_count",
+            "result_has_no_error_count",
+            "final_durable_release_ready_count",
+            "section_433_user_widget_correct_workspace_reload_checkpoint_satisfied_count",
+            "section_434_hardened_unreal_mcp_dll_on_disk_verified_count",
+            "section_435_running_editor_workspace_mismatch_detected_count",
+            "section_436_running_editor_unreal_mcp_module_mismatch_detected_count",
+            "section_437_correct_workspace_live_bridge_blocked_count",
+            "section_438_correct_workspace_editor_restart_required_recorded_count",
+            "section_439_user_widget_live_mutation_command_no_dispatch_verified_count",
+            "section_440_user_widget_correct_workspace_reload_preflight_release_ready_count",
+            "user_widget_correct_workspace_reload_preflight_ready_count",
+            "correct_workspace_editor_reload_still_required_count",
+        )
+        for key in expected_correct_workspace_reload_one_counts:
+            assert correct_workspace_reload_row["actual"][key] == 1, key
+        expected_correct_workspace_reload_zero_counts = (
+            "live_command_dispatched_count",
+            "live_command_executed_count",
+            "widget_tree_mutation_command_dispatched_count",
+            "widget_tree_mutation_command_executed_count",
+            "widget_tree_mutation_performed_count",
+            "root_widget_created_count",
+            "child_widget_added_count",
+            "widget_slot_mutation_performed_count",
+            "widget_binding_mutation_performed_count",
+            "event_graph_mutation_performed_count",
+            "compile_executed_count",
+            "save_executed_count",
+            "asset_write_performed_count",
+            "package_dirty_marked_count",
+            "delete_asset_allowed_count",
+            "delete_asset_executed_output_count",
+            "rename_asset_allowed_count",
+            "rename_command_dispatched_count",
+            "rename_command_executed_count",
+            "overwrite_allowed_count",
+            "overwrite_executed_count",
+            "cleanup_allowed_count",
+            "cleanup_executed_count",
+            "production_path_write_allowed_count",
+            "production_path_write_executed_count",
+        )
+        for key in expected_correct_workspace_reload_zero_counts:
+            assert correct_workspace_reload_row["actual"][key] == 0, key
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
