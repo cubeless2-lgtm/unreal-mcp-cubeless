@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_305_312_v143"
+        assert report["verdict"]["release_boundary_version"] == "section_313_320_v144"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -1305,6 +1305,60 @@ def main() -> int:
             ]
             == "passed"
         )
+        assert (
+            report["verdict"][
+                "section_313_320_durable_executor_authoring_post_recreation_actor_bp_reauthoring_actual_batch_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_313_durable_authoring_reauthoring_checkpoint_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_314_durable_authoring_recreated_actor_bp_target_ready_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_315_durable_authoring_variable_reauthoring_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_316_durable_authoring_component_reauthoring_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_317_durable_authoring_default_tag_reauthoring_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_318_durable_authoring_reauthoring_compile_save_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_319_durable_authoring_reauthoring_readback_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_320_durable_authoring_reauthoring_dirty_baseline_status"
+            ]
+            == "passed"
+        )
         assert report["verdict"]["durable_safety_boundary_unlock_ready"] is True
         assert report["verdict"]["durable_safety_boundary_unlocked"] is True
         assert report["verdict"]["final_durable_release_ready"] is True
@@ -1474,17 +1528,31 @@ def main() -> int:
         )
         assert (
             report["verdict"]["post_delete_recreation_variable_authoring_open"]
-            is False
+            is True
         )
         assert (
             report["verdict"][
                 "post_delete_recreation_component_authoring_open"
             ]
-            is False
+            is True
         )
         assert (
             report["verdict"]["post_delete_recreation_default_authoring_open"]
-            is False
+            is True
+        )
+        assert (
+            report["verdict"]["post_recreation_actor_bp_reauthoring_ready"]
+            is True
+        )
+        assert (
+            report["verdict"]["post_recreation_actor_bp_reauthoring_saved"]
+            is True
+        )
+        assert (
+            report["verdict"][
+                "post_recreation_actor_bp_reauthoring_readback_verified"
+            ]
+            is True
         )
         assert report["verdict"]["graph_repair_command_dispatched"] is False
         assert report["verdict"]["graph_repair_command_executed"] is False
@@ -1544,7 +1612,7 @@ def main() -> int:
         assert report["verdict"]["production_path_write_executed"] is False
         assert (
             report["verdict"]["durable_authoring_release_status"]
-            == "section_312_post_delete_recreation_actual_execution_ready"
+            == "section_320_post_recreation_actor_bp_reauthoring_ready"
         )
         assert find_row(report, "job_contract_default_request_set")["status"] == "passed"
         assert find_row(report, "manifest_executor_policy")["status"] == "passed"
@@ -9986,6 +10054,81 @@ def main() -> int:
         )
         for key in expected_recreation_actual_zero_counts:
             assert post_delete_recreation_actual_row["actual"][key] == 0, key
+        post_recreation_reauthoring_row = find_row(
+            report,
+            "durable_executor_authoring_post_recreation_actor_bp_reauthoring_actual_batch",
+        )
+        assert post_recreation_reauthoring_row["status"] == "passed"
+        expected_reauthoring_one_counts = (
+            "durable_requested_executor_authoring_post_recreation_actor_bp_reauthoring_actual_batch_count",
+            "section_305_312_summary_schema_matches_count",
+            "section_305_312_summary_passed_count",
+            "section_305_312_post_delete_recreation_actual_ready_count",
+            "section_305_312_authoring_outputs_closed_count",
+            "result_schema_matches_count",
+            "reauthoring_checkpoint_satisfied_count",
+            "recreated_actor_bp_target_ready_count",
+            "variable_reauthoring_executed_count",
+            "component_reauthoring_executed_count",
+            "default_tag_reauthoring_executed_count",
+            "compile_save_executed_count",
+            "reauthoring_readback_verified_count",
+            "dirty_baseline_preserved_count",
+            "destructive_outputs_closed_count",
+            "result_has_no_error_count",
+            "final_durable_release_ready_count",
+            "variable_add_command_dispatched_count",
+            "variable_add_command_executed_count",
+            "component_add_command_dispatched_count",
+            "component_add_command_executed_count",
+            "default_write_command_dispatched_count",
+            "default_write_command_executed_count",
+            "actor_bp_authoring_command_dispatched_count",
+            "actor_bp_authoring_command_executed_count",
+            "actor_bp_authoring_compile_dispatched_count",
+            "actor_bp_authoring_compile_executed_count",
+            "actor_bp_authoring_save_dispatched_count",
+            "actor_bp_authoring_save_executed_count",
+            "actor_bp_authoring_asset_write_performed_count",
+            "actor_bp_authoring_package_dirty_marked_count",
+            "actor_bp_authoring_external_dirty_preserved_count",
+            "section_313_reauthoring_checkpoint_satisfied_count",
+            "section_314_recreated_actor_bp_target_ready_count",
+            "section_315_variable_reauthoring_executed_count",
+            "section_316_component_reauthoring_executed_count",
+            "section_317_default_tag_reauthoring_executed_count",
+            "section_318_reauthoring_compile_save_executed_count",
+            "section_319_reauthoring_readback_verified_count",
+            "section_320_reauthoring_dirty_baseline_preserved_count",
+            "post_recreation_actor_bp_reauthoring_ready_count",
+            "post_recreation_actor_bp_reauthoring_saved_count",
+            "post_recreation_actor_bp_reauthoring_readback_verified_count",
+        )
+        for key in expected_reauthoring_one_counts:
+            assert post_recreation_reauthoring_row["actual"][key] == 1, key
+        expected_reauthoring_zero_counts = (
+            "actor_bp_authoring_target_dirty_after_count",
+            "diagnostics_command_dispatched_count",
+            "diagnostics_command_executed_count",
+            "graph_repair_command_dispatched_count",
+            "graph_repair_command_executed_count",
+            "graph_layout_mutation_performed_count",
+            "node_position_write_performed_count",
+            "pin_connection_write_performed_count",
+            "cleanup_allowed_count",
+            "cleanup_executed_count",
+            "delete_asset_allowed_count",
+            "delete_asset_executed_output_count",
+            "rename_asset_allowed_count",
+            "rename_command_dispatched_count",
+            "rename_command_executed_count",
+            "overwrite_allowed_count",
+            "overwrite_executed_count",
+            "production_path_write_allowed_count",
+            "production_path_write_executed_count",
+        )
+        for key in expected_reauthoring_zero_counts:
+            assert post_recreation_reauthoring_row["actual"][key] == 0, key
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
