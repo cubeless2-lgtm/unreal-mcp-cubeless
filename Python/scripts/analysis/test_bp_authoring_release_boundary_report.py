@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_457_464_v162"
+        assert report["verdict"]["release_boundary_version"] == "section_465_472_v163"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -2331,6 +2331,60 @@ def main() -> int:
             ]
             == "passed"
         )
+        assert (
+            report["verdict"][
+                "section_465_472_durable_executor_authoring_blueprint_function_library_readonly_preflight_batch_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_465_durable_authoring_blueprint_function_library_readonly_checkpoint_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_466_durable_authoring_correct_project_blueprint_function_library_readonly_probe_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_467_durable_authoring_blueprint_function_library_factory_parent_prerequisites_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_468_durable_authoring_blueprint_function_library_graph_prerequisites_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_469_durable_authoring_blueprint_function_library_creation_graph_outputs_blocked_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_470_durable_authoring_blueprint_function_library_compile_save_write_outputs_blocked_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_471_durable_authoring_blueprint_function_library_readonly_no_write_boundary_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_472_durable_authoring_blueprint_function_library_readonly_preflight_release_status"
+            ]
+            == "passed"
+        )
         assert report["verdict"]["durable_safety_boundary_unlock_ready"] is True
         assert report["verdict"]["durable_safety_boundary_unlocked"] is True
         assert report["verdict"]["final_durable_release_ready"] is True
@@ -2752,7 +2806,7 @@ def main() -> int:
         assert report["verdict"]["production_path_write_executed"] is False
         assert (
             report["verdict"]["durable_authoring_release_status"]
-            == "section_464_data_asset_default_authoring_dry_run_admission_ready"
+            == "section_472_blueprint_function_library_readonly_preflight_ready"
         )
         assert find_row(report, "job_contract_default_request_set")["status"] == "passed"
         assert find_row(report, "manifest_executor_policy")["status"] == "passed"
@@ -12423,6 +12477,67 @@ def main() -> int:
         )
         for key in expected_data_asset_dry_run_zero_counts:
             assert data_asset_dry_run_row["actual"][key] == 0, key
+        bfl_row = find_row(
+            report,
+            "durable_executor_authoring_blueprint_function_library_readonly_preflight_batch",
+        )
+        assert bfl_row["status"] == "passed"
+        expected_bfl_one_counts = (
+            "durable_requested_executor_authoring_blueprint_function_library_readonly_preflight_batch_count",
+            "section_385_392_summary_schema_matches_count",
+            "section_385_392_summary_passed_count",
+            "section_385_392_non_actor_admission_dry_run_ready_count",
+            "section_385_392_outputs_closed_count",
+            "result_schema_matches_count",
+            "blueprint_function_library_readonly_checkpoint_satisfied_count",
+            "correct_project_blueprint_function_library_readonly_probe_recorded_count",
+            "blueprint_function_library_factory_parent_prerequisites_verified_count",
+            "blueprint_function_library_graph_prerequisites_verified_count",
+            "blueprint_function_library_creation_graph_outputs_blocked_count",
+            "blueprint_function_library_compile_save_write_outputs_blocked_count",
+            "blueprint_function_library_readonly_no_write_boundary_verified_count",
+            "result_has_no_error_count",
+            "final_durable_release_ready_count",
+            "section_465_blueprint_function_library_readonly_checkpoint_satisfied_count",
+            "section_466_correct_project_blueprint_function_library_readonly_probe_recorded_count",
+            "section_467_blueprint_function_library_factory_parent_prerequisites_verified_count",
+            "section_468_blueprint_function_library_graph_prerequisites_verified_count",
+            "section_469_blueprint_function_library_creation_graph_outputs_blocked_count",
+            "section_470_blueprint_function_library_compile_save_write_outputs_blocked_count",
+            "section_471_blueprint_function_library_readonly_no_write_boundary_verified_count",
+            "section_472_blueprint_function_library_readonly_preflight_release_ready_count",
+            "blueprint_function_library_readonly_preflight_ready_count",
+            "blueprint_function_library_actual_authoring_still_blocked_count",
+        )
+        for key in expected_bfl_one_counts:
+            assert bfl_row["actual"][key] == 1, key
+        expected_bfl_zero_counts = (
+            "function_library_blueprint_create_command_dispatched_count",
+            "function_library_blueprint_create_command_executed_count",
+            "function_library_graph_mutation_command_dispatched_count",
+            "function_library_graph_mutation_command_executed_count",
+            "function_library_function_added_count",
+            "function_library_function_signature_changed_count",
+            "function_library_node_added_count",
+            "function_library_pin_connected_count",
+            "compile_executed_count",
+            "save_executed_count",
+            "asset_write_performed_count",
+            "package_dirty_marked_count",
+            "cleanup_allowed_count",
+            "cleanup_executed_count",
+            "delete_asset_allowed_count",
+            "delete_asset_executed_output_count",
+            "rename_asset_allowed_count",
+            "rename_command_dispatched_count",
+            "rename_command_executed_count",
+            "overwrite_allowed_count",
+            "overwrite_executed_count",
+            "production_path_write_allowed_count",
+            "production_path_write_executed_count",
+        )
+        for key in expected_bfl_zero_counts:
+            assert bfl_row["actual"][key] == 0, key
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False
