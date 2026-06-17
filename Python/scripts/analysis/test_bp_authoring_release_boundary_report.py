@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_233_240_v134"
+        assert report["verdict"]["release_boundary_version"] == "section_241_248_v135"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -819,6 +819,60 @@ def main() -> int:
             ]
             == "passed"
         )
+        assert (
+            report["verdict"][
+                "section_241_248_durable_executor_authoring_rename_overwrite_dry_run_batch_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_241_durable_authoring_rename_source_scope_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_242_durable_authoring_rename_destination_scope_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_243_durable_authoring_overwrite_policy_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_244_durable_authoring_rename_overwrite_dry_run_plan_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_245_durable_authoring_rename_collision_boundary_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_246_durable_authoring_rename_dirty_package_boundary_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_247_durable_authoring_rename_result_readback_dry_run_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_248_durable_authoring_actual_rename_overwrite_final_checkpoint_status"
+            ]
+            == "passed"
+        )
         assert report["verdict"]["durable_safety_boundary_unlock_ready"] is True
         assert report["verdict"]["durable_safety_boundary_unlocked"] is True
         assert report["verdict"]["final_durable_release_ready"] is True
@@ -864,6 +918,14 @@ def main() -> int:
             ]
             is True
         )
+        assert report["verdict"]["rename_overwrite_dry_run_allowed"] is True
+        assert report["verdict"]["rename_overwrite_dry_run_ready"] is True
+        assert (
+            report["verdict"][
+                "actual_rename_overwrite_requires_final_user_checkpoint"
+            ]
+            is True
+        )
         assert (
             report["verdict"]["fixed_compile_api"]
             == "BlueprintEditorLibrary.compile_blueprint"
@@ -887,11 +949,15 @@ def main() -> int:
         assert report["verdict"]["save_delete_rename_allowed"] is False
         assert report["verdict"]["delete_asset_allowed"] is False
         assert report["verdict"]["rename_asset_allowed"] is False
+        assert report["verdict"]["rename_command_dispatched"] is False
+        assert report["verdict"]["rename_command_executed"] is False
+        assert report["verdict"]["overwrite_allowed"] is False
+        assert report["verdict"]["overwrite_executed"] is False
         assert report["verdict"]["production_path_write_allowed"] is False
         assert report["verdict"]["production_path_write_executed"] is False
         assert (
             report["verdict"]["durable_authoring_release_status"]
-            == "section_240_cleanup_delete_dry_run_ready_actual_delete_closed"
+            == "section_248_rename_overwrite_dry_run_ready_actual_rename_closed"
         )
         assert find_row(report, "job_contract_default_request_set")["status"] == "passed"
         assert find_row(report, "manifest_executor_policy")["status"] == "passed"
@@ -8770,6 +8836,57 @@ def main() -> int:
         )
         for key in expected_cleanup_zero_counts:
             assert cleanup_delete_dry_run_row["actual"][key] == 0, key
+        rename_overwrite_dry_run_row = find_row(
+            report,
+            "durable_executor_authoring_rename_overwrite_dry_run_batch",
+        )
+        assert rename_overwrite_dry_run_row["status"] == "passed"
+        expected_rename_one_counts = (
+            "durable_requested_executor_authoring_rename_overwrite_dry_run_batch_count",
+            "section_233_240_summary_schema_matches_count",
+            "section_233_240_summary_passed_count",
+            "section_233_240_cleanup_delete_dry_run_ready_count",
+            "section_233_240_destructive_outputs_closed_count",
+            "result_schema_matches_count",
+            "rename_source_scope_confirmed_count",
+            "rename_destination_scope_confirmed_count",
+            "overwrite_policy_denies_existing_destination_count",
+            "rename_overwrite_dry_run_plan_accepted_count",
+            "rename_collision_boundary_clean_count",
+            "rename_dirty_package_boundary_clean_count",
+            "rename_result_readback_dry_run_ready_count",
+            "dry_run_blocks_actual_rename_outputs_count",
+            "result_has_no_error_count",
+            "final_durable_release_ready_count",
+            "cleanup_delete_dry_run_ready_count",
+            "rename_overwrite_dry_run_allowed_count",
+            "rename_overwrite_dry_run_ready_count",
+            "section_241_rename_source_scope_confirmed_count",
+            "section_242_rename_destination_scope_confirmed_count",
+            "section_243_overwrite_policy_denies_existing_destination_count",
+            "section_244_rename_overwrite_dry_run_plan_accepted_count",
+            "section_245_rename_collision_boundary_clean_count",
+            "section_246_rename_dirty_package_boundary_clean_count",
+            "section_247_rename_result_readback_dry_run_ready_count",
+            "section_248_actual_rename_overwrite_requires_final_user_checkpoint_count",
+            "actual_rename_overwrite_requires_final_user_checkpoint_count",
+        )
+        for key in expected_rename_one_counts:
+            assert rename_overwrite_dry_run_row["actual"][key] == 1, key
+        expected_rename_zero_counts = (
+            "cleanup_allowed_count",
+            "cleanup_executed_count",
+            "delete_asset_allowed_count",
+            "rename_asset_allowed_count",
+            "rename_command_dispatched_count",
+            "rename_command_executed_count",
+            "overwrite_allowed_count",
+            "overwrite_executed_count",
+            "production_path_write_allowed_count",
+            "production_path_write_executed_count",
+        )
+        for key in expected_rename_zero_counts:
+            assert rename_overwrite_dry_run_row["actual"][key] == 0, key
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False

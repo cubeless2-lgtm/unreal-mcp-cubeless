@@ -114,6 +114,7 @@ import bp_authoring_durable_executor_authoring_live_pre_save_checkpoint_batch_co
 import bp_authoring_durable_executor_authoring_live_actual_save_execution_batch_contract as durable_executor_authoring_live_actual_save_execution_batch
 import bp_authoring_durable_executor_authoring_live_save_stability_batch_contract as durable_executor_authoring_live_save_stability_batch
 import bp_authoring_durable_executor_authoring_cleanup_delete_dry_run_batch_contract as durable_executor_authoring_cleanup_delete_dry_run_batch
+import bp_authoring_durable_executor_authoring_rename_overwrite_dry_run_batch_contract as durable_executor_authoring_rename_overwrite_dry_run_batch
 import bp_authoring_durable_executor_authoring_enable_contract as durable_executor_authoring_enable
 import bp_authoring_durable_executor_authoring_enable_after_open_contract as durable_executor_authoring_enable_after_open
 import bp_authoring_durable_executor_authoring_activation_readiness_contract as durable_executor_authoring_activation_readiness
@@ -151,7 +152,7 @@ import bp_authoring_durable_save_gate_final_review_contract as save_gate_final_r
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_233_240_bp_authoring_release_boundary_v134"
+REPORT_SCHEMA = "section_241_248_bp_authoring_release_boundary_v135"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -14028,6 +14029,97 @@ def build_durable_executor_authoring_cleanup_delete_dry_run_batch_row(
     )
 
 
+def build_durable_executor_authoring_rename_overwrite_dry_run_batch_row(
+    contract_summary: Dict[str, Any],
+    executor_summary: Dict[str, Any],
+    project_root: Path,
+    planner_report: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    cleanup_row = (
+        build_durable_executor_authoring_cleanup_delete_dry_run_batch_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        )
+    )
+    cleanup_summary = _summary_from_row_actual(cleanup_row)
+    cleanup_summary["schema"] = (
+        durable_executor_authoring_cleanup_delete_dry_run_batch
+        .DURABLE_EXECUTOR_AUTHORING_CLEANUP_DELETE_DRY_RUN_BATCH_SUMMARY_SCHEMA
+    )
+    rename_result = durable_executor_authoring_rename_overwrite_dry_run_batch.build_rename_overwrite_dry_run_result()
+    contract = durable_executor_authoring_rename_overwrite_dry_run_batch.build_durable_executor_authoring_rename_overwrite_dry_run_batch_contract(
+        requested=True,
+        section_233_240_cleanup_delete_dry_run_summary=cleanup_summary,
+        rename_overwrite_dry_run_result=rename_result,
+    )
+    summary = durable_executor_authoring_rename_overwrite_dry_run_batch.summarize_durable_executor_authoring_rename_overwrite_dry_run_batches(
+        [contract]
+    )
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_executor_authoring_rename_overwrite_dry_run_batch_count": 1,
+        "section_233_240_summary_schema_matches_count": 1,
+        "section_233_240_summary_passed_count": 1,
+        "section_233_240_cleanup_delete_dry_run_ready_count": 1,
+        "section_233_240_destructive_outputs_closed_count": 1,
+        "result_schema_matches_count": 1,
+        "rename_source_scope_confirmed_count": 1,
+        "rename_destination_scope_confirmed_count": 1,
+        "overwrite_policy_denies_existing_destination_count": 1,
+        "rename_overwrite_dry_run_plan_accepted_count": 1,
+        "rename_collision_boundary_clean_count": 1,
+        "rename_dirty_package_boundary_clean_count": 1,
+        "rename_result_readback_dry_run_ready_count": 1,
+        "dry_run_blocks_actual_rename_outputs_count": 1,
+        "result_has_no_error_count": 1,
+        "final_durable_release_ready_count": 1,
+        "cleanup_delete_dry_run_ready_count": 1,
+        "rename_overwrite_dry_run_allowed_count": 1,
+        "rename_overwrite_dry_run_ready_count": 1,
+        "cleanup_allowed_count": 0,
+        "cleanup_executed_count": 0,
+        "delete_asset_allowed_count": 0,
+        "rename_asset_allowed_count": 0,
+        "rename_command_dispatched_count": 0,
+        "rename_command_executed_count": 0,
+        "overwrite_allowed_count": 0,
+        "overwrite_executed_count": 0,
+        "production_path_write_allowed_count": 0,
+        "production_path_write_executed_count": 0,
+    }
+    for key in (
+        durable_executor_authoring_rename_overwrite_dry_run_batch
+        .RENAME_OVERWRITE_DRY_RUN_PATH_COUNT_KEYS
+    ):
+        expected[key] = 1
+    expected.update(
+        {
+            key: 0
+            for key in (
+                durable_executor_authoring_rename_overwrite_dry_run_batch
+                .BLOCKED_RENAME_OVERWRITE_OUTPUT_COUNT_KEYS
+            )
+        }
+    )
+    actual = {
+        key: summary.get(key) if key != "summary_status" else summary.get("status")
+        for key in expected
+    }
+    return row(
+        "durable_executor_authoring_rename_overwrite_dry_run_batch",
+        "Sections 241-248 durable executor authoring rename/overwrite dry-run batch",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "Sections 241-248 prove target-scoped rename/overwrite dry-run readiness with a deny-existing destination policy.",
+            "The batch does not dispatch or execute rename/overwrite/delete and keeps production path writes closed.",
+        ),
+    )
+
+
 def build_section_51_58_consolidation_row(
     contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -14299,7 +14391,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     lyra_report = read_json(lyra_report_path)
     preliminary_verdict = {
         "status": "passed",
-        "release_boundary_version": "section_233_240_v134",
+        "release_boundary_version": "section_241_248_v135",
         "durable_authoring_enabled": False,
     }
     decision_contract = mvp_decision.build_mvp_decision_contract(
@@ -15054,6 +15146,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             project_root,
             planner_report,
         ),
+        build_durable_executor_authoring_rename_overwrite_dry_run_batch_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        ),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -15074,7 +15172,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
-            "release_boundary_version": "section_233_240_v134",
+            "release_boundary_version": "section_241_248_v135",
             "mvp_decision_status": decision_contract["decision_status"],
             "temporary_blueprint_authoring_mvp_ready": decision_contract[
                 "temporary_blueprint_authoring_mvp_ready"
@@ -15085,7 +15183,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "ready_for_main_push": not failed_blocking,
             "durable_authoring_enabled": not failed_blocking,
             "durable_authoring_release_status": (
-                "section_240_cleanup_delete_dry_run_ready_actual_delete_closed"
+                "section_248_rename_overwrite_dry_run_ready_actual_rename_closed"
                 if not failed_blocking
                 else "failed"
             ),
@@ -15627,6 +15725,33 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "section_240_durable_authoring_actual_delete_final_checkpoint_status": (
                 "passed" if not failed_blocking else "failed"
             ),
+            "section_241_248_durable_executor_authoring_rename_overwrite_dry_run_batch_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_241_durable_authoring_rename_source_scope_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_242_durable_authoring_rename_destination_scope_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_243_durable_authoring_overwrite_policy_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_244_durable_authoring_rename_overwrite_dry_run_plan_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_245_durable_authoring_rename_collision_boundary_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_246_durable_authoring_rename_dirty_package_boundary_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_247_durable_authoring_rename_result_readback_dry_run_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_248_durable_authoring_actual_rename_overwrite_final_checkpoint_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
             "durable_executor_opened": not failed_blocking,
             "durable_authoring_command_no_save_execution_ready": not failed_blocking,
             "final_no_save_release_ready": not failed_blocking,
@@ -15645,6 +15770,11 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "cleanup_delete_dry_run_allowed": not failed_blocking,
             "cleanup_delete_dry_run_ready": not failed_blocking,
             "actual_delete_execution_requires_final_user_checkpoint": (
+                not failed_blocking
+            ),
+            "rename_overwrite_dry_run_allowed": not failed_blocking,
+            "rename_overwrite_dry_run_ready": not failed_blocking,
+            "actual_rename_overwrite_requires_final_user_checkpoint": (
                 not failed_blocking
             ),
             "fixed_compile_api": (
@@ -15670,6 +15800,10 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "save_delete_rename_allowed": False,
             "delete_asset_allowed": False,
             "rename_asset_allowed": False,
+            "rename_command_dispatched": False,
+            "rename_command_executed": False,
+            "overwrite_allowed": False,
+            "overwrite_executed": False,
             "production_path_write_allowed": False,
             "production_path_write_executed": False,
             "durable_safety_boundary_unlock_ready": not failed_blocking,
@@ -15741,11 +15875,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
                 "_and_section_217_224_durable_executor_authoring_live_actual_save_execution_readback_ready"
                 "_and_section_225_232_durable_executor_authoring_live_save_stability_ready_cleanup_delete_rename_closed"
                 "_and_section_233_240_durable_executor_authoring_cleanup_delete_dry_run_ready_actual_delete_closed"
+                "_and_section_241_248_durable_executor_authoring_rename_overwrite_dry_run_ready_actual_rename_closed"
             ),
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
-            "actual target-scoped cleanup/delete execution requires final user checkpoint",
+            "Actor Blueprint variable/component/default authoring expansion under _MCP_Temp",
             "component default/type readback expansion for broader Blueprint classes",
             "function call diagnostics and graph layout repair suggestions",
         ],
