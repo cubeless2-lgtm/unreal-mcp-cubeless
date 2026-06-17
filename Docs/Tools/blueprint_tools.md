@@ -283,10 +283,10 @@ Set common Pawn properties on a Blueprint.
 **Parameters:**
 - `blueprint_name` (string) - Name of the target Blueprint (must be a Pawn or Character)
 - `auto_possess_player` (string, optional) - Auto possess player setting (None, "Disabled", "Player0", "Player1", etc.), defaults to empty string
-- `use_controller_rotation_yaw` (boolean, optional) - Whether the pawn should use the controller's yaw rotation, defaults to false
-- `use_controller_rotation_pitch` (boolean, optional) - Whether the pawn should use the controller's pitch rotation, defaults to false
-- `use_controller_rotation_roll` (boolean, optional) - Whether the pawn should use the controller's roll rotation, defaults to false
-- `can_be_damaged` (boolean, optional) - Whether the pawn can be damaged, defaults to true
+- `use_controller_rotation_yaw` (boolean, optional) - Whether the pawn should use the controller's yaw rotation. Omit to leave unchanged.
+- `use_controller_rotation_pitch` (boolean, optional) - Whether the pawn should use the controller's pitch rotation. Omit to leave unchanged.
+- `use_controller_rotation_roll` (boolean, optional) - Whether the pawn should use the controller's roll rotation. Omit to leave unchanged.
+- `can_be_damaged` (boolean, optional) - Whether the pawn can be damaged. Omit to leave unchanged.
 
 **Returns:**
 - Response indicating success or failure with detailed results for each property

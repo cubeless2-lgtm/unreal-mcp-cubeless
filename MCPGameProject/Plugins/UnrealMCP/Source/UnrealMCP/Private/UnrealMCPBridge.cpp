@@ -418,6 +418,7 @@ FString UUnrealMCPBridge::ExecuteCommand(const FString& CommandType, const TShar
                      CommandType == TEXT("add_blueprint_switch_int_node") ||
                      CommandType == TEXT("add_blueprint_switch_enum_node") ||
                      CommandType == TEXT("set_blueprint_pin_default") ||
+                     CommandType == TEXT("set_blueprint_variable_metadata") ||
                      CommandType == TEXT("add_blueprint_function_parameter") ||
                      CommandType == TEXT("add_blueprint_local_variable") ||
                      CommandType == TEXT("set_blueprint_variable_metadata") ||
@@ -481,7 +482,9 @@ FString UUnrealMCPBridge::ExecuteCommand(const FString& CommandType, const TShar
                 ResultJson = NiagaraCommands->HandleCommand(CommandType, Params);
             }
             // PCG Graph Commands
-            else if (CommandType == TEXT("resolve_pcg_graph") ||
+            else if (CommandType == TEXT("refresh_pcg_components") ||
+                     CommandType == TEXT("set_spline_component_points") ||
+                     CommandType == TEXT("resolve_pcg_graph") ||
                      CommandType == TEXT("list_pcg_graph_nodes") ||
                      CommandType == TEXT("add_pcg_node") ||
                      CommandType == TEXT("connect_pcg_nodes") ||

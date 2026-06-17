@@ -550,27 +550,24 @@ def register_blueprint_tools(mcp: FastMCP):
                 logger.error("Failed to connect to Unreal Engine")
                 return {"success": False, "message": "Failed to connect to Unreal Engine"}
             
-            # Define the properties to set
-            properties = {}
+            params: Dict[str, Any] = {"blueprint_name": blueprint_name}
             if auto_possess_player and auto_possess_player != "":
-                properties["auto_possess_player"] = auto_possess_player
+                params["auto_possess_player"] = auto_possess_player
             
-            # Only include boolean properties if they were explicitly set
             if use_controller_rotation_yaw is not None:
-                properties["bUseControllerRotationYaw"] = use_controller_rotation_yaw
+                params["use_controller_rotation_yaw"] = use_controller_rotation_yaw
             if use_controller_rotation_pitch is not None:
-                properties["bUseControllerRotationPitch"] = use_controller_rotation_pitch
+                params["use_controller_rotation_pitch"] = use_controller_rotation_pitch
             if use_controller_rotation_roll is not None:
-                properties["bUseControllerRotationRoll"] = use_controller_rotation_roll
+                params["use_controller_rotation_roll"] = use_controller_rotation_roll
             if can_be_damaged is not None:
-                properties["bCanBeDamaged"] = can_be_damaged
+                params["can_be_damaged"] = can_be_damaged
                 
-            if not properties:
+            if len(params) == 1:
                 logger.warning("No properties specified to set")
-                return {"success": False, "message": "No pawn properties specified to set"}
-
-            params = {"blueprint_name": blueprint_name}
-            params.update(properties)
+                return {"success": True, "message": "No properties specified to set", "results": {}}
+            
+            logger.info(f"Setting pawn properties with params: {params}")
             response = unreal.send_command("set_pawn_properties", params)
             return response or {"success": False, "message": "No response from Unreal Engine"}
             

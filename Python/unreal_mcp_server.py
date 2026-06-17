@@ -61,11 +61,24 @@ logging.basicConfig(
 )
 logger = logging.getLogger("UnrealMCP")
 
+
+def _env_int(name: str, default: int) -> int:
+    value = os.environ.get(name)
+    if value is None or value.strip() == "":
+        return default
+    try:
+        return int(value)
+    except ValueError:
+        logger.warning("Invalid integer for %s: %s", name, value)
+        return default
+
+
 # Configuration
-UNREAL_HOST = "127.0.0.1"
-UNREAL_PORT = 55557
-UNREAL_RESPONSE_TIMEOUT_SECONDS = int(os.environ.get("UNREAL_MCP_RESPONSE_TIMEOUT_SECONDS", "120"))
-UNREAL_MCP_LOG_PAYLOAD_CHARS = int(os.environ.get("UNREAL_MCP_LOG_PAYLOAD_CHARS", "1200"))
+UNREAL_HOST = os.environ.get("UNREAL_MCP_HOST", "127.0.0.1")
+UNREAL_PORT = _env_int("UNREAL_MCP_PORT", 55557)
+UNREAL_RESPONSE_TIMEOUT_SECONDS = _env_int("UNREAL_MCP_RESPONSE_TIMEOUT_SECONDS", 120)
+UNREAL_MCP_HEARTBEAT_TIMEOUT_SECONDS = max(1, _env_int("UNREAL_MCP_HEARTBEAT_TIMEOUT_SECONDS", 5))
+UNREAL_MCP_LOG_PAYLOAD_CHARS = _env_int("UNREAL_MCP_LOG_PAYLOAD_CHARS", 1200)
 
 def _summarize_for_log(value: Any, max_chars: int = UNREAL_MCP_LOG_PAYLOAD_CHARS) -> str:
     """Return a bounded JSON-ish representation for operational logs."""
@@ -85,20 +98,32 @@ class UnrealConnection:
         self.socket = None
         self.connected = False
     
-    def connect(self) -> bool:
+    def connect(self, timeout_seconds: Optional[int] = None) -> bool:
         """Connect to the Unreal Engine instance."""
         try:
+            socket_timeout = timeout_seconds or UNREAL_RESPONSE_TIMEOUT_SECONDS
+            guard_decision = runtime_guard.check_bridge_target(UNREAL_HOST, UNREAL_PORT)
+            if guard_decision.get("would_block"):
+                request_telemetry.record_guard_event("bridge_target", f"{UNREAL_HOST}:{UNREAL_PORT}", guard_decision)
+            if not guard_decision.get("allowed", True):
+                logger.error("Unreal bridge connection blocked by runtime guard: %s", guard_decision.get("reason"))
+                self.connected = False
+                return False
+
             # Close any existing socket
             if self.socket:
                 try:
                     self.socket.close()
                 except:
                     pass
-                self.socket = None
+            self.socket = None
             
             logger.info(f"Connecting to Unreal at {UNREAL_HOST}:{UNREAL_PORT}...")
-            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.socket.settimeout(UNREAL_RESPONSE_TIMEOUT_SECONDS)
+            self.socket = socket.create_connection(
+                (UNREAL_HOST, UNREAL_PORT),
+                timeout=socket_timeout,
+            )
+            self.socket.settimeout(socket_timeout)
             
             # Set socket options for better stability
             self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
@@ -107,8 +132,6 @@ class UnrealConnection:
             # Set larger buffer sizes
             self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 65536)
             self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 65536)
-            
-            self.socket.connect((UNREAL_HOST, UNREAL_PORT))
             self.connected = True
             logger.info("Connected to Unreal Engine")
             return True
@@ -128,10 +151,10 @@ class UnrealConnection:
         self.socket = None
         self.connected = False
 
-    def receive_full_response(self, sock, buffer_size=4096) -> bytes:
+    def receive_full_response(self, sock, buffer_size=4096, timeout_seconds: Optional[int] = None) -> bytes:
         """Receive a complete response from Unreal, handling chunked data."""
         chunks = []
-        sock.settimeout(UNREAL_RESPONSE_TIMEOUT_SECONDS)
+        sock.settimeout(timeout_seconds or UNREAL_RESPONSE_TIMEOUT_SECONDS)
         try:
             while True:
                 chunk = sock.recv(buffer_size)
@@ -174,8 +197,14 @@ class UnrealConnection:
             logger.error(f"Error during receive: {str(e)}")
             raise
     
-    def send_command(self, command: str, params: Dict[str, Any] = None) -> Optional[Dict[str, Any]]:
+    def send_command(
+        self,
+        command: str,
+        params: Dict[str, Any] = None,
+        timeout_seconds: Optional[int] = None,
+    ) -> Optional[Dict[str, Any]]:
         """Send a command to Unreal Engine and get the response."""
+        telemetry_token = request_telemetry.begin("unreal_command", command)
         # Always reconnect for each command, since Unreal closes the connection after each command
         # This is different from Unity which keeps connections alive
         if self.socket:
@@ -186,8 +215,9 @@ class UnrealConnection:
             self.socket = None
             self.connected = False
         
-        if not self.connect():
+        if not self.connect(timeout_seconds=timeout_seconds):
             logger.error("Failed to connect to Unreal Engine for command")
+            request_telemetry.end(telemetry_token, False, status="connect_failed", error="Failed to connect to Unreal Engine")
             return None
         
         try:
@@ -208,7 +238,7 @@ class UnrealConnection:
             self.socket.sendall(command_json.encode('utf-8'))
             
             # Read response using improved handler
-            response_data = self.receive_full_response(self.socket)
+            response_data = self.receive_full_response(self.socket, timeout_seconds=timeout_seconds)
             response = json.loads(response_data.decode('utf-8'))
             
             logger.info(
@@ -240,6 +270,13 @@ class UnrealConnection:
             self.socket = None
             self.connected = False
             
+            success = response.get("status") != "error" and response.get("success") is not False
+            request_telemetry.end(
+                telemetry_token,
+                success,
+                status=str(response.get("status") or ("ok" if success else "error")),
+                error=str(response.get("error") or response.get("message") or ""),
+            )
             return response
             
         except Exception as e:
@@ -251,6 +288,7 @@ class UnrealConnection:
             except:
                 pass
             self.socket = None
+            request_telemetry.end(telemetry_token, False, status="exception", error=str(e))
             return {
                 "status": "error",
                 "error": str(e)
@@ -278,6 +316,54 @@ def get_unreal_connection() -> Optional[UnrealConnection]:
     except Exception as e:
         logger.error(f"Error getting Unreal connection: {e}")
         return None
+
+
+def build_unreal_health(ping_unreal: bool = False) -> Dict[str, Any]:
+    """Return structured bridge health without mutating Unreal assets."""
+    guard_decision = runtime_guard.check_bridge_target(UNREAL_HOST, UNREAL_PORT)
+    bridge = {
+        "host": UNREAL_HOST,
+        "port": UNREAL_PORT,
+        "guard": guard_decision,
+        "status": "not_checked",
+        "connected": False,
+    }
+    if ping_unreal:
+        started = time.perf_counter()
+        attempts = []
+        response = None
+        for attempt_index in range(2):
+            connection = UnrealConnection()
+            response = connection.send_command(
+                "ping",
+                {},
+                timeout_seconds=UNREAL_MCP_HEARTBEAT_TIMEOUT_SECONDS,
+            )
+            connection.disconnect()
+            attempts.append(
+                {
+                    "attempt": attempt_index + 1,
+                    "success": bool(response and response.get("status") != "error" and response.get("success") is not False),
+                    "status": response.get("status") if response else "no_response",
+                    "error": response.get("error") if response else "No response from Unreal Engine",
+                }
+            )
+            if attempts[-1]["success"]:
+                break
+        elapsed_ms = round((time.perf_counter() - started) * 1000.0, 3)
+        bridge["ping_elapsed_ms"] = elapsed_ms
+        bridge["response"] = response
+        bridge["attempts"] = attempts
+        if response and response.get("status") != "error" and response.get("success") is not False:
+            bridge["status"] = "connected"
+            bridge["connected"] = True
+        else:
+            bridge["status"] = "not connected"
+            bridge["connected"] = False
+        bridge["success"] = bridge["connected"]
+        return {"success": bridge["connected"], "unreal_bridge": bridge}
+    bridge["success"] = True
+    return {"success": True, "unreal_bridge": bridge}
 
 @asynccontextmanager
 async def server_lifespan(server: FastMCP) -> AsyncIterator[Dict[str, Any]]:
@@ -321,19 +407,34 @@ from tools.material_tools import register_material_tools
 from tools.niagara_tools import register_niagara_tools
 from tools.texture_generation import register_texture_generation_tools
 from tools.ieta_tools import register_ieta_tools
+from tools.management_tools import (
+    register_management_tools,
+    request_telemetry,
+    runtime_guard,
+    set_health_provider,
+    tool_registry,
+)
 
-# Register tools
-register_editor_tools(mcp)
-register_blueprint_tools(mcp)
-register_blueprint_node_tools(mcp)
-register_project_tools(mcp)
-register_umg_tools(mcp)  
-register_python_tools(mcp)
-register_pcg_tools(mcp)
-register_material_tools(mcp)
-register_niagara_tools(mcp)
-register_texture_generation_tools(mcp)
-register_ieta_tools(mcp)
+set_health_provider(build_unreal_health)
+
+def register_tool_group(category, register_func):
+    """Register one tool group while recording runtime policy metadata."""
+    with tool_registry.capture_tools(mcp, category=category):
+        register_func(mcp)
+
+# Register tools. Runtime policy defaults to all tools enabled.
+register_tool_group("editor", register_editor_tools)
+register_tool_group("blueprint", register_blueprint_tools)
+register_tool_group("blueprint_node", register_blueprint_node_tools)
+register_tool_group("project", register_project_tools)
+register_tool_group("umg", register_umg_tools)
+register_tool_group("python", register_python_tools)
+register_tool_group("pcg", register_pcg_tools)
+register_tool_group("material", register_material_tools)
+register_tool_group("niagara", register_niagara_tools)
+register_tool_group("texture_generation", register_texture_generation_tools)
+register_tool_group("ieta", register_ieta_tools)
+register_management_tools(mcp, tool_registry)
 
 @mcp.prompt()
 def info():
@@ -441,6 +542,9 @@ def info():
     - `create_input_mapping(action_name, key, input_type)` - Create input mappings
     - `analyze_blueprint_widget_fallbacks_mcp(source_root, target_root)` - Diagnose Blueprint/Widget duplicate fallback safety for MCP-generated content
     - `run_content_validation_pipeline_mcp(source_root, target_root, map_path="")` - Run the MCP recreate/postprocess/world-repair validation pipeline
+
+    ## Runtime Tool Management
+    - `manage_tools(action="status", tool_name="", category="", enabled=None, include_tools=True, include_recent=True, ping_unreal=False)` - Inspect or adjust runtime-only MCP tool/category enablement. Use `action="health"` for registry, telemetry, guard, and optional Unreal bridge ping. Use `action="heartbeat"` for a required Unreal bridge ping. Defaults to all tools enabled, resets on server restart, cannot disable itself, and requires `enabled` for `set_tool`/`set_category`.
 
     ## Material Graph Management
     - `resolve_material_graph(material_path, graph_type="auto")` - Resolve a Material or Material Function

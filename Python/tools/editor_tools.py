@@ -349,6 +349,32 @@ def register_editor_tools(mcp: FastMCP):
             return {"status": "error", "message": str(e)}
 
     @mcp.tool()
+    def take_screenshot(ctx: Context, filepath: str) -> Dict[str, Any]:
+        """
+        Capture the active editor viewport to a PNG file.
+
+        Args:
+            filepath: Output PNG path. The native bridge appends .png when omitted.
+
+        Returns:
+            Response from Unreal Engine with the saved filepath or an error.
+        """
+        from unreal_mcp_server import get_unreal_connection
+
+        try:
+            unreal = get_unreal_connection()
+            if not unreal:
+                logger.error("Failed to connect to Unreal Engine")
+                return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+            response = unreal.send_command("take_screenshot", {"filepath": filepath})
+            return response or {"success": False, "message": "No response from Unreal Engine"}
+
+        except Exception as e:
+            logger.error(f"Error taking screenshot: {e}")
+            return {"success": False, "message": str(e)}
+
+    @mcp.tool()
     def list_viewport_bookmarks(ctx: Context) -> Dict[str, Any]:
         """
         List bookmark slots available to the active editor viewport.

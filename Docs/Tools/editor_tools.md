@@ -38,9 +38,7 @@ Focus the viewport on a specific actor or location.
 Capture a screenshot of the viewport.
 
 **Parameters:**
-- `filename` (string, optional) - Name of the file to save the screenshot as (default: "screenshot.png")
-- `show_ui` (boolean, optional) - Whether to include UI elements in the screenshot (default: false)
-- `resolution` (array, optional) - [Width, Height] for the screenshot
+- `filepath` (string) - Output PNG path. The native bridge appends `.png` when omitted.
 
 **Returns:**
 - Result of the screenshot operation
@@ -50,9 +48,7 @@ Capture a screenshot of the viewport.
 {
   "command": "take_screenshot",
   "params": {
-    "filename": "my_scene.png",
-    "show_ui": false,
-    "resolution": [1920, 1080]
+    "filepath": "my_scene.png"
   }
 }
 ```
@@ -268,7 +264,7 @@ focus_response = unreal.send_command("focus_viewport", {
 print(focus_response)
 
 # Take a screenshot
-screenshot_response = unreal.send_command("take_screenshot", {"filename": "my_scene.png"})
+screenshot_response = unreal.send_command("take_screenshot", {"filepath": "my_scene.png"})
 print(screenshot_response)
 ```
 

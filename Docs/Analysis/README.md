@@ -24,3 +24,6 @@ UnrealMCP Blueprint authoring surface before attempting any asset or graph work.
 - [BP authoring executor capability policy](bp_authoring_executor_capability_policy.md)
 - [BP authoring durable executor gate policy](bp_authoring_durable_executor_gate_policy.md)
 - [Planner-driven smoke policy](planner_driven_smoke_policy.md)
+- [MCP tool parity audit](mcp_tool_parity_audit.md)
+- [MCP runtime tool management](mcp_tool_management.md)
+- [MCP runtime hardening](mcp_runtime_hardening.md)
