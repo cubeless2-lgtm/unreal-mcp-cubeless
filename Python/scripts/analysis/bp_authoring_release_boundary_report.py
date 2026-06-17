@@ -148,6 +148,7 @@ import bp_authoring_durable_executor_authoring_non_actor_actual_temp_checkpoint_
 import bp_authoring_durable_executor_authoring_correct_workspace_bridge_takeover_handoff_batch_contract as durable_executor_authoring_correct_workspace_bridge_takeover_handoff_batch
 import bp_authoring_durable_executor_authoring_correct_workspace_bridge_takeover_execution_dry_run_envelope_batch_contract as durable_executor_authoring_correct_workspace_bridge_takeover_execution_dry_run_envelope_batch
 import bp_authoring_durable_executor_authoring_correct_workspace_bridge_post_takeover_verification_admission_batch_contract as durable_executor_authoring_correct_workspace_bridge_post_takeover_verification_admission_batch
+import bp_authoring_durable_executor_authoring_correct_workspace_bridge_verification_evidence_schema_batch_contract as durable_executor_authoring_correct_workspace_bridge_verification_evidence_schema_batch
 import bp_authoring_durable_executor_authoring_enable_contract as durable_executor_authoring_enable
 import bp_authoring_durable_executor_authoring_enable_after_open_contract as durable_executor_authoring_enable_after_open
 import bp_authoring_durable_executor_authoring_activation_readiness_contract as durable_executor_authoring_activation_readiness
@@ -185,7 +186,7 @@ import bp_authoring_durable_save_gate_final_review_contract as save_gate_final_r
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_505_512_bp_authoring_release_boundary_v168"
+REPORT_SCHEMA = "section_513_520_bp_authoring_release_boundary_v169"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -16781,6 +16782,86 @@ def build_durable_executor_authoring_correct_workspace_bridge_post_takeover_veri
     )
 
 
+def build_durable_executor_authoring_correct_workspace_bridge_verification_evidence_schema_batch_row(
+    contract_summary: Dict[str, Any],
+    executor_summary: Dict[str, Any],
+    project_root: Path,
+    planner_report: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    upstream_row = build_durable_executor_authoring_correct_workspace_bridge_post_takeover_verification_admission_batch_row(
+        contract_summary,
+        executor_summary,
+        project_root,
+        planner_report,
+    )
+    upstream_summary = _summary_from_row_actual(upstream_row)
+    upstream_summary["schema"] = (
+        durable_executor_authoring_correct_workspace_bridge_post_takeover_verification_admission_batch
+        .DURABLE_EXECUTOR_AUTHORING_CORRECT_WORKSPACE_BRIDGE_POST_TAKEOVER_VERIFICATION_ADMISSION_BATCH_SUMMARY_SCHEMA
+    )
+    evidence_result = durable_executor_authoring_correct_workspace_bridge_verification_evidence_schema_batch.build_correct_workspace_bridge_verification_evidence_schema_result()
+    contract = durable_executor_authoring_correct_workspace_bridge_verification_evidence_schema_batch.build_durable_executor_authoring_correct_workspace_bridge_verification_evidence_schema_batch_contract(
+        requested=True,
+        section_505_512_post_takeover_verification_admission_summary=(
+            upstream_summary
+        ),
+        correct_workspace_bridge_verification_evidence_schema_result=(
+            evidence_result
+        ),
+    )
+    summary = durable_executor_authoring_correct_workspace_bridge_verification_evidence_schema_batch.summarize_durable_executor_authoring_correct_workspace_bridge_verification_evidence_schema_batches(
+        [contract]
+    )
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_executor_authoring_correct_workspace_bridge_verification_evidence_schema_batch_count": 1,
+        "section_505_512_summary_schema_matches_count": 1,
+        "section_505_512_summary_passed_count": 1,
+        "section_505_512_post_takeover_verification_admission_ready_count": 1,
+        "section_505_512_outputs_closed_count": 1,
+        "result_schema_matches_count": 1,
+        "verification_evidence_schema_checkpoint_satisfied_count": 1,
+        "required_evidence_fields_recorded_count": 1,
+        "project_identity_evidence_requirements_recorded_count": 1,
+        "bridge_identity_evidence_requirements_recorded_count": 1,
+        "read_only_probe_evidence_requirements_recorded_count": 1,
+        "evidence_ingest_and_admission_blocked_count": 1,
+        "verification_evidence_schema_no_write_boundary_verified_count": 1,
+        "verification_evidence_schema_compile_save_write_outputs_blocked_count": 1,
+        "result_has_no_error_count": 1,
+        "final_durable_release_ready_count": 1,
+    }
+    for key in (
+        durable_executor_authoring_correct_workspace_bridge_verification_evidence_schema_batch
+        .CORRECT_WORKSPACE_BRIDGE_VERIFICATION_EVIDENCE_SCHEMA_PATH_COUNT_KEYS
+    ):
+        expected[key] = 1
+    expected.update(
+        {
+            key: 0
+            for key in (
+                durable_executor_authoring_correct_workspace_bridge_verification_evidence_schema_batch
+                .BLOCKED_VERIFICATION_EVIDENCE_SCHEMA_OUTPUT_COUNT_KEYS
+            )
+        }
+    )
+    actual = {
+        key: summary.get(key) if key != "summary_status" else summary.get("status")
+        for key in expected
+    }
+    return row(
+        "durable_executor_authoring_correct_workspace_bridge_verification_evidence_schema_batch",
+        "Sections 513-520 durable executor correct-workspace bridge verification evidence schema batch",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "Sections 513-520 record the required evidence schema for a future correct-workspace bridge proof.",
+            "The batch keeps evidence ingest, validation execution, verification evidence admission, live authoring dispatch, compile, save, cleanup, delete, rename, overwrite, and production writes closed.",
+        ),
+    )
+
+
 def build_section_51_58_consolidation_row(
     contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -17052,7 +17133,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     lyra_report = read_json(lyra_report_path)
     preliminary_verdict = {
         "status": "passed",
-        "release_boundary_version": "section_505_512_v168",
+        "release_boundary_version": "section_513_520_v169",
         "durable_authoring_enabled": False,
     }
     decision_contract = mvp_decision.build_mvp_decision_contract(
@@ -18011,6 +18092,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             project_root,
             planner_report,
         ),
+        build_durable_executor_authoring_correct_workspace_bridge_verification_evidence_schema_batch_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        ),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -18031,7 +18118,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
-            "release_boundary_version": "section_505_512_v168",
+            "release_boundary_version": "section_513_520_v169",
             "mvp_decision_status": decision_contract["decision_status"],
             "temporary_blueprint_authoring_mvp_ready": decision_contract[
                 "temporary_blueprint_authoring_mvp_ready"
@@ -18042,7 +18129,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "ready_for_main_push": not failed_blocking,
             "durable_authoring_enabled": not failed_blocking,
             "durable_authoring_release_status": (
-                "section_512_correct_workspace_bridge_post_takeover_verification_admission_ready"
+                "section_520_correct_workspace_bridge_verification_evidence_schema_ready"
                 if not failed_blocking
                 else "failed"
             ),
@@ -19502,6 +19589,33 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "section_512_durable_authoring_post_takeover_verification_admission_release_status": (
                 "passed" if not failed_blocking else "failed"
             ),
+            "section_513_520_durable_executor_authoring_correct_workspace_bridge_verification_evidence_schema_batch_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_513_durable_authoring_verification_evidence_schema_checkpoint_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_514_durable_authoring_required_evidence_fields_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_515_durable_authoring_project_identity_evidence_requirements_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_516_durable_authoring_bridge_identity_evidence_requirements_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_517_durable_authoring_read_only_probe_evidence_requirements_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_518_durable_authoring_evidence_ingest_and_admission_blocked_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_519_durable_authoring_verification_evidence_schema_no_write_boundary_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_520_durable_authoring_verification_evidence_schema_release_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
             "durable_executor_opened": not failed_blocking,
             "durable_authoring_command_no_save_execution_ready": not failed_blocking,
             "final_no_save_release_ready": not failed_blocking,
@@ -19815,6 +19929,23 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "read_only_probe_evidence_required": not failed_blocking,
             "verification_result_admission_blocked": not failed_blocking,
             "live_authoring_after_verification_blocked": not failed_blocking,
+            "correct_workspace_bridge_verification_evidence_schema_ready": (
+                not failed_blocking
+            ),
+            "verification_evidence_admission_still_blocked": (
+                not failed_blocking
+            ),
+            "required_evidence_fields_recorded": not failed_blocking,
+            "project_identity_evidence_requirements_recorded": (
+                not failed_blocking
+            ),
+            "bridge_identity_evidence_requirements_recorded": (
+                not failed_blocking
+            ),
+            "read_only_probe_evidence_requirements_recorded": (
+                not failed_blocking
+            ),
+            "evidence_ingest_and_admission_blocked": not failed_blocking,
             "user_widget_widget_tree_live_readonly_preflight_ready": (
                 not failed_blocking
             ),
@@ -19999,12 +20130,13 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
                 "_and_section_489_496_durable_executor_authoring_correct_workspace_bridge_takeover_handoff_ready"
                 "_and_section_497_504_durable_executor_authoring_correct_workspace_bridge_takeover_execution_dry_run_envelope_ready"
                 "_and_section_505_512_durable_executor_authoring_correct_workspace_bridge_post_takeover_verification_admission_ready"
+                "_and_section_513_520_durable_executor_authoring_correct_workspace_bridge_verification_evidence_schema_ready"
             ),
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
             "Execute the bridge takeover only after an explicit actual-takeover request, then release 127.0.0.1:55557 from the wrong workspace editor and launch the correct D:/Git/CubelessStylized editor session with the hardened UnrealMCP DLL loaded",
-            "After takeover execution, verify the correct workspace bridge through a read-only probe, then admit the verification result only if the probe proves the managed CubelessStylized project",
+            "After takeover execution, produce verification evidence matching the required project identity, bridge endpoint, MCP command, read-only probe, dirty-state, and timestamp schema before admission",
             "Run the UserWidget root/child WidgetTree mutation checkpoint under _MCP_Temp after the correct bridge owns 127.0.0.1:55557",
             "Run DataAsset or Blueprint Function Library actual temp asset creation checkpoints only after the correct workspace bridge is verified",
         ],
@@ -20039,7 +20171,7 @@ def render_markdown(report: Dict[str, Any]) -> str:
             "",
             "## Decision",
             "",
-            "This boundary records the staged durable authoring gates through Section 512. The UserWidget UMG C++ route is hardened and build-verified, but 127.0.0.1:55557 is owned by a different workspace editor. Section 489-496 records the correct-workspace bridge takeover handoff, Section 497-504 records the takeover execution envelope as dry-run only, and Section 505-512 records that post-takeover verification evidence is still missing. Automatic process termination, port release, editor/MCP startup, bridge verification result admission, UserWidget live WidgetTree mutation, and non-Actor actual temp asset checkpoints remain blocked until an explicit actual-takeover request and read-only correct-project verification complete. DataAsset default-authoring and Blueprint Function Library routes remain dry-run admitted only; creation, graph/default mutation, compile, save, cleanup, delete, rename, overwrite, and production writes remain closed.",
+            "This boundary records the staged durable authoring gates through Section 520. The UserWidget UMG C++ route is hardened and build-verified, but 127.0.0.1:55557 is owned by a different workspace editor. Section 489-496 records the correct-workspace bridge takeover handoff, Section 497-504 records the takeover execution envelope as dry-run only, Section 505-512 records that post-takeover verification evidence is still missing, and Section 513-520 records the required verification evidence schema while keeping evidence ingest and admission closed. Automatic process termination, port release, editor/MCP startup, bridge verification result admission, UserWidget live WidgetTree mutation, and non-Actor actual temp asset checkpoints remain blocked until an explicit actual-takeover request and read-only correct-project verification evidence complete. DataAsset default-authoring and Blueprint Function Library routes remain dry-run admitted only; creation, graph/default mutation, compile, save, cleanup, delete, rename, overwrite, and production writes remain closed.",
             "",
             "## Next Reinforcement Candidates",
             "",
