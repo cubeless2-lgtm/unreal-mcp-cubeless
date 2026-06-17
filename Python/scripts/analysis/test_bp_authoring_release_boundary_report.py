@@ -53,7 +53,7 @@ def main() -> int:
         report = release_boundary.build_report(repo_root=repo_root, project_root=project_root)
         assert report["schema"] == release_boundary.REPORT_SCHEMA
         assert report["verdict"]["status"] == "passed"
-        assert report["verdict"]["release_boundary_version"] == "section_289_296_v141"
+        assert report["verdict"]["release_boundary_version"] == "section_297_304_v142"
         assert report["verdict"]["section_51_58_contract_status"] == "passed"
         assert report["verdict"]["section_61_bridge_refresh_status"] == "passed"
         assert report["verdict"]["section_62_live_evidence_refresh_status"] == "passed"
@@ -1197,6 +1197,60 @@ def main() -> int:
             ]
             == "passed"
         )
+        assert (
+            report["verdict"][
+                "section_297_304_durable_executor_authoring_post_delete_recreation_reset_batch_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_297_durable_authoring_post_delete_checkpoint_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_298_durable_authoring_deleted_target_absence_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_299_durable_authoring_recreation_plan_scope_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_300_durable_authoring_recreation_checkpoint_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_301_durable_authoring_readback_routes_reset_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_302_durable_authoring_diagnostics_routes_reset_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_303_durable_authoring_post_delete_no_write_boundary_status"
+            ]
+            == "passed"
+        )
+        assert (
+            report["verdict"][
+                "section_304_durable_authoring_post_delete_reset_release_status"
+            ]
+            == "passed"
+        )
         assert report["verdict"]["durable_safety_boundary_unlock_ready"] is True
         assert report["verdict"]["durable_safety_boundary_unlocked"] is True
         assert report["verdict"]["final_durable_release_ready"] is True
@@ -1332,6 +1386,25 @@ def main() -> int:
             ]
             is True
         )
+        assert report["verdict"]["post_delete_recreation_reset_ready"] is True
+        assert report["verdict"]["post_delete_target_absence_confirmed"] is True
+        assert (
+            report["verdict"][
+                "post_delete_recreation_requires_final_user_checkpoint"
+            ]
+            is True
+        )
+        assert report["verdict"]["post_delete_readback_routes_reset"] is True
+        assert report["verdict"]["post_delete_diagnostics_routes_reset"] is True
+        assert report["verdict"]["post_delete_recreate_asset_allowed"] is False
+        assert (
+            report["verdict"]["post_delete_recreate_command_dispatched"]
+            is False
+        )
+        assert (
+            report["verdict"]["post_delete_recreate_command_executed"]
+            is False
+        )
         assert report["verdict"]["graph_repair_command_dispatched"] is False
         assert report["verdict"]["graph_repair_command_executed"] is False
         assert report["verdict"]["graph_layout_mutation_performed"] is False
@@ -1390,7 +1463,7 @@ def main() -> int:
         assert report["verdict"]["production_path_write_executed"] is False
         assert (
             report["verdict"]["durable_authoring_release_status"]
-            == "section_296_cleanup_delete_actual_execution_readback_ready"
+            == "section_304_post_delete_recreation_reset_ready"
         )
         assert find_row(report, "job_contract_default_request_set")["status"] == "passed"
         assert find_row(report, "manifest_executor_policy")["status"] == "passed"
@@ -9691,6 +9764,74 @@ def main() -> int:
         )
         for key in expected_cleanup_delete_actual_zero_counts:
             assert cleanup_delete_actual_row["actual"][key] == 0, key
+        post_delete_reset_row = find_row(
+            report,
+            "durable_executor_authoring_post_delete_recreation_reset_batch",
+        )
+        assert post_delete_reset_row["status"] == "passed"
+        expected_post_delete_reset_one_counts = (
+            "durable_requested_executor_authoring_post_delete_recreation_reset_batch_count",
+            "section_289_296_summary_schema_matches_count",
+            "section_289_296_summary_passed_count",
+            "section_289_296_cleanup_delete_actual_ready_count",
+            "section_289_296_non_delete_outputs_closed_count",
+            "result_schema_matches_count",
+            "post_delete_checkpoint_satisfied_count",
+            "deleted_target_absence_confirmed_count",
+            "recreation_plan_scoped_count",
+            "recreation_requires_explicit_checkpoint_count",
+            "readback_routes_reset_count",
+            "diagnostics_routes_reset_count",
+            "post_delete_no_write_boundary_verified_count",
+            "result_has_no_error_count",
+            "final_durable_release_ready_count",
+            "section_297_post_delete_checkpoint_satisfied_count",
+            "section_298_deleted_target_absence_confirmed_count",
+            "section_299_recreation_plan_scoped_count",
+            "section_300_recreation_requires_explicit_checkpoint_count",
+            "section_301_readback_routes_reset_count",
+            "section_302_diagnostics_routes_reset_count",
+            "section_303_post_delete_no_write_boundary_verified_count",
+            "section_304_post_delete_reset_release_ready_count",
+            "post_delete_recreation_reset_ready_count",
+            "post_delete_target_absence_confirmed_count",
+            "post_delete_recreation_requires_checkpoint_count",
+        )
+        for key in expected_post_delete_reset_one_counts:
+            assert post_delete_reset_row["actual"][key] == 1, key
+        expected_post_delete_reset_zero_counts = (
+            "recreate_asset_allowed_count",
+            "recreate_command_dispatched_count",
+            "recreate_command_executed_count",
+            "readback_command_dispatched_count",
+            "readback_command_executed_count",
+            "diagnostics_command_dispatched_count",
+            "diagnostics_command_executed_count",
+            "graph_repair_command_dispatched_count",
+            "graph_repair_command_executed_count",
+            "graph_layout_mutation_performed_count",
+            "node_position_write_performed_count",
+            "pin_connection_write_performed_count",
+            "actor_bp_authoring_compile_dispatched_count",
+            "actor_bp_authoring_compile_executed_count",
+            "actor_bp_authoring_save_dispatched_count",
+            "actor_bp_authoring_save_executed_count",
+            "actor_bp_authoring_asset_write_performed_count",
+            "actor_bp_authoring_package_dirty_marked_count",
+            "cleanup_allowed_count",
+            "cleanup_executed_count",
+            "delete_asset_allowed_count",
+            "delete_asset_executed_output_count",
+            "rename_asset_allowed_count",
+            "rename_command_dispatched_count",
+            "rename_command_executed_count",
+            "overwrite_allowed_count",
+            "overwrite_executed_count",
+            "production_path_write_allowed_count",
+            "production_path_write_executed_count",
+        )
+        for key in expected_post_delete_reset_zero_counts:
+            assert post_delete_reset_row["actual"][key] == 0, key
         assert find_row(report, "planner_driven_live_smoke_report")["status"] == "passed"
         canary_live_report_row = find_row(report, "durable_canary_read_only_live_preflight")
         assert canary_live_report_row["blocking"] is False

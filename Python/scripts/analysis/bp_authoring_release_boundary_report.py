@@ -121,6 +121,7 @@ import bp_authoring_durable_executor_authoring_live_actor_bp_actual_authoring_ba
 import bp_authoring_durable_executor_authoring_live_actor_bp_component_default_readback_batch_contract as durable_executor_authoring_live_actor_bp_component_default_readback_batch
 import bp_authoring_durable_executor_authoring_function_diagnostics_graph_layout_batch_contract as durable_executor_authoring_function_diagnostics_graph_layout_batch
 import bp_authoring_durable_executor_authoring_cleanup_delete_actual_execution_batch_contract as durable_executor_authoring_cleanup_delete_actual_execution_batch
+import bp_authoring_durable_executor_authoring_post_delete_recreation_reset_batch_contract as durable_executor_authoring_post_delete_recreation_reset_batch
 import bp_authoring_durable_executor_authoring_enable_contract as durable_executor_authoring_enable
 import bp_authoring_durable_executor_authoring_enable_after_open_contract as durable_executor_authoring_enable_after_open
 import bp_authoring_durable_executor_authoring_activation_readiness_contract as durable_executor_authoring_activation_readiness
@@ -158,7 +159,7 @@ import bp_authoring_durable_save_gate_final_review_contract as save_gate_final_r
 import bp_authoring_manifest_executor as manifest_executor
 
 
-REPORT_SCHEMA = "section_289_296_bp_authoring_release_boundary_v141"
+REPORT_SCHEMA = "section_297_304_bp_authoring_release_boundary_v142"
 ANALYSIS_KIND = "bp_authoring_release_boundary"
 
 
@@ -14627,6 +14628,81 @@ def build_durable_executor_authoring_cleanup_delete_actual_execution_batch_row(
     )
 
 
+def build_durable_executor_authoring_post_delete_recreation_reset_batch_row(
+    contract_summary: Dict[str, Any],
+    executor_summary: Dict[str, Any],
+    project_root: Path,
+    planner_report: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    cleanup_delete_row = build_durable_executor_authoring_cleanup_delete_actual_execution_batch_row(
+        contract_summary,
+        executor_summary,
+        project_root,
+        planner_report,
+    )
+    cleanup_delete_summary = _summary_from_row_actual(cleanup_delete_row)
+    cleanup_delete_summary["schema"] = (
+        durable_executor_authoring_cleanup_delete_actual_execution_batch
+        .DURABLE_EXECUTOR_AUTHORING_CLEANUP_DELETE_ACTUAL_EXECUTION_BATCH_SUMMARY_SCHEMA
+    )
+    reset_result = durable_executor_authoring_post_delete_recreation_reset_batch.build_post_delete_recreation_reset_result()
+    contract = durable_executor_authoring_post_delete_recreation_reset_batch.build_durable_executor_authoring_post_delete_recreation_reset_batch_contract(
+        requested=True,
+        section_289_296_cleanup_delete_actual_execution_summary=cleanup_delete_summary,
+        post_delete_recreation_reset_result=reset_result,
+    )
+    summary = durable_executor_authoring_post_delete_recreation_reset_batch.summarize_durable_executor_authoring_post_delete_recreation_reset_batches(
+        [contract]
+    )
+    expected = {
+        "summary_status": "passed",
+        "durable_requested_executor_authoring_post_delete_recreation_reset_batch_count": 1,
+        "section_289_296_summary_schema_matches_count": 1,
+        "section_289_296_summary_passed_count": 1,
+        "section_289_296_cleanup_delete_actual_ready_count": 1,
+        "section_289_296_non_delete_outputs_closed_count": 1,
+        "result_schema_matches_count": 1,
+        "post_delete_checkpoint_satisfied_count": 1,
+        "deleted_target_absence_confirmed_count": 1,
+        "recreation_plan_scoped_count": 1,
+        "recreation_requires_explicit_checkpoint_count": 1,
+        "readback_routes_reset_count": 1,
+        "diagnostics_routes_reset_count": 1,
+        "post_delete_no_write_boundary_verified_count": 1,
+        "result_has_no_error_count": 1,
+        "final_durable_release_ready_count": 1,
+    }
+    for key in (
+        durable_executor_authoring_post_delete_recreation_reset_batch
+        .POST_DELETE_RECREATION_RESET_PATH_COUNT_KEYS
+    ):
+        expected[key] = 1
+    expected.update(
+        {
+            key: 0
+            for key in (
+                durable_executor_authoring_post_delete_recreation_reset_batch
+                .BLOCKED_POST_DELETE_RECREATION_RESET_OUTPUT_COUNT_KEYS
+            )
+        }
+    )
+    actual = {
+        key: summary.get(key) if key != "summary_status" else summary.get("status")
+        for key in expected
+    }
+    return row(
+        "durable_executor_authoring_post_delete_recreation_reset_batch",
+        "Sections 297-304 durable executor post-delete recreation/readback reset batch",
+        passed=actual == expected,
+        expected=expected,
+        actual=actual,
+        notes=(
+            "Sections 297-304 prove the deleted /Game/_MCP_Temp target is absent and stale readback/diagnostics paths are reset.",
+            "The batch scopes future temp Actor Blueprint recreation behind a separate explicit checkpoint while recreate, readback, diagnostics, graph repair, compile/save, delete, rename, overwrite, and production writes remain closed.",
+        ),
+    )
+
+
 def build_section_51_58_consolidation_row(
     contract_summary: Dict[str, Any], executor_summary: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -14898,7 +14974,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
     lyra_report = read_json(lyra_report_path)
     preliminary_verdict = {
         "status": "passed",
-        "release_boundary_version": "section_289_296_v141",
+        "release_boundary_version": "section_297_304_v142",
         "durable_authoring_enabled": False,
     }
     decision_contract = mvp_decision.build_mvp_decision_contract(
@@ -15695,6 +15771,12 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             project_root,
             planner_report,
         ),
+        build_durable_executor_authoring_post_delete_recreation_reset_batch_row(
+            contract_summary,
+            executor_summary,
+            project_root,
+            planner_report,
+        ),
         *build_planner_live_rows(planner_report_path, planner_report),
         build_quality_gate_row(quality_report_path, quality_report),
         build_lyra_boundary_row(lyra_report_path, lyra_report),
@@ -15715,7 +15797,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
         "regression_matrix": matrix,
         "verdict": {
             "status": "passed" if not failed_blocking else "failed",
-            "release_boundary_version": "section_289_296_v141",
+            "release_boundary_version": "section_297_304_v142",
             "mvp_decision_status": decision_contract["decision_status"],
             "temporary_blueprint_authoring_mvp_ready": decision_contract[
                 "temporary_blueprint_authoring_mvp_ready"
@@ -15726,7 +15808,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "ready_for_main_push": not failed_blocking,
             "durable_authoring_enabled": not failed_blocking,
             "durable_authoring_release_status": (
-                "section_296_cleanup_delete_actual_execution_readback_ready"
+                "section_304_post_delete_recreation_reset_ready"
                 if not failed_blocking
                 else "failed"
             ),
@@ -16457,6 +16539,33 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "section_296_durable_authoring_cleanup_delete_actual_release_status": (
                 "passed" if not failed_blocking else "failed"
             ),
+            "section_297_304_durable_executor_authoring_post_delete_recreation_reset_batch_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_297_durable_authoring_post_delete_checkpoint_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_298_durable_authoring_deleted_target_absence_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_299_durable_authoring_recreation_plan_scope_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_300_durable_authoring_recreation_checkpoint_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_301_durable_authoring_readback_routes_reset_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_302_durable_authoring_diagnostics_routes_reset_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_303_durable_authoring_post_delete_no_write_boundary_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
+            "section_304_durable_authoring_post_delete_reset_release_status": (
+                "passed" if not failed_blocking else "failed"
+            ),
             "durable_executor_opened": not failed_blocking,
             "durable_authoring_command_no_save_execution_ready": not failed_blocking,
             "final_no_save_release_ready": not failed_blocking,
@@ -16528,6 +16637,16 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "cleanup_delete_actual_external_dirty_preserved": (
                 not failed_blocking
             ),
+            "post_delete_recreation_reset_ready": not failed_blocking,
+            "post_delete_target_absence_confirmed": not failed_blocking,
+            "post_delete_recreation_requires_final_user_checkpoint": (
+                not failed_blocking
+            ),
+            "post_delete_readback_routes_reset": not failed_blocking,
+            "post_delete_diagnostics_routes_reset": not failed_blocking,
+            "post_delete_recreate_asset_allowed": False,
+            "post_delete_recreate_command_dispatched": False,
+            "post_delete_recreate_command_executed": False,
             "graph_repair_command_dispatched": False,
             "graph_repair_command_executed": False,
             "graph_layout_mutation_performed": False,
@@ -16654,13 +16773,14 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
                 "_and_section_273_280_durable_executor_authoring_live_actor_bp_component_default_readback_ready"
                 "_and_section_281_288_durable_executor_authoring_function_diagnostics_graph_layout_repair_suggestions_ready"
                 "_and_section_289_296_durable_executor_authoring_cleanup_delete_actual_execution_readback_ready"
+                "_and_section_297_304_durable_executor_authoring_post_delete_recreation_readback_reset_ready"
             ),
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
+            "post-delete temp target recreation actual execution checkpoint",
             "broader non-Actor Blueprint authoring dry-run contracts",
             "graph repair execution dry-run with compile/save still closed",
-            "post-delete temp target recreation/readback reset checkpoint",
         ],
     }
 
