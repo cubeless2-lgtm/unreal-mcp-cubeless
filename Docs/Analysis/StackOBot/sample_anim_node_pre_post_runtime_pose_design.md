@@ -201,5 +201,6 @@ Only after that passes review should the temporary runtime sampler be added.
 - Trail cleanup verification reported `0` dirty content packages, `0` dirty map packages, and `0` remaining assets under `/Game/_MCP_Temp/AnimNodePrePost`.
 - A read-only compiled graph mapping preflight, `mode=compiled_graph_mapping`, is implemented to map an editor AnimGraph node GUID to the compiled/live `FAnimNode_*` property on the matched `AnimInstance`.
 - `compiled_graph_mapping` reports `same_anim_instance_node_mapping=true` when the live node struct address is resolved and cross-checks the address against `UAnimGraphNode_Base::FindDebugAnimNode` when possible.
+- `compiled_graph_mapping` also reports `runtime_pose_links` by reflecting runtime `FPoseLink` / `FComponentSpacePoseLink` fields from the live node struct. This captures `LinkID`, `SourceLinkID`, linked compiled property, linked visual node, and linked-node pointer parity.
 - This preflight proves the editor-node-to-runtime-node address path needed for future instrumentation, but it still reports `runtime_graph_prepost=false` and `same_instance_prepost=false` because it does not sample true compiled graph input/output pose data.
 - Remaining future scope is true same-instance compiled graph pose instrumentation once a safe pose tap/capture strategy is chosen.

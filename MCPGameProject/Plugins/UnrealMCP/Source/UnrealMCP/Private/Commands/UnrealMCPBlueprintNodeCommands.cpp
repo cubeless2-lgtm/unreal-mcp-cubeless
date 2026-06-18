@@ -5807,6 +5807,183 @@ TSharedPtr<FJsonObject> AnimGraphCompiledNodeMappingToJson(
     return MappingObject;
 }
 
+TSharedPtr<FJsonObject> RuntimePoseLinkToJson(
+    const FString& FieldPath,
+    const FStructProperty* PoseLinkProperty,
+    const void* PoseLinkPtr,
+    UAnimBlueprintGeneratedClass* AnimClass,
+    UAnimInstance* AnimInstance)
+{
+    TSharedPtr<FJsonObject> LinkObject = MakeShared<FJsonObject>();
+    LinkObject->SetStringField(TEXT("field_path"), FieldPath);
+    LinkObject->SetStringField(TEXT("field_name"), PoseLinkProperty ? PoseLinkProperty->GetName() : FString());
+    LinkObject->SetStringField(TEXT("pose_link_struct"), PoseLinkProperty && PoseLinkProperty->Struct ? PoseLinkProperty->Struct->GetPathName() : FString());
+    LinkObject->SetBoolField(TEXT("valid"), false);
+
+    if (!PoseLinkPtr)
+    {
+        LinkObject->SetStringField(TEXT("error"), TEXT("Pose link pointer is null"));
+        return LinkObject;
+    }
+
+    const FPoseLinkBase* PoseLink = reinterpret_cast<const FPoseLinkBase*>(PoseLinkPtr);
+    const int32 LinkID = PoseLink->LinkID;
+#if WITH_EDITORONLY_DATA
+    const int32 SourceLinkID = PoseLink->SourceLinkID;
+#else
+    const int32 SourceLinkID = INDEX_NONE;
+#endif
+    FPoseLinkBase* MutablePoseLink = const_cast<FPoseLinkBase*>(PoseLink);
+    FAnimNode_Base* CachedLinkedNode = MutablePoseLink->GetLinkNode();
+
+    const TArray<FStructProperty*>* AnimNodeProperties = AnimClass ? &AnimClass->GetAnimNodeProperties() : nullptr;
+    FStructProperty* LinkedProperty = (AnimNodeProperties && AnimNodeProperties->IsValidIndex(LinkID)) ? (*AnimNodeProperties)[LinkID] : nullptr;
+    FAnimNode_Base* LinkIDNode = (LinkedProperty && AnimInstance) ? LinkedProperty->ContainerPtrToValuePtr<FAnimNode_Base>(AnimInstance) : nullptr;
+    const UEdGraphNode* LinkedVisualNode = (AnimClass && LinkID != INDEX_NONE) ? AnimClass->GetVisualNodeFromNodePropertyIndex(LinkID, EPropertySearchMode::Hierarchy) : nullptr;
+    const UEdGraphNode* SourceVisualNode = (AnimClass && SourceLinkID != INDEX_NONE) ? AnimClass->GetVisualNodeFromNodePropertyIndex(SourceLinkID, EPropertySearchMode::Hierarchy) : nullptr;
+
+    LinkObject->SetBoolField(TEXT("valid"), true);
+    LinkObject->SetNumberField(TEXT("link_id"), LinkID);
+    LinkObject->SetNumberField(TEXT("source_link_id"), SourceLinkID);
+    LinkObject->SetBoolField(TEXT("link_id_property_valid"), LinkedProperty != nullptr);
+    LinkObject->SetStringField(TEXT("linked_property_name"), LinkedProperty ? LinkedProperty->GetName() : FString());
+    LinkObject->SetStringField(TEXT("linked_property_path"), LinkedProperty ? LinkedProperty->GetPathName() : FString());
+    LinkObject->SetStringField(TEXT("linked_property_struct"), LinkedProperty && LinkedProperty->Struct ? LinkedProperty->Struct->GetPathName() : FString());
+    LinkObject->SetBoolField(TEXT("has_cached_linked_node"), CachedLinkedNode != nullptr);
+    LinkObject->SetStringField(TEXT("cached_linked_node_pointer"), PointerToJsonString(CachedLinkedNode));
+    LinkObject->SetBoolField(TEXT("link_id_node_mapped"), LinkIDNode != nullptr);
+    LinkObject->SetStringField(TEXT("link_id_node_pointer"), PointerToJsonString(LinkIDNode));
+    LinkObject->SetBoolField(TEXT("linked_pointer_match"), CachedLinkedNode && LinkIDNode && CachedLinkedNode == LinkIDNode);
+    LinkObject->SetObjectField(TEXT("linked_visual_node"), NodeToJson(const_cast<UEdGraphNode*>(LinkedVisualNode), false));
+    LinkObject->SetObjectField(TEXT("source_visual_node"), NodeToJson(const_cast<UEdGraphNode*>(SourceVisualNode), false));
+    return LinkObject;
+}
+
+void CollectRuntimePoseLinksFromStruct(
+    const UScriptStruct* Struct,
+    const void* StructValuePtr,
+    const FString& FieldPath,
+    UAnimBlueprintGeneratedClass* AnimClass,
+    UAnimInstance* AnimInstance,
+    TArray<TSharedPtr<FJsonValue>>& LinkValues,
+    int32 Depth,
+    int32 MaxDepth)
+{
+    if (!Struct || !StructValuePtr || Depth > MaxDepth)
+    {
+        return;
+    }
+
+    for (TFieldIterator<FProperty> It(Struct, EFieldIterationFlags::IncludeSuper); It; ++It)
+    {
+        const FProperty* Property = *It;
+        if (!Property)
+        {
+            continue;
+        }
+
+        const FString ChildPath = FieldPath.IsEmpty()
+            ? Property->GetName()
+            : FString::Printf(TEXT("%s.%s"), *FieldPath, *Property->GetName());
+        const void* ValuePtr = Property->ContainerPtrToValuePtr<void>(StructValuePtr);
+
+        if (const FStructProperty* StructProperty = CastField<FStructProperty>(Property))
+        {
+            if (StructProperty->Struct && StructProperty->Struct->IsChildOf(FPoseLinkBase::StaticStruct()))
+            {
+                LinkValues.Add(MakeShared<FJsonValueObject>(RuntimePoseLinkToJson(ChildPath, StructProperty, ValuePtr, AnimClass, AnimInstance)));
+            }
+            else if (StructProperty->Struct)
+            {
+                CollectRuntimePoseLinksFromStruct(
+                    StructProperty->Struct,
+                    ValuePtr,
+                    ChildPath,
+                    AnimClass,
+                    AnimInstance,
+                    LinkValues,
+                    Depth + 1,
+                    MaxDepth);
+            }
+            continue;
+        }
+
+        if (const FArrayProperty* ArrayProperty = CastField<FArrayProperty>(Property))
+        {
+            const FStructProperty* InnerStructProperty = CastField<FStructProperty>(ArrayProperty->Inner);
+            if (!InnerStructProperty || !InnerStructProperty->Struct)
+            {
+                continue;
+            }
+
+            FScriptArrayHelper ArrayHelper(ArrayProperty, ValuePtr);
+            for (int32 Index = 0; Index < ArrayHelper.Num(); ++Index)
+            {
+                const FString ArrayPath = FString::Printf(TEXT("%s[%d]"), *ChildPath, Index);
+                const void* ElementPtr = ArrayHelper.GetRawPtr(Index);
+                if (InnerStructProperty->Struct->IsChildOf(FPoseLinkBase::StaticStruct()))
+                {
+                    LinkValues.Add(MakeShared<FJsonValueObject>(RuntimePoseLinkToJson(ArrayPath, InnerStructProperty, ElementPtr, AnimClass, AnimInstance)));
+                }
+                else
+                {
+                    CollectRuntimePoseLinksFromStruct(
+                        InnerStructProperty->Struct,
+                        ElementPtr,
+                        ArrayPath,
+                        AnimClass,
+                        AnimInstance,
+                        LinkValues,
+                        Depth + 1,
+                        MaxDepth);
+                }
+            }
+        }
+    }
+}
+
+TSharedPtr<FJsonObject> RuntimeAnimNodePoseLinksToJson(
+    UAnimBlueprintGeneratedClass* AnimClass,
+    FStructProperty* AnimNodeProperty,
+    UAnimInstance* AnimInstance,
+    int32 MaxDepth)
+{
+    TSharedPtr<FJsonObject> LinksObject = MakeShared<FJsonObject>();
+    TArray<TSharedPtr<FJsonValue>> LinkValues;
+
+    LinksObject->SetBoolField(TEXT("valid"), false);
+    LinksObject->SetStringField(TEXT("mapping_kind"), TEXT("runtime_anim_node_pose_links"));
+    LinksObject->SetStringField(TEXT("runtime_note"), TEXT("Reads FPoseLink/FComponentSpacePoseLink fields from the live FAnimNode struct. This maps runtime link IDs and linked node pointers only; it does not evaluate or capture pose data."));
+
+    if (!AnimClass || !AnimNodeProperty || !AnimNodeProperty->Struct || !AnimInstance)
+    {
+        LinksObject->SetStringField(TEXT("error"), TEXT("Missing AnimClass, AnimNodeProperty, struct, or AnimInstance"));
+        LinksObject->SetNumberField(TEXT("pose_link_count"), 0);
+        LinksObject->SetArrayField(TEXT("pose_links"), LinkValues);
+        return LinksObject;
+    }
+
+    void* RuntimeNodePtr = AnimNodeProperty->ContainerPtrToValuePtr<void>(AnimInstance);
+    CollectRuntimePoseLinksFromStruct(
+        AnimNodeProperty->Struct,
+        RuntimeNodePtr,
+        FString(),
+        AnimClass,
+        AnimInstance,
+        LinkValues,
+        0,
+        MaxDepth);
+
+    LinksObject->SetBoolField(TEXT("valid"), true);
+    LinksObject->SetStringField(TEXT("anim_class"), AnimClass->GetPathName());
+    LinksObject->SetStringField(TEXT("anim_node_property_name"), AnimNodeProperty->GetName());
+    LinksObject->SetStringField(TEXT("anim_node_property_struct"), AnimNodeProperty->Struct->GetPathName());
+    LinksObject->SetNumberField(TEXT("max_depth"), MaxDepth);
+    LinksObject->SetNumberField(TEXT("pose_link_count"), LinkValues.Num());
+    LinksObject->SetArrayField(TEXT("pose_links"), LinkValues);
+    return LinksObject;
+}
+
 TArray<TSharedPtr<FJsonValue>> LinkedPinsToJsonValues(const UEdGraphPin* Pin)
 {
     TArray<TSharedPtr<FJsonValue>> Values;
@@ -6292,6 +6469,22 @@ TSharedPtr<FJsonObject> BuildAnimNodePrePostCompiledGraphMappingResponse(
         &bRuntimeNodeMapped,
         &bFindDebugMapped);
 
+    UAnimBlueprintGeneratedClass* RuntimeAnimClass = Target.AnimInstance ? Cast<UAnimBlueprintGeneratedClass>(Target.AnimInstance->GetClass()) : nullptr;
+    const int32 RuntimeNodeIndex = (RuntimeAnimClass && TargetNode) ? RuntimeAnimClass->GetNodeIndexFromGuid(TargetNode->NodeGuid, EPropertySearchMode::Hierarchy) : INDEX_NONE;
+    FStructProperty* RuntimeAnimNodeProperty = (RuntimeAnimClass && RuntimeAnimClass->GetAnimNodeProperties().IsValidIndex(RuntimeNodeIndex))
+        ? RuntimeAnimClass->GetAnimNodeProperties()[RuntimeNodeIndex]
+        : nullptr;
+    const int32 PoseLinkMaxDepth = GetClampedIntParam(Params, TEXT("pose_link_max_depth"), 4, 0, 8);
+    TSharedPtr<FJsonObject> RuntimePoseLinksObject = RuntimeAnimNodePoseLinksToJson(
+        RuntimeAnimClass,
+        RuntimeAnimNodeProperty,
+        Target.AnimInstance,
+        PoseLinkMaxDepth);
+    const TArray<TSharedPtr<FJsonValue>>* RuntimePoseLinkValues = nullptr;
+    const bool bRuntimePoseLinksAvailable = RuntimePoseLinksObject->TryGetArrayField(TEXT("pose_links"), RuntimePoseLinkValues)
+        && RuntimePoseLinkValues
+        && RuntimePoseLinkValues->Num() > 0;
+
     const bool bMapped = bRuntimeNodeMapped || bFindDebugMapped;
     TSharedPtr<FJsonObject> ResultObj = MakeShared<FJsonObject>();
     ResultObj->SetBoolField(TEXT("success"), bMapped);
@@ -6307,6 +6500,7 @@ TSharedPtr<FJsonObject> BuildAnimNodePrePostCompiledGraphMappingResponse(
     ResultObj->SetBoolField(TEXT("same_anim_instance_node_mapping"), bMapped);
     ResultObj->SetBoolField(TEXT("runtime_node_instance_mapped"), bRuntimeNodeMapped);
     ResultObj->SetBoolField(TEXT("find_debug_anim_node_mapped"), bFindDebugMapped);
+    ResultObj->SetBoolField(TEXT("runtime_pose_links_available"), bRuntimePoseLinksAvailable);
     ResultObj->SetBoolField(TEXT("instrumentation_preflight"), true);
     ResultObj->SetBoolField(TEXT("original_assets_modified"), false);
     ResultObj->SetBoolField(TEXT("temp_assets_created"), false);
@@ -6315,6 +6509,7 @@ TSharedPtr<FJsonObject> BuildAnimNodePrePostCompiledGraphMappingResponse(
     ResultObj->SetStringField(TEXT("blueprint_path"), Blueprint ? Blueprint->GetPathName() : FString());
     ResultObj->SetObjectField(TEXT("target_node"), TargetNodeObject);
     ResultObj->SetObjectField(TEXT("runtime_node_mapping"), MappingObject);
+    ResultObj->SetObjectField(TEXT("runtime_pose_links"), RuntimePoseLinksObject);
     PopulateAnimInstanceRuntimeTargetFields(ResultObj, Target, bPreferPIEWorld, bRequirePIEWorld);
     AddGraphField(ResultObj, Blueprint, TargetGraph);
     ResultObj->SetArrayField(TEXT("warnings"), WarningValues);

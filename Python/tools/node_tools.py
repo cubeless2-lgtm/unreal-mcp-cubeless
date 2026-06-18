@@ -1535,6 +1535,7 @@ def register_blueprint_node_tools(mcp: FastMCP):
         settle_tick_count: int = 0,
         refresh_bone_transforms: bool = True,
         allow_missing_bones: bool = False,
+        pose_link_max_depth: int = 4,
         include_pins: bool = True,
         max_depth: int = 3,
         dry_run: bool = True
@@ -1544,7 +1545,8 @@ def register_blueprint_node_tools(mcp: FastMCP):
 
         With dry_run=True this is a read-only target resolver. With dry_run=False,
         mode="compiled_graph_mapping" maps the selected editor AnimGraph node to
-        the compiled/live FAnimNode instance on a matched AnimInstance. With
+        the compiled/live FAnimNode instance on a matched AnimInstance and reports
+        runtime FPoseLink/FComponentSpacePoseLink link IDs. With
         mode="active_component_tick_delta" samples final SkeletalMeshComponent pose
         before and after forced ticks on a matched live component. With
         mode="isolated_temp_components", it duplicates the AnimBP under _MCP_Temp,
@@ -1580,6 +1582,7 @@ def register_blueprint_node_tools(mcp: FastMCP):
             settle_tick_count: Forced ticks before taking the pre sample
             refresh_bone_transforms: Refresh bone transforms after forced ticks
             allow_missing_bones: Return partial samples instead of failing on missing bones/sockets
+            pose_link_max_depth: Max struct recursion depth for compiled_graph_mapping runtime pose-link inventory
             include_pins: Include full pin data for the selected node
             max_depth: Reflected settings depth
             dry_run: Resolve only when true; run the selected mode when false
@@ -1602,6 +1605,7 @@ def register_blueprint_node_tools(mcp: FastMCP):
                 "settle_tick_count": settle_tick_count,
                 "refresh_bone_transforms": refresh_bone_transforms,
                 "allow_missing_bones": allow_missing_bones,
+                "pose_link_max_depth": pose_link_max_depth,
                 "include_pins": include_pins,
                 "max_depth": max_depth,
                 "dry_run": dry_run,

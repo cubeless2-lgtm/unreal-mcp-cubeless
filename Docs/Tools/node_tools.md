@@ -468,7 +468,7 @@ Use this command when you need a stable same-instance pre/post ControlRig solve 
 
 Resolve a target AnimGraph node or run a limited runtime pose/mapping probe.
 
-**Important scope note:** `dry_run=true` is a read-only target resolver. `dry_run=false` supports `mode=compiled_graph_mapping`, `mode=active_component_tick_delta`, and `mode=isolated_temp_components`. Compiled graph mapping resolves the selected editor AnimGraph node GUID to the compiled/live `FAnimNode_*` instance on a matched `AnimInstance`; this is a same-instance instrumentation preflight, not a pose sample. Active tick-delta samples final `SkeletalMeshComponent` pose before and after forced ticks on a matched live component. Isolated temp mode duplicates the AnimBP under `_MCP_Temp`, bypasses the selected node in a source copy, and compares it against a selected-node copy on separate transient components. None of these runtime modes samples true same-instance compiled graph input/output pose data. Runtime responses intentionally report `runtime_graph_prepost=false` and `same_instance_prepost=false`.
+**Important scope note:** `dry_run=true` is a read-only target resolver. `dry_run=false` supports `mode=compiled_graph_mapping`, `mode=active_component_tick_delta`, and `mode=isolated_temp_components`. Compiled graph mapping resolves the selected editor AnimGraph node GUID to the compiled/live `FAnimNode_*` instance on a matched `AnimInstance` and reads that node's runtime `FPoseLink` / `FComponentSpacePoseLink` link IDs; this is a same-instance instrumentation preflight, not a pose sample. Active tick-delta samples final `SkeletalMeshComponent` pose before and after forced ticks on a matched live component. Isolated temp mode duplicates the AnimBP under `_MCP_Temp`, bypasses the selected node in a source copy, and compares it against a selected-node copy on separate transient components. None of these runtime modes samples true same-instance compiled graph input/output pose data. Runtime responses intentionally report `runtime_graph_prepost=false` and `same_instance_prepost=false`.
 
 Use this command before implementing or running deeper AnimGraph node instrumentation so ambiguous node selectors are caught early.
 
@@ -497,6 +497,7 @@ Use this command before implementing or running deeper AnimGraph node instrument
 - `settle_tick_count` (number, optional) - Forced ticks before the pre sample, clamped `0..240`. Defaults to `0`.
 - `refresh_bone_transforms` (boolean, optional) - Refresh bone transforms after forced ticks. Defaults to `true`.
 - `allow_missing_bones` (boolean, optional) - Return partial samples instead of failing on missing bones/sockets. Defaults to `false`.
+- `pose_link_max_depth` (number, optional) - Max struct recursion depth for `compiled_graph_mapping` runtime pose-link inventory. Defaults to `4`, clamped `0..8`.
 - `include_pins` (boolean, optional) - Include full selected-node pin data. Defaults to `true`.
 - `max_depth` (number, optional) - Reflected settings depth. Defaults to `3`.
 - `dry_run` (boolean, optional) - Resolve only when true; run `active_component_tick_delta` when false. Defaults to `true`.
@@ -505,7 +506,8 @@ Use this command before implementing or running deeper AnimGraph node instrument
 - `target_node` with node metadata, reflected settings, preferred input/output pose pins, upstream/downstream pose links, `mvp_kind`, and `isolated_sampler_mvp_supported`
 - `target_node.compiled_node_mapping` with the dry-run compiled property mapping for the selected editor node
 - `mode=dry_run_target_resolver` for dry-run
-- `mode=compiled_graph_mapping`, `comparison_kind=compiled_graph_node_mapping`, `runtime_node_mapping`, and `same_anim_instance_node_mapping=true` when live same-instance node mapping succeeds
+- `mode=compiled_graph_mapping`, `comparison_kind=compiled_graph_node_mapping`, `runtime_node_mapping`, `runtime_pose_links`, and `same_anim_instance_node_mapping=true` when live same-instance node mapping succeeds
+- `runtime_pose_links.pose_links[]` with `field_path`, `link_id`, `source_link_id`, linked compiled property, linked visual node, cached linked-node pointer, and `linked_pointer_match` when a runtime pose link is present
 - `mode=active_component_tick_delta` and `comparison_kind=active_component_tick_delta` for runtime tick-delta sampling
 - `mode=isolated_temp_components` and `comparison_kind=isolated_temp_components` for temp source-vs-output sampling
 - `runtime_graph_prepost=false`
