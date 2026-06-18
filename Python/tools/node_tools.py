@@ -1547,12 +1547,16 @@ def register_blueprint_node_tools(mcp: FastMCP):
         mode="compiled_graph_mapping" maps the selected editor AnimGraph node to
         the compiled/live FAnimNode instance on a matched AnimInstance and reports
         runtime FPoseLink/FComponentSpacePoseLink link IDs. With
+        mode="pose_watch_capture", it temporarily sets the AnimBP debug object,
+        registers transient PoseWatch debug entries for the selected compiled
+        node output and first runtime input pose link, and samples both during
+        the same forced tick without adding PoseWatches to the AnimBP asset.
+        With
         mode="active_component_tick_delta" samples final SkeletalMeshComponent pose
         before and after forced ticks on a matched live component. With
         mode="isolated_temp_components", it duplicates the AnimBP under _MCP_Temp,
         bypasses the selected node in a source copy, and compares that against a
-        selected-node copy on separate transient components. These modes still do
-        not sample true same-instance compiled graph input/output pose data.
+        selected-node copy on separate transient components.
 
         Args:
             blueprint_name: Anim Blueprint name or path
@@ -1565,7 +1569,7 @@ def register_blueprint_node_tools(mcp: FastMCP):
             title_contains: Node title substring filter
             sample_bones: Optional future sample bone list echoed in the response
             sample_sockets: Optional future sample socket list echoed in the response
-            mode: Runtime mode for dry_run=False. compiled_graph_mapping, active_component_tick_delta, or isolated_temp_components.
+            mode: Runtime mode for dry_run=False. compiled_graph_mapping, pose_watch_capture, active_component_tick_delta, or isolated_temp_components.
             skeletal_mesh: SkeletalMesh path required by isolated_temp_components
             temp_root: Temp asset root for isolated_temp_components
             cleanup: Delete transient actors/temp assets after isolated sampling
@@ -1582,7 +1586,7 @@ def register_blueprint_node_tools(mcp: FastMCP):
             settle_tick_count: Forced ticks before taking the pre sample
             refresh_bone_transforms: Refresh bone transforms after forced ticks
             allow_missing_bones: Return partial samples instead of failing on missing bones/sockets
-            pose_link_max_depth: Max struct recursion depth for compiled_graph_mapping runtime pose-link inventory
+            pose_link_max_depth: Max struct recursion depth for compiled_graph_mapping and pose_watch_capture runtime pose-link inventory
             include_pins: Include full pin data for the selected node
             max_depth: Reflected settings depth
             dry_run: Resolve only when true; run the selected mode when false

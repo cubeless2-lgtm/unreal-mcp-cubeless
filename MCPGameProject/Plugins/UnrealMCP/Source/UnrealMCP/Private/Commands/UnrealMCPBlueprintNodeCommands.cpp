@@ -3,6 +3,7 @@
 #include "Engine/Blueprint.h"
 #include "Engine/BlueprintGeneratedClass.h"
 #include "Animation/AnimBlueprintGeneratedClass.h"
+#include "Animation/AnimBlueprint.h"
 #include "Animation/AnimClassInterface.h"
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
@@ -33,6 +34,8 @@
 #include "Editor.h"
 #include "EditorAssetLibrary.h"
 #include "Engine/Engine.h"
+#include "Engine/PoseWatch.h"
+#include "Engine/PoseWatchRenderData.h"
 #include "Engine/SkeletalMesh.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
@@ -78,6 +81,7 @@
 #include "InputAction.h"
 #include "Internationalization/Text.h"
 #include "Misc/PackageName.h"
+#include "ReferenceSkeleton.h"
 #include "Serialization/JsonSerializer.h"
 #include "Serialization/JsonWriter.h"
 #include "UObject/Class.h"
@@ -6229,6 +6233,688 @@ TSharedPtr<FJsonObject> BuildAnimNodePoseDeltas(
     return DeltaObject;
 }
 
+#if WITH_EDITOR
+struct FTransientAnimPoseWatchRegistration
+{
+    FString Role;
+    int32 NodeID = INDEX_NONE;
+    UPoseWatch* PoseWatch = nullptr;
+    UPoseWatchPoseElement* PoseElement = nullptr;
+    bool bRegistered = false;
+    bool bPreExisting = false;
+    bool bCreatedTransient = false;
+};
+
+FAnimNodePoseWatch* FindAnimNodePoseWatchByNodeID(FAnimBlueprintDebugData* DebugData, int32 NodeID)
+{
+    if (!DebugData || NodeID == INDEX_NONE)
+    {
+        return nullptr;
+    }
+
+    for (FAnimNodePoseWatch& PoseWatch : DebugData->AnimNodePoseWatch)
+    {
+        if (PoseWatch.NodeID == NodeID)
+        {
+            return &PoseWatch;
+        }
+    }
+
+    return nullptr;
+}
+
+const FAnimNodePoseWatch* FindAnimNodePoseWatchByNodeID(const FAnimBlueprintDebugData* DebugData, int32 NodeID)
+{
+    if (!DebugData || NodeID == INDEX_NONE)
+    {
+        return nullptr;
+    }
+
+    for (const FAnimNodePoseWatch& PoseWatch : DebugData->AnimNodePoseWatch)
+    {
+        if (PoseWatch.NodeID == NodeID)
+        {
+            return &PoseWatch;
+        }
+    }
+
+    return nullptr;
+}
+
+TSharedPtr<FJsonObject> PoseWatchRegistrationToJson(const FTransientAnimPoseWatchRegistration& Registration)
+{
+    TSharedPtr<FJsonObject> Object = MakeShared<FJsonObject>();
+    Object->SetStringField(TEXT("role"), Registration.Role);
+    Object->SetNumberField(TEXT("node_id"), Registration.NodeID);
+    Object->SetBoolField(TEXT("registered"), Registration.bRegistered);
+    Object->SetBoolField(TEXT("pre_existing"), Registration.bPreExisting);
+    Object->SetBoolField(TEXT("created_transient"), Registration.bCreatedTransient);
+    Object->SetStringField(TEXT("pose_watch"), Registration.PoseWatch ? Registration.PoseWatch->GetPathName() : FString());
+    Object->SetStringField(TEXT("pose_element"), Registration.PoseElement ? Registration.PoseElement->GetPathName() : FString());
+    return Object;
+}
+
+bool GetJsonBoolFieldOrDefault(const TSharedPtr<FJsonObject>& Object, const FString& FieldName, bool bDefaultValue)
+{
+    bool bValue = bDefaultValue;
+    return Object.IsValid() && Object->TryGetBoolField(FieldName, bValue) ? bValue : bDefaultValue;
+}
+
+FString GetJsonStringFieldOrDefault(const TSharedPtr<FJsonObject>& Object, const FString& FieldName, const FString& DefaultValue)
+{
+    FString Value;
+    return Object.IsValid() && Object->TryGetStringField(FieldName, Value) ? Value : DefaultValue;
+}
+
+bool RegisterTransientAnimPoseWatch(
+    FAnimBlueprintDebugData* DebugData,
+    UAnimBlueprint* AnimBlueprint,
+    int32 NodeID,
+    const FString& Role,
+    FTransientAnimPoseWatchRegistration& OutRegistration,
+    TArray<TSharedPtr<FJsonValue>>& ErrorValues)
+{
+    OutRegistration = FTransientAnimPoseWatchRegistration();
+    OutRegistration.Role = Role;
+    OutRegistration.NodeID = NodeID;
+
+    if (!DebugData)
+    {
+        ErrorValues.Add(MakeShared<FJsonValueString>(FString::Printf(TEXT("Cannot register pose watch '%s': debug data is null"), *Role)));
+        return false;
+    }
+
+    if (!AnimBlueprint)
+    {
+        ErrorValues.Add(MakeShared<FJsonValueString>(FString::Printf(TEXT("Cannot register pose watch '%s': AnimBlueprint is null"), *Role)));
+        return false;
+    }
+
+    if (NodeID == INDEX_NONE)
+    {
+        ErrorValues.Add(MakeShared<FJsonValueString>(FString::Printf(TEXT("Cannot register pose watch '%s': node/link ID is INDEX_NONE"), *Role)));
+        return false;
+    }
+
+    if (FAnimNodePoseWatch* ExistingPoseWatch = FindAnimNodePoseWatchByNodeID(DebugData, NodeID))
+    {
+        OutRegistration.PoseWatch = ExistingPoseWatch->PoseWatch;
+        OutRegistration.PoseElement = ExistingPoseWatch->PoseWatchPoseElement;
+        OutRegistration.bRegistered = ExistingPoseWatch->PoseWatch != nullptr && ExistingPoseWatch->PoseWatchPoseElement != nullptr;
+        OutRegistration.bPreExisting = true;
+        if (!OutRegistration.bRegistered)
+        {
+            ErrorValues.Add(MakeShared<FJsonValueString>(FString::Printf(TEXT("Existing pose watch '%s' for node/link ID %d has null watch pointers"), *Role, NodeID)));
+        }
+        return OutRegistration.bRegistered;
+    }
+
+    UPoseWatch* PoseWatch = NewObject<UPoseWatch>(AnimBlueprint, NAME_None, RF_Transient);
+    if (!PoseWatch)
+    {
+        ErrorValues.Add(MakeShared<FJsonValueString>(FString::Printf(TEXT("Failed to create transient pose watch '%s'"), *Role)));
+        return false;
+    }
+
+    PoseWatch->AddToRoot();
+    PoseWatch->SetIsVisible(false);
+    TObjectPtr<UPoseWatchPoseElement> PoseElementObject = PoseWatch->AddElement<UPoseWatchPoseElement>(
+        FText::FromString(Role),
+        FName(TEXT("AnimGraph.PoseWatch.Icon")));
+    UPoseWatchPoseElement* PoseElement = PoseElementObject.Get();
+    if (!PoseElement)
+    {
+        if (PoseWatch->IsRooted())
+        {
+            PoseWatch->RemoveFromRoot();
+        }
+        ErrorValues.Add(MakeShared<FJsonValueString>(FString::Printf(TEXT("Failed to create transient pose watch element '%s'"), *Role)));
+        return false;
+    }
+
+    PoseElement->SetColor(Role.Contains(TEXT("pre")) ? FColor::Cyan : FColor::Orange);
+    PoseElement->SetIsVisible(false);
+
+    DebugData->AddPoseWatch(NodeID, PoseElement);
+    FAnimNodePoseWatch* RegisteredPoseWatch = FindAnimNodePoseWatchByNodeID(DebugData, NodeID);
+    const bool bRegistered = RegisteredPoseWatch && RegisteredPoseWatch->PoseWatch == PoseWatch && RegisteredPoseWatch->PoseWatchPoseElement == PoseElement;
+    if (!bRegistered)
+    {
+        DebugData->RemovePoseWatch(NodeID);
+        if (PoseWatch->IsRooted())
+        {
+            PoseWatch->RemoveFromRoot();
+        }
+        ErrorValues.Add(MakeShared<FJsonValueString>(FString::Printf(TEXT("Transient pose watch '%s' did not register for node/link ID %d"), *Role, NodeID)));
+        return false;
+    }
+
+    OutRegistration.PoseWatch = PoseWatch;
+    OutRegistration.PoseElement = PoseElement;
+    OutRegistration.bRegistered = true;
+    OutRegistration.bCreatedTransient = true;
+    return true;
+}
+
+void CleanupTransientAnimPoseWatches(FAnimBlueprintDebugData* DebugData, const TArray<FTransientAnimPoseWatchRegistration>& Registrations)
+{
+    TSet<int32> RemovedNodeIDs;
+    for (const FTransientAnimPoseWatchRegistration& Registration : Registrations)
+    {
+        if (!Registration.bCreatedTransient || Registration.NodeID == INDEX_NONE || RemovedNodeIDs.Contains(Registration.NodeID))
+        {
+            continue;
+        }
+
+        if (DebugData)
+        {
+            DebugData->RemovePoseWatch(Registration.NodeID);
+        }
+        RemovedNodeIDs.Add(Registration.NodeID);
+
+        if (Registration.PoseWatch && Registration.PoseWatch->IsRooted())
+        {
+            Registration.PoseWatch->RemoveFromRoot();
+        }
+    }
+}
+
+bool GetPoseWatchLocalTransformForMeshBone(
+    const FAnimNodePoseWatch& PoseWatch,
+    int32 MeshBoneIndex,
+    FTransform& OutLocalTransform)
+{
+    const TArray<FTransform>& BoneTransforms = PoseWatch.GetBoneTransforms();
+    const TArray<FBoneIndexType>& RequiredBones = PoseWatch.GetRequiredBones();
+    const FBoneIndexType BoneIndex = static_cast<FBoneIndexType>(MeshBoneIndex);
+    int32 MaxRequiredBoneIndex = INDEX_NONE;
+    for (const FBoneIndexType RequiredBone : RequiredBones)
+    {
+        MaxRequiredBoneIndex = FMath::Max(MaxRequiredBoneIndex, static_cast<int32>(RequiredBone));
+    }
+
+    const bool bLooksMeshIndexed = RequiredBones.Num() == 0 || BoneTransforms.Num() > MaxRequiredBoneIndex;
+    if (bLooksMeshIndexed && BoneTransforms.IsValidIndex(MeshBoneIndex) && (RequiredBones.Num() == 0 || RequiredBones.Contains(BoneIndex)))
+    {
+        OutLocalTransform = BoneTransforms[MeshBoneIndex];
+        return true;
+    }
+
+    const int32 RequiredBoneArrayIndex = RequiredBones.Find(BoneIndex);
+    if (RequiredBoneArrayIndex != INDEX_NONE && BoneTransforms.IsValidIndex(RequiredBoneArrayIndex))
+    {
+        OutLocalTransform = BoneTransforms[RequiredBoneArrayIndex];
+        return true;
+    }
+
+    return false;
+}
+
+FAnimNodePoseTransformSample CapturePoseWatchBoneTransformSample(
+    const FAnimNodePoseWatch& PoseWatch,
+    const USkeletalMeshComponent* Component,
+    const FString& BoneNameText)
+{
+    FAnimNodePoseTransformSample Sample;
+    if (!Component)
+    {
+        Sample.Error = TEXT("SkeletalMeshComponent is null");
+        return Sample;
+    }
+
+    const USkeletalMesh* SkeletalMesh = Component->GetSkeletalMeshAsset();
+    if (!SkeletalMesh)
+    {
+        Sample.Error = TEXT("SkeletalMeshAsset is null");
+        return Sample;
+    }
+
+    const FName BoneName(*BoneNameText);
+    const int32 BoneIndex = Component->GetBoneIndex(BoneName);
+    if (BoneIndex == INDEX_NONE)
+    {
+        Sample.Error = FString::Printf(TEXT("Bone not found: %s"), *BoneNameText);
+        return Sample;
+    }
+
+    const FReferenceSkeleton& RefSkeleton = SkeletalMesh->GetRefSkeleton();
+    if (!RefSkeleton.IsValidIndex(BoneIndex))
+    {
+        Sample.Error = FString::Printf(TEXT("Bone index %d for '%s' is not valid in the mesh reference skeleton"), BoneIndex, *BoneNameText);
+        return Sample;
+    }
+
+    FTransform ComponentTransform = FTransform::Identity;
+    FTransform LocalTransform = FTransform::Identity;
+    if (!GetPoseWatchLocalTransformForMeshBone(PoseWatch, BoneIndex, LocalTransform))
+    {
+        Sample.Error = FString::Printf(TEXT("PoseWatch did not capture a transform for bone '%s' index %d"), *BoneNameText, BoneIndex);
+        return Sample;
+    }
+
+    ComponentTransform = LocalTransform;
+    int32 ParentIndex = RefSkeleton.GetParentIndex(BoneIndex);
+    while (ParentIndex != INDEX_NONE)
+    {
+        FTransform ParentLocalTransform = FTransform::Identity;
+        if (!GetPoseWatchLocalTransformForMeshBone(PoseWatch, ParentIndex, ParentLocalTransform))
+        {
+            Sample.Error = FString::Printf(TEXT("PoseWatch did not capture parent bone index %d while composing '%s'"), ParentIndex, *BoneNameText);
+            return Sample;
+        }
+
+        ComponentTransform = ComponentTransform * ParentLocalTransform;
+        ParentIndex = RefSkeleton.GetParentIndex(ParentIndex);
+    }
+
+    Sample.bValid = true;
+    Sample.ComponentTransform = ComponentTransform;
+    Sample.WorldTransform = ComponentTransform * PoseWatch.GetWorldTransform();
+    return Sample;
+}
+
+TSharedPtr<FJsonObject> PoseWatchBoneTransformSampleToJson(
+    const FAnimNodePoseWatch& PoseWatch,
+    const USkeletalMeshComponent* Component,
+    const FString& BoneNameText)
+{
+    TSharedPtr<FJsonObject> SampleObject = MakeShared<FJsonObject>();
+    SampleObject->SetStringField(TEXT("bone"), BoneNameText);
+
+    const FAnimNodePoseTransformSample Sample = CapturePoseWatchBoneTransformSample(PoseWatch, Component, BoneNameText);
+    SampleObject->SetBoolField(TEXT("valid"), Sample.bValid);
+    if (!Sample.bValid)
+    {
+        SampleObject->SetStringField(TEXT("error"), Sample.Error);
+        return SampleObject;
+    }
+
+    SampleObject->SetObjectField(TEXT("world"), TransformToJsonObject(Sample.WorldTransform));
+    SampleObject->SetObjectField(TEXT("component"), TransformToJsonObject(Sample.ComponentTransform));
+    return SampleObject;
+}
+
+FAnimNodePoseCapture CaptureAnimNodePoseWatchPose(
+    const FAnimBlueprintDebugData* DebugData,
+    int32 NodeID,
+    const FString& Role,
+    UAnimInstance* ExpectedAnimInstance,
+    const USkeletalMeshComponent* Component,
+    const TArray<FString>& SampleBones,
+    bool bAllowMissingSamples,
+    TArray<TSharedPtr<FJsonValue>>& ErrorValues,
+    TArray<TSharedPtr<FJsonValue>>& WarningValues)
+{
+    FAnimNodePoseCapture Capture;
+    TSharedPtr<FJsonObject> BoneSamplesObject = MakeShared<FJsonObject>();
+    Capture.Json->SetStringField(TEXT("role"), Role);
+    Capture.Json->SetNumberField(TEXT("node_id"), NodeID);
+    Capture.Json->SetBoolField(TEXT("valid"), false);
+
+    const FAnimNodePoseWatch* PoseWatch = FindAnimNodePoseWatchByNodeID(DebugData, NodeID);
+    if (!PoseWatch)
+    {
+        const FString Error = FString::Printf(TEXT("PoseWatch capture '%s' was not found for node/link ID %d after tick"), *Role, NodeID);
+        Capture.Json->SetStringField(TEXT("error"), Error);
+        ErrorValues.Add(MakeShared<FJsonValueString>(Error));
+        return Capture;
+    }
+
+    Capture.Json->SetStringField(TEXT("captured_object"), PoseWatch->Object ? PoseWatch->Object->GetPathName() : FString());
+    Capture.Json->SetBoolField(TEXT("captured_expected_anim_instance"), PoseWatch->Object == ExpectedAnimInstance);
+    Capture.Json->SetBoolField(TEXT("pose_watch_valid"), PoseWatch->IsValid());
+    Capture.Json->SetBoolField(TEXT("pose_watch_node_enabled"), PoseWatch->PoseWatch ? PoseWatch->PoseWatch->GetIsNodeEnabled() : false);
+    Capture.Json->SetBoolField(TEXT("pose_element_visible"), PoseWatch->PoseWatchPoseElement ? PoseWatch->PoseWatchPoseElement->GetIsVisible() : false);
+    Capture.Json->SetNumberField(TEXT("required_bone_count"), PoseWatch->GetRequiredBones().Num());
+    Capture.Json->SetNumberField(TEXT("bone_transform_count"), PoseWatch->GetBoneTransforms().Num());
+    Capture.Json->SetObjectField(TEXT("world_transform"), TransformToJsonObject(PoseWatch->GetWorldTransform()));
+
+    if (PoseWatch->Object != ExpectedAnimInstance)
+    {
+        const FString Error = FString::Printf(TEXT("PoseWatch capture '%s' came from a different AnimInstance"), *Role);
+        Capture.Json->SetStringField(TEXT("error"), Error);
+        ErrorValues.Add(MakeShared<FJsonValueString>(Error));
+        return Capture;
+    }
+
+    if (PoseWatch->GetRequiredBones().Num() == 0 || PoseWatch->GetBoneTransforms().Num() == 0)
+    {
+        const FString Error = FString::Printf(TEXT("PoseWatch capture '%s' did not receive bone transforms; the watched link may not have evaluated this tick"), *Role);
+        Capture.Json->SetStringField(TEXT("error"), Error);
+        ErrorValues.Add(MakeShared<FJsonValueString>(Error));
+        return Capture;
+    }
+
+    for (const FString& BoneName : SampleBones)
+    {
+        if (BoneName.IsEmpty())
+        {
+            continue;
+        }
+
+        TSharedPtr<FJsonObject> BoneSampleJson = PoseWatchBoneTransformSampleToJson(*PoseWatch, Component, BoneName);
+        FAnimNodePoseTransformSample TransformSample = CapturePoseWatchBoneTransformSample(*PoseWatch, Component, BoneName);
+        Capture.BoneSamples.Add(BoneName, TransformSample);
+        if (!TransformSample.bValid)
+        {
+            const TSharedPtr<FJsonValue> MissingMessage = MakeShared<FJsonValueString>(TransformSample.Error);
+            if (bAllowMissingSamples)
+            {
+                WarningValues.Add(MissingMessage);
+            }
+            else
+            {
+                ErrorValues.Add(MissingMessage);
+            }
+        }
+        BoneSamplesObject->SetObjectField(BoneName, BoneSampleJson);
+    }
+
+    Capture.Json->SetBoolField(TEXT("valid"), true);
+    Capture.Json->SetObjectField(TEXT("bone_samples"), BoneSamplesObject);
+    return Capture;
+}
+
+bool TryGetFirstRuntimePoseLinkID(const TSharedPtr<FJsonObject>& RuntimePoseLinksObject, int32& OutLinkID, FString& OutFieldPath)
+{
+    OutLinkID = INDEX_NONE;
+    OutFieldPath.Reset();
+
+    const TArray<TSharedPtr<FJsonValue>>* RuntimePoseLinkValues = nullptr;
+    if (!RuntimePoseLinksObject.IsValid() || !RuntimePoseLinksObject->TryGetArrayField(TEXT("pose_links"), RuntimePoseLinkValues) || !RuntimePoseLinkValues)
+    {
+        return false;
+    }
+
+    for (const TSharedPtr<FJsonValue>& LinkValue : *RuntimePoseLinkValues)
+    {
+        if (!LinkValue.IsValid() || LinkValue->Type != EJson::Object)
+        {
+            continue;
+        }
+
+        const TSharedPtr<FJsonObject> LinkObject = LinkValue->AsObject();
+        if (!LinkObject.IsValid())
+        {
+            continue;
+        }
+
+        double LinkIDNumber = INDEX_NONE;
+        const bool bValid = GetJsonBoolFieldOrDefault(LinkObject, TEXT("valid"), false);
+        if (bValid && LinkObject->TryGetNumberField(TEXT("link_id"), LinkIDNumber) && static_cast<int32>(LinkIDNumber) != INDEX_NONE)
+        {
+            OutLinkID = static_cast<int32>(LinkIDNumber);
+            OutFieldPath = GetJsonStringFieldOrDefault(LinkObject, TEXT("field_path"), FString());
+            return true;
+        }
+    }
+
+    return false;
+}
+#endif
+
+TSharedPtr<FJsonObject> BuildAnimNodePrePostPoseWatchCaptureResponse(
+    const TSharedPtr<FJsonObject>& Params,
+    const FString& BlueprintName,
+    UBlueprint* Blueprint,
+    UEdGraph* TargetGraph,
+    UAnimGraphNode_Base* TargetNode,
+    const TSharedPtr<FJsonObject>& TargetNodeObject,
+    const TArray<FString>& SampleBones,
+    const TArray<FString>& SampleSockets)
+{
+#if !WITH_EDITOR
+    TSharedPtr<FJsonObject> ErrorObj = FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("pose_watch_capture requires an editor build"));
+    ErrorObj->SetStringField(TEXT("mode"), TEXT("pose_watch_capture"));
+    ErrorObj->SetBoolField(TEXT("runtime_graph_prepost"), false);
+    ErrorObj->SetBoolField(TEXT("same_instance_prepost"), false);
+    ErrorObj->SetBoolField(TEXT("original_assets_modified"), false);
+    ErrorObj->SetObjectField(TEXT("target_node"), TargetNodeObject);
+    AddGraphField(ErrorObj, Blueprint, TargetGraph);
+    return ErrorObj;
+#else
+    bool bPreferPIEWorld = true;
+    Params->TryGetBoolField(TEXT("prefer_pie_world"), bPreferPIEWorld);
+    const bool bRequirePIEWorld = GetBoolParam(Params, TEXT("require_pie_world"), false);
+    const bool bAllowMissingSamples = GetBoolParam(Params, TEXT("allow_missing_bones"), false)
+        || GetBoolParam(Params, TEXT("allow_missing_samples"), false);
+    const int32 SettleTickCount = GetClampedIntParam(Params, TEXT("settle_tick_count"), 0, 0, 240);
+    const int32 TickCount = GetClampedIntParam(Params, TEXT("tick_count"), 1, 0, 240);
+    const double TickDeltaTime = GetClampedNumberParam(Params, TEXT("tick_delta_time"), 1.0 / 30.0, 0.0, 1.0);
+    const bool bRefreshBoneTransforms = GetBoolParam(Params, TEXT("refresh_bone_transforms"), true);
+    const int32 PoseLinkMaxDepth = GetClampedIntParam(Params, TEXT("pose_link_max_depth"), 4, 0, 8);
+
+    TArray<TSharedPtr<FJsonValue>> ErrorValues;
+    TArray<TSharedPtr<FJsonValue>> WarningValues;
+    if (SampleSockets.Num() > 0)
+    {
+        WarningValues.Add(MakeShared<FJsonValueString>(TEXT("pose_watch_capture samples internal bone poses only; requested sample_sockets are reported as unsupported for this mode.")));
+    }
+
+    FAnimInstanceRuntimeTarget Target;
+    FString TargetError;
+    if (!FindAnimInstanceRuntimeTarget(Params, bPreferPIEWorld, bRequirePIEWorld, TEXT("pose-watched"), Target, WarningValues, TargetError))
+    {
+        TSharedPtr<FJsonObject> ErrorObj = FUnrealMCPCommonUtils::CreateErrorResponse(TargetError);
+        ErrorObj->SetStringField(TEXT("mode"), TEXT("pose_watch_capture"));
+        ErrorObj->SetBoolField(TEXT("runtime_graph_prepost"), false);
+        ErrorObj->SetBoolField(TEXT("same_instance_prepost"), false);
+        ErrorObj->SetBoolField(TEXT("original_assets_modified"), false);
+        ErrorObj->SetBoolField(TEXT("temp_assets_created"), false);
+        ErrorObj->SetObjectField(TEXT("target_node"), TargetNodeObject);
+        ErrorObj->SetArrayField(TEXT("warnings"), WarningValues);
+        AddGraphField(ErrorObj, Blueprint, TargetGraph);
+        return ErrorObj;
+    }
+
+    if (Blueprint && Blueprint->GeneratedClass && Target.AnimInstance && !Target.AnimInstance->GetClass()->IsChildOf(Blueprint->GeneratedClass))
+    {
+        TSharedPtr<FJsonObject> ErrorObj = FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(
+            TEXT("Matched AnimInstance class '%s' is not compatible with resolved blueprint '%s'. Pass an actor using this AnimBP."),
+            Target.AnimInstance->GetClass() ? *Target.AnimInstance->GetClass()->GetPathName() : TEXT("<none>"),
+            *Blueprint->GetPathName()));
+        ErrorObj->SetStringField(TEXT("mode"), TEXT("pose_watch_capture"));
+        ErrorObj->SetStringField(TEXT("matched_anim_class"), Target.AnimInstance->GetClass() ? Target.AnimInstance->GetClass()->GetPathName() : FString());
+        ErrorObj->SetStringField(TEXT("resolved_blueprint_class"), Blueprint->GeneratedClass->GetPathName());
+        ErrorObj->SetBoolField(TEXT("runtime_graph_prepost"), false);
+        ErrorObj->SetBoolField(TEXT("same_instance_prepost"), false);
+        ErrorObj->SetBoolField(TEXT("original_assets_modified"), false);
+        ErrorObj->SetBoolField(TEXT("temp_assets_created"), false);
+        ErrorObj->SetObjectField(TEXT("target_node"), TargetNodeObject);
+        AddGraphField(ErrorObj, Blueprint, TargetGraph);
+        return ErrorObj;
+    }
+
+    bool bRuntimeNodeMapped = false;
+    bool bFindDebugMapped = false;
+    TSharedPtr<FJsonObject> MappingObject = AnimGraphCompiledNodeMappingToJson(
+        Blueprint,
+        TargetNode,
+        Target.AnimInstance,
+        Target.Component,
+        &bRuntimeNodeMapped,
+        &bFindDebugMapped);
+
+    UAnimBlueprintGeneratedClass* RuntimeAnimClass = Target.AnimInstance ? Cast<UAnimBlueprintGeneratedClass>(Target.AnimInstance->GetClass()) : nullptr;
+    const int32 PostNodeLinkID = (RuntimeAnimClass && TargetNode) ? RuntimeAnimClass->GetNodeIndexFromGuid(TargetNode->NodeGuid, EPropertySearchMode::Hierarchy) : INDEX_NONE;
+    FStructProperty* RuntimeAnimNodeProperty = (RuntimeAnimClass && RuntimeAnimClass->GetAnimNodeProperties().IsValidIndex(PostNodeLinkID))
+        ? RuntimeAnimClass->GetAnimNodeProperties()[PostNodeLinkID]
+        : nullptr;
+    TSharedPtr<FJsonObject> RuntimePoseLinksObject = RuntimeAnimNodePoseLinksToJson(
+        RuntimeAnimClass,
+        RuntimeAnimNodeProperty,
+        Target.AnimInstance,
+        PoseLinkMaxDepth);
+
+    int32 PreInputLinkID = INDEX_NONE;
+    FString PreInputFieldPath;
+    const bool bHasPreInputLink = TryGetFirstRuntimePoseLinkID(RuntimePoseLinksObject, PreInputLinkID, PreInputFieldPath);
+
+    UAnimBlueprint* RuntimeAnimBlueprint = RuntimeAnimClass ? Cast<UAnimBlueprint>(RuntimeAnimClass->ClassGeneratedBy) : nullptr;
+    UAnimBlueprint* RootAnimBlueprint = RuntimeAnimBlueprint ? UAnimBlueprint::FindRootAnimBlueprint(RuntimeAnimBlueprint) : nullptr;
+    UAnimBlueprint* DebugAnimBlueprint = RootAnimBlueprint ? RootAnimBlueprint : RuntimeAnimBlueprint;
+    FAnimBlueprintDebugData* DebugData = DebugAnimBlueprint ? DebugAnimBlueprint->GetDebugData() : nullptr;
+
+    if (!RuntimeAnimClass || !RuntimeAnimNodeProperty || PostNodeLinkID == INDEX_NONE || !DebugAnimBlueprint || !DebugData)
+    {
+        TSharedPtr<FJsonObject> ErrorObj = FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Could not resolve AnimBP generated class, selected node link ID, or debug data for pose_watch_capture"));
+        ErrorObj->SetStringField(TEXT("mode"), TEXT("pose_watch_capture"));
+        ErrorObj->SetBoolField(TEXT("runtime_graph_prepost"), false);
+        ErrorObj->SetBoolField(TEXT("same_instance_prepost"), false);
+        ErrorObj->SetBoolField(TEXT("original_assets_modified"), false);
+        ErrorObj->SetBoolField(TEXT("temp_assets_created"), false);
+        ErrorObj->SetNumberField(TEXT("post_node_link_id"), PostNodeLinkID);
+        ErrorObj->SetBoolField(TEXT("pre_input_link_id_found"), bHasPreInputLink);
+        ErrorObj->SetObjectField(TEXT("target_node"), TargetNodeObject);
+        ErrorObj->SetObjectField(TEXT("runtime_node_mapping"), MappingObject);
+        ErrorObj->SetObjectField(TEXT("runtime_pose_links"), RuntimePoseLinksObject);
+        ErrorObj->SetArrayField(TEXT("errors"), ErrorValues);
+        ErrorObj->SetArrayField(TEXT("warnings"), WarningValues);
+        PopulateAnimInstanceRuntimeTargetFields(ErrorObj, Target, bPreferPIEWorld, bRequirePIEWorld);
+        AddGraphField(ErrorObj, Blueprint, TargetGraph);
+        return ErrorObj;
+    }
+
+    if (!bHasPreInputLink)
+    {
+        ErrorValues.Add(MakeShared<FJsonValueString>(TEXT("No runtime FPoseLink/FComponentSpacePoseLink input link was found on the selected node; cannot capture pre-node input pose.")));
+    }
+
+    const TWeakObjectPtr<UObject> PreviousDebugObject = DebugAnimBlueprint->GetObjectBeingDebugged();
+    const bool bDebugObjectWasAlreadyTarget = PreviousDebugObject.Get() == Target.AnimInstance;
+    if (!bDebugObjectWasAlreadyTarget)
+    {
+        DebugAnimBlueprint->SetObjectBeingDebugged(Target.AnimInstance);
+    }
+
+    TArray<FTransientAnimPoseWatchRegistration> Registrations;
+    FTransientAnimPoseWatchRegistration PostRegistration;
+    RegisterTransientAnimPoseWatch(DebugData, DebugAnimBlueprint, PostNodeLinkID, TEXT("post_node_output"), PostRegistration, ErrorValues);
+    Registrations.Add(PostRegistration);
+
+    FTransientAnimPoseWatchRegistration PreRegistration;
+    if (bHasPreInputLink && PreInputLinkID != PostNodeLinkID)
+    {
+        RegisterTransientAnimPoseWatch(DebugData, DebugAnimBlueprint, PreInputLinkID, TEXT("pre_input_pose"), PreRegistration, ErrorValues);
+        Registrations.Add(PreRegistration);
+    }
+    else if (bHasPreInputLink)
+    {
+        WarningValues.Add(MakeShared<FJsonValueString>(TEXT("Pre input link ID matched the selected post node link ID; only one pose watch was registered.")));
+        PreRegistration = PostRegistration;
+        PreRegistration.Role = TEXT("pre_input_pose");
+        Registrations.Add(PreRegistration);
+    }
+
+    TArray<TSharedPtr<FJsonValue>> RegistrationValues;
+    for (const FTransientAnimPoseWatchRegistration& Registration : Registrations)
+    {
+        RegistrationValues.Add(MakeShared<FJsonValueObject>(PoseWatchRegistrationToJson(Registration)));
+    }
+
+    TSharedPtr<FJsonObject> SettleTickObject = TickSkeletalComponentForAnimRuntimeProbe(
+        Target.Component,
+        SettleTickCount,
+        TickDeltaTime,
+        bRefreshBoneTransforms,
+        WarningValues);
+    TSharedPtr<FJsonObject> TickObject = TickSkeletalComponentForAnimRuntimeProbe(
+        Target.Component,
+        TickCount,
+        TickDeltaTime,
+        bRefreshBoneTransforms,
+        WarningValues);
+
+    FAnimNodePoseCapture PrePose;
+    if (bHasPreInputLink)
+    {
+        PrePose = CaptureAnimNodePoseWatchPose(
+            DebugData,
+            PreInputLinkID,
+            TEXT("pre_input_pose"),
+            Target.AnimInstance,
+            Target.Component,
+            SampleBones,
+            bAllowMissingSamples,
+            ErrorValues,
+            WarningValues);
+    }
+    else
+    {
+        PrePose.Json->SetStringField(TEXT("role"), TEXT("pre_input_pose"));
+        PrePose.Json->SetNumberField(TEXT("node_id"), INDEX_NONE);
+        PrePose.Json->SetBoolField(TEXT("valid"), false);
+        PrePose.Json->SetStringField(TEXT("error"), TEXT("No pre input pose link was found"));
+    }
+
+    FAnimNodePoseCapture PostPose = CaptureAnimNodePoseWatchPose(
+        DebugData,
+        PostNodeLinkID,
+        TEXT("post_node_output"),
+        Target.AnimInstance,
+        Target.Component,
+        SampleBones,
+        bAllowMissingSamples,
+        ErrorValues,
+        WarningValues);
+
+    CleanupTransientAnimPoseWatches(DebugData, Registrations);
+
+    bool bDebugObjectRestored = true;
+    if (!bDebugObjectWasAlreadyTarget)
+    {
+        DebugAnimBlueprint->SetObjectBeingDebugged(PreviousDebugObject.Get());
+        bDebugObjectRestored = DebugAnimBlueprint->GetObjectBeingDebugged() == PreviousDebugObject.Get();
+    }
+
+    const bool bRuntimeGraphPrePost = ErrorValues.Num() == 0 && GetJsonBoolFieldOrDefault(PrePose.Json, TEXT("valid"), false) && GetJsonBoolFieldOrDefault(PostPose.Json, TEXT("valid"), false);
+    TSharedPtr<FJsonObject> ResultObj = MakeShared<FJsonObject>();
+    ResultObj->SetBoolField(TEXT("success"), bRuntimeGraphPrePost);
+    ResultObj->SetBoolField(TEXT("read_only"), false);
+    ResultObj->SetBoolField(TEXT("runtime_only"), true);
+    ResultObj->SetBoolField(TEXT("asset_modified"), false);
+    ResultObj->SetBoolField(TEXT("saves_assets"), false);
+    ResultObj->SetBoolField(TEXT("dry_run"), false);
+    ResultObj->SetStringField(TEXT("mode"), TEXT("pose_watch_capture"));
+    ResultObj->SetStringField(TEXT("comparison_kind"), TEXT("runtime_pose_watch_prepost"));
+    ResultObj->SetBoolField(TEXT("runtime_graph_prepost"), bRuntimeGraphPrePost);
+    ResultObj->SetBoolField(TEXT("same_instance_prepost"), bRuntimeGraphPrePost);
+    ResultObj->SetBoolField(TEXT("same_anim_instance_node_mapping"), bRuntimeNodeMapped || bFindDebugMapped);
+    ResultObj->SetBoolField(TEXT("runtime_node_instance_mapped"), bRuntimeNodeMapped);
+    ResultObj->SetBoolField(TEXT("find_debug_anim_node_mapped"), bFindDebugMapped);
+    ResultObj->SetBoolField(TEXT("original_assets_modified"), false);
+    ResultObj->SetBoolField(TEXT("temp_assets_created"), false);
+    ResultObj->SetBoolField(TEXT("transient_pose_watches"), true);
+    ResultObj->SetBoolField(TEXT("debug_object_was_already_target"), bDebugObjectWasAlreadyTarget);
+    ResultObj->SetBoolField(TEXT("debug_object_restored"), bDebugObjectRestored);
+    ResultObj->SetStringField(TEXT("previous_debug_object"), PreviousDebugObject.IsValid() ? PreviousDebugObject->GetPathName() : FString());
+    ResultObj->SetStringField(TEXT("debug_anim_blueprint"), DebugAnimBlueprint ? DebugAnimBlueprint->GetPathName() : FString());
+    ResultObj->SetStringField(TEXT("runtime_note"), TEXT("Temporarily sets the AnimBP debug object and registers transient PoseWatch entries in debug data to capture the selected compiled node output and its first runtime pose-link input during the same forced tick. It does not add PoseWatches to the AnimBP asset arrays or save assets."));
+    ResultObj->SetStringField(TEXT("blueprint_name"), BlueprintName);
+    ResultObj->SetStringField(TEXT("blueprint_path"), Blueprint ? Blueprint->GetPathName() : FString());
+    ResultObj->SetNumberField(TEXT("post_node_link_id"), PostNodeLinkID);
+    ResultObj->SetNumberField(TEXT("pre_input_link_id"), PreInputLinkID);
+    ResultObj->SetStringField(TEXT("pre_input_field_path"), PreInputFieldPath);
+    ResultObj->SetObjectField(TEXT("target_node"), TargetNodeObject);
+    ResultObj->SetObjectField(TEXT("runtime_node_mapping"), MappingObject);
+    ResultObj->SetObjectField(TEXT("runtime_pose_links"), RuntimePoseLinksObject);
+    ResultObj->SetArrayField(TEXT("pose_watch_registrations"), RegistrationValues);
+    ResultObj->SetArrayField(TEXT("requested_sample_bones"), StringArrayToJsonValues(SampleBones));
+    ResultObj->SetArrayField(TEXT("requested_sample_sockets"), StringArrayToJsonValues(SampleSockets));
+    ResultObj->SetBoolField(TEXT("allow_missing_bones"), bAllowMissingSamples);
+    ResultObj->SetObjectField(TEXT("settle_tick"), SettleTickObject);
+    ResultObj->SetObjectField(TEXT("tick"), TickObject);
+    ResultObj->SetObjectField(TEXT("pre_pose"), PrePose.Json);
+    ResultObj->SetObjectField(TEXT("post_pose"), PostPose.Json);
+    ResultObj->SetObjectField(TEXT("deltas"), BuildAnimNodePoseDeltas(PrePose, PostPose, SampleBones, TArray<FString>()));
+    PopulateAnimInstanceRuntimeTargetFields(ResultObj, Target, bPreferPIEWorld, bRequirePIEWorld);
+    AddGraphField(ResultObj, Blueprint, TargetGraph);
+    ResultObj->SetArrayField(TEXT("errors"), ErrorValues);
+    ResultObj->SetArrayField(TEXT("warnings"), WarningValues);
+    return ResultObj;
+#endif
+}
+
 TSharedPtr<FJsonObject> BuildAnimNodePrePostRuntimeTickDeltaResponse(
     const TSharedPtr<FJsonObject>& Params,
     const FString& BlueprintName,
@@ -11380,6 +12066,21 @@ TSharedPtr<FJsonObject> FUnrealMCPBlueprintNodeCommands::HandleSampleAnimNodePre
                 TargetNodeObject);
         }
 
+        if (RuntimeMode.Equals(TEXT("pose_watch_capture"), ESearchCase::IgnoreCase)
+            || RuntimeMode.Equals(TEXT("runtime_pose_watch"), ESearchCase::IgnoreCase)
+            || RuntimeMode.Equals(TEXT("compiled_graph_pose_watch"), ESearchCase::IgnoreCase))
+        {
+            return BuildAnimNodePrePostPoseWatchCaptureResponse(
+                Params,
+                BlueprintName,
+                Blueprint,
+                TargetGraph,
+                TargetNode,
+                TargetNodeObject,
+                SampleBones,
+                SampleSockets);
+        }
+
         if (RuntimeMode.Equals(TEXT("isolated_temp_components"), ESearchCase::IgnoreCase))
         {
             return BuildAnimNodePrePostIsolatedTempComponentsResponse(
@@ -11418,7 +12119,7 @@ TSharedPtr<FJsonObject> FUnrealMCPBlueprintNodeCommands::HandleSampleAnimNodePre
     ResultObj->SetBoolField(TEXT("same_instance_prepost"), false);
     ResultObj->SetBoolField(TEXT("original_assets_modified"), false);
     ResultObj->SetBoolField(TEXT("temp_assets_created"), false);
-    ResultObj->SetStringField(TEXT("next_implementation_mode"), TEXT("compiled_graph_mapping"));
+    ResultObj->SetStringField(TEXT("next_implementation_mode"), TEXT("pose_watch_capture"));
     ResultObj->SetStringField(TEXT("runtime_note"), TEXT("Phase 1 resolves one AnimGraph node and reports feasibility only. It does not tick components or sample poses."));
     ResultObj->SetStringField(TEXT("blueprint_name"), BlueprintName);
     ResultObj->SetStringField(TEXT("blueprint_path"), Blueprint->GetPathName());
@@ -11426,6 +12127,7 @@ TSharedPtr<FJsonObject> FUnrealMCPBlueprintNodeCommands::HandleSampleAnimNodePre
     ResultObj->SetObjectField(TEXT("target_node"), TargetNodeObject);
     ResultObj->SetArrayField(TEXT("available_runtime_modes"), StringArrayToJsonValues(TArray<FString>{
         TEXT("compiled_graph_mapping"),
+        TEXT("pose_watch_capture"),
         TEXT("active_component_tick_delta"),
         TEXT("isolated_temp_components")
     }));

@@ -468,7 +468,7 @@ Use this command when you need a stable same-instance pre/post ControlRig solve 
 
 Resolve a target AnimGraph node or run a limited runtime pose/mapping probe.
 
-**Important scope note:** `dry_run=true` is a read-only target resolver. `dry_run=false` supports `mode=compiled_graph_mapping`, `mode=active_component_tick_delta`, and `mode=isolated_temp_components`. Compiled graph mapping resolves the selected editor AnimGraph node GUID to the compiled/live `FAnimNode_*` instance on a matched `AnimInstance` and reads that node's runtime `FPoseLink` / `FComponentSpacePoseLink` link IDs; this is a same-instance instrumentation preflight, not a pose sample. Active tick-delta samples final `SkeletalMeshComponent` pose before and after forced ticks on a matched live component. Isolated temp mode duplicates the AnimBP under `_MCP_Temp`, bypasses the selected node in a source copy, and compares it against a selected-node copy on separate transient components. None of these runtime modes samples true same-instance compiled graph input/output pose data. Runtime responses intentionally report `runtime_graph_prepost=false` and `same_instance_prepost=false`.
+**Important scope note:** `dry_run=true` is a read-only target resolver. `dry_run=false` supports `mode=compiled_graph_mapping`, `mode=pose_watch_capture`, `mode=active_component_tick_delta`, and `mode=isolated_temp_components`. Compiled graph mapping resolves the selected editor AnimGraph node GUID to the compiled/live `FAnimNode_*` instance on a matched `AnimInstance` and reads that node's runtime `FPoseLink` / `FComponentSpacePoseLink` link IDs; this is a same-instance instrumentation preflight, not a pose sample. PoseWatch capture temporarily sets the AnimBP debug object, registers transient debug-data PoseWatch entries for the selected compiled node output and its first runtime input pose link, samples both during the same forced tick, then removes only the transient entries. Active tick-delta samples final `SkeletalMeshComponent` pose before and after forced ticks on a matched live component. Isolated temp mode duplicates the AnimBP under `_MCP_Temp`, bypasses the selected node in a source copy, and compares it against a selected-node copy on separate transient components. Only `pose_watch_capture` is intended to report `runtime_graph_prepost=true` / `same_instance_prepost=true` when both watched links evaluate successfully.
 
 Use this command before implementing or running deeper AnimGraph node instrumentation so ambiguous node selectors are caught early.
 
@@ -482,7 +482,7 @@ Use this command before implementing or running deeper AnimGraph node instrument
 - `title_contains` (string, optional) - Node title substring filter
 - `sample_bones` (array, optional) - Bone list to echo in dry-run or sample in runtime mode. Runtime default is a compact StackOBot/Baddy study set.
 - `sample_sockets` (array, optional) - Socket list to echo in dry-run or sample in runtime mode
-- `mode` (string, optional) - Runtime mode for `dry_run=false`: `compiled_graph_mapping`, `active_component_tick_delta`, or `isolated_temp_components`.
+- `mode` (string, optional) - Runtime mode for `dry_run=false`: `compiled_graph_mapping`, `pose_watch_capture`, `active_component_tick_delta`, or `isolated_temp_components`.
 - `skeletal_mesh` (string, optional) - SkeletalMesh path required by `isolated_temp_components`
 - `temp_root` (string, optional) - Temp asset root for isolated mode. Defaults to `/Game/_MCP_Temp/AnimNodePrePost`.
 - `cleanup` (boolean, optional) - Delete transient actors/temp assets after isolated sampling. Defaults to `true`.
@@ -497,7 +497,7 @@ Use this command before implementing or running deeper AnimGraph node instrument
 - `settle_tick_count` (number, optional) - Forced ticks before the pre sample, clamped `0..240`. Defaults to `0`.
 - `refresh_bone_transforms` (boolean, optional) - Refresh bone transforms after forced ticks. Defaults to `true`.
 - `allow_missing_bones` (boolean, optional) - Return partial samples instead of failing on missing bones/sockets. Defaults to `false`.
-- `pose_link_max_depth` (number, optional) - Max struct recursion depth for `compiled_graph_mapping` runtime pose-link inventory. Defaults to `4`, clamped `0..8`.
+- `pose_link_max_depth` (number, optional) - Max struct recursion depth for `compiled_graph_mapping` and `pose_watch_capture` runtime pose-link inventory. Defaults to `4`, clamped `0..8`.
 - `include_pins` (boolean, optional) - Include full selected-node pin data. Defaults to `true`.
 - `max_depth` (number, optional) - Reflected settings depth. Defaults to `3`.
 - `dry_run` (boolean, optional) - Resolve only when true; run `active_component_tick_delta` when false. Defaults to `true`.
@@ -508,13 +508,13 @@ Use this command before implementing or running deeper AnimGraph node instrument
 - `mode=dry_run_target_resolver` for dry-run
 - `mode=compiled_graph_mapping`, `comparison_kind=compiled_graph_node_mapping`, `runtime_node_mapping`, `runtime_pose_links`, and `same_anim_instance_node_mapping=true` when live same-instance node mapping succeeds
 - `runtime_pose_links.pose_links[]` with `field_path`, `link_id`, `source_link_id`, linked compiled property, linked visual node, cached linked-node pointer, and `linked_pointer_match` when a runtime pose link is present
+- `mode=pose_watch_capture`, `comparison_kind=runtime_pose_watch_prepost`, `pre_pose`, `post_pose`, `deltas`, `post_node_link_id`, `pre_input_link_id`, `transient_pose_watches=true`, and `debug_object_restored=true` when same-instance PoseWatch capture is requested
 - `mode=active_component_tick_delta` and `comparison_kind=active_component_tick_delta` for runtime tick-delta sampling
 - `mode=isolated_temp_components` and `comparison_kind=isolated_temp_components` for temp source-vs-output sampling
-- `runtime_graph_prepost=false`
-- `same_instance_prepost=false`
+- `runtime_graph_prepost` and `same_instance_prepost`; currently these are true only for a successful `pose_watch_capture`
 - `pre_tick_pose`, `post_tick_pose`, and `deltas` for active tick-delta mode
 - `source_pose`, `post_pose`, `deltas`, `prepare_temp_assets`, and `cleanup_results` for isolated temp mode
-- `available_runtime_modes` and `next_implementation_mode=compiled_graph_mapping` for dry-run
+- `available_runtime_modes` and `next_implementation_mode=pose_watch_capture` for dry-run
 - warning/error details when the selector matches no node or multiple nodes
 
 **Dry-run example:**
@@ -544,6 +544,26 @@ Use this command before implementing or running deeper AnimGraph node instrument
     "mode": "compiled_graph_mapping",
     "dry_run": false,
     "require_pie_world": true
+  }
+}
+```
+
+**PoseWatch same-instance pre/post example:**
+```json
+{
+  "command": "sample_anim_node_pre_post_runtime_pose",
+  "params": {
+    "blueprint_name": "/Game/StackOBot/Characters/Blobling/Anim/ABP_Baddy.ABP_Baddy",
+    "graph_name": "AnimGraph",
+    "graph_type": "function",
+    "node_id": "81E779C34D36CC52F0125F91BF52BAF3",
+    "actor_label": "MCP_AnimNodeProbe_Baddy",
+    "mode": "pose_watch_capture",
+    "dry_run": false,
+    "require_pie_world": true,
+    "settle_tick_count": 2,
+    "tick_count": 1,
+    "sample_bones": ["Head_02", "TailEnd", "R_Stalk_04", "L_Stalk_04"]
   }
 }
 ```
