@@ -435,6 +435,7 @@ def info():
     - `sample_anim_state_machine_runtime_response(actor_label="", cases?, require_pie_world=False)` - Apply runtime property cases, tick narrowly, and sample state-machine response
     - `set_anim_graph_rigidbody_settings(blueprint_name, alpha?, external_force?, simulation_space?)` - Modify a sample RigidBody AnimGraph node
     - `ensure_anim_graph_input_pose_passthrough(blueprint_name, graph_name="AnimGraph", replace_existing=False)` - Create/reuse a Linked Input Pose node and connect it to the AnimGraph root Result pin
+    - `ensure_postprocess_anim_demo_variant(source_blueprint_name, source_skeletal_mesh, variant_name, bone_name="head", rotation=[0,0,6])` - Duplicate/reuse a sample Post Process AnimBP and SkeletalMesh variant for safe late ModifyBone proof
     - `ensure_anim_graph_modify_bone_demo(blueprint_name, bone_name="head", rotation=[0,0,6], replace_existing=False)` - Create/reuse a safe Post Process AnimBP Modify Bone demo chain
     - `ensure_anim_graph_modify_curve_demo(blueprint_name, curve_values?)` - Create/reuse a sample Modify Curve demo chain, defaulting to StackOBot ControlRig gate curves
     - `set_anim_graph_controlrig_input_defaults(blueprint_name, input_defaults?)` - Expose sample ControlRig AnimGraph input pins and set defaults
