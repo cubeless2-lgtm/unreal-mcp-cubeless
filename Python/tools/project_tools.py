@@ -5,7 +5,7 @@ This module provides tools for managing project-wide settings and configuration.
 """
 
 import logging
-from typing import Dict, Any
+from typing import Dict, Any, List, Optional
 from mcp.server.fastmcp import FastMCP, Context
 
 # Get logger
@@ -58,6 +58,66 @@ def register_project_tools(mcp: FastMCP):
             
         except Exception as e:
             error_msg = f"Error creating input mapping: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def audit_content_root_mcp(
+        ctx: Context,
+        root_path: str,
+        recursive: bool = True,
+        scan_paths: bool = True,
+        include_dependencies: bool = True,
+        include_assets: bool = False,
+        write_report: bool = False,
+        forbidden_dependency_prefixes: Optional[List[str]] = None,
+        required_asset_paths: Optional[List[str]] = None,
+        expected_asset_count: Optional[int] = None,
+        expected_class_counts: Optional[Dict[str, int]] = None,
+        max_samples: int = 50,
+        fail_on_dirty_packages: bool = False,
+        fail_on_redirectors: bool = True,
+        fail_on_forbidden_dependencies: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Read-only audit for a /Game content root.
+
+        Use this before and after reusable content promotion to check asset and
+        class counts, redirectors, dirty packages, required assets, and forbidden
+        dependency prefixes without compiling, saving, or mutating assets.
+        """
+        from unreal_mcp_server import get_unreal_connection
+
+        try:
+            unreal = get_unreal_connection()
+            if not unreal:
+                return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+            params: Dict[str, Any] = {
+                "root_path": root_path,
+                "recursive": recursive,
+                "scan_paths": scan_paths,
+                "include_dependencies": include_dependencies,
+                "include_assets": include_assets,
+                "write_report": write_report,
+                "max_samples": max_samples,
+                "fail_on_dirty_packages": fail_on_dirty_packages,
+                "fail_on_redirectors": fail_on_redirectors,
+                "fail_on_forbidden_dependencies": fail_on_forbidden_dependencies,
+            }
+            if forbidden_dependency_prefixes is not None:
+                params["forbidden_dependency_prefixes"] = forbidden_dependency_prefixes
+            if required_asset_paths is not None:
+                params["required_asset_paths"] = required_asset_paths
+            if expected_asset_count is not None:
+                params["expected_asset_count"] = expected_asset_count
+            if expected_class_counts is not None:
+                params["expected_class_counts"] = expected_class_counts
+
+            response = unreal.send_command("audit_content_root_mcp", params)
+            return response or {"success": False, "message": "No response from Unreal Engine"}
+        except Exception as e:
+            error_msg = f"Error auditing content root: {e}"
             logger.error(error_msg)
             return {"success": False, "message": error_msg}
 

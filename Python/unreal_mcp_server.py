@@ -540,6 +540,7 @@ def info():
     
     ## Project Tools
     - `create_input_mapping(action_name, key, input_type)` - Create input mappings
+    - `audit_content_root_mcp(root_path)` - Read-only audit for asset counts, dependencies, redirectors, dirty packages, and expected content checks
     - `analyze_blueprint_widget_fallbacks_mcp(source_root, target_root)` - Diagnose Blueprint/Widget duplicate fallback safety for MCP-generated content
     - `run_content_validation_pipeline_mcp(source_root, target_root, map_path="")` - Run the MCP recreate/postprocess/world-repair validation pipeline
 
