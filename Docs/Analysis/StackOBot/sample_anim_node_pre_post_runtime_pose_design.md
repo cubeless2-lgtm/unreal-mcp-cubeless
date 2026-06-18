@@ -196,4 +196,7 @@ Only after that passes review should the temporary runtime sampler be added.
 - The isolated temporary component/asset sampler under `/Game/_MCP_Temp/AnimNodePrePost` is implemented for RigidBody/Trail-style single input/output pose nodes.
 - `mode=isolated_temp_components` duplicates the AnimBP into source-bypass and post-node temp copies, rewires the source copy around the selected node, compiles both temp AnimBPs, samples separate transient components, and cleans up temp actors/assets by default.
 - StackOBot `ABP_Baddy` RigidBody live smoke passed with nonzero stalk deltas, `runtime_graph_prepost=false`, `same_instance_prepost=false`, `original_assets_modified=false`, and no remaining dirty content/map packages after cleanup.
+- StackOBot Bot Trail live smoke passed against a disposable `_MCP_Temp` duplicate of `ABP_Bot_Trail_Study` with `FakeVelocity=(0,0,80)`. The strongest isolated source-bypass vs post-node delta was `antenna_04_l`, about `21.948 cm` translation and `34.072 deg` rotation.
+- The static no-FakeVelocity Trail case produced only floating-point noise, about `0.000005 cm`, confirming that controlled motion or fake velocity is required for a meaningful Trail isolated sample.
+- Trail cleanup verification reported `0` dirty content packages, `0` dirty map packages, and `0` remaining assets under `/Game/_MCP_Temp/AnimNodePrePost`.
 - Remaining future scope is true same-instance compiled graph instrumentation.
