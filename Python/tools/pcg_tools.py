@@ -909,6 +909,123 @@ def graph_dependencies(package_path):
     except TypeError:
         return [str(item) for item in registry.get_dependencies(package_path)]
 
+MAX_ASSET_REGISTRY_DESCRIPTION_CHARS = 800
+
+def unsafe_asset_registry_descriptions(graph):
+    offenders = []
+
+    def read_description(obj):
+        if not obj:
+            return ""
+        try:
+            value = obj.get_editor_property("description")
+        except Exception:
+            try:
+                value = obj.description
+            except Exception:
+                return ""
+        return str(value or "")
+
+    def add_if_long(scope, obj):
+        text = read_description(obj)
+        if len(text) > MAX_ASSET_REGISTRY_DESCRIPTION_CHARS:
+            offenders.append({
+                "scope": scope,
+                "length": len(text),
+                "preview": text[:160],
+            })
+
+    add_if_long("graph", graph)
+    try:
+        graph_nodes = list(graph.get_editor_property("nodes"))
+    except Exception:
+        graph_nodes = []
+    for node in graph_nodes:
+        try:
+            title = str(node.get_editor_property("node_title")) or node.get_name()
+        except Exception:
+            title = node.get_name()
+        try:
+            settings_obj = node.get_settings()
+        except Exception:
+            settings_obj = None
+        add_if_long("settings:" + title, settings_obj)
+    return offenders
+
+def dependency_scan_skip_reason(graph):
+    offenders = unsafe_asset_registry_descriptions(graph)
+    if not offenders:
+        return None
+    return {
+        "reason": "PCG asset description text exceeds the safe dependency scan limit",
+        "max_safe_chars": MAX_ASSET_REGISTRY_DESCRIPTION_CHARS,
+        "offenders": offenders,
+    }
+
+def read_asset_description(obj):
+    if not obj:
+        return ""
+    try:
+        value = obj.get_editor_property("description")
+    except Exception:
+        try:
+            value = obj.description
+        except Exception:
+            return ""
+    return str(value or "")
+
+def write_asset_description(obj, text):
+    safe_text = str(text or "")[:240].rstrip()
+    try:
+        obj.set_editor_property("description", safe_text)
+        return True
+    except Exception:
+        try:
+            obj.description = safe_text
+            return True
+        except Exception:
+            return False
+
+def sanitize_asset_registry_descriptions(graph):
+    changes = []
+
+    def sanitize(scope, obj):
+        text = read_asset_description(obj)
+        if len(text) <= MAX_ASSET_REGISTRY_DESCRIPTION_CHARS:
+            return
+        if not write_asset_description(obj, text):
+            changes.append({
+                "scope": scope,
+                "length": len(text),
+                "sanitized": False,
+                "preview": text[:160],
+            })
+            return
+        changes.append({
+            "scope": scope,
+            "length": len(text),
+            "new_length": len(read_asset_description(obj)),
+            "sanitized": True,
+            "preview": text[:160],
+        })
+
+    sanitize("graph", graph)
+    try:
+        graph_nodes = list(graph.get_editor_property("nodes"))
+    except Exception:
+        graph_nodes = []
+    for node in graph_nodes:
+        try:
+            title = str(node.get_editor_property("node_title")) or node.get_name()
+        except Exception:
+            title = node.get_name()
+        try:
+            settings_obj = node.get_settings()
+        except Exception:
+            settings_obj = None
+        sanitize("settings:" + title, settings_obj)
+    return changes
+
 asset_path = spec.get("asset_path") or spec.get("graph_path")
 parent_path, asset_name, package_path = split_asset_path(asset_path)
 nodes_spec = spec.get("nodes") or []
@@ -1023,18 +1140,28 @@ else:
         except Exception as exc:
             edge_errors.append({"edge": edge_spec, "error": str(exc)})
 
+    sanitized_descriptions = sanitize_asset_registry_descriptions(graph)
+
     if save_graph:
         unreal.EditorAssetLibrary.save_loaded_asset(graph)
 
-    dependencies = graph_dependencies(package_path)
+    dependency_scan_warning = dependency_scan_skip_reason(graph)
+    dependencies = [] if dependency_scan_warning else graph_dependencies(package_path)
     forbidden_hits = [
         dependency
         for dependency in dependencies
         for prefix in forbidden_prefixes
         if str(dependency).startswith(str(prefix))
     ]
+    dependency_scan_required_but_skipped = bool(forbidden_prefixes and dependency_scan_warning)
     RESULT = {
-        "success": not setting_errors and not spawner_errors and not edge_errors and not forbidden_hits,
+        "success": (
+            not setting_errors
+            and not spawner_errors
+            and not edge_errors
+            and not forbidden_hits
+            and not dependency_scan_required_but_skipped
+        ),
         "asset_path": package_path,
         "object_path": graph.get_path_name(),
         "saved": bool(save_graph),
@@ -1043,7 +1170,10 @@ else:
         "setting_errors": setting_errors,
         "spawner_errors": spawner_errors,
         "edge_errors": edge_errors,
+        "sanitized_descriptions": sanitized_descriptions,
         "dependencies": dependencies,
+        "dependency_scan_skipped": bool(dependency_scan_warning),
+        "dependency_scan_warning": dependency_scan_warning,
         "forbidden_dependency_prefixes": forbidden_prefixes,
         "forbidden_dependency_hits": forbidden_hits,
     }
@@ -1137,6 +1267,59 @@ def graph_dependencies(package_path):
     except TypeError:
         return [str(item) for item in registry.get_dependencies(package_path)]
 
+MAX_ASSET_REGISTRY_DESCRIPTION_CHARS = 800
+
+def unsafe_asset_registry_descriptions(graph):
+    offenders = []
+
+    def read_description(obj):
+        if not obj:
+            return ""
+        try:
+            value = obj.get_editor_property("description")
+        except Exception:
+            try:
+                value = obj.description
+            except Exception:
+                return ""
+        return str(value or "")
+
+    def add_if_long(scope, obj):
+        text = read_description(obj)
+        if len(text) > MAX_ASSET_REGISTRY_DESCRIPTION_CHARS:
+            offenders.append({
+                "scope": scope,
+                "length": len(text),
+                "preview": text[:160],
+            })
+
+    add_if_long("graph", graph)
+    try:
+        graph_nodes = list(graph.get_editor_property("nodes"))
+    except Exception:
+        graph_nodes = []
+    for node in graph_nodes:
+        try:
+            title = str(node.get_editor_property("node_title")) or node.get_name()
+        except Exception:
+            title = node.get_name()
+        try:
+            settings_obj = node.get_settings()
+        except Exception:
+            settings_obj = None
+        add_if_long("settings:" + title, settings_obj)
+    return offenders
+
+def dependency_scan_skip_reason(graph):
+    offenders = unsafe_asset_registry_descriptions(graph)
+    if not offenders:
+        return None
+    return {
+        "reason": "PCG asset description text exceeds the safe dependency scan limit",
+        "max_safe_chars": MAX_ASSET_REGISTRY_DESCRIPTION_CHARS,
+        "offenders": offenders,
+    }
+
 def read_spawner(settings_obj):
     info = {}
     if settings_obj.get_class().get_name() != "PCGStaticMeshSpawnerSettings":
@@ -1228,15 +1411,20 @@ for node in graph.get_editor_property("nodes"):
         "actor_selector": read_actor_selector(settings_obj) if settings_obj else {},
     })
 
-dependencies = graph_dependencies(package_path) if include_dependencies else []
+dependency_scan_warning = dependency_scan_skip_reason(graph) if include_dependencies else None
+dependencies = [] if dependency_scan_warning else (graph_dependencies(package_path) if include_dependencies else [])
 forbidden_hits = [
     dependency
     for dependency in dependencies
     for prefix in forbidden_prefixes
     if str(dependency).startswith(str(prefix))
 ]
+dependency_scan_required_but_skipped = bool(forbidden_prefixes and dependency_scan_warning)
 RESULT = {
-    "success": not (fail_on_forbidden and forbidden_hits),
+    "success": not (
+        (fail_on_forbidden and forbidden_hits)
+        or (fail_on_forbidden and dependency_scan_required_but_skipped)
+    ),
     "graph_path": package_path,
     "object_path": graph.get_path_name(),
     "node_count": len(nodes),
@@ -1244,6 +1432,8 @@ RESULT = {
     "nodes": nodes,
     "edges": list(edges.values()),
     "dependencies": dependencies,
+    "dependency_scan_skipped": bool(dependency_scan_warning),
+    "dependency_scan_warning": dependency_scan_warning,
     "forbidden_dependency_prefixes": forbidden_prefixes,
     "forbidden_dependency_hits": forbidden_hits,
 }
