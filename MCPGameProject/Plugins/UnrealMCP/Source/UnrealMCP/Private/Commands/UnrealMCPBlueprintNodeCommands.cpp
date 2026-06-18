@@ -2,6 +2,7 @@
 #include "Commands/UnrealMCPCommonUtils.h"
 #include "Engine/Blueprint.h"
 #include "Engine/BlueprintGeneratedClass.h"
+#include "Animation/AnimBlueprintGeneratedClass.h"
 #include "Animation/AnimClassInterface.h"
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
@@ -5706,6 +5707,106 @@ FString GetAnimNodePrePostSupportNote(UAnimGraphNode_Base* Node)
     return TEXT("Dry-run resolver can identify this AnimGraph node, but the isolated runtime sampler MVP does not support it yet.");
 }
 
+FString PointerToJsonString(const void* Pointer)
+{
+    return Pointer ? FString::Printf(TEXT("%p"), Pointer) : FString();
+}
+
+TSharedPtr<FJsonObject> AnimGraphCompiledNodeMappingToJson(
+    UBlueprint* Blueprint,
+    UAnimGraphNode_Base* TargetNode,
+    UAnimInstance* AnimInstance,
+    USkeletalMeshComponent* Component,
+    bool* bOutRuntimeNodeMapped,
+    bool* bOutFindDebugMapped)
+{
+    if (bOutRuntimeNodeMapped)
+    {
+        *bOutRuntimeNodeMapped = false;
+    }
+    if (bOutFindDebugMapped)
+    {
+        *bOutFindDebugMapped = false;
+    }
+
+    TSharedPtr<FJsonObject> MappingObject = MakeShared<FJsonObject>();
+    MappingObject->SetBoolField(TEXT("valid"), false);
+    MappingObject->SetStringField(TEXT("mapping_kind"), TEXT("editor_guid_to_compiled_anim_node_property"));
+    MappingObject->SetStringField(TEXT("mapping_note"), TEXT("Maps the editor AnimGraph node GUID to the compiled FAnimNode property and, when a live AnimInstance is supplied, to that instance's in-memory node struct. It does not sample pre/post pose data."));
+
+    if (!TargetNode)
+    {
+        MappingObject->SetStringField(TEXT("error"), TEXT("Target AnimGraph node is null"));
+        return MappingObject;
+    }
+
+    MappingObject->SetStringField(TEXT("node_guid"), TargetNode->NodeGuid.ToString(EGuidFormats::Digits));
+    MappingObject->SetStringField(TEXT("node_object_name"), TargetNode->GetName());
+    MappingObject->SetStringField(TEXT("node_class"), TargetNode->GetClass() ? TargetNode->GetClass()->GetPathName() : FString());
+    MappingObject->SetStringField(TEXT("blueprint_path"), Blueprint ? Blueprint->GetPathName() : FString());
+    MappingObject->SetStringField(TEXT("blueprint_generated_class"), Blueprint && Blueprint->GeneratedClass ? Blueprint->GeneratedClass->GetPathName() : FString());
+
+    UAnimBlueprintGeneratedClass* AnimClass = AnimInstance
+        ? Cast<UAnimBlueprintGeneratedClass>(AnimInstance->GetClass())
+        : (Blueprint ? Cast<UAnimBlueprintGeneratedClass>(Blueprint->GeneratedClass) : nullptr);
+
+    MappingObject->SetBoolField(TEXT("runtime_instance_requested"), AnimInstance != nullptr);
+    MappingObject->SetStringField(TEXT("runtime_instance_class"), AnimInstance && AnimInstance->GetClass() ? AnimInstance->GetClass()->GetPathName() : FString());
+    MappingObject->SetBoolField(TEXT("runtime_instance_compatible"), !AnimInstance || (Blueprint && Blueprint->GeneratedClass && AnimInstance->GetClass() && AnimInstance->GetClass()->IsChildOf(Blueprint->GeneratedClass)));
+    MappingObject->SetBoolField(TEXT("has_anim_blueprint_generated_class"), AnimClass != nullptr);
+    MappingObject->SetStringField(TEXT("anim_class"), AnimClass ? AnimClass->GetPathName() : FString());
+
+    if (!AnimClass)
+    {
+        MappingObject->SetStringField(TEXT("error"), TEXT("Resolved class is not a UAnimBlueprintGeneratedClass"));
+        return MappingObject;
+    }
+
+    const int32 NodeIndex = AnimClass->GetNodeIndexFromGuid(TargetNode->NodeGuid, EPropertySearchMode::Hierarchy);
+    const TArray<FStructProperty*>& AnimNodeProperties = AnimClass->GetAnimNodeProperties();
+    FStructProperty* AnimNodeProperty = AnimNodeProperties.IsValidIndex(NodeIndex) ? AnimNodeProperties[NodeIndex] : nullptr;
+    const bool bNodeIndexFound = NodeIndex != INDEX_NONE && AnimNodeProperty != nullptr;
+    const bool bPropertyStructValid = AnimNodeProperty && AnimNodeProperty->Struct && AnimNodeProperty->Struct->IsChildOf(FAnimNode_Base::StaticStruct());
+
+    MappingObject->SetBoolField(TEXT("node_index_found"), bNodeIndexFound);
+    MappingObject->SetNumberField(TEXT("node_index"), NodeIndex);
+    MappingObject->SetNumberField(TEXT("anim_node_property_count"), AnimNodeProperties.Num());
+    MappingObject->SetBoolField(TEXT("anim_node_property_valid"), bPropertyStructValid);
+    MappingObject->SetStringField(TEXT("anim_node_property_name"), AnimNodeProperty ? AnimNodeProperty->GetName() : FString());
+    MappingObject->SetStringField(TEXT("anim_node_property_path"), AnimNodeProperty ? AnimNodeProperty->GetPathName() : FString());
+    MappingObject->SetStringField(TEXT("anim_node_property_cpp_type"), AnimNodeProperty ? AnimNodeProperty->GetCPPType(nullptr, 0) : FString());
+    MappingObject->SetStringField(TEXT("anim_node_property_struct"), AnimNodeProperty && AnimNodeProperty->Struct ? AnimNodeProperty->Struct->GetPathName() : FString());
+    MappingObject->SetNumberField(TEXT("property_offset"), AnimNodeProperty ? AnimNodeProperty->GetOffset_ForInternal() : INDEX_NONE);
+
+    FAnimNode_Base* RuntimeNode = nullptr;
+    if (AnimInstance && bPropertyStructValid && (!Blueprint || !Blueprint->GeneratedClass || AnimInstance->GetClass()->IsChildOf(Blueprint->GeneratedClass)))
+    {
+        RuntimeNode = AnimNodeProperty->ContainerPtrToValuePtr<FAnimNode_Base>(AnimInstance);
+    }
+
+    FAnimNode_Base* DebugNode = Component ? TargetNode->FindDebugAnimNode(Component) : nullptr;
+    const bool bRuntimeNodeMapped = RuntimeNode != nullptr;
+    const bool bFindDebugMapped = DebugNode != nullptr;
+
+    MappingObject->SetBoolField(TEXT("runtime_node_instance_mapped"), bRuntimeNodeMapped);
+    MappingObject->SetStringField(TEXT("runtime_node_pointer"), PointerToJsonString(RuntimeNode));
+    MappingObject->SetBoolField(TEXT("find_debug_anim_node_mapped"), bFindDebugMapped);
+    MappingObject->SetStringField(TEXT("find_debug_anim_node_pointer"), PointerToJsonString(DebugNode));
+    MappingObject->SetBoolField(TEXT("pointer_match"), RuntimeNode && DebugNode && RuntimeNode == DebugNode);
+    MappingObject->SetBoolField(TEXT("valid"), bNodeIndexFound && bPropertyStructValid && (!AnimInstance || bRuntimeNodeMapped || bFindDebugMapped));
+
+    if (bOutRuntimeNodeMapped)
+    {
+        *bOutRuntimeNodeMapped = bRuntimeNodeMapped;
+    }
+    if (bOutFindDebugMapped)
+    {
+        *bOutFindDebugMapped = bFindDebugMapped;
+    }
+
+    return MappingObject;
+}
+
 TArray<TSharedPtr<FJsonValue>> LinkedPinsToJsonValues(const UEdGraphPin* Pin)
 {
     TArray<TSharedPtr<FJsonValue>> Values;
@@ -6115,6 +6216,107 @@ TSharedPtr<FJsonObject> BuildAnimNodePrePostRuntimeTickDeltaResponse(
     PopulateAnimInstanceRuntimeTargetFields(ResultObj, Target, bPreferPIEWorld, bRequirePIEWorld);
     AddGraphField(ResultObj, Blueprint, TargetGraph);
     ResultObj->SetArrayField(TEXT("errors"), ErrorValues);
+    ResultObj->SetArrayField(TEXT("warnings"), WarningValues);
+    return ResultObj;
+}
+
+TSharedPtr<FJsonObject> BuildAnimNodePrePostCompiledGraphMappingResponse(
+    const TSharedPtr<FJsonObject>& Params,
+    const FString& BlueprintName,
+    UBlueprint* Blueprint,
+    UEdGraph* TargetGraph,
+    UAnimGraphNode_Base* TargetNode,
+    const TSharedPtr<FJsonObject>& TargetNodeObject)
+{
+    bool bPreferPIEWorld = true;
+    Params->TryGetBoolField(TEXT("prefer_pie_world"), bPreferPIEWorld);
+    const bool bRequirePIEWorld = GetBoolParam(Params, TEXT("require_pie_world"), false);
+
+    TArray<TSharedPtr<FJsonValue>> WarningValues;
+    FAnimInstanceRuntimeTarget Target;
+    FString TargetError;
+    if (!FindAnimInstanceRuntimeTarget(Params, bPreferPIEWorld, bRequirePIEWorld, TEXT("mapped"), Target, WarningValues, TargetError))
+    {
+        TSharedPtr<FJsonObject> ErrorObj = FUnrealMCPCommonUtils::CreateErrorResponse(TargetError);
+        ErrorObj->SetStringField(TEXT("mode"), TEXT("compiled_graph_mapping"));
+        ErrorObj->SetBoolField(TEXT("read_only"), true);
+        ErrorObj->SetBoolField(TEXT("runtime_only"), true);
+        ErrorObj->SetBoolField(TEXT("asset_modified"), false);
+        ErrorObj->SetBoolField(TEXT("saves_assets"), false);
+        ErrorObj->SetBoolField(TEXT("dry_run"), false);
+        ErrorObj->SetBoolField(TEXT("runtime_graph_prepost"), false);
+        ErrorObj->SetBoolField(TEXT("same_instance_prepost"), false);
+        ErrorObj->SetBoolField(TEXT("same_anim_instance_node_mapping"), false);
+        ErrorObj->SetBoolField(TEXT("instrumentation_preflight"), true);
+        ErrorObj->SetBoolField(TEXT("original_assets_modified"), false);
+        ErrorObj->SetBoolField(TEXT("temp_assets_created"), false);
+        ErrorObj->SetObjectField(TEXT("target_node"), TargetNodeObject);
+        ErrorObj->SetArrayField(TEXT("warnings"), WarningValues);
+        AddGraphField(ErrorObj, Blueprint, TargetGraph);
+        return ErrorObj;
+    }
+
+    if (Blueprint && Blueprint->GeneratedClass && Target.AnimInstance && !Target.AnimInstance->GetClass()->IsChildOf(Blueprint->GeneratedClass))
+    {
+        TSharedPtr<FJsonObject> ErrorObj = FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(
+            TEXT("Matched AnimInstance class '%s' is not compatible with resolved blueprint '%s'. Pass an actor using this AnimBP."),
+            Target.AnimInstance->GetClass() ? *Target.AnimInstance->GetClass()->GetPathName() : TEXT("<none>"),
+            *Blueprint->GetPathName()));
+        ErrorObj->SetStringField(TEXT("mode"), TEXT("compiled_graph_mapping"));
+        ErrorObj->SetStringField(TEXT("matched_anim_class"), Target.AnimInstance->GetClass() ? Target.AnimInstance->GetClass()->GetPathName() : FString());
+        ErrorObj->SetStringField(TEXT("resolved_blueprint_class"), Blueprint->GeneratedClass->GetPathName());
+        ErrorObj->SetBoolField(TEXT("read_only"), true);
+        ErrorObj->SetBoolField(TEXT("runtime_only"), true);
+        ErrorObj->SetBoolField(TEXT("asset_modified"), false);
+        ErrorObj->SetBoolField(TEXT("saves_assets"), false);
+        ErrorObj->SetBoolField(TEXT("dry_run"), false);
+        ErrorObj->SetBoolField(TEXT("runtime_graph_prepost"), false);
+        ErrorObj->SetBoolField(TEXT("same_instance_prepost"), false);
+        ErrorObj->SetBoolField(TEXT("same_anim_instance_node_mapping"), false);
+        ErrorObj->SetBoolField(TEXT("instrumentation_preflight"), true);
+        ErrorObj->SetBoolField(TEXT("original_assets_modified"), false);
+        ErrorObj->SetBoolField(TEXT("temp_assets_created"), false);
+        ErrorObj->SetObjectField(TEXT("target_node"), TargetNodeObject);
+        ErrorObj->SetArrayField(TEXT("warnings"), WarningValues);
+        AddGraphField(ErrorObj, Blueprint, TargetGraph);
+        return ErrorObj;
+    }
+
+    bool bRuntimeNodeMapped = false;
+    bool bFindDebugMapped = false;
+    TSharedPtr<FJsonObject> MappingObject = AnimGraphCompiledNodeMappingToJson(
+        Blueprint,
+        TargetNode,
+        Target.AnimInstance,
+        Target.Component,
+        &bRuntimeNodeMapped,
+        &bFindDebugMapped);
+
+    const bool bMapped = bRuntimeNodeMapped || bFindDebugMapped;
+    TSharedPtr<FJsonObject> ResultObj = MakeShared<FJsonObject>();
+    ResultObj->SetBoolField(TEXT("success"), bMapped);
+    ResultObj->SetBoolField(TEXT("read_only"), true);
+    ResultObj->SetBoolField(TEXT("runtime_only"), true);
+    ResultObj->SetBoolField(TEXT("asset_modified"), false);
+    ResultObj->SetBoolField(TEXT("saves_assets"), false);
+    ResultObj->SetBoolField(TEXT("dry_run"), false);
+    ResultObj->SetStringField(TEXT("mode"), TEXT("compiled_graph_mapping"));
+    ResultObj->SetStringField(TEXT("comparison_kind"), TEXT("compiled_graph_node_mapping"));
+    ResultObj->SetBoolField(TEXT("runtime_graph_prepost"), false);
+    ResultObj->SetBoolField(TEXT("same_instance_prepost"), false);
+    ResultObj->SetBoolField(TEXT("same_anim_instance_node_mapping"), bMapped);
+    ResultObj->SetBoolField(TEXT("runtime_node_instance_mapped"), bRuntimeNodeMapped);
+    ResultObj->SetBoolField(TEXT("find_debug_anim_node_mapped"), bFindDebugMapped);
+    ResultObj->SetBoolField(TEXT("instrumentation_preflight"), true);
+    ResultObj->SetBoolField(TEXT("original_assets_modified"), false);
+    ResultObj->SetBoolField(TEXT("temp_assets_created"), false);
+    ResultObj->SetStringField(TEXT("runtime_note"), TEXT("Maps the selected editor AnimGraph node GUID to the compiled/live FAnimNode instance on the matched AnimInstance. This proves a same-instance node address can be found, but it does not sample node input/output pose data."));
+    ResultObj->SetStringField(TEXT("blueprint_name"), BlueprintName);
+    ResultObj->SetStringField(TEXT("blueprint_path"), Blueprint ? Blueprint->GetPathName() : FString());
+    ResultObj->SetObjectField(TEXT("target_node"), TargetNodeObject);
+    ResultObj->SetObjectField(TEXT("runtime_node_mapping"), MappingObject);
+    PopulateAnimInstanceRuntimeTargetFields(ResultObj, Target, bPreferPIEWorld, bRequirePIEWorld);
+    AddGraphField(ResultObj, Blueprint, TargetGraph);
     ResultObj->SetArrayField(TEXT("warnings"), WarningValues);
     return ResultObj;
 }
@@ -10962,6 +11164,7 @@ TSharedPtr<FJsonObject> FUnrealMCPBlueprintNodeCommands::HandleSampleAnimNodePre
     TargetNodeObject->SetObjectField(TEXT("preferred_output_pose_pin"), PinToJson(OutputPosePin));
     TargetNodeObject->SetArrayField(TEXT("upstream_pose_links"), LinkedPinsToJsonValues(InputPosePin));
     TargetNodeObject->SetArrayField(TEXT("downstream_pose_links"), LinkedPinsToJsonValues(OutputPosePin));
+    TargetNodeObject->SetObjectField(TEXT("compiled_node_mapping"), AnimGraphCompiledNodeMappingToJson(Blueprint, TargetNode, nullptr, nullptr, nullptr, nullptr));
 
     const TArray<FString> SampleBones = GetStringArrayParam(Params, TEXT("sample_bones"), bDryRun ? TArray<FString>() : GetDefaultAnimNodePrePostSampleBones());
     const TArray<FString> SampleSockets = GetStringArrayParam(Params, TEXT("sample_sockets"), TArray<FString>());
@@ -10969,6 +11172,19 @@ TSharedPtr<FJsonObject> FUnrealMCPBlueprintNodeCommands::HandleSampleAnimNodePre
     if (!bDryRun)
     {
         const FString RuntimeMode = GetStringParam(Params, TEXT("mode"), TEXT("active_component_tick_delta"));
+        if (RuntimeMode.Equals(TEXT("compiled_graph_mapping"), ESearchCase::IgnoreCase)
+            || RuntimeMode.Equals(TEXT("runtime_node_mapping"), ESearchCase::IgnoreCase)
+            || RuntimeMode.Equals(TEXT("compiled_runtime_mapping"), ESearchCase::IgnoreCase))
+        {
+            return BuildAnimNodePrePostCompiledGraphMappingResponse(
+                Params,
+                BlueprintName,
+                Blueprint,
+                TargetGraph,
+                TargetNode,
+                TargetNodeObject);
+        }
+
         if (RuntimeMode.Equals(TEXT("isolated_temp_components"), ESearchCase::IgnoreCase))
         {
             return BuildAnimNodePrePostIsolatedTempComponentsResponse(
@@ -11007,12 +11223,17 @@ TSharedPtr<FJsonObject> FUnrealMCPBlueprintNodeCommands::HandleSampleAnimNodePre
     ResultObj->SetBoolField(TEXT("same_instance_prepost"), false);
     ResultObj->SetBoolField(TEXT("original_assets_modified"), false);
     ResultObj->SetBoolField(TEXT("temp_assets_created"), false);
-    ResultObj->SetStringField(TEXT("next_implementation_mode"), TEXT("isolated_temp_components"));
+    ResultObj->SetStringField(TEXT("next_implementation_mode"), TEXT("compiled_graph_mapping"));
     ResultObj->SetStringField(TEXT("runtime_note"), TEXT("Phase 1 resolves one AnimGraph node and reports feasibility only. It does not tick components or sample poses."));
     ResultObj->SetStringField(TEXT("blueprint_name"), BlueprintName);
     ResultObj->SetStringField(TEXT("blueprint_path"), Blueprint->GetPathName());
     ResultObj->SetNumberField(TEXT("max_depth"), MaxDepth);
     ResultObj->SetObjectField(TEXT("target_node"), TargetNodeObject);
+    ResultObj->SetArrayField(TEXT("available_runtime_modes"), StringArrayToJsonValues(TArray<FString>{
+        TEXT("compiled_graph_mapping"),
+        TEXT("active_component_tick_delta"),
+        TEXT("isolated_temp_components")
+    }));
     ResultObj->SetArrayField(TEXT("requested_sample_bones"), StringArrayToJsonValues(SampleBones));
     ResultObj->SetArrayField(TEXT("requested_sample_sockets"), StringArrayToJsonValues(SampleSockets));
     AddGraphField(ResultObj, Blueprint, TargetGraph);

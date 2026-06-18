@@ -1540,15 +1540,17 @@ def register_blueprint_node_tools(mcp: FastMCP):
         dry_run: bool = True
     ) -> Dict[str, Any]:
         """
-        Resolve a target AnimGraph node or run a limited active-component tick-delta probe.
+        Resolve a target AnimGraph node or run a limited runtime probe.
 
         With dry_run=True this is a read-only target resolver. With dry_run=False,
+        mode="compiled_graph_mapping" maps the selected editor AnimGraph node to
+        the compiled/live FAnimNode instance on a matched AnimInstance. With
         mode="active_component_tick_delta" samples final SkeletalMeshComponent pose
         before and after forced ticks on a matched live component. With
         mode="isolated_temp_components", it duplicates the AnimBP under _MCP_Temp,
         bypasses the selected node in a source copy, and compares that against a
-        selected-node copy on separate transient components. Neither runtime mode is
-        true same-instance compiled graph instrumentation.
+        selected-node copy on separate transient components. These modes still do
+        not sample true same-instance compiled graph input/output pose data.
 
         Args:
             blueprint_name: Anim Blueprint name or path
@@ -1561,7 +1563,7 @@ def register_blueprint_node_tools(mcp: FastMCP):
             title_contains: Node title substring filter
             sample_bones: Optional future sample bone list echoed in the response
             sample_sockets: Optional future sample socket list echoed in the response
-            mode: Runtime mode for dry_run=False. active_component_tick_delta or isolated_temp_components.
+            mode: Runtime mode for dry_run=False. compiled_graph_mapping, active_component_tick_delta, or isolated_temp_components.
             skeletal_mesh: SkeletalMesh path required by isolated_temp_components
             temp_root: Temp asset root for isolated_temp_components
             cleanup: Delete transient actors/temp assets after isolated sampling
@@ -1580,10 +1582,10 @@ def register_blueprint_node_tools(mcp: FastMCP):
             allow_missing_bones: Return partial samples instead of failing on missing bones/sockets
             include_pins: Include full pin data for the selected node
             max_depth: Reflected settings depth
-            dry_run: Resolve only when true; run active_component_tick_delta when false
+            dry_run: Resolve only when true; run the selected mode when false
 
         Returns:
-            Resolver response or active-component tick-delta runtime probe response.
+            Resolver response or selected runtime probe response.
         """
         try:
             params: Dict[str, Any] = {

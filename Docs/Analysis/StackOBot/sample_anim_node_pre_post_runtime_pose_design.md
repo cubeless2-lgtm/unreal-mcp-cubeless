@@ -199,4 +199,7 @@ Only after that passes review should the temporary runtime sampler be added.
 - StackOBot Bot Trail live smoke passed against a disposable `_MCP_Temp` duplicate of `ABP_Bot_Trail_Study` with `FakeVelocity=(0,0,80)`. The strongest isolated source-bypass vs post-node delta was `antenna_04_l`, about `21.948 cm` translation and `34.072 deg` rotation.
 - The static no-FakeVelocity Trail case produced only floating-point noise, about `0.000005 cm`, confirming that controlled motion or fake velocity is required for a meaningful Trail isolated sample.
 - Trail cleanup verification reported `0` dirty content packages, `0` dirty map packages, and `0` remaining assets under `/Game/_MCP_Temp/AnimNodePrePost`.
-- Remaining future scope is true same-instance compiled graph instrumentation.
+- A read-only compiled graph mapping preflight, `mode=compiled_graph_mapping`, is implemented to map an editor AnimGraph node GUID to the compiled/live `FAnimNode_*` property on the matched `AnimInstance`.
+- `compiled_graph_mapping` reports `same_anim_instance_node_mapping=true` when the live node struct address is resolved and cross-checks the address against `UAnimGraphNode_Base::FindDebugAnimNode` when possible.
+- This preflight proves the editor-node-to-runtime-node address path needed for future instrumentation, but it still reports `runtime_graph_prepost=false` and `same_instance_prepost=false` because it does not sample true compiled graph input/output pose data.
+- Remaining future scope is true same-instance compiled graph pose instrumentation once a safe pose tap/capture strategy is chosen.
