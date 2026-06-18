@@ -1450,17 +1450,29 @@ def register_blueprint_node_tools(mcp: FastMCP):
         title_contains: str = "",
         sample_bones: Optional[List[str]] = None,
         sample_sockets: Optional[List[str]] = None,
+        mode: str = "active_component_tick_delta",
+        actor_label: str = "",
+        actor_name: str = "",
+        actor_path: str = "",
+        component_name: str = "",
+        prefer_pie_world: bool = True,
+        require_pie_world: bool = False,
+        tick_count: int = 1,
+        tick_delta_time: float = 1.0 / 30.0,
+        settle_tick_count: int = 0,
+        refresh_bone_transforms: bool = True,
+        allow_missing_bones: bool = False,
         include_pins: bool = True,
         max_depth: int = 3,
         dry_run: bool = True
     ) -> Dict[str, Any]:
         """
-        Resolve a target AnimGraph node for a future pre/post runtime pose probe.
+        Resolve a target AnimGraph node or run a limited active-component tick-delta probe.
 
-        Phase 1 is a dry-run target resolver only. It reports the selected node,
-        preferred pose pins, upstream/downstream pose links, reflected settings,
-        and whether the isolated runtime sampler MVP can support that node kind.
-        It does not tick components or sample poses yet.
+        With dry_run=True this is a read-only target resolver. With dry_run=False
+        and mode="active_component_tick_delta", it samples final SkeletalMeshComponent
+        pose before and after forced ticks on a matched live component. That runtime
+        mode is not true internal AnimGraph node source-vs-output instrumentation.
 
         Args:
             blueprint_name: Anim Blueprint name or path
@@ -1473,17 +1485,37 @@ def register_blueprint_node_tools(mcp: FastMCP):
             title_contains: Node title substring filter
             sample_bones: Optional future sample bone list echoed in the response
             sample_sockets: Optional future sample socket list echoed in the response
+            mode: Runtime mode for dry_run=False. Currently active_component_tick_delta.
+            actor_label: Live actor label to sample for active_component_tick_delta
+            actor_name: Live actor object name to sample
+            actor_path: Live actor object path to sample
+            component_name: SkeletalMeshComponent name to sample
+            prefer_pie_world: Prefer PIE/SIE/play worlds over editor world
+            require_pie_world: Refuse editor-world fallback
+            tick_count: Forced tick count between pre/post samples
+            tick_delta_time: Delta time for forced ticks
+            settle_tick_count: Forced ticks before taking the pre sample
+            refresh_bone_transforms: Refresh bone transforms after forced ticks
+            allow_missing_bones: Return partial samples instead of failing on missing bones/sockets
             include_pins: Include full pin data for the selected node
             max_depth: Reflected settings depth
-            dry_run: Must remain true in Phase 1
+            dry_run: Resolve only when true; run active_component_tick_delta when false
 
         Returns:
-            Dry-run resolver response with target node metadata and feasibility flags.
+            Resolver response or active-component tick-delta runtime probe response.
         """
         try:
             params: Dict[str, Any] = {
                 "graph_name": graph_name,
                 "graph_type": graph_type,
+                "mode": mode,
+                "prefer_pie_world": prefer_pie_world,
+                "require_pie_world": require_pie_world,
+                "tick_count": tick_count,
+                "tick_delta_time": tick_delta_time,
+                "settle_tick_count": settle_tick_count,
+                "refresh_bone_transforms": refresh_bone_transforms,
+                "allow_missing_bones": allow_missing_bones,
                 "include_pins": include_pins,
                 "max_depth": max_depth,
                 "dry_run": dry_run,
@@ -1500,6 +1532,14 @@ def register_blueprint_node_tools(mcp: FastMCP):
                 params["node_type"] = node_type
             if title_contains:
                 params["title_contains"] = title_contains
+            if actor_label:
+                params["actor_label"] = actor_label
+            if actor_name:
+                params["actor_name"] = actor_name
+            if actor_path:
+                params["actor_path"] = actor_path
+            if component_name:
+                params["component_name"] = component_name
             if sample_bones is not None:
                 params["sample_bones"] = sample_bones
             if sample_sockets is not None:

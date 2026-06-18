@@ -427,9 +427,9 @@ Use this command when you need a stable same-instance pre/post ControlRig solve 
 
 ### sample_anim_node_pre_post_runtime_pose
 
-Resolve a target AnimGraph node for a future pre/post runtime pose probe.
+Resolve a target AnimGraph node or run a limited active-component tick-delta pose probe.
 
-**Important scope note:** Phase 1 is a dry-run target resolver only. It reports one selected AnimGraph node, preferred pose pins, upstream/downstream pose links, reflected settings, and isolated sampler feasibility. It does not tick components, spawn actors, create temporary assets, or sample runtime poses yet. Responses intentionally report `runtime_graph_prepost=false` and `same_instance_prepost=false`.
+**Important scope note:** `dry_run=true` is a read-only target resolver. `dry_run=false` currently supports only `mode=active_component_tick_delta`, which samples final `SkeletalMeshComponent` pose before and after forced ticks on a matched live component. This is not true internal AnimGraph node source-vs-output instrumentation. Runtime responses intentionally report `runtime_graph_prepost=false` and `same_instance_prepost=false`.
 
 Use this command before implementing or running deeper AnimGraph node instrumentation so ambiguous node selectors are caught early.
 
@@ -441,21 +441,33 @@ Use this command before implementing or running deeper AnimGraph node instrument
 - `node_id` (string, optional) - Exact target node GUID. Required when filters are ambiguous.
 - `node_type` (string, optional) - Node class/title filter, such as `AnimGraphNode_RigidBody`, `AnimGraphNode_Trail`, or `AnimGraphNode_ControlRig`
 - `title_contains` (string, optional) - Node title substring filter
-- `sample_bones` (array, optional) - Future sample bone list echoed in the response
-- `sample_sockets` (array, optional) - Future sample socket list echoed in the response
+- `sample_bones` (array, optional) - Bone list to echo in dry-run or sample in runtime mode. Runtime default is a compact StackOBot/Baddy study set.
+- `sample_sockets` (array, optional) - Socket list to echo in dry-run or sample in runtime mode
+- `mode` (string, optional) - Runtime mode for `dry_run=false`. Currently `active_component_tick_delta`.
+- `actor_label`, `actor_name`, `actor_path` (string, optional) - Live actor selector for runtime mode
+- `component_name` (string, optional) - Live `SkeletalMeshComponent` selector for runtime mode
+- `prefer_pie_world` (boolean, optional) - Prefer PIE/SIE/play worlds over editor world. Defaults to `true`.
+- `require_pie_world` (boolean, optional) - Refuse editor-world fallback. Defaults to `false`.
+- `tick_count` (number, optional) - Forced tick count between pre/post samples, clamped `0..240`. Defaults to `1`.
+- `tick_delta_time` (number, optional) - Forced tick delta time, clamped `0..1`. Defaults to `1/30`.
+- `settle_tick_count` (number, optional) - Forced ticks before the pre sample, clamped `0..240`. Defaults to `0`.
+- `refresh_bone_transforms` (boolean, optional) - Refresh bone transforms after forced ticks. Defaults to `true`.
+- `allow_missing_bones` (boolean, optional) - Return partial samples instead of failing on missing bones/sockets. Defaults to `false`.
 - `include_pins` (boolean, optional) - Include full selected-node pin data. Defaults to `true`.
 - `max_depth` (number, optional) - Reflected settings depth. Defaults to `3`.
-- `dry_run` (boolean, optional) - Must remain `true` in Phase 1. Defaults to `true`.
+- `dry_run` (boolean, optional) - Resolve only when true; run `active_component_tick_delta` when false. Defaults to `true`.
 
 **Returns:**
 - `target_node` with node metadata, reflected settings, preferred input/output pose pins, upstream/downstream pose links, `mvp_kind`, and `isolated_sampler_mvp_supported`
-- `mode=dry_run_target_resolver`
+- `mode=dry_run_target_resolver` for dry-run
+- `mode=active_component_tick_delta` and `comparison_kind=active_component_tick_delta` for runtime tick-delta sampling
 - `runtime_graph_prepost=false`
 - `same_instance_prepost=false`
-- `next_implementation_mode=isolated_temp_components`
+- `pre_tick_pose`, `post_tick_pose`, and `deltas` for runtime mode
+- `next_implementation_mode=isolated_temp_components` for dry-run
 - warning/error details when the selector matches no node or multiple nodes
 
-**Example:**
+**Dry-run example:**
 ```json
 {
   "command": "sample_anim_node_pre_post_runtime_pose",
@@ -464,6 +476,26 @@ Use this command before implementing or running deeper AnimGraph node instrument
     "graph_name": "AnimGraph",
     "graph_type": "function",
     "node_type": "AnimGraphNode_RigidBody",
+    "sample_bones": ["Head_02", "TailEnd", "R_Stalk_04", "L_Stalk_04"]
+  }
+}
+```
+
+**Active component tick-delta example:**
+```json
+{
+  "command": "sample_anim_node_pre_post_runtime_pose",
+  "params": {
+    "blueprint_name": "/Game/StackOBot/Characters/Blobling/Anim/ABP_Baddy.ABP_Baddy",
+    "graph_name": "AnimGraph",
+    "graph_type": "function",
+    "node_id": "81E779C34D36CC52F0125F91BF52BAF3",
+    "actor_label": "MCP_AnimNodeProbe_Baddy",
+    "mode": "active_component_tick_delta",
+    "dry_run": false,
+    "settle_tick_count": 3,
+    "tick_count": 5,
+    "tick_delta_time": 0.033333,
     "sample_bones": ["Head_02", "TailEnd", "R_Stalk_04", "L_Stalk_04"]
   }
 }

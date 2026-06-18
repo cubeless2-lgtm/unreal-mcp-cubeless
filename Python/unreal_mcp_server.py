@@ -424,7 +424,7 @@ def info():
     - `inspect_anim_state_machine_transitions(blueprint_name, state_machine_name="")` - Read AnimBP state-machine transition source/target/rule graph topology
     - `controlrig_direct_gate_probe(control_rig_path="", control_rig_class="", cases?)` - Run transient ControlRig property/curve gate probes and return hierarchy transform deltas without saving assets
     - `sample_controlrig_pre_post_runtime_pose(control_rig_path="", control_rig_class="", input_defaults?, curve_values?)` - Sample transient ControlRig hierarchy pre/post execute transforms and deltas
-    - `sample_anim_node_pre_post_runtime_pose(blueprint_name="", node_id="", node_type="", dry_run=True)` - Resolve an AnimGraph node target for future pre/post runtime pose sampling
+    - `sample_anim_node_pre_post_runtime_pose(blueprint_name="", node_id="", node_type="", dry_run=True)` - Resolve an AnimGraph node target or run an active-component tick-delta pose probe
     - `sample_skeletal_bones_in_sie(actor_label="", actor_name="", component_name="", bones?, sockets?, require_pie_world=False)` - Sample live PIE/SIE/play SkeletalMeshComponent bone/socket transforms without modifying assets
     - `inspect_anim_instance_runtime_state(actor_label="", actor_name="", component_name="", state_machine_name="", require_pie_world=False)` - Read live PIE/SIE/play AnimInstance state-machine, montage, and curve state
     - `set_anim_instance_runtime_property_for_probe(actor_label="", properties?, require_pie_world=False)` - Set live AnimInstance runtime properties for probing without saving assets

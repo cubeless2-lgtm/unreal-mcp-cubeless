@@ -5240,6 +5240,393 @@ TArray<TSharedPtr<FJsonValue>> LinkedPinsToJsonValues(const UEdGraphPin* Pin)
     return Values;
 }
 
+struct FAnimNodePoseTransformSample
+{
+    bool bValid = false;
+    FTransform WorldTransform = FTransform::Identity;
+    FTransform ComponentTransform = FTransform::Identity;
+    FString Error;
+};
+
+struct FAnimNodePoseCapture
+{
+    TSharedPtr<FJsonObject> Json = MakeShared<FJsonObject>();
+    TMap<FString, FAnimNodePoseTransformSample> BoneSamples;
+    TMap<FString, FAnimNodePoseTransformSample> SocketSamples;
+};
+
+TArray<FString> GetDefaultAnimNodePrePostSampleBones()
+{
+    return {
+        TEXT("Head_02"),
+        TEXT("TailEnd"),
+        TEXT("R_Stalk_04"),
+        TEXT("L_Stalk_04")
+    };
+}
+
+FAnimNodePoseTransformSample CaptureBonePoseTransformSample(
+    const USkeletalMeshComponent* Component,
+    const FString& BoneNameText)
+{
+    FAnimNodePoseTransformSample Sample;
+    if (!Component)
+    {
+        Sample.Error = TEXT("SkeletalMeshComponent is null");
+        return Sample;
+    }
+
+    const FName BoneName(*BoneNameText);
+    if (Component->GetBoneIndex(BoneName) == INDEX_NONE)
+    {
+        Sample.Error = FString::Printf(TEXT("Bone not found: %s"), *BoneNameText);
+        return Sample;
+    }
+
+    Sample.bValid = true;
+    Sample.WorldTransform = Component->GetSocketTransform(BoneName, RTS_World);
+    Sample.ComponentTransform = Component->GetSocketTransform(BoneName, RTS_Component);
+    return Sample;
+}
+
+FAnimNodePoseTransformSample CaptureSocketPoseTransformSample(
+    const USkeletalMeshComponent* Component,
+    const FString& SocketNameText)
+{
+    FAnimNodePoseTransformSample Sample;
+    if (!Component)
+    {
+        Sample.Error = TEXT("SkeletalMeshComponent is null");
+        return Sample;
+    }
+
+    const FName SocketName(*SocketNameText);
+    if (!Component->DoesSocketExist(SocketName))
+    {
+        Sample.Error = FString::Printf(TEXT("Socket not found: %s"), *SocketNameText);
+        return Sample;
+    }
+
+    Sample.bValid = true;
+    Sample.WorldTransform = Component->GetSocketTransform(SocketName, RTS_World);
+    Sample.ComponentTransform = Component->GetSocketTransform(SocketName, RTS_Component);
+    return Sample;
+}
+
+FAnimNodePoseCapture CaptureAnimNodeProbePose(
+    const USkeletalMeshComponent* Component,
+    const TArray<FString>& SampleBones,
+    const TArray<FString>& SampleSockets,
+    bool bAllowMissingSamples,
+    TArray<TSharedPtr<FJsonValue>>& ErrorValues,
+    TArray<TSharedPtr<FJsonValue>>& WarningValues)
+{
+    FAnimNodePoseCapture Capture;
+    TSharedPtr<FJsonObject> BoneSamplesObject = MakeShared<FJsonObject>();
+    TSharedPtr<FJsonObject> SocketSamplesObject = MakeShared<FJsonObject>();
+
+    for (const FString& BoneName : SampleBones)
+    {
+        if (BoneName.IsEmpty())
+        {
+            continue;
+        }
+
+        TSharedPtr<FJsonObject> BoneSampleJson = SampleBoneTransformToJson(Component, BoneName);
+        FAnimNodePoseTransformSample TransformSample = CaptureBonePoseTransformSample(Component, BoneName);
+        Capture.BoneSamples.Add(BoneName, TransformSample);
+        if (!TransformSample.bValid)
+        {
+            const TSharedPtr<FJsonValue> MissingMessage = MakeShared<FJsonValueString>(TransformSample.Error);
+            if (bAllowMissingSamples)
+            {
+                WarningValues.Add(MissingMessage);
+            }
+            else
+            {
+                ErrorValues.Add(MissingMessage);
+            }
+        }
+        BoneSamplesObject->SetObjectField(BoneName, BoneSampleJson);
+    }
+
+    for (const FString& SocketName : SampleSockets)
+    {
+        if (SocketName.IsEmpty())
+        {
+            continue;
+        }
+
+        TSharedPtr<FJsonObject> SocketSampleJson = SampleSocketTransformToJson(Component, SocketName);
+        FAnimNodePoseTransformSample TransformSample = CaptureSocketPoseTransformSample(Component, SocketName);
+        Capture.SocketSamples.Add(SocketName, TransformSample);
+        if (!TransformSample.bValid)
+        {
+            const TSharedPtr<FJsonValue> MissingMessage = MakeShared<FJsonValueString>(TransformSample.Error);
+            if (bAllowMissingSamples)
+            {
+                WarningValues.Add(MissingMessage);
+            }
+            else
+            {
+                ErrorValues.Add(MissingMessage);
+            }
+        }
+        SocketSamplesObject->SetObjectField(SocketName, SocketSampleJson);
+    }
+
+    Capture.Json->SetObjectField(TEXT("bone_samples"), BoneSamplesObject);
+    Capture.Json->SetObjectField(TEXT("socket_samples"), SocketSamplesObject);
+    return Capture;
+}
+
+TSharedPtr<FJsonObject> TransformDeltaToJson(
+    const FAnimNodePoseTransformSample& Before,
+    const FAnimNodePoseTransformSample& After)
+{
+    TSharedPtr<FJsonObject> DeltaObject = MakeShared<FJsonObject>();
+    if (!Before.bValid || !After.bValid)
+    {
+        DeltaObject->SetBoolField(TEXT("valid"), false);
+        if (!Before.Error.IsEmpty())
+        {
+            DeltaObject->SetStringField(TEXT("pre_error"), Before.Error);
+        }
+        if (!After.Error.IsEmpty())
+        {
+            DeltaObject->SetStringField(TEXT("post_error"), After.Error);
+        }
+        return DeltaObject;
+    }
+
+    const FVector WorldDelta = After.WorldTransform.GetLocation() - Before.WorldTransform.GetLocation();
+    const FVector ComponentDelta = After.ComponentTransform.GetLocation() - Before.ComponentTransform.GetLocation();
+    const double WorldRotationDeltaDegrees = FMath::RadiansToDegrees(Before.WorldTransform.GetRotation().AngularDistance(After.WorldTransform.GetRotation()));
+    const double ComponentRotationDeltaDegrees = FMath::RadiansToDegrees(Before.ComponentTransform.GetRotation().AngularDistance(After.ComponentTransform.GetRotation()));
+
+    DeltaObject->SetBoolField(TEXT("valid"), true);
+    DeltaObject->SetArrayField(TEXT("world_translation_delta"), VectorToJsonArray(WorldDelta));
+    DeltaObject->SetNumberField(TEXT("world_translation_distance"), WorldDelta.Size());
+    DeltaObject->SetNumberField(TEXT("world_rotation_angle_degrees"), WorldRotationDeltaDegrees);
+    DeltaObject->SetArrayField(TEXT("component_translation_delta"), VectorToJsonArray(ComponentDelta));
+    DeltaObject->SetNumberField(TEXT("component_translation_distance"), ComponentDelta.Size());
+    DeltaObject->SetNumberField(TEXT("component_rotation_angle_degrees"), ComponentRotationDeltaDegrees);
+    return DeltaObject;
+}
+
+TSharedPtr<FJsonObject> BuildAnimNodePoseDeltas(
+    const FAnimNodePoseCapture& Before,
+    const FAnimNodePoseCapture& After,
+    const TArray<FString>& SampleBones,
+    const TArray<FString>& SampleSockets)
+{
+    TSharedPtr<FJsonObject> DeltaObject = MakeShared<FJsonObject>();
+    TSharedPtr<FJsonObject> BoneDeltasObject = MakeShared<FJsonObject>();
+    TSharedPtr<FJsonObject> SocketDeltasObject = MakeShared<FJsonObject>();
+
+    for (const FString& BoneName : SampleBones)
+    {
+        if (BoneName.IsEmpty())
+        {
+            continue;
+        }
+
+        const FAnimNodePoseTransformSample* BeforeSample = Before.BoneSamples.Find(BoneName);
+        const FAnimNodePoseTransformSample* AfterSample = After.BoneSamples.Find(BoneName);
+        if (BeforeSample && AfterSample)
+        {
+            BoneDeltasObject->SetObjectField(BoneName, TransformDeltaToJson(*BeforeSample, *AfterSample));
+        }
+    }
+
+    for (const FString& SocketName : SampleSockets)
+    {
+        if (SocketName.IsEmpty())
+        {
+            continue;
+        }
+
+        const FAnimNodePoseTransformSample* BeforeSample = Before.SocketSamples.Find(SocketName);
+        const FAnimNodePoseTransformSample* AfterSample = After.SocketSamples.Find(SocketName);
+        if (BeforeSample && AfterSample)
+        {
+            SocketDeltasObject->SetObjectField(SocketName, TransformDeltaToJson(*BeforeSample, *AfterSample));
+        }
+    }
+
+    DeltaObject->SetObjectField(TEXT("bone_deltas"), BoneDeltasObject);
+    DeltaObject->SetObjectField(TEXT("socket_deltas"), SocketDeltasObject);
+    return DeltaObject;
+}
+
+TSharedPtr<FJsonObject> BuildAnimNodePrePostRuntimeTickDeltaResponse(
+    const TSharedPtr<FJsonObject>& Params,
+    const FString& BlueprintName,
+    UBlueprint* Blueprint,
+    UEdGraph* TargetGraph,
+    UAnimGraphNode_Base* TargetNode,
+    const TSharedPtr<FJsonObject>& TargetNodeObject,
+    const TArray<FString>& SampleBones,
+    const TArray<FString>& SampleSockets,
+    bool bIsolatedSamplerSupported)
+{
+    FString Mode = GetStringParam(Params, TEXT("mode"), TEXT("active_component_tick_delta"));
+    Mode.TrimStartAndEndInline();
+    if (Mode.IsEmpty())
+    {
+        Mode = TEXT("active_component_tick_delta");
+    }
+
+    if (!Mode.Equals(TEXT("active_component_tick_delta"), ESearchCase::IgnoreCase)
+        && !Mode.Equals(TEXT("live_component_tick_delta"), ESearchCase::IgnoreCase))
+    {
+        TSharedPtr<FJsonObject> ErrorObj = FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(
+            TEXT("Runtime mode '%s' is not implemented yet. Use mode='active_component_tick_delta' or dry_run=true."),
+            *Mode));
+        ErrorObj->SetStringField(TEXT("requested_mode"), Mode);
+        ErrorObj->SetStringField(TEXT("implemented_mode"), TEXT("active_component_tick_delta"));
+        ErrorObj->SetBoolField(TEXT("runtime_graph_prepost"), false);
+        ErrorObj->SetBoolField(TEXT("same_instance_prepost"), false);
+        ErrorObj->SetBoolField(TEXT("original_assets_modified"), false);
+        ErrorObj->SetObjectField(TEXT("target_node"), TargetNodeObject);
+        AddGraphField(ErrorObj, Blueprint, TargetGraph);
+        return ErrorObj;
+    }
+
+    bool bPreferPIEWorld = true;
+    Params->TryGetBoolField(TEXT("prefer_pie_world"), bPreferPIEWorld);
+    const bool bRequirePIEWorld = GetBoolParam(Params, TEXT("require_pie_world"), false);
+    const bool bAllowMissingSamples = GetBoolParam(Params, TEXT("allow_missing_bones"), false)
+        || GetBoolParam(Params, TEXT("allow_missing_samples"), false);
+    const int32 SettleTickCount = GetClampedIntParam(Params, TEXT("settle_tick_count"), 0, 0, 240);
+    const int32 TickCount = GetClampedIntParam(Params, TEXT("tick_count"), 1, 0, 240);
+    const double TickDeltaTime = GetClampedNumberParam(Params, TEXT("tick_delta_time"), 1.0 / 30.0, 0.0, 1.0);
+    const bool bRefreshBoneTransforms = GetBoolParam(Params, TEXT("refresh_bone_transforms"), true);
+
+    TArray<TSharedPtr<FJsonValue>> ErrorValues;
+    TArray<TSharedPtr<FJsonValue>> WarningValues;
+
+    if (!bIsolatedSamplerSupported)
+    {
+        WarningValues.Add(MakeShared<FJsonValueString>(TEXT("Selected node type is not supported by the later isolated sampler MVP; active_component_tick_delta can still sample final component pose deltas.")));
+    }
+
+    if (Params->HasField(TEXT("properties")) || Params->HasField(TEXT("property_name")) || Params->HasField(TEXT("curve_values")))
+    {
+        WarningValues.Add(MakeShared<FJsonValueString>(TEXT("active_component_tick_delta does not apply driver properties or curve values yet; use existing runtime property tools before this call when needed.")));
+    }
+
+    FAnimInstanceRuntimeTarget Target;
+    FString TargetError;
+    if (!FindAnimInstanceRuntimeTarget(Params, bPreferPIEWorld, bRequirePIEWorld, TEXT("sampled"), Target, WarningValues, TargetError))
+    {
+        TSharedPtr<FJsonObject> ErrorObj = FUnrealMCPCommonUtils::CreateErrorResponse(TargetError);
+        ErrorObj->SetStringField(TEXT("mode"), TEXT("active_component_tick_delta"));
+        ErrorObj->SetBoolField(TEXT("runtime_graph_prepost"), false);
+        ErrorObj->SetBoolField(TEXT("same_instance_prepost"), false);
+        ErrorObj->SetBoolField(TEXT("original_assets_modified"), false);
+        ErrorObj->SetObjectField(TEXT("target_node"), TargetNodeObject);
+        ErrorObj->SetArrayField(TEXT("warnings"), WarningValues);
+        AddGraphField(ErrorObj, Blueprint, TargetGraph);
+        return ErrorObj;
+    }
+
+    if (Blueprint && Blueprint->GeneratedClass && Target.AnimInstance && !Target.AnimInstance->GetClass()->IsChildOf(Blueprint->GeneratedClass))
+    {
+        TSharedPtr<FJsonObject> ErrorObj = FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(
+            TEXT("Matched AnimInstance class '%s' is not compatible with resolved blueprint '%s'. Pass an actor using this AnimBP."),
+            Target.AnimInstance->GetClass() ? *Target.AnimInstance->GetClass()->GetPathName() : TEXT("<none>"),
+            *Blueprint->GetPathName()));
+        ErrorObj->SetStringField(TEXT("mode"), TEXT("active_component_tick_delta"));
+        ErrorObj->SetStringField(TEXT("matched_anim_class"), Target.AnimInstance->GetClass() ? Target.AnimInstance->GetClass()->GetPathName() : FString());
+        ErrorObj->SetStringField(TEXT("resolved_blueprint_class"), Blueprint->GeneratedClass->GetPathName());
+        ErrorObj->SetBoolField(TEXT("runtime_graph_prepost"), false);
+        ErrorObj->SetBoolField(TEXT("same_instance_prepost"), false);
+        ErrorObj->SetBoolField(TEXT("original_assets_modified"), false);
+        ErrorObj->SetObjectField(TEXT("target_node"), TargetNodeObject);
+        AddGraphField(ErrorObj, Blueprint, TargetGraph);
+        return ErrorObj;
+    }
+
+    TSharedPtr<FJsonObject> SettleTickObject = TickSkeletalComponentForAnimRuntimeProbe(
+        Target.Component,
+        SettleTickCount,
+        TickDeltaTime,
+        bRefreshBoneTransforms,
+        WarningValues);
+
+    const int32 ErrorCountBeforePreSample = ErrorValues.Num();
+    FAnimNodePoseCapture PreTickPose = CaptureAnimNodeProbePose(
+        Target.Component,
+        SampleBones,
+        SampleSockets,
+        bAllowMissingSamples,
+        ErrorValues,
+        WarningValues);
+    if (ErrorValues.Num() > ErrorCountBeforePreSample)
+    {
+        TSharedPtr<FJsonObject> ErrorObj = FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("One or more requested sample bones/sockets were missing; pass allow_missing_bones=true to return partial samples."));
+        ErrorObj->SetStringField(TEXT("mode"), TEXT("active_component_tick_delta"));
+        ErrorObj->SetBoolField(TEXT("runtime_graph_prepost"), false);
+        ErrorObj->SetBoolField(TEXT("same_instance_prepost"), false);
+        ErrorObj->SetBoolField(TEXT("original_assets_modified"), false);
+        ErrorObj->SetObjectField(TEXT("target_node"), TargetNodeObject);
+        ErrorObj->SetObjectField(TEXT("settle_tick"), SettleTickObject);
+        ErrorObj->SetObjectField(TEXT("pre_tick_pose"), PreTickPose.Json);
+        ErrorObj->SetArrayField(TEXT("errors"), ErrorValues);
+        ErrorObj->SetArrayField(TEXT("warnings"), WarningValues);
+        PopulateAnimInstanceRuntimeTargetFields(ErrorObj, Target, bPreferPIEWorld, bRequirePIEWorld);
+        AddGraphField(ErrorObj, Blueprint, TargetGraph);
+        return ErrorObj;
+    }
+
+    TSharedPtr<FJsonObject> TickObject = TickSkeletalComponentForAnimRuntimeProbe(
+        Target.Component,
+        TickCount,
+        TickDeltaTime,
+        bRefreshBoneTransforms,
+        WarningValues);
+
+    FAnimNodePoseCapture PostTickPose = CaptureAnimNodeProbePose(
+        Target.Component,
+        SampleBones,
+        SampleSockets,
+        bAllowMissingSamples,
+        ErrorValues,
+        WarningValues);
+
+    TSharedPtr<FJsonObject> ResultObj = MakeShared<FJsonObject>();
+    ResultObj->SetBoolField(TEXT("success"), ErrorValues.Num() == 0);
+    ResultObj->SetBoolField(TEXT("read_only"), false);
+    ResultObj->SetBoolField(TEXT("runtime_only"), true);
+    ResultObj->SetBoolField(TEXT("asset_modified"), false);
+    ResultObj->SetBoolField(TEXT("saves_assets"), false);
+    ResultObj->SetBoolField(TEXT("dry_run"), false);
+    ResultObj->SetStringField(TEXT("mode"), TEXT("active_component_tick_delta"));
+    ResultObj->SetStringField(TEXT("comparison_kind"), TEXT("active_component_tick_delta"));
+    ResultObj->SetBoolField(TEXT("runtime_graph_prepost"), false);
+    ResultObj->SetBoolField(TEXT("same_instance_prepost"), false);
+    ResultObj->SetBoolField(TEXT("original_assets_modified"), false);
+    ResultObj->SetBoolField(TEXT("temp_assets_created"), false);
+    ResultObj->SetStringField(TEXT("runtime_note"), TEXT("Samples final SkeletalMeshComponent pose before and after forced ticks on an active component. This is not true internal AnimGraph node source-vs-output instrumentation."));
+    ResultObj->SetStringField(TEXT("blueprint_name"), BlueprintName);
+    ResultObj->SetStringField(TEXT("blueprint_path"), Blueprint ? Blueprint->GetPathName() : FString());
+    ResultObj->SetObjectField(TEXT("target_node"), TargetNodeObject);
+    ResultObj->SetArrayField(TEXT("requested_sample_bones"), StringArrayToJsonValues(SampleBones));
+    ResultObj->SetArrayField(TEXT("requested_sample_sockets"), StringArrayToJsonValues(SampleSockets));
+    ResultObj->SetBoolField(TEXT("allow_missing_bones"), bAllowMissingSamples);
+    ResultObj->SetObjectField(TEXT("settle_tick"), SettleTickObject);
+    ResultObj->SetObjectField(TEXT("tick"), TickObject);
+    ResultObj->SetObjectField(TEXT("pre_tick_pose"), PreTickPose.Json);
+    ResultObj->SetObjectField(TEXT("post_tick_pose"), PostTickPose.Json);
+    ResultObj->SetObjectField(TEXT("deltas"), BuildAnimNodePoseDeltas(PreTickPose, PostTickPose, SampleBones, SampleSockets));
+    PopulateAnimInstanceRuntimeTargetFields(ResultObj, Target, bPreferPIEWorld, bRequirePIEWorld);
+    AddGraphField(ResultObj, Blueprint, TargetGraph);
+    ResultObj->SetArrayField(TEXT("errors"), ErrorValues);
+    ResultObj->SetArrayField(TEXT("warnings"), WarningValues);
+    return ResultObj;
+}
+
 UEdGraphPin* FindPreferredInputPosePinForNode(UEdGraphNode* Node)
 {
     if (UEdGraphPin* ComponentPosePin = FindFirstComponentPosePin(Node, EGPD_Input, { TEXT("ComponentPose") }))
@@ -9160,10 +9547,6 @@ TSharedPtr<FJsonObject> FUnrealMCPBlueprintNodeCommands::HandleSampleAnimNodePre
     }
 
     const bool bDryRun = GetBoolParam(Params, TEXT("dry_run"), true);
-    if (!bDryRun)
-    {
-        return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Only dry_run target resolution is implemented for sample_anim_node_pre_post_runtime_pose. Runtime sampling will be added after resolver review."));
-    }
 
     FString BlueprintName = GetStringParam(Params, TEXT("blueprint_name"));
     if (BlueprintName.IsEmpty())
@@ -9298,8 +9681,22 @@ TSharedPtr<FJsonObject> FUnrealMCPBlueprintNodeCommands::HandleSampleAnimNodePre
     TargetNodeObject->SetArrayField(TEXT("upstream_pose_links"), LinkedPinsToJsonValues(InputPosePin));
     TargetNodeObject->SetArrayField(TEXT("downstream_pose_links"), LinkedPinsToJsonValues(OutputPosePin));
 
-    const TArray<FString> SampleBones = GetStringArrayParam(Params, TEXT("sample_bones"), TArray<FString>());
+    const TArray<FString> SampleBones = GetStringArrayParam(Params, TEXT("sample_bones"), bDryRun ? TArray<FString>() : GetDefaultAnimNodePrePostSampleBones());
     const TArray<FString> SampleSockets = GetStringArrayParam(Params, TEXT("sample_sockets"), TArray<FString>());
+
+    if (!bDryRun)
+    {
+        return BuildAnimNodePrePostRuntimeTickDeltaResponse(
+            Params,
+            BlueprintName,
+            Blueprint,
+            TargetGraph,
+            TargetNode,
+            TargetNodeObject,
+            SampleBones,
+            SampleSockets,
+            bIsolatedSamplerSupported);
+    }
 
     TSharedPtr<FJsonObject> ResultObj = MakeShared<FJsonObject>();
     ResultObj->SetBoolField(TEXT("success"), true);

@@ -183,3 +183,14 @@ The next implementation commit should add:
 - dry-run node resolver returning target node and feasibility data.
 
 Only after that passes review should the temporary runtime sampler be added.
+
+## Implementation Status
+
+### 2026-06-18
+
+- Phase 1 dry-run target resolver is implemented and live-smoked on StackOBot `ABP_Baddy` RigidBody.
+- A conservative runtime mode, `active_component_tick_delta`, is implemented for `dry_run=false`.
+- `active_component_tick_delta` samples a matched live `SkeletalMeshComponent` before and after forced animation ticks and reports `pre_tick_pose`, `post_tick_pose`, and transform `deltas`.
+- This runtime mode is useful evidence for final component pose response, but it is not the isolated source-vs-output sampler and not true compiled AnimGraph node instrumentation.
+- Runtime responses therefore keep `runtime_graph_prepost=false` and `same_instance_prepost=false`.
+- The isolated temporary component/asset sampler under `/Game/_MCP_Temp/AnimNodePrePost` remains the next implementation step.
