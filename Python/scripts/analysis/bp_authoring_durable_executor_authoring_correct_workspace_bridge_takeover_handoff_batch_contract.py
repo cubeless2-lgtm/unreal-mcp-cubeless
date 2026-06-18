@@ -15,6 +15,7 @@ from typing import Any, Dict, Sequence
 
 import bp_authoring_durable_executor_authoring_non_actor_actual_temp_checkpoint_bridge_blocker_batch_contract as bridge_blocker
 import bp_authoring_durable_executor_authoring_user_widget_bridge_port_ownership_preflight_batch_contract as bridge_port
+import project_paths
 
 
 DURABLE_EXECUTOR_AUTHORING_CORRECT_WORKSPACE_BRIDGE_TAKEOVER_HANDOFF_BATCH_SCHEMA = (
@@ -39,9 +40,7 @@ DEFAULT_WRONG_WORKSPACE_PROJECT_FILE_PATH = (
 )
 DEFAULT_WRONG_WORKSPACE_OWNER_PROCESS_ID = bridge_port.DEFAULT_PORT_OWNER_PROCESS_ID
 DEFAULT_WRONG_WORKSPACE_OWNER_COMMAND_LINE = bridge_port.DEFAULT_PORT_OWNER_COMMAND_LINE
-DEFAULT_EDITOR_EXECUTABLE_PATH = (
-    "C:/Program Files/Epic Games/UE_5.7/Engine/Binaries/Win64/UnrealEditor.exe"
-)
+DEFAULT_EDITOR_EXECUTABLE_PATH = project_paths.default_unreal_editor_exe()
 DEFAULT_MCP_SERVER_COMMAND = (
     "uv --directory ../unreal-mcp-cubeless/Python run --python 3.11 "
     "unreal_mcp_server.py"
@@ -49,7 +48,7 @@ DEFAULT_MCP_SERVER_COMMAND = (
 DEFAULT_HANDOFF_STEPS = (
     "Record the current wrong-workspace Unreal Editor owner of 127.0.0.1:55557.",
     "Release 127.0.0.1:55557 only through an explicit bridge takeover action.",
-    "Launch D:/Git/CubelessStylized/StylizedCubeless.uproject with the hardened UnrealMCP DLL loaded.",
+    f"Launch {DEFAULT_PROJECT_FILE_PATH} with the hardened UnrealMCP DLL loaded.",
     "Verify the correct workspace bridge by read-only probe before any authoring command dispatch.",
 )
 

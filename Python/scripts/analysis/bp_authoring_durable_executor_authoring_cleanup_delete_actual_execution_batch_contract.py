@@ -13,6 +13,7 @@ from __future__ import annotations
 from typing import Any, Dict, Sequence
 
 import bp_authoring_durable_executor_authoring_function_diagnostics_graph_layout_batch_contract as diagnostics
+import project_paths
 
 
 DURABLE_EXECUTOR_AUTHORING_CLEANUP_DELETE_ACTUAL_EXECUTION_BATCH_SCHEMA = (
@@ -30,9 +31,10 @@ SECTION_281_288_FUNCTION_DIAGNOSTICS_GRAPH_LAYOUT_SUMMARY_SCHEMA = (
 )
 DEFAULT_TARGET_ASSET_PATH = diagnostics.DEFAULT_TARGET_ASSET_PATH
 DEFAULT_TARGET_ROOT = "/Game/_MCP_Temp/DurableSaveGate/"
-DEFAULT_TARGET_CONTENT_FILE = (
-    "D:/Git/CubelessStylized/Content/_MCP_Temp/"
-    "DurableSaveGate/BP_DurableSaveGatePrep.uasset"
+DEFAULT_TARGET_CONTENT_FILE = project_paths.cubeless_content_path(
+    "_MCP_Temp",
+    "DurableSaveGate",
+    "BP_DurableSaveGatePrep.uasset",
 )
 DEFAULT_EXTERNAL_DIRTY_PACKAGE = "/Game/Cubeless/VFX/Fire/NS_Codex_Fire_01"
 UPSTREAM_READY_COUNT_KEYS = (

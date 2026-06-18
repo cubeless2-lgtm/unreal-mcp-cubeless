@@ -304,15 +304,11 @@ def repo_root_from_script() -> Path:
 
 
 def default_project_candidates() -> List[Path]:
-    env_path = os.environ.get("LYRA_PROJECT_ROOT")
     candidates: List[Path] = []
+    env_path = os.environ.get("LYRA_PROJECT_ROOT")
     if env_path:
-        candidates.append(Path(env_path))
-    candidates.extend(
-        [
-            Path(r"D:\Git\LyraStarterGame"),
-        ]
-    )
+        candidates.append(Path(env_path).expanduser())
+    candidates.append(repo_root_from_script().parent / "LyraStarterGame")
     return candidates
 
 

@@ -13,6 +13,7 @@ from __future__ import annotations
 from typing import Any, Dict, Sequence
 
 import bp_authoring_durable_executor_authoring_user_widget_correct_workspace_reload_preflight_batch_contract as reload_preflight
+import project_paths
 
 
 DURABLE_EXECUTOR_AUTHORING_USER_WIDGET_BRIDGE_PORT_OWNERSHIP_PREFLIGHT_BATCH_SCHEMA = (
@@ -36,10 +37,7 @@ DEFAULT_PORT_OWNER_PROCESS_ID = reload_preflight.DEFAULT_RUNNING_EDITOR_PROCESS_
 DEFAULT_PORT_OWNER_PROJECT_FILE_PATH = (
     reload_preflight.DEFAULT_RUNNING_EDITOR_PROJECT_FILE_PATH
 )
-DEFAULT_PORT_OWNER_COMMAND_LINE = (
-    '"C:/Program Files/Epic Games/UE_5.7/Engine/Binaries/Win64/UnrealEditor.exe" '
-    "D:/Git/CubelessStylized-delete-sky-main/StylizedCubeless.uproject -log"
-)
+DEFAULT_PORT_OWNER_COMMAND_LINE = project_paths.default_port_owner_command_line()
 
 UPSTREAM_READY_COUNT_KEYS = (
     "durable_requested_executor_authoring_user_widget_correct_workspace_reload_preflight_batch_count",

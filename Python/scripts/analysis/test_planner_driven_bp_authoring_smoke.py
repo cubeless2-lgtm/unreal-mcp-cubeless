@@ -13,6 +13,7 @@ sys.path.insert(0, str(SCRIPT_DIR))
 
 import bp_authoring_planner as planner  # noqa: E402
 import planner_driven_bp_authoring_smoke as smoke  # noqa: E402
+import project_paths  # noqa: E402
 
 
 def find_prevented(report: dict, plan_id: str) -> dict:
@@ -492,8 +493,8 @@ def main() -> int:
                     "asset_exists": False,
                 }
             return {
-                "project_file": "D:/Git/CubelessStylized/StylizedCubeless.uproject",
-                "project_dir": "D:/Git/CubelessStylized/",
+                "project_file": project_paths.default_cubeless_uproject(),
+                "project_dir": str(project_paths.cubeless_project_root()) + "/",
                 "engine_version": "offline-test",
             }
 

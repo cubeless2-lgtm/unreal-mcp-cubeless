@@ -15,6 +15,7 @@ from __future__ import annotations
 from typing import Any, Dict, Mapping, Sequence
 
 import bp_authoring_durable_executor_authoring_broader_non_actor_live_authoring_admission_dry_run_batch_contract as admission
+import project_paths
 
 
 DURABLE_EXECUTOR_AUTHORING_USER_WIDGET_WIDGET_TREE_LIVE_READONLY_PREFLIGHT_BATCH_SCHEMA = (
@@ -30,7 +31,7 @@ SECTION_385_392_NON_ACTOR_ADMISSION_DRY_RUN_SUMMARY_SCHEMA = (
     admission
     .DURABLE_EXECUTOR_AUTHORING_BROADER_NON_ACTOR_LIVE_AUTHORING_ADMISSION_DRY_RUN_BATCH_SUMMARY_SCHEMA
 )
-DEFAULT_PROJECT_FILE_PATH = "D:/Git/CubelessStylized/StylizedCubeless.uproject"
+DEFAULT_PROJECT_FILE_PATH = project_paths.default_cubeless_uproject()
 DEFAULT_PREFLIGHT_MARKER = "CODEX_SECTION_393_USER_WIDGET_READONLY_PREFLIGHT"
 DEFAULT_CLASS_PROBES = {
     "WidgetBlueprint": {

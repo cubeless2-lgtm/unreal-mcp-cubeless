@@ -15,6 +15,7 @@ from __future__ import annotations
 from typing import Any, Dict, Sequence
 
 import bp_authoring_durable_executor_authoring_user_widget_widget_tree_authoring_dry_run_admission_batch_contract as dry_run
+import project_paths
 
 
 DURABLE_EXECUTOR_AUTHORING_USER_WIDGET_ACTUAL_ASSET_CREATION_CHECKPOINT_BATCH_SCHEMA = (
@@ -30,14 +31,17 @@ SECTION_401_408_USER_WIDGET_DRY_RUN_ADMISSION_SUMMARY_SCHEMA = (
     dry_run
     .DURABLE_EXECUTOR_AUTHORING_USER_WIDGET_WIDGET_TREE_AUTHORING_DRY_RUN_ADMISSION_BATCH_SUMMARY_SCHEMA
 )
-DEFAULT_PROJECT_FILE_PATH = "D:/Git/CubelessStylized/StylizedCubeless.uproject"
+DEFAULT_PROJECT_FILE_PATH = project_paths.default_cubeless_uproject()
 DEFAULT_TARGET_DIRECTORY = "/Game/_MCP_Temp/DurableSaveGate/UserWidgetActual"
 DEFAULT_TARGET_ASSET_PATH = (
     "/Game/_MCP_Temp/DurableSaveGate/UserWidgetActual/WBP_DurableWidgetTreeActual"
 )
 DEFAULT_TARGET_NAME = "WBP_DurableWidgetTreeActual"
-DEFAULT_TARGET_PACKAGE_FILE = (
-    "D:/Git/CubelessStylized/Content/_MCP_Temp/DurableSaveGate/UserWidgetActual/WBP_DurableWidgetTreeActual.uasset"
+DEFAULT_TARGET_PACKAGE_FILE = project_paths.cubeless_content_path(
+    "_MCP_Temp",
+    "DurableSaveGate",
+    "UserWidgetActual",
+    "WBP_DurableWidgetTreeActual.uasset",
 )
 DEFAULT_ASSET_CLASS = "WidgetBlueprint"
 DEFAULT_PACKAGE_FILE_SIZE_BYTES = 21229

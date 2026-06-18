@@ -8,7 +8,7 @@ This checkout is intended to keep a local TA-focused extension of `chongdashu/un
 
 - Upstream repository: `https://github.com/chongdashu/unreal-mcp`
 - Local extension branch: `local/pcg-tools`
-- Primary target engine for the user: `D:\Git\UnrealEngine`, Unreal Engine 5.7.4
+- Primary target engine for the user: Unreal Engine 5.7.4. Resolve the engine checkout from `UE_ENGINE_ROOT` or `UE_SOURCE_ROOT` when set, otherwise from a local workspace sibling such as `../UnrealEngine`.
 - User workflow: Unreal TA work with heavy PCG, Blueprint, and Python automation.
 
 ## Important Local Changes
@@ -46,7 +46,7 @@ For those requests, update `main` from `upstream/main`, rebase `local/pcg-tools`
 Preferred update flow:
 
 ```powershell
-cd D:\Git\unreal-mcp
+cd <this unreal-mcp-cubeless repository root>
 .\scripts\update_with_pcg_extension.ps1
 ```
 
@@ -57,14 +57,14 @@ If conflicts happen after an upstream update, preserve the generic `execute_pyth
 For Python changes, run:
 
 ```powershell
-uv --directory D:\Git\unreal-mcp\Python run python -m py_compile unreal_mcp_server.py tools\python_tools.py tools\pcg_tools.py
-uv --directory D:\Git\unreal-mcp\Python run python -c "import unreal_mcp_server; print('server import ok')"
+uv --directory .\Python run python -m py_compile unreal_mcp_server.py tools\python_tools.py tools\pcg_tools.py
+uv --directory .\Python run python -c "import unreal_mcp_server; print('server import ok')"
 ```
 
 For AI texture tool changes, include:
 
 ```powershell
-uv --directory D:\Git\unreal-mcp\Python run python -m py_compile unreal_mcp_server.py tools\texture_generation.py services\openai_image_service.py services\unreal_texture_importer.py
+uv --directory .\Python run python -m py_compile unreal_mcp_server.py tools\texture_generation.py services\openai_image_service.py services\unreal_texture_importer.py
 ```
 
-C++ plugin verification should use the user's source engine at `D:\Git\UnrealEngine`. Avoid kicking off a full source-engine rebuild unless necessary; it can be very slow.
+C++ plugin verification should use the user's source engine resolved from `UE_ENGINE_ROOT`, `UE_SOURCE_ROOT`, or the local workspace sibling `../UnrealEngine`. Avoid kicking off a full source-engine rebuild unless necessary; it can be very slow.

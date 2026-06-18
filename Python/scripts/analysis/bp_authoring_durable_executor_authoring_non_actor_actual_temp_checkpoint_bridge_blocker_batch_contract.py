@@ -17,6 +17,7 @@ from typing import Any, Dict, Sequence
 import bp_authoring_durable_executor_authoring_blueprint_function_library_authoring_dry_run_admission_batch_contract as bfl_dry_run
 import bp_authoring_durable_executor_authoring_data_asset_default_authoring_dry_run_admission_batch_contract as data_asset_dry_run
 import bp_authoring_durable_executor_authoring_user_widget_bridge_port_ownership_preflight_batch_contract as bridge_port
+import project_paths
 
 
 DURABLE_EXECUTOR_AUTHORING_NON_ACTOR_ACTUAL_TEMP_CHECKPOINT_BRIDGE_BLOCKER_BATCH_SCHEMA = (
@@ -41,12 +42,10 @@ SECTION_473_480_BFL_DRY_RUN_SUMMARY_SCHEMA = (
     .DURABLE_EXECUTOR_AUTHORING_BLUEPRINT_FUNCTION_LIBRARY_AUTHORING_DRY_RUN_ADMISSION_BATCH_SUMMARY_SCHEMA
 )
 
-DEFAULT_PROJECT_FILE_PATH = "D:/Git/CubelessStylized/StylizedCubeless.uproject"
+DEFAULT_PROJECT_FILE_PATH = project_paths.default_cubeless_uproject()
 DEFAULT_BRIDGE_HOST = "127.0.0.1"
 DEFAULT_BRIDGE_PORT = 55557
-DEFAULT_WRONG_WORKSPACE_PROJECT_FILE_PATH = (
-    "D:/Git/CubelessStylized-delete-sky-main/StylizedCubeless.uproject"
-)
+DEFAULT_WRONG_WORKSPACE_PROJECT_FILE_PATH = project_paths.default_wrong_workspace_uproject()
 DEFAULT_DATA_ASSET_TARGET_ASSET_PATH = (
     data_asset_dry_run.DEFAULT_TARGET_ASSET_PATH.replace(
         "DataAssetDryRun", "DataAssetActual"

@@ -17,6 +17,7 @@ from __future__ import annotations
 from typing import Any, Dict, Sequence
 
 import bp_authoring_durable_executor_authoring_post_recreation_non_empty_graph_fixture_batch_contract as non_empty_fixture
+import project_paths
 
 
 DURABLE_EXECUTOR_AUTHORING_NODE_LEVEL_GRAPH_FIXTURE_ROUTE_PREFLIGHT_BATCH_SCHEMA = (
@@ -35,7 +36,7 @@ SECTION_353_360_NON_EMPTY_GRAPH_FIXTURE_SUMMARY_SCHEMA = (
 DEFAULT_FIXTURE_ASSET_PATH = non_empty_fixture.DEFAULT_FIXTURE_ASSET_PATH
 DEFAULT_FIXTURE_ROOT = non_empty_fixture.DEFAULT_FIXTURE_ROOT
 DEFAULT_FUNCTION_GRAPH_NAME = non_empty_fixture.DEFAULT_FUNCTION_GRAPH_NAME
-DEFAULT_PROJECT_FILE_PATH = "D:/Git/CubelessStylized/StylizedCubeless.uproject"
+DEFAULT_PROJECT_FILE_PATH = project_paths.default_cubeless_uproject()
 DEFAULT_LIVE_MCP_ERROR = (
     "Blueprint not found: "
     "/Game/_MCP_Temp/DurableSaveGate/BP_DurableGraphDiagnosticsFixture"

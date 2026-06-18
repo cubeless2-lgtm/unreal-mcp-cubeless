@@ -16059,7 +16059,7 @@ def build_durable_executor_authoring_user_widget_correct_workspace_reload_prefli
         expected=expected,
         actual=actual,
         notes=(
-            "Sections 433-440 record that the hardened UnrealMCP DLL exists in the managed CubelessStylized workspace, but the currently running editor is attached to D:/Git/CubelessStylized-delete-sky-main.",
+            "Sections 433-440 record that the hardened UnrealMCP DLL exists in the managed CubelessStylized workspace, but the currently running editor is attached to a wrong-workspace project file.",
             "The batch blocks live UserWidget WidgetTree mutation dispatch until a correct-workspace editor session loads the hardened UnrealMCP plugin DLL.",
         ),
     )
@@ -20640,7 +20640,7 @@ def build_report(repo_root: Optional[Path] = None, project_root: Optional[Path] 
             "cxx_changes_required": False,
         },
         "next_reinforcement_candidates": [
-            "Execute the bridge takeover only after an explicit actual-takeover request, then release 127.0.0.1:55557 from the wrong workspace editor and launch the correct D:/Git/CubelessStylized editor session with the hardened UnrealMCP DLL loaded",
+            "Execute the bridge takeover only after an explicit actual-takeover request, then release 127.0.0.1:55557 from the wrong workspace editor and launch the correct managed CubelessStylized editor session with the hardened UnrealMCP DLL loaded",
             "After takeover execution, replace dry-run evidence payload placeholders with real read-only bridge proof, explicitly authorize and execute the validation envelope, then produce a validation result matching the required schema before admission",
             "Run the UserWidget root/child WidgetTree mutation checkpoint under _MCP_Temp after the correct bridge owns 127.0.0.1:55557",
             "Run DataAsset or Blueprint Function Library actual temp asset creation checkpoints only after the correct workspace bridge is verified",

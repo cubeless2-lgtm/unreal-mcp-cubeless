@@ -16,6 +16,7 @@ from __future__ import annotations
 from typing import Any, Dict, Sequence
 
 import bp_authoring_durable_executor_authoring_user_widget_actual_asset_creation_checkpoint_batch_contract as actual_checkpoint
+import project_paths
 
 
 DURABLE_EXECUTOR_AUTHORING_USER_WIDGET_WIDGET_TREE_MUTATION_ROUTE_PREFLIGHT_BATCH_SCHEMA = (
@@ -32,24 +33,30 @@ SECTION_409_416_USER_WIDGET_ACTUAL_ASSET_CHECKPOINT_SUMMARY_SCHEMA = (
     .DURABLE_EXECUTOR_AUTHORING_USER_WIDGET_ACTUAL_ASSET_CREATION_CHECKPOINT_BATCH_SUMMARY_SCHEMA
 )
 
-DEFAULT_PROJECT_FILE_PATH = "D:/Git/CubelessStylized/StylizedCubeless.uproject"
+DEFAULT_PROJECT_FILE_PATH = project_paths.default_cubeless_uproject()
 DEFAULT_TARGET_ASSET_PATH = (
     "/Game/_MCP_Temp/DurableSaveGate/UserWidgetActual/WBP_DurableWidgetTreeActual"
 )
 DEFAULT_TARGET_NAME = "WBP_DurableWidgetTreeActual"
-DEFAULT_TARGET_PACKAGE_FILE = (
-    "D:/Git/CubelessStylized/Content/_MCP_Temp/DurableSaveGate/UserWidgetActual/WBP_DurableWidgetTreeActual.uasset"
+DEFAULT_TARGET_PACKAGE_FILE = project_paths.cubeless_content_path(
+    "_MCP_Temp",
+    "DurableSaveGate",
+    "UserWidgetActual",
+    "WBP_DurableWidgetTreeActual.uasset",
 )
 DEFAULT_TARGET_GENERATED_CLASS_PATH = (
     "/Game/_MCP_Temp/DurableSaveGate/UserWidgetActual/WBP_DurableWidgetTreeActual.WBP_DurableWidgetTreeActual_C"
 )
 DEFAULT_PACKAGE_FILE_SIZE_BYTES = 21229
 DEFAULT_ASSET_CLASS = "WidgetBlueprint"
-DEFAULT_UMG_CPP_SOURCE_PATH = (
-    "D:/Git/CubelessStylized/Plugins/UnrealMCP/Source/UnrealMCP/Private/Commands/UnrealMCPUMGCommands.cpp"
+DEFAULT_UMG_CPP_SOURCE_PATH = project_paths.cubeless_unreal_mcp_source_path(
+    "Private",
+    "Commands",
+    "UnrealMCPUMGCommands.cpp",
 )
-DEFAULT_BRIDGE_CPP_SOURCE_PATH = (
-    "D:/Git/CubelessStylized/Plugins/UnrealMCP/Source/UnrealMCP/Private/UnrealMCPBridge.cpp"
+DEFAULT_BRIDGE_CPP_SOURCE_PATH = project_paths.cubeless_unreal_mcp_source_path(
+    "Private",
+    "UnrealMCPBridge.cpp",
 )
 
 UPSTREAM_READY_COUNT_KEYS = (

@@ -13,6 +13,7 @@ from __future__ import annotations
 from typing import Any, Dict, Mapping, Sequence
 
 import bp_authoring_durable_executor_authoring_broader_non_actor_live_authoring_admission_dry_run_batch_contract as admission
+import project_paths
 
 
 DURABLE_EXECUTOR_AUTHORING_BLUEPRINT_FUNCTION_LIBRARY_READONLY_PREFLIGHT_BATCH_SCHEMA = (
@@ -28,7 +29,7 @@ SECTION_385_392_NON_ACTOR_ADMISSION_DRY_RUN_SUMMARY_SCHEMA = (
     admission
     .DURABLE_EXECUTOR_AUTHORING_BROADER_NON_ACTOR_LIVE_AUTHORING_ADMISSION_DRY_RUN_BATCH_SUMMARY_SCHEMA
 )
-DEFAULT_PROJECT_FILE_PATH = "D:/Git/CubelessStylized/StylizedCubeless.uproject"
+DEFAULT_PROJECT_FILE_PATH = project_paths.default_cubeless_uproject()
 DEFAULT_PREFLIGHT_MARKER = "CODEX_SECTION_465_BFL_READONLY_PREFLIGHT"
 DEFAULT_DRY_RUN_ROOT = "/Game/_MCP_Temp/DurableSaveGate/FunctionLibraryReadOnly"
 DEFAULT_TARGET_ASSET_PATH = (

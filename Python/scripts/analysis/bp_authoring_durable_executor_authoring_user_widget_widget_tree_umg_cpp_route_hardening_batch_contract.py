@@ -15,6 +15,7 @@ from __future__ import annotations
 from typing import Any, Dict, Sequence
 
 import bp_authoring_durable_executor_authoring_user_widget_widget_tree_mutation_route_preflight_batch_contract as route_preflight
+import project_paths
 
 
 DURABLE_EXECUTOR_AUTHORING_USER_WIDGET_WIDGET_TREE_UMG_CPP_ROUTE_HARDENING_BATCH_SCHEMA = (
@@ -31,17 +32,14 @@ SECTION_417_424_USER_WIDGET_WIDGET_TREE_MUTATION_ROUTE_PREFLIGHT_SUMMARY_SCHEMA 
     .DURABLE_EXECUTOR_AUTHORING_USER_WIDGET_WIDGET_TREE_MUTATION_ROUTE_PREFLIGHT_BATCH_SUMMARY_SCHEMA
 )
 
-DEFAULT_PROJECT_FILE_PATH = "D:/Git/CubelessStylized/StylizedCubeless.uproject"
-DEFAULT_UMG_CPP_SOURCE_PATH = (
-    "D:/Git/CubelessStylized/Plugins/UnrealMCP/Source/UnrealMCP/Private/Commands/UnrealMCPUMGCommands.cpp"
+DEFAULT_PROJECT_FILE_PATH = project_paths.default_cubeless_uproject()
+DEFAULT_UMG_CPP_SOURCE_PATH = project_paths.cubeless_unreal_mcp_source_path(
+    "Private",
+    "Commands",
+    "UnrealMCPUMGCommands.cpp",
 )
-DEFAULT_UNREAL_MCP_SUBMODULE_PATH = "D:/Git/CubelessStylized/Plugins/UnrealMCP"
-DEFAULT_UBT_BUILD_COMMAND = (
-    r'C:\Program Files\Epic Games\UE_5.7\Engine\Build\BatchFiles\Build.bat '
-    'StylizedCubelessEditor Win64 Development '
-    '-Project="D:/Git/CubelessStylized/StylizedCubeless.uproject" '
-    "-WaitMutex -NoHotReloadFromIDE"
-)
+DEFAULT_UNREAL_MCP_SUBMODULE_PATH = project_paths.cubeless_plugin_path("UnrealMCP")
+DEFAULT_UBT_BUILD_COMMAND = project_paths.default_ubt_build_command()
 
 UPSTREAM_READY_COUNT_KEYS = (
     "durable_requested_executor_authoring_user_widget_widget_tree_mutation_route_preflight_batch_count",

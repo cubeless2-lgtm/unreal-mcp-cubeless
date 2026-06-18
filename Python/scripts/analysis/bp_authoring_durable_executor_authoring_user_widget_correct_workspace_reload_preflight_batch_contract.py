@@ -14,6 +14,7 @@ from __future__ import annotations
 from typing import Any, Dict, Sequence
 
 import bp_authoring_durable_executor_authoring_user_widget_widget_tree_umg_cpp_route_hardening_batch_contract as route_hardening
+import project_paths
 
 
 DURABLE_EXECUTOR_AUTHORING_USER_WIDGET_CORRECT_WORKSPACE_RELOAD_PREFLIGHT_BATCH_SCHEMA = (
@@ -30,19 +31,13 @@ SECTION_425_432_USER_WIDGET_UMG_CPP_ROUTE_HARDENING_SUMMARY_SCHEMA = (
     .DURABLE_EXECUTOR_AUTHORING_USER_WIDGET_WIDGET_TREE_UMG_CPP_ROUTE_HARDENING_BATCH_SUMMARY_SCHEMA
 )
 
-DEFAULT_PROJECT_FILE_PATH = "D:/Git/CubelessStylized/StylizedCubeless.uproject"
-DEFAULT_EXPECTED_UNREAL_MCP_DLL_PATH = (
-    "D:/Git/CubelessStylized/Plugins/UnrealMCP/Binaries/Win64/UnrealEditor-UnrealMCP.dll"
-)
+DEFAULT_PROJECT_FILE_PATH = project_paths.default_cubeless_uproject()
+DEFAULT_EXPECTED_UNREAL_MCP_DLL_PATH = project_paths.cubeless_unreal_mcp_dll_path()
 DEFAULT_EXPECTED_UNREAL_MCP_SUBMODULE_COMMIT = (
     "df47193754f421e38f31d9627f0a5257824a2a3c"
 )
-DEFAULT_RUNNING_EDITOR_PROJECT_FILE_PATH = (
-    "D:/Git/CubelessStylized-delete-sky-main/StylizedCubeless.uproject"
-)
-DEFAULT_RUNNING_EDITOR_UNREAL_MCP_DLL_PATH = (
-    "D:/Git/CubelessStylized-delete-sky-main/Plugins/UnrealMCP/Binaries/Win64/UnrealEditor-UnrealMCP.dll"
-)
+DEFAULT_RUNNING_EDITOR_PROJECT_FILE_PATH = project_paths.default_wrong_workspace_uproject()
+DEFAULT_RUNNING_EDITOR_UNREAL_MCP_DLL_PATH = project_paths.wrong_workspace_unreal_mcp_dll_path()
 DEFAULT_RUNNING_EDITOR_PROCESS_ID = 55408
 DEFAULT_RUNNING_EDITOR_PROCESS_START_TIME = "2026-06-17T10:46:30+09:00"
 

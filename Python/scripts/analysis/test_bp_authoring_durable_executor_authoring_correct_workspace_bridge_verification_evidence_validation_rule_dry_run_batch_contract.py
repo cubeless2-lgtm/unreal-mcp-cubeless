@@ -121,7 +121,7 @@ def main() -> int:
     assert build_summary(result=missing_required_field)["status"] == "failed"
 
     wrong_identity = validation_dry_run.build_correct_workspace_bridge_verification_evidence_validation_rule_dry_run_result(
-        project_file_path="D:/Git/CubelessStylized-delete-sky-main/StylizedCubeless.uproject",
+        project_file_path=payload_dry_run.DEFAULT_WRONG_WORKSPACE_PROJECT_FILE_PATH,
     )
     assert build_summary(result=wrong_identity)["status"] == "failed"
 
