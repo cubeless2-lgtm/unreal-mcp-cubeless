@@ -2439,8 +2439,13 @@ TSharedPtr<FJsonObject> AnimStateMachineRuntimeStateToJson(
     const TArray<FBakedAnimationStateMachine>& BakedStateMachines = AnimClassInterface->GetBakedStateMachines();
     const FString StateMachineFilter = GetStringParam(Params, TEXT("state_machine_name"), FString());
     const bool bIncludeStates = GetBoolParam(Params, TEXT("include_states"), true);
+    const bool bIncludeStateWeights = GetBoolParam(Params, TEXT("include_state_weights"), true);
+    const bool bIncludeRelevantAnimTimes = GetBoolParam(Params, TEXT("include_relevant_anim_times"), false);
+    const bool bIncludeTransitionProgress = GetBoolParam(Params, TEXT("include_transition_progress"), true);
+    const bool bIncludeInactiveTransitionProgress = GetBoolParam(Params, TEXT("include_inactive_transition_progress"), false);
     const int32 MaxStateMachines = GetClampedIntParam(Params, TEXT("max_state_machines"), 32, 0, 1024);
     const int32 MaxStatesPerMachine = GetClampedIntParam(Params, TEXT("max_states_per_machine"), 64, 0, 2048);
+    const int32 MaxTransitionsPerMachine = GetClampedIntParam(Params, TEXT("max_transitions_per_machine"), 128, 0, 4096);
     const int32 MaxStateMachineInstancesToProbe = GetClampedIntParam(Params, TEXT("max_state_machine_instances_to_probe"), 256, 0, 4096);
 
     TArray<TSharedPtr<FJsonValue>> MachineValues;
@@ -2488,6 +2493,10 @@ TSharedPtr<FJsonObject> AnimStateMachineRuntimeStateToJson(
         MachineObject->SetStringField(TEXT("current_state_name"), CurrentStateName.ToString());
         MachineObject->SetNumberField(TEXT("current_state_index"), CurrentStateIndex);
         MachineObject->SetNumberField(TEXT("current_state_elapsed_time"), MachineInstance->GetCurrentStateElapsedTime());
+        if (bIncludeStateWeights)
+        {
+            MachineObject->SetNumberField(TEXT("machine_weight"), AnimInstance->GetInstanceMachineWeight(MachineInstanceIndex));
+        }
         MachineObject->SetBoolField(TEXT("has_baked_state_machine"), BakedMachine != nullptr);
         if (BakedMachine)
         {
@@ -2522,11 +2531,87 @@ TSharedPtr<FJsonObject> AnimStateMachineRuntimeStateToJson(
                 StateObject->SetBoolField(TEXT("is_current"), StateIndex == CurrentStateIndex);
                 StateObject->SetBoolField(TEXT("is_conduit"), BakedState.bIsAConduit);
                 StateObject->SetBoolField(TEXT("always_reset_on_entry"), BakedState.bAlwaysResetOnEntry);
+                if (bIncludeStateWeights)
+                {
+                    const float StateWeight = MachineInstance->GetStateWeight(StateIndex);
+                    const float RecordedStateWeight = AnimInstance->GetInstanceStateWeight(MachineInstanceIndex, StateIndex);
+                    StateObject->SetNumberField(TEXT("state_weight"), StateWeight);
+                    StateObject->SetNumberField(TEXT("recorded_state_weight"), RecordedStateWeight);
+                    StateObject->SetBoolField(TEXT("has_nonzero_weight"), StateWeight > KINDA_SMALL_NUMBER || RecordedStateWeight > KINDA_SMALL_NUMBER);
+                }
+                if (bIncludeRelevantAnimTimes)
+                {
+                    const float RelevantAnimLength = AnimInstance->GetRelevantAnimLength(MachineInstanceIndex, StateIndex);
+                    const float RelevantAnimTime = AnimInstance->GetRelevantAnimTime(MachineInstanceIndex, StateIndex);
+                    const float RelevantAnimTimeFraction = AnimInstance->GetRelevantAnimTimeFraction(MachineInstanceIndex, StateIndex);
+                    const float RelevantAnimTimeRemaining = AnimInstance->GetRelevantAnimTimeRemaining(MachineInstanceIndex, StateIndex);
+                    const float RelevantAnimTimeRemainingFraction = AnimInstance->GetRelevantAnimTimeRemainingFraction(MachineInstanceIndex, StateIndex);
+                    StateObject->SetBoolField(TEXT("has_relevant_anim"), RelevantAnimLength > KINDA_SMALL_NUMBER);
+                    StateObject->SetNumberField(TEXT("relevant_anim_length"), RelevantAnimLength);
+                    StateObject->SetNumberField(TEXT("relevant_anim_time"), RelevantAnimTime);
+                    StateObject->SetNumberField(TEXT("relevant_anim_time_fraction"), RelevantAnimTimeFraction);
+                    StateObject->SetNumberField(TEXT("relevant_anim_time_remaining"), RelevantAnimTimeRemaining);
+                    StateObject->SetNumberField(TEXT("relevant_anim_time_remaining_fraction"), RelevantAnimTimeRemainingFraction);
+                }
                 StateValues.Add(MakeShared<FJsonValueObject>(StateObject));
             }
             MachineObject->SetArrayField(TEXT("states"), StateValues);
             MachineObject->SetNumberField(TEXT("included_state_count"), StateLimit);
             MachineObject->SetBoolField(TEXT("states_truncated"), BakedMachine->States.Num() > StateLimit);
+        }
+
+        if (bIncludeTransitionProgress && BakedMachine)
+        {
+            TArray<TSharedPtr<FJsonValue>> TransitionProgressValues;
+            int32 IncludedTransitionProgressCount = 0;
+            int32 ActiveTransitionProgressCount = 0;
+            const int32 TransitionLimit = FMath::Min(MaxTransitionsPerMachine, BakedMachine->Transitions.Num());
+            for (int32 TransitionIndex = 0; TransitionIndex < TransitionLimit; ++TransitionIndex)
+            {
+                const FAnimationTransitionBetweenStates& BakedTransition = BakedMachine->Transitions[TransitionIndex];
+                const bool bIsActiveTransition = MachineInstance->IsTransitionActive(TransitionIndex);
+                if (bIsActiveTransition)
+                {
+                    ++ActiveTransitionProgressCount;
+                }
+                if (!bIncludeInactiveTransitionProgress && !bIsActiveTransition)
+                {
+                    continue;
+                }
+
+                TSharedPtr<FJsonObject> TransitionObject = MakeShared<FJsonObject>();
+                TransitionObject->SetNumberField(TEXT("transition_index"), TransitionIndex);
+                TransitionObject->SetStringField(TEXT("transition_name"), BakedTransition.StateName.ToString());
+                TransitionObject->SetBoolField(TEXT("is_active"), bIsActiveTransition);
+                TransitionObject->SetNumberField(TEXT("previous_state_index"), BakedTransition.PreviousState);
+                TransitionObject->SetNumberField(TEXT("next_state_index"), BakedTransition.NextState);
+                if (BakedMachine->States.IsValidIndex(BakedTransition.PreviousState))
+                {
+                    TransitionObject->SetStringField(TEXT("previous_state_name"), BakedMachine->States[BakedTransition.PreviousState].StateName.ToString());
+                }
+                if (BakedMachine->States.IsValidIndex(BakedTransition.NextState))
+                {
+                    TransitionObject->SetStringField(TEXT("next_state_name"), BakedMachine->States[BakedTransition.NextState].StateName.ToString());
+                }
+                const float CrossfadeDuration = AnimInstance->GetInstanceTransitionCrossfadeDuration(MachineInstanceIndex, TransitionIndex);
+                const float ElapsedTime = AnimInstance->GetInstanceTransitionTimeElapsed(MachineInstanceIndex, TransitionIndex);
+                const float ElapsedFraction = CrossfadeDuration > KINDA_SMALL_NUMBER
+                    ? FMath::Clamp(ElapsedTime / CrossfadeDuration, 0.0f, 1.0f)
+                    : (bIsActiveTransition ? 1.0f : 0.0f);
+                TransitionObject->SetNumberField(TEXT("crossfade_duration"), CrossfadeDuration);
+                TransitionObject->SetNumberField(TEXT("elapsed_time"), ElapsedTime);
+                TransitionObject->SetNumberField(TEXT("elapsed_fraction"), ElapsedFraction);
+                TransitionObject->SetField(TEXT("blend_mode"), EnumValueToJson(StaticEnum<EAlphaBlendOption>(), static_cast<int64>(BakedTransition.BlendMode)));
+                TransitionObject->SetField(TEXT("logic_type"), EnumValueToJson(StaticEnum<ETransitionLogicType::Type>(), BakedTransition.LogicType.GetValue()));
+                TransitionProgressValues.Add(MakeShared<FJsonValueObject>(TransitionObject));
+                ++IncludedTransitionProgressCount;
+            }
+
+            MachineObject->SetArrayField(TEXT("transition_progress"), TransitionProgressValues);
+            MachineObject->SetNumberField(TEXT("included_transition_progress_count"), IncludedTransitionProgressCount);
+            MachineObject->SetNumberField(TEXT("active_transition_progress_count"), ActiveTransitionProgressCount);
+            MachineObject->SetBoolField(TEXT("transition_progress_includes_inactive"), bIncludeInactiveTransitionProgress);
+            MachineObject->SetBoolField(TEXT("transition_progress_truncated"), BakedMachine->Transitions.Num() > TransitionLimit);
         }
 
         MachineValues.Add(MakeShared<FJsonValueObject>(MachineObject));
@@ -2545,7 +2630,11 @@ TSharedPtr<FJsonObject> AnimStateMachineRuntimeStateToJson(
     StateMachinesObject->SetNumberField(TEXT("matching_count"), MatchingMachineCount);
     StateMachinesObject->SetNumberField(TEXT("included_count"), IncludedMachineCount);
     StateMachinesObject->SetBoolField(TEXT("truncated"), MatchingMachineCount > IncludedMachineCount);
-    StateMachinesObject->SetStringField(TEXT("runtime_index_note"), TEXT("State machines are read through FAnimNode_StateMachine runtime instances and mapped back with StateMachineIndexInClass. Per-state weights and relevant animation timing are intentionally omitted in this safe MVP."));
+    StateMachinesObject->SetBoolField(TEXT("include_state_weights"), bIncludeStateWeights);
+    StateMachinesObject->SetBoolField(TEXT("include_relevant_anim_times"), bIncludeRelevantAnimTimes);
+    StateMachinesObject->SetBoolField(TEXT("include_transition_progress"), bIncludeTransitionProgress);
+    StateMachinesObject->SetBoolField(TEXT("include_inactive_transition_progress"), bIncludeInactiveTransitionProgress);
+    StateMachinesObject->SetStringField(TEXT("runtime_index_note"), TEXT("State machines are read through FAnimNode_StateMachine runtime instances and mapped back with StateMachineIndexInClass. Runtime getter calls use the discovered machine_instance_index, not the baked class index."));
     StateMachinesObject->SetArrayField(TEXT("machines"), MachineValues);
     return StateMachinesObject;
 }

@@ -1630,12 +1630,17 @@ def register_blueprint_node_tools(mcp: FastMCP):
         component_name: str = "",
         state_machine_name: str = "",
         include_states: bool = True,
+        include_state_weights: bool = True,
+        include_relevant_anim_times: bool = False,
+        include_transition_progress: bool = True,
+        include_inactive_transition_progress: bool = False,
         include_montages: bool = True,
         include_curves: bool = False,
         curve_names: Optional[List[str]] = None,
         max_state_machines: int = 32,
         max_state_machine_instances_to_probe: int = 256,
         max_states_per_machine: int = 64,
+        max_transitions_per_machine: int = 128,
         max_curves: int = 128,
         prefer_pie_world: bool = True,
         require_pie_world: bool = False
@@ -1652,13 +1657,18 @@ def register_blueprint_node_tools(mcp: FastMCP):
             actor_path: Optional actor path filter, exact or path suffix match
             component_name: Optional SkeletalMeshComponent object name
             state_machine_name: Optional state-machine name substring filter
-            include_states: Include per-state metadata for each state machine. Per-state weights/timing are omitted in the safe MVP.
+            include_states: Include per-state metadata for each state machine
+            include_state_weights: Include runtime state/machine weights
+            include_relevant_anim_times: Include relevant asset-player time/remaining values per state
+            include_transition_progress: Include active transition elapsed/crossfade progress
+            include_inactive_transition_progress: Include inactive transitions with zero progress
             include_montages: Include current active montage data
             include_curves: Include curve values
             curve_names: Optional curve names. If omitted and include_curves is true, active/all names are used.
             max_state_machines: Maximum state machines to include
             max_state_machine_instances_to_probe: Maximum runtime AnimNode indexes to probe for state-machine instances
             max_states_per_machine: Maximum states per included machine
+            max_transitions_per_machine: Maximum transitions per included machine for transition progress
             max_curves: Maximum curves to include
             prefer_pie_world: Prefer active PIE/SIE/play world before editor world
             require_pie_world: Fail instead of falling back to the editor world when no PIE/SIE/play world matches
@@ -1674,11 +1684,16 @@ def register_blueprint_node_tools(mcp: FastMCP):
                 "component_name": component_name,
                 "state_machine_name": state_machine_name,
                 "include_states": include_states,
+                "include_state_weights": include_state_weights,
+                "include_relevant_anim_times": include_relevant_anim_times,
+                "include_transition_progress": include_transition_progress,
+                "include_inactive_transition_progress": include_inactive_transition_progress,
                 "include_montages": include_montages,
                 "include_curves": include_curves,
                 "max_state_machines": max_state_machines,
                 "max_state_machine_instances_to_probe": max_state_machine_instances_to_probe,
                 "max_states_per_machine": max_states_per_machine,
+                "max_transitions_per_machine": max_transitions_per_machine,
                 "max_curves": max_curves,
                 "prefer_pie_world": prefer_pie_world,
                 "require_pie_world": require_pie_world,
@@ -1709,9 +1724,14 @@ def register_blueprint_node_tools(mcp: FastMCP):
         include_previous_values: bool = True,
         state_machine_name: str = "",
         include_states: bool = True,
+        include_state_weights: bool = True,
+        include_relevant_anim_times: bool = False,
+        include_transition_progress: bool = True,
+        include_inactive_transition_progress: bool = False,
         include_montages: bool = True,
         include_curves: bool = False,
         curve_names: Optional[List[str]] = None,
+        max_transitions_per_machine: int = 128,
         prefer_pie_world: bool = True,
         require_pie_world: bool = False
     ) -> Dict[str, Any]:
@@ -1736,9 +1756,14 @@ def register_blueprint_node_tools(mcp: FastMCP):
             include_previous_values: Include previous property values in the response
             state_machine_name: Optional state-machine name substring filter for snapshots
             include_states: Include per-state metadata in snapshots
+            include_state_weights: Include runtime state/machine weights in snapshots
+            include_relevant_anim_times: Include relevant asset-player time/remaining values per state in snapshots
+            include_transition_progress: Include active transition elapsed/crossfade progress in snapshots
+            include_inactive_transition_progress: Include inactive transition progress entries in snapshots
             include_montages: Include active montage data in snapshots
             include_curves: Include curve values in snapshots
             curve_names: Optional curve names for snapshots
+            max_transitions_per_machine: Maximum transitions per included machine for transition progress
             prefer_pie_world: Prefer active PIE/SIE/play world before editor world
             require_pie_world: Fail instead of falling back to the editor world when no PIE/SIE/play world matches
 
@@ -1759,8 +1784,13 @@ def register_blueprint_node_tools(mcp: FastMCP):
                 "include_previous_values": include_previous_values,
                 "state_machine_name": state_machine_name,
                 "include_states": include_states,
+                "include_state_weights": include_state_weights,
+                "include_relevant_anim_times": include_relevant_anim_times,
+                "include_transition_progress": include_transition_progress,
+                "include_inactive_transition_progress": include_inactive_transition_progress,
                 "include_montages": include_montages,
                 "include_curves": include_curves,
+                "max_transitions_per_machine": max_transitions_per_machine,
                 "prefer_pie_world": prefer_pie_world,
                 "require_pie_world": require_pie_world,
             }
@@ -1794,12 +1824,17 @@ def register_blueprint_node_tools(mcp: FastMCP):
         include_baseline: bool = True,
         state_machine_name: str = "",
         include_states: bool = True,
+        include_state_weights: bool = True,
+        include_relevant_anim_times: bool = False,
+        include_transition_progress: bool = True,
+        include_inactive_transition_progress: bool = False,
         include_montages: bool = True,
         include_curves: bool = False,
         curve_names: Optional[List[str]] = None,
         max_state_machines: int = 32,
         max_state_machine_instances_to_probe: int = 256,
         max_states_per_machine: int = 64,
+        max_transitions_per_machine: int = 128,
         max_curves: int = 128,
         prefer_pie_world: bool = True,
         require_pie_world: bool = False
@@ -1825,12 +1860,17 @@ def register_blueprint_node_tools(mcp: FastMCP):
             include_baseline: Capture state before cases
             state_machine_name: Optional state-machine name substring filter
             include_states: Include per-state metadata
+            include_state_weights: Include runtime state/machine weights
+            include_relevant_anim_times: Include relevant asset-player time/remaining values per state
+            include_transition_progress: Include active transition elapsed/crossfade progress
+            include_inactive_transition_progress: Include inactive transition progress entries
             include_montages: Include active montage data
             include_curves: Include curve values
             curve_names: Optional curve names
             max_state_machines: Maximum state machines to include
             max_state_machine_instances_to_probe: Maximum runtime AnimNode indexes to probe
             max_states_per_machine: Maximum states per included machine
+            max_transitions_per_machine: Maximum transitions per included machine for transition progress
             max_curves: Maximum curves to include
             prefer_pie_world: Prefer active PIE/SIE/play world before editor world
             require_pie_world: Fail instead of falling back to the editor world when no PIE/SIE/play world matches
@@ -1852,11 +1892,16 @@ def register_blueprint_node_tools(mcp: FastMCP):
                 "include_baseline": include_baseline,
                 "state_machine_name": state_machine_name,
                 "include_states": include_states,
+                "include_state_weights": include_state_weights,
+                "include_relevant_anim_times": include_relevant_anim_times,
+                "include_transition_progress": include_transition_progress,
+                "include_inactive_transition_progress": include_inactive_transition_progress,
                 "include_montages": include_montages,
                 "include_curves": include_curves,
                 "max_state_machines": max_state_machines,
                 "max_state_machine_instances_to_probe": max_state_machine_instances_to_probe,
                 "max_states_per_machine": max_states_per_machine,
+                "max_transitions_per_machine": max_transitions_per_machine,
                 "max_curves": max_curves,
                 "prefer_pie_world": prefer_pie_world,
                 "require_pie_world": require_pie_world,

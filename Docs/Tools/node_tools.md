@@ -577,13 +577,18 @@ Inspect runtime `AnimInstance` state from a matched live `SkeletalMeshComponent`
 - `actor_path` (string, optional) - Actor path filter, exact or path suffix match
 - `component_name` (string, optional) - SkeletalMeshComponent object name. If omitted, the first skeletal component on the matched actor is inspected.
 - `state_machine_name` (string, optional) - State-machine name substring filter
-- `include_states` (boolean, optional) - Include per-state metadata. Per-state weights and relevant animation timing are intentionally omitted in the safe MVP. Defaults to `true`.
+- `include_states` (boolean, optional) - Include per-state metadata. Defaults to `true`.
+- `include_state_weights` (boolean, optional) - Include runtime machine/state weights. Defaults to `true`.
+- `include_relevant_anim_times` (boolean, optional) - Include relevant asset-player time, fraction, remaining time, and length per state. Defaults to `false`.
+- `include_transition_progress` (boolean, optional) - Include active transition crossfade duration, elapsed time, and elapsed fraction. Defaults to `true`.
+- `include_inactive_transition_progress` (boolean, optional) - Include inactive transitions with zero progress entries. Defaults to `false`.
 - `include_montages` (boolean, optional) - Include the current active montage summary. Defaults to `true`.
 - `include_curves` (boolean, optional) - Include curve values. Defaults to `false`.
 - `curve_names` (array, optional) - Specific curve names to sample when `include_curves=true`
 - `max_state_machines` (number, optional) - Maximum state machines to include. Defaults to `32`.
 - `max_state_machine_instances_to_probe` (number, optional) - Maximum runtime AnimNode indexes to probe for state-machine instances. Defaults to `256`.
 - `max_states_per_machine` (number, optional) - Maximum states per state machine. Defaults to `64`.
+- `max_transitions_per_machine` (number, optional) - Maximum transitions per state machine for runtime transition progress. Defaults to `128`.
 - `max_curves` (number, optional) - Maximum curves to include. Defaults to `128`.
 - `prefer_pie_world` (boolean, optional) - Prefer active PIE/SIE/play world before editor world. Defaults to `true`.
 - `require_pie_world` (boolean, optional) - Fail instead of falling back to the editor world when no PIE/SIE/play world matches. Defaults to `false`.
@@ -591,12 +596,12 @@ Inspect runtime `AnimInstance` state from a matched live `SkeletalMeshComponent`
 **Returns:**
 - `actor`, `component`, and `anim_instance` metadata
 - `sampled_world_type`, `sampled_world_name`, and `is_play_session_active`
-- `state_machines` with current state name/index, elapsed time, runtime/class machine indexes, and optional per-state metadata
+- `state_machines` with current state name/index, elapsed time, runtime/class machine indexes, optional per-state metadata, state weights, relevant animation timing, and transition progress
 - optional `active_montage`
 - optional `curves`
 - warning/error arrays for ambiguous matches, missing state machines, or missing curves
 
-The state-machine reader uses live `FAnimNode_StateMachine` instances and maps them back to baked class data with `StateMachineIndexInClass`. This avoids unsafe `UAnimInstance` helper calls whose machine indexes do not always match baked state-machine array indexes.
+The state-machine reader uses live `FAnimNode_StateMachine` instances and maps them back to baked class data with `StateMachineIndexInClass`. Runtime getter calls use the discovered `machine_instance_index`, not the baked class index, so helper calls do not hit the known index mismatch.
 
 **Example:**
 ```json
@@ -606,6 +611,8 @@ The state-machine reader uses live `FAnimNode_StateMachine` instances and maps t
     "actor_label": "MCP_AnimState_Smoke",
     "state_machine_name": "Locomotion",
     "include_states": true,
+    "include_state_weights": true,
+    "include_transition_progress": true,
     "include_curves": true,
     "curve_names": ["GroundSpeed", "IK_blend_interact"],
     "prefer_pie_world": true
@@ -634,7 +641,7 @@ Supported value types follow the shared runtime property writer: booleans, numbe
 - `refresh_bone_transforms` (boolean, optional) - Refresh bone transforms during/after forced ticks when `tick_after_set=true` and `tick_count > 0`. Defaults to `true`.
 - `include_snapshot_after` (boolean, optional) - Include state-machine/montage/curve snapshot after assignment. Defaults to `true`.
 - `include_previous_values` (boolean, optional) - Include previous property values in the assignment result. Defaults to `true`.
-- Snapshot filters from `inspect_anim_instance_runtime_state`, such as `state_machine_name`, `include_states`, `include_curves`, and `curve_names`.
+- Snapshot filters from `inspect_anim_instance_runtime_state`, such as `state_machine_name`, `include_states`, `include_state_weights`, `include_relevant_anim_times`, `include_transition_progress`, `include_curves`, and `curve_names`.
 - Target/world selection options from `inspect_anim_instance_runtime_state`, such as `prefer_pie_world` and `require_pie_world`.
 
 **Example:**
@@ -669,7 +676,7 @@ Apply runtime `AnimInstance` property cases, force a narrow component animation 
 - `refresh_bone_transforms` (boolean, optional) - Refresh bone transforms during/after forced ticks when `tick_count > 0`. Defaults to `true`.
 - `restore_after_case` (boolean, optional) - Restore successful property changes after each case. Defaults to `true`.
 - `include_baseline` (boolean, optional) - Capture state before applying cases. Defaults to `true`.
-- Snapshot filters from `inspect_anim_instance_runtime_state`, such as `state_machine_name`, `include_states`, `include_curves`, `curve_names`, and state-machine limits.
+- Snapshot filters from `inspect_anim_instance_runtime_state`, such as `state_machine_name`, `include_states`, `include_state_weights`, `include_relevant_anim_times`, `include_transition_progress`, `include_curves`, `curve_names`, and state-machine limits.
 - Target/world selection options from `inspect_anim_instance_runtime_state`, such as `prefer_pie_world` and `require_pie_world`.
 
 **Returns:**
