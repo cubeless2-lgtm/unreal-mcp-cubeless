@@ -193,4 +193,7 @@ Only after that passes review should the temporary runtime sampler be added.
 - `active_component_tick_delta` samples a matched live `SkeletalMeshComponent` before and after forced animation ticks and reports `pre_tick_pose`, `post_tick_pose`, and transform `deltas`.
 - This runtime mode is useful evidence for final component pose response, but it is not the isolated source-vs-output sampler and not true compiled AnimGraph node instrumentation.
 - Runtime responses therefore keep `runtime_graph_prepost=false` and `same_instance_prepost=false`.
-- The isolated temporary component/asset sampler under `/Game/_MCP_Temp/AnimNodePrePost` remains the next implementation step.
+- The isolated temporary component/asset sampler under `/Game/_MCP_Temp/AnimNodePrePost` is implemented for RigidBody/Trail-style single input/output pose nodes.
+- `mode=isolated_temp_components` duplicates the AnimBP into source-bypass and post-node temp copies, rewires the source copy around the selected node, compiles both temp AnimBPs, samples separate transient components, and cleans up temp actors/assets by default.
+- StackOBot `ABP_Baddy` RigidBody live smoke passed with nonzero stalk deltas, `runtime_graph_prepost=false`, `same_instance_prepost=false`, `original_assets_modified=false`, and no remaining dirty content/map packages after cleanup.
+- Remaining future scope is true same-instance compiled graph instrumentation.

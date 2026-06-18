@@ -429,7 +429,7 @@ Use this command when you need a stable same-instance pre/post ControlRig solve 
 
 Resolve a target AnimGraph node or run a limited active-component tick-delta pose probe.
 
-**Important scope note:** `dry_run=true` is a read-only target resolver. `dry_run=false` currently supports only `mode=active_component_tick_delta`, which samples final `SkeletalMeshComponent` pose before and after forced ticks on a matched live component. This is not true internal AnimGraph node source-vs-output instrumentation. Runtime responses intentionally report `runtime_graph_prepost=false` and `same_instance_prepost=false`.
+**Important scope note:** `dry_run=true` is a read-only target resolver. `dry_run=false` supports `mode=active_component_tick_delta` and `mode=isolated_temp_components`. Active tick-delta samples final `SkeletalMeshComponent` pose before and after forced ticks on a matched live component. Isolated temp mode duplicates the AnimBP under `_MCP_Temp`, bypasses the selected node in a source copy, and compares it against a selected-node copy on separate transient components. Neither runtime mode is true same-instance compiled AnimGraph instrumentation. Runtime responses intentionally report `runtime_graph_prepost=false` and `same_instance_prepost=false`.
 
 Use this command before implementing or running deeper AnimGraph node instrumentation so ambiguous node selectors are caught early.
 
@@ -443,7 +443,12 @@ Use this command before implementing or running deeper AnimGraph node instrument
 - `title_contains` (string, optional) - Node title substring filter
 - `sample_bones` (array, optional) - Bone list to echo in dry-run or sample in runtime mode. Runtime default is a compact StackOBot/Baddy study set.
 - `sample_sockets` (array, optional) - Socket list to echo in dry-run or sample in runtime mode
-- `mode` (string, optional) - Runtime mode for `dry_run=false`. Currently `active_component_tick_delta`.
+- `mode` (string, optional) - Runtime mode for `dry_run=false`: `active_component_tick_delta` or `isolated_temp_components`.
+- `skeletal_mesh` (string, optional) - SkeletalMesh path required by `isolated_temp_components`
+- `temp_root` (string, optional) - Temp asset root for isolated mode. Defaults to `/Game/_MCP_Temp/AnimNodePrePost`.
+- `cleanup` (boolean, optional) - Delete transient actors/temp assets after isolated sampling. Defaults to `true`.
+- `overwrite_existing_temp_assets` (boolean, optional) - Replace colliding temp assets. Defaults to `true`.
+- `run_id` (string, optional) - Stable suffix for generated temp asset/actor names
 - `actor_label`, `actor_name`, `actor_path` (string, optional) - Live actor selector for runtime mode
 - `component_name` (string, optional) - Live `SkeletalMeshComponent` selector for runtime mode
 - `prefer_pie_world` (boolean, optional) - Prefer PIE/SIE/play worlds over editor world. Defaults to `true`.
@@ -461,9 +466,11 @@ Use this command before implementing or running deeper AnimGraph node instrument
 - `target_node` with node metadata, reflected settings, preferred input/output pose pins, upstream/downstream pose links, `mvp_kind`, and `isolated_sampler_mvp_supported`
 - `mode=dry_run_target_resolver` for dry-run
 - `mode=active_component_tick_delta` and `comparison_kind=active_component_tick_delta` for runtime tick-delta sampling
+- `mode=isolated_temp_components` and `comparison_kind=isolated_temp_components` for temp source-vs-output sampling
 - `runtime_graph_prepost=false`
 - `same_instance_prepost=false`
-- `pre_tick_pose`, `post_tick_pose`, and `deltas` for runtime mode
+- `pre_tick_pose`, `post_tick_pose`, and `deltas` for active tick-delta mode
+- `source_pose`, `post_pose`, `deltas`, `prepare_temp_assets`, and `cleanup_results` for isolated temp mode
 - `next_implementation_mode=isolated_temp_components` for dry-run
 - warning/error details when the selector matches no node or multiple nodes
 
@@ -493,6 +500,27 @@ Use this command before implementing or running deeper AnimGraph node instrument
     "actor_label": "MCP_AnimNodeProbe_Baddy",
     "mode": "active_component_tick_delta",
     "dry_run": false,
+    "settle_tick_count": 3,
+    "tick_count": 5,
+    "tick_delta_time": 0.033333,
+    "sample_bones": ["Head_02", "TailEnd", "R_Stalk_04", "L_Stalk_04"]
+  }
+}
+```
+
+**Isolated temp source-vs-output example:**
+```json
+{
+  "command": "sample_anim_node_pre_post_runtime_pose",
+  "params": {
+    "blueprint_name": "/Game/StackOBot/Characters/Blobling/Anim/ABP_Baddy.ABP_Baddy",
+    "graph_name": "AnimGraph",
+    "graph_type": "function",
+    "node_id": "81E779C34D36CC52F0125F91BF52BAF3",
+    "skeletal_mesh": "/Game/StackOBot/Characters/Blobling/SKM_Baddy.SKM_Baddy",
+    "mode": "isolated_temp_components",
+    "dry_run": false,
+    "cleanup": true,
     "settle_tick_count": 3,
     "tick_count": 5,
     "tick_delta_time": 0.033333,

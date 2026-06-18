@@ -1451,6 +1451,11 @@ def register_blueprint_node_tools(mcp: FastMCP):
         sample_bones: Optional[List[str]] = None,
         sample_sockets: Optional[List[str]] = None,
         mode: str = "active_component_tick_delta",
+        skeletal_mesh: str = "",
+        temp_root: str = "/Game/_MCP_Temp/AnimNodePrePost",
+        cleanup: bool = True,
+        overwrite_existing_temp_assets: bool = True,
+        run_id: str = "",
         actor_label: str = "",
         actor_name: str = "",
         actor_path: str = "",
@@ -1469,10 +1474,13 @@ def register_blueprint_node_tools(mcp: FastMCP):
         """
         Resolve a target AnimGraph node or run a limited active-component tick-delta probe.
 
-        With dry_run=True this is a read-only target resolver. With dry_run=False
-        and mode="active_component_tick_delta", it samples final SkeletalMeshComponent
-        pose before and after forced ticks on a matched live component. That runtime
-        mode is not true internal AnimGraph node source-vs-output instrumentation.
+        With dry_run=True this is a read-only target resolver. With dry_run=False,
+        mode="active_component_tick_delta" samples final SkeletalMeshComponent pose
+        before and after forced ticks on a matched live component. With
+        mode="isolated_temp_components", it duplicates the AnimBP under _MCP_Temp,
+        bypasses the selected node in a source copy, and compares that against a
+        selected-node copy on separate transient components. Neither runtime mode is
+        true same-instance compiled graph instrumentation.
 
         Args:
             blueprint_name: Anim Blueprint name or path
@@ -1485,7 +1493,12 @@ def register_blueprint_node_tools(mcp: FastMCP):
             title_contains: Node title substring filter
             sample_bones: Optional future sample bone list echoed in the response
             sample_sockets: Optional future sample socket list echoed in the response
-            mode: Runtime mode for dry_run=False. Currently active_component_tick_delta.
+            mode: Runtime mode for dry_run=False. active_component_tick_delta or isolated_temp_components.
+            skeletal_mesh: SkeletalMesh path required by isolated_temp_components
+            temp_root: Temp asset root for isolated_temp_components
+            cleanup: Delete transient actors/temp assets after isolated sampling
+            overwrite_existing_temp_assets: Replace colliding temp assets
+            run_id: Optional stable suffix for generated temp asset/actor names
             actor_label: Live actor label to sample for active_component_tick_delta
             actor_name: Live actor object name to sample
             actor_path: Live actor object path to sample
@@ -1509,6 +1522,9 @@ def register_blueprint_node_tools(mcp: FastMCP):
                 "graph_name": graph_name,
                 "graph_type": graph_type,
                 "mode": mode,
+                "temp_root": temp_root,
+                "cleanup": cleanup,
+                "overwrite_existing_temp_assets": overwrite_existing_temp_assets,
                 "prefer_pie_world": prefer_pie_world,
                 "require_pie_world": require_pie_world,
                 "tick_count": tick_count,
@@ -1526,6 +1542,10 @@ def register_blueprint_node_tools(mcp: FastMCP):
                 params["anim_blueprint"] = anim_blueprint
             if graph_id:
                 params["graph_id"] = graph_id
+            if skeletal_mesh:
+                params["skeletal_mesh"] = skeletal_mesh
+            if run_id:
+                params["run_id"] = run_id
             if node_id:
                 params["node_id"] = node_id
             if node_type:

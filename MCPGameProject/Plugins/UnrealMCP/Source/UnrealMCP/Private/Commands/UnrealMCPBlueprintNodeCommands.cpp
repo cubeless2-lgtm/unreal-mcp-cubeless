@@ -30,6 +30,7 @@
 #include "EdGraph/EdGraphNode.h"
 #include "EdGraph/EdGraphPin.h"
 #include "Editor.h"
+#include "EditorAssetLibrary.h"
 #include "Engine/Engine.h"
 #include "Engine/SkeletalMesh.h"
 #include "Engine/World.h"
@@ -5240,6 +5241,17 @@ TArray<TSharedPtr<FJsonValue>> LinkedPinsToJsonValues(const UEdGraphPin* Pin)
     return Values;
 }
 
+UEdGraphPin* FindPreferredInputPosePinForNode(UEdGraphNode* Node);
+UEdGraphPin* FindPreferredOutputPosePinForNode(UEdGraphNode* Node);
+bool EnsureAnimGraphConnection(
+    UEdGraph* Graph,
+    UEdGraphPin* SourcePin,
+    UEdGraphPin* TargetPin,
+    bool bReplaceExisting,
+    bool& bOutChanged,
+    FString& OutError,
+    TSharedPtr<FJsonObject>* OutErrorObj);
+
 struct FAnimNodePoseTransformSample
 {
     bool bValid = false;
@@ -5624,6 +5636,603 @@ TSharedPtr<FJsonObject> BuildAnimNodePrePostRuntimeTickDeltaResponse(
     AddGraphField(ResultObj, Blueprint, TargetGraph);
     ResultObj->SetArrayField(TEXT("errors"), ErrorValues);
     ResultObj->SetArrayField(TEXT("warnings"), WarningValues);
+    return ResultObj;
+}
+
+struct FAnimNodeIsolatedTempBlueprints
+{
+    FString TempRoot;
+    FString SourceBypassPath;
+    FString PostNodePath;
+    UBlueprint* SourceBypassBlueprint = nullptr;
+    UBlueprint* PostNodeBlueprint = nullptr;
+    bool bSourceBypassGraphChanged = false;
+    bool bSourceBypassCompiled = false;
+    bool bPostNodeCompiled = false;
+};
+
+struct FAnimNodeIsolatedProbeActor
+{
+    AActor* Actor = nullptr;
+    USkeletalMeshComponent* Component = nullptr;
+};
+
+FString SanitizeAssetNameSegmentForAnimNodeProbe(const FString& RawName)
+{
+    FString Result = RawName;
+    for (TCHAR& Character : Result)
+    {
+        if (!FChar::IsAlnum(Character) && Character != TEXT('_'))
+        {
+            Character = TEXT('_');
+        }
+    }
+    Result.TrimStartAndEndInline();
+    return Result.IsEmpty() ? TEXT("AnimNodeProbe") : Result;
+}
+
+FString NormalizeTempRootForAnimNodeProbe(const FString& RawTempRoot)
+{
+    FString TempRoot = RawTempRoot.IsEmpty() ? TEXT("/Game/_MCP_Temp/AnimNodePrePost") : RawTempRoot;
+    TempRoot.ReplaceInline(TEXT("\\"), TEXT("/"));
+    TempRoot.TrimEndInline();
+    while (TempRoot.EndsWith(TEXT("/")))
+    {
+        TempRoot.LeftChopInline(1);
+    }
+    return TempRoot.IsEmpty() ? TEXT("/Game/_MCP_Temp/AnimNodePrePost") : TempRoot;
+}
+
+bool IsAllowedAnimNodeProbeTempRoot(const FString& TempRoot)
+{
+    return TempRoot.Equals(TEXT("/Game/_MCP_Temp"), ESearchCase::IgnoreCase)
+        || TempRoot.StartsWith(TEXT("/Game/_MCP_Temp/"), ESearchCase::IgnoreCase);
+}
+
+TSharedPtr<FJsonObject> AnimNodeProbeCompileBlueprint(UBlueprint* Blueprint)
+{
+    TSharedPtr<FJsonObject> CompileObject = MakeShared<FJsonObject>();
+    CompileObject->SetBoolField(TEXT("requested"), true);
+    if (!Blueprint)
+    {
+        CompileObject->SetBoolField(TEXT("success"), false);
+        CompileObject->SetStringField(TEXT("error"), TEXT("Blueprint is null"));
+        return CompileObject;
+    }
+
+    FKismetEditorUtilities::CompileBlueprint(Blueprint);
+    CompileObject->SetBoolField(TEXT("success"), Blueprint->GeneratedClass != nullptr);
+    CompileObject->SetStringField(TEXT("blueprint"), Blueprint->GetPathName());
+    CompileObject->SetStringField(TEXT("generated_class"), Blueprint->GeneratedClass ? Blueprint->GeneratedClass->GetPathName() : FString());
+    return CompileObject;
+}
+
+UBlueprint* DuplicateAnimBlueprintForNodeProbe(
+    UBlueprint* SourceBlueprint,
+    const FString& TargetPath,
+    bool bOverwrite,
+    TArray<TSharedPtr<FJsonValue>>& ErrorValues)
+{
+    if (!SourceBlueprint)
+    {
+        ErrorValues.Add(MakeShared<FJsonValueString>(TEXT("Cannot duplicate null source Anim Blueprint")));
+        return nullptr;
+    }
+
+    if (UEditorAssetLibrary::DoesAssetExist(TargetPath))
+    {
+        if (!bOverwrite)
+        {
+            ErrorValues.Add(MakeShared<FJsonValueString>(FString::Printf(TEXT("Temp asset already exists: %s"), *TargetPath)));
+            return nullptr;
+        }
+        if (!UEditorAssetLibrary::DeleteAsset(TargetPath))
+        {
+            ErrorValues.Add(MakeShared<FJsonValueString>(FString::Printf(TEXT("Failed to delete existing temp asset: %s"), *TargetPath)));
+            return nullptr;
+        }
+    }
+
+    UObject* DuplicatedObject = UEditorAssetLibrary::DuplicateAsset(SourceBlueprint->GetOutermost()->GetName(), TargetPath);
+    UBlueprint* DuplicatedBlueprint = Cast<UBlueprint>(DuplicatedObject);
+    if (!DuplicatedBlueprint)
+    {
+        ErrorValues.Add(MakeShared<FJsonValueString>(FString::Printf(TEXT("Failed to duplicate Anim Blueprint '%s' to '%s'"), *SourceBlueprint->GetOutermost()->GetName(), *TargetPath)));
+        return nullptr;
+    }
+
+    return DuplicatedBlueprint;
+}
+
+UAnimGraphNode_Base* FindAnimGraphNodeByGuid(UEdGraph* Graph, const FGuid& NodeGuid)
+{
+    if (!Graph)
+    {
+        return nullptr;
+    }
+
+    for (UEdGraphNode* Node : Graph->Nodes)
+    {
+        UAnimGraphNode_Base* AnimNode = Cast<UAnimGraphNode_Base>(Node);
+        if (AnimNode && AnimNode->NodeGuid == NodeGuid)
+        {
+            return AnimNode;
+        }
+    }
+    return nullptr;
+}
+
+UAnimGraphNode_Base* FindMatchingAnimGraphNodeForProbe(
+    UEdGraph* Graph,
+    const FGuid& NodeGuid,
+    const UAnimGraphNode_Base* OriginalNode)
+{
+    if (UAnimGraphNode_Base* GuidMatch = FindAnimGraphNodeByGuid(Graph, NodeGuid))
+    {
+        return GuidMatch;
+    }
+
+    if (!Graph || !OriginalNode)
+    {
+        return nullptr;
+    }
+
+    TArray<UAnimGraphNode_Base*> ClassMatches;
+    UAnimGraphNode_Base* NameMatch = nullptr;
+    const UClass* OriginalClass = OriginalNode->GetClass();
+    const FString OriginalName = OriginalNode->GetName();
+    for (UEdGraphNode* Node : Graph->Nodes)
+    {
+        UAnimGraphNode_Base* Candidate = Cast<UAnimGraphNode_Base>(Node);
+        if (!Candidate || Candidate->GetClass() != OriginalClass)
+        {
+            continue;
+        }
+
+        ClassMatches.Add(Candidate);
+        if (Candidate->GetName().Equals(OriginalName, ESearchCase::IgnoreCase))
+        {
+            NameMatch = Candidate;
+        }
+    }
+
+    if (NameMatch)
+    {
+        return NameMatch;
+    }
+    return ClassMatches.Num() == 1 ? ClassMatches[0] : nullptr;
+}
+
+bool BypassAnimGraphNodeForProbe(
+    UBlueprint* Blueprint,
+    const TSharedPtr<FJsonObject>& ResolveParams,
+    const UAnimGraphNode_Base* OriginalTargetNode,
+    TSharedPtr<FJsonObject>& OutBypassObject,
+    TArray<TSharedPtr<FJsonValue>>& ErrorValues)
+{
+    OutBypassObject = MakeShared<FJsonObject>();
+    if (!Blueprint)
+    {
+        ErrorValues.Add(MakeShared<FJsonValueString>(TEXT("Cannot bypass node on null blueprint")));
+        return false;
+    }
+
+    bool bCreated = false;
+    FString GraphError;
+    UEdGraph* Graph = ResolveBlueprintGraph(Blueprint, ResolveParams, false, bCreated, GraphError);
+    if (!Graph)
+    {
+        ErrorValues.Add(MakeShared<FJsonValueString>(GraphError));
+        return false;
+    }
+
+    UAnimGraphNode_Base* TargetNode = FindMatchingAnimGraphNodeForProbe(
+        Graph,
+        OriginalTargetNode ? OriginalTargetNode->NodeGuid : FGuid(),
+        OriginalTargetNode);
+    if (!TargetNode)
+    {
+        ErrorValues.Add(MakeShared<FJsonValueString>(FString::Printf(
+            TEXT("Target node not found in temp blueprint by GUID/class/name: %s"),
+            OriginalTargetNode ? *OriginalTargetNode->NodeGuid.ToString() : TEXT("<none>"))));
+        return false;
+    }
+
+    UEdGraphPin* InputPosePin = FindPreferredInputPosePinForNode(TargetNode);
+    UEdGraphPin* OutputPosePin = FindPreferredOutputPosePinForNode(TargetNode);
+    if (!InputPosePin || !OutputPosePin)
+    {
+        ErrorValues.Add(MakeShared<FJsonValueString>(TEXT("Target node does not expose preferred input/output pose pins for bypass")));
+        return false;
+    }
+    if (InputPosePin->LinkedTo.Num() != 1)
+    {
+        ErrorValues.Add(MakeShared<FJsonValueString>(FString::Printf(TEXT("Target node input pose pin must have exactly one upstream link for bypass; found %d"), InputPosePin->LinkedTo.Num())));
+        return false;
+    }
+    if (OutputPosePin->LinkedTo.Num() == 0)
+    {
+        ErrorValues.Add(MakeShared<FJsonValueString>(TEXT("Target node output pose pin has no downstream links to reconnect")));
+        return false;
+    }
+
+    UEdGraphPin* UpstreamOutputPin = InputPosePin->LinkedTo[0];
+    TArray<UEdGraphPin*> DownstreamInputPins = OutputPosePin->LinkedTo;
+    TArray<TSharedPtr<FJsonValue>> ReconnectedTargets;
+    bool bAnyChanged = false;
+
+    for (UEdGraphPin* DownstreamInputPin : DownstreamInputPins)
+    {
+        bool bChangedThisLink = false;
+        FString LinkError;
+        TSharedPtr<FJsonObject> LinkErrorObj;
+        if (!EnsureAnimGraphConnection(Graph, UpstreamOutputPin, DownstreamInputPin, true, bChangedThisLink, LinkError, &LinkErrorObj))
+        {
+            ErrorValues.Add(MakeShared<FJsonValueString>(LinkError));
+            if (LinkErrorObj.IsValid())
+            {
+                OutBypassObject->SetObjectField(TEXT("link_error"), LinkErrorObj);
+            }
+            return false;
+        }
+
+        bAnyChanged = bAnyChanged || bChangedThisLink;
+        ReconnectedTargets.Add(MakeShared<FJsonValueObject>(PinToJson(DownstreamInputPin)));
+    }
+
+    if (bAnyChanged)
+    {
+        FBlueprintEditorUtils::MarkBlueprintAsModified(Blueprint);
+        TargetNode->ReconstructNode();
+        Graph->NotifyGraphChanged();
+    }
+
+    OutBypassObject->SetBoolField(TEXT("success"), true);
+    OutBypassObject->SetBoolField(TEXT("graph_changed"), bAnyChanged);
+    OutBypassObject->SetStringField(TEXT("blueprint"), Blueprint->GetPathName());
+    OutBypassObject->SetObjectField(TEXT("bypassed_node"), NodeToJson(TargetNode, false));
+    OutBypassObject->SetObjectField(TEXT("upstream_pose_pin"), PinToJson(UpstreamOutputPin));
+    OutBypassObject->SetArrayField(TEXT("reconnected_downstream_pins"), ReconnectedTargets);
+    AddGraphField(OutBypassObject, Blueprint, Graph);
+    return true;
+}
+
+bool PrepareAnimNodeIsolatedTempBlueprints(
+    const TSharedPtr<FJsonObject>& Params,
+    UBlueprint* SourceBlueprint,
+    UAnimGraphNode_Base* TargetNode,
+    const TSharedPtr<FJsonObject>& ResolveParams,
+    FAnimNodeIsolatedTempBlueprints& OutTemps,
+    TSharedPtr<FJsonObject>& OutPrepareObject,
+    TArray<TSharedPtr<FJsonValue>>& ErrorValues)
+{
+    OutPrepareObject = MakeShared<FJsonObject>();
+    if (!SourceBlueprint || !TargetNode)
+    {
+        ErrorValues.Add(MakeShared<FJsonValueString>(TEXT("Missing source blueprint or target node for isolated temp preparation")));
+        return false;
+    }
+
+    FString TempRoot = NormalizeTempRootForAnimNodeProbe(GetStringParam(Params, TEXT("temp_root"), TEXT("/Game/_MCP_Temp/AnimNodePrePost")));
+    if (!IsAllowedAnimNodeProbeTempRoot(TempRoot))
+    {
+        ErrorValues.Add(MakeShared<FJsonValueString>(FString::Printf(TEXT("Refusing temp_root outside /Game/_MCP_Temp: %s"), *TempRoot)));
+        return false;
+    }
+
+    const bool bOverwriteExistingTempAssets = GetBoolParam(Params, TEXT("overwrite_existing_temp_assets"), true);
+    const FString SourceAssetName = SanitizeAssetNameSegmentForAnimNodeProbe(SourceBlueprint->GetName());
+    const FString NodeName = SanitizeAssetNameSegmentForAnimNodeProbe(TargetNode->GetName());
+    const FString RunId = SanitizeAssetNameSegmentForAnimNodeProbe(GetStringParam(Params, TEXT("run_id"), FGuid::NewGuid().ToString(EGuidFormats::Digits)));
+    OutTemps.TempRoot = TempRoot;
+    OutTemps.SourceBypassPath = FString::Printf(TEXT("%s/%s_%s_SourceBypass_%s"), *TempRoot, *SourceAssetName, *NodeName, *RunId);
+    OutTemps.PostNodePath = FString::Printf(TEXT("%s/%s_%s_PostNode_%s"), *TempRoot, *SourceAssetName, *NodeName, *RunId);
+
+    UEditorAssetLibrary::MakeDirectory(TempRoot);
+
+    OutTemps.SourceBypassBlueprint = DuplicateAnimBlueprintForNodeProbe(SourceBlueprint, OutTemps.SourceBypassPath, bOverwriteExistingTempAssets, ErrorValues);
+    OutTemps.PostNodeBlueprint = DuplicateAnimBlueprintForNodeProbe(SourceBlueprint, OutTemps.PostNodePath, bOverwriteExistingTempAssets, ErrorValues);
+    if (!OutTemps.SourceBypassBlueprint || !OutTemps.PostNodeBlueprint)
+    {
+        return false;
+    }
+
+    TSharedPtr<FJsonObject> BypassObject;
+    if (!BypassAnimGraphNodeForProbe(OutTemps.SourceBypassBlueprint, ResolveParams, TargetNode, BypassObject, ErrorValues))
+    {
+        return false;
+    }
+    OutTemps.bSourceBypassGraphChanged = BypassObject.IsValid() && BypassObject->GetBoolField(TEXT("graph_changed"));
+
+    TSharedPtr<FJsonObject> SourceCompileObject = AnimNodeProbeCompileBlueprint(OutTemps.SourceBypassBlueprint);
+    TSharedPtr<FJsonObject> PostCompileObject = AnimNodeProbeCompileBlueprint(OutTemps.PostNodeBlueprint);
+    OutTemps.bSourceBypassCompiled = SourceCompileObject->GetBoolField(TEXT("success"));
+    OutTemps.bPostNodeCompiled = PostCompileObject->GetBoolField(TEXT("success"));
+    if (!OutTemps.bSourceBypassCompiled || !OutTemps.bPostNodeCompiled)
+    {
+        ErrorValues.Add(MakeShared<FJsonValueString>(TEXT("Failed to compile one or more isolated temp Anim Blueprints")));
+    }
+
+    OutPrepareObject->SetStringField(TEXT("temp_root"), OutTemps.TempRoot);
+    OutPrepareObject->SetStringField(TEXT("source_bypass_path"), OutTemps.SourceBypassPath);
+    OutPrepareObject->SetStringField(TEXT("post_node_path"), OutTemps.PostNodePath);
+    OutPrepareObject->SetBoolField(TEXT("overwrite_existing_temp_assets"), bOverwriteExistingTempAssets);
+    OutPrepareObject->SetObjectField(TEXT("source_bypass"), BypassObject);
+    OutPrepareObject->SetObjectField(TEXT("source_compile"), SourceCompileObject);
+    OutPrepareObject->SetObjectField(TEXT("post_compile"), PostCompileObject);
+    return ErrorValues.Num() == 0;
+}
+
+FAnimNodeIsolatedProbeActor SpawnAnimNodeIsolatedProbeActor(
+    UWorld* World,
+    USkeletalMesh* SkeletalMesh,
+    UClass* AnimClass,
+    const FString& ActorLabel,
+    const FVector& Location)
+{
+    FAnimNodeIsolatedProbeActor Probe;
+    if (!World || !SkeletalMesh || !AnimClass)
+    {
+        return Probe;
+    }
+
+    FActorSpawnParameters SpawnParams;
+    SpawnParams.Name = MakeUniqueObjectName(World, AActor::StaticClass(), FName(*SanitizeAssetNameSegmentForAnimNodeProbe(ActorLabel)));
+    SpawnParams.ObjectFlags |= RF_Transient;
+    AActor* Actor = World->SpawnActor<AActor>(AActor::StaticClass(), FTransform(FRotator::ZeroRotator, Location), SpawnParams);
+    if (!Actor)
+    {
+        return Probe;
+    }
+
+    Actor->SetActorLabel(ActorLabel);
+    USkeletalMeshComponent* Component = NewObject<USkeletalMeshComponent>(Actor, TEXT("AnimNodeProbeSkeletalMeshComponent"), RF_Transient);
+    if (!Component)
+    {
+        World->DestroyActor(Actor);
+        return Probe;
+    }
+
+    Component->SetSkeletalMesh(SkeletalMesh);
+    Component->SetAnimationMode(EAnimationMode::AnimationBlueprint);
+    Component->SetAnimInstanceClass(AnimClass);
+    Actor->SetRootComponent(Component);
+    Actor->AddInstanceComponent(Component);
+    Component->RegisterComponent();
+    Component->RefreshBoneTransforms();
+
+    Probe.Actor = Actor;
+    Probe.Component = Component;
+    return Probe;
+}
+
+TSharedPtr<FJsonObject> BuildIsolatedProbeActorJson(const FAnimNodeIsolatedProbeActor& Probe)
+{
+    TSharedPtr<FJsonObject> Object = MakeShared<FJsonObject>();
+    Object->SetObjectField(TEXT("actor"), ActorToSkeletalSamplerJson(Probe.Actor));
+    Object->SetObjectField(TEXT("component"), SkeletalComponentToSamplerJson(Probe.Component));
+    Object->SetObjectField(TEXT("anim_instance"), AnimInstanceToRuntimeJson(Probe.Component ? Probe.Component->GetAnimInstance() : nullptr));
+    return Object;
+}
+
+void CleanupAnimNodeIsolatedProbe(
+    UWorld* World,
+    FAnimNodeIsolatedProbeActor& Probe,
+    const FString& CleanupLabel,
+    TArray<TSharedPtr<FJsonValue>>& CleanupValues)
+{
+    TSharedPtr<FJsonObject> CleanupObject = MakeShared<FJsonObject>();
+    CleanupObject->SetStringField(TEXT("label"), CleanupLabel);
+    CleanupObject->SetBoolField(TEXT("had_actor"), Probe.Actor != nullptr);
+    if (World && Probe.Actor)
+    {
+        CleanupObject->SetStringField(TEXT("actor_name"), Probe.Actor->GetName());
+        CleanupObject->SetBoolField(TEXT("destroyed"), World->DestroyActor(Probe.Actor));
+    }
+    else
+    {
+        CleanupObject->SetBoolField(TEXT("destroyed"), false);
+    }
+    Probe.Actor = nullptr;
+    Probe.Component = nullptr;
+    CleanupValues.Add(MakeShared<FJsonValueObject>(CleanupObject));
+}
+
+void CleanupAnimNodeIsolatedTempAsset(
+    const FString& AssetPath,
+    const FString& CleanupLabel,
+    TArray<TSharedPtr<FJsonValue>>& CleanupValues)
+{
+    TSharedPtr<FJsonObject> CleanupObject = MakeShared<FJsonObject>();
+    CleanupObject->SetStringField(TEXT("label"), CleanupLabel);
+    CleanupObject->SetStringField(TEXT("asset_path"), AssetPath);
+    const bool bExists = UEditorAssetLibrary::DoesAssetExist(AssetPath);
+    CleanupObject->SetBoolField(TEXT("existed"), bExists);
+    CleanupObject->SetBoolField(TEXT("deleted"), bExists ? UEditorAssetLibrary::DeleteAsset(AssetPath) : false);
+    CleanupValues.Add(MakeShared<FJsonValueObject>(CleanupObject));
+}
+
+TSharedPtr<FJsonObject> BuildAnimNodePrePostIsolatedTempComponentsResponse(
+    const TSharedPtr<FJsonObject>& Params,
+    const FString& BlueprintName,
+    UBlueprint* Blueprint,
+    UEdGraph* TargetGraph,
+    UAnimGraphNode_Base* TargetNode,
+    const TSharedPtr<FJsonObject>& ResolveParams,
+    const TSharedPtr<FJsonObject>& TargetNodeObject,
+    const TArray<FString>& SampleBones,
+    const TArray<FString>& SampleSockets,
+    bool bIsolatedSamplerSupported)
+{
+    TArray<TSharedPtr<FJsonValue>> ErrorValues;
+    TArray<TSharedPtr<FJsonValue>> WarningValues;
+    TArray<TSharedPtr<FJsonValue>> CleanupValues;
+
+    if (!bIsolatedSamplerSupported)
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("mode=isolated_temp_components currently supports only RigidBody and Trail AnimGraph nodes"));
+    }
+
+    FString SkeletalMeshPath = GetStringParam(Params, TEXT("skeletal_mesh"), FString());
+    SkeletalMeshPath.TrimStartAndEndInline();
+    if (SkeletalMeshPath.IsEmpty())
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("mode=isolated_temp_components requires 'skeletal_mesh'"));
+    }
+
+    USkeletalMesh* SkeletalMesh = Cast<USkeletalMesh>(UEditorAssetLibrary::LoadAsset(SkeletalMeshPath));
+    if (!SkeletalMesh)
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("SkeletalMesh not found: %s"), *SkeletalMeshPath));
+    }
+
+    bool bPreferPIEWorld = true;
+    Params->TryGetBoolField(TEXT("prefer_pie_world"), bPreferPIEWorld);
+    const bool bRequirePIEWorld = GetBoolParam(Params, TEXT("require_pie_world"), false);
+    const bool bAllowMissingSamples = GetBoolParam(Params, TEXT("allow_missing_bones"), false)
+        || GetBoolParam(Params, TEXT("allow_missing_samples"), false);
+    const bool bCleanup = GetBoolParam(Params, TEXT("cleanup"), true);
+    const int32 SettleTickCount = GetClampedIntParam(Params, TEXT("settle_tick_count"), 0, 0, 240);
+    const int32 TickCount = GetClampedIntParam(Params, TEXT("tick_count"), 1, 0, 240);
+    const double TickDeltaTime = GetClampedNumberParam(Params, TEXT("tick_delta_time"), 1.0 / 30.0, 0.0, 1.0);
+    const bool bRefreshBoneTransforms = GetBoolParam(Params, TEXT("refresh_bone_transforms"), true);
+
+    UWorld* ProbeWorld = nullptr;
+    const TArray<UWorld*> CandidateWorlds = GetCandidateWorldsForSkeletalSampling(bPreferPIEWorld, !bRequirePIEWorld);
+    for (UWorld* World : CandidateWorlds)
+    {
+        if (World)
+        {
+            ProbeWorld = World;
+            break;
+        }
+    }
+    if (!ProbeWorld)
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(bRequirePIEWorld
+            ? TEXT("No active PIE/SIE/play world available for isolated temp component probe")
+            : TEXT("No candidate editor/PIE world available for isolated temp component probe"));
+    }
+
+    FAnimNodeIsolatedTempBlueprints Temps;
+    TSharedPtr<FJsonObject> PrepareObject;
+    if (!PrepareAnimNodeIsolatedTempBlueprints(Params, Blueprint, TargetNode, ResolveParams, Temps, PrepareObject, ErrorValues))
+    {
+        if (bCleanup)
+        {
+            if (!Temps.SourceBypassPath.IsEmpty())
+            {
+                CleanupAnimNodeIsolatedTempAsset(Temps.SourceBypassPath, TEXT("source_bypass_asset_prepare_failure"), CleanupValues);
+            }
+            if (!Temps.PostNodePath.IsEmpty())
+            {
+                CleanupAnimNodeIsolatedTempAsset(Temps.PostNodePath, TEXT("post_node_asset_prepare_failure"), CleanupValues);
+            }
+        }
+
+        TSharedPtr<FJsonObject> ErrorObj = FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Failed to prepare isolated temp Anim Blueprints"));
+        ErrorObj->SetStringField(TEXT("mode"), TEXT("isolated_temp_components"));
+        ErrorObj->SetObjectField(TEXT("prepare_temp_assets"), PrepareObject);
+        ErrorObj->SetBoolField(TEXT("cleanup"), bCleanup);
+        ErrorObj->SetArrayField(TEXT("cleanup_results"), CleanupValues);
+        ErrorObj->SetArrayField(TEXT("errors"), ErrorValues);
+        ErrorObj->SetArrayField(TEXT("warnings"), WarningValues);
+        ErrorObj->SetBoolField(TEXT("runtime_graph_prepost"), false);
+        ErrorObj->SetBoolField(TEXT("same_instance_prepost"), false);
+        ErrorObj->SetBoolField(TEXT("original_assets_modified"), false);
+        ErrorObj->SetObjectField(TEXT("target_node"), TargetNodeObject);
+        AddGraphField(ErrorObj, Blueprint, TargetGraph);
+        return ErrorObj;
+    }
+
+    UClass* SourceBypassClass = Temps.SourceBypassBlueprint ? Temps.SourceBypassBlueprint->GeneratedClass : nullptr;
+    UClass* PostNodeClass = Temps.PostNodeBlueprint ? Temps.PostNodeBlueprint->GeneratedClass : nullptr;
+    if (!SourceBypassClass || !PostNodeClass)
+    {
+        ErrorValues.Add(MakeShared<FJsonValueString>(TEXT("Prepared temp Anim Blueprint generated classes are missing")));
+    }
+
+    const FString RunId = SanitizeAssetNameSegmentForAnimNodeProbe(GetStringParam(Params, TEXT("run_id"), FGuid::NewGuid().ToString(EGuidFormats::Digits)));
+    FAnimNodeIsolatedProbeActor SourceProbe;
+    FAnimNodeIsolatedProbeActor PostProbe;
+
+    if (ErrorValues.Num() == 0)
+    {
+        SourceProbe = SpawnAnimNodeIsolatedProbeActor(ProbeWorld, SkeletalMesh, SourceBypassClass, FString::Printf(TEXT("MCP_AnimNode_Source_%s"), *RunId), FVector(0.0, -80.0, 120.0));
+        PostProbe = SpawnAnimNodeIsolatedProbeActor(ProbeWorld, SkeletalMesh, PostNodeClass, FString::Printf(TEXT("MCP_AnimNode_Post_%s"), *RunId), FVector(0.0, 80.0, 120.0));
+        if (!SourceProbe.Actor || !SourceProbe.Component || !PostProbe.Actor || !PostProbe.Component)
+        {
+            ErrorValues.Add(MakeShared<FJsonValueString>(TEXT("Failed to spawn one or more isolated probe actors/components")));
+        }
+    }
+
+    TSharedPtr<FJsonObject> SourceSettleTickObject = MakeShared<FJsonObject>();
+    TSharedPtr<FJsonObject> PostSettleTickObject = MakeShared<FJsonObject>();
+    TSharedPtr<FJsonObject> SourceTickObject = MakeShared<FJsonObject>();
+    TSharedPtr<FJsonObject> PostTickObject = MakeShared<FJsonObject>();
+    FAnimNodePoseCapture SourcePose;
+    FAnimNodePoseCapture PostPose;
+    TSharedPtr<FJsonObject> SourceProbeObject = MakeShared<FJsonObject>();
+    TSharedPtr<FJsonObject> PostProbeObject = MakeShared<FJsonObject>();
+
+    if (ErrorValues.Num() == 0)
+    {
+        SourceSettleTickObject = TickSkeletalComponentForAnimRuntimeProbe(SourceProbe.Component, SettleTickCount, TickDeltaTime, bRefreshBoneTransforms, WarningValues);
+        PostSettleTickObject = TickSkeletalComponentForAnimRuntimeProbe(PostProbe.Component, SettleTickCount, TickDeltaTime, bRefreshBoneTransforms, WarningValues);
+        SourceTickObject = TickSkeletalComponentForAnimRuntimeProbe(SourceProbe.Component, TickCount, TickDeltaTime, bRefreshBoneTransforms, WarningValues);
+        PostTickObject = TickSkeletalComponentForAnimRuntimeProbe(PostProbe.Component, TickCount, TickDeltaTime, bRefreshBoneTransforms, WarningValues);
+        SourcePose = CaptureAnimNodeProbePose(SourceProbe.Component, SampleBones, SampleSockets, bAllowMissingSamples, ErrorValues, WarningValues);
+        PostPose = CaptureAnimNodeProbePose(PostProbe.Component, SampleBones, SampleSockets, bAllowMissingSamples, ErrorValues, WarningValues);
+        SourceProbeObject = BuildIsolatedProbeActorJson(SourceProbe);
+        PostProbeObject = BuildIsolatedProbeActorJson(PostProbe);
+    }
+
+    if (bCleanup)
+    {
+        CleanupAnimNodeIsolatedProbe(ProbeWorld, SourceProbe, TEXT("source_bypass_actor"), CleanupValues);
+        CleanupAnimNodeIsolatedProbe(ProbeWorld, PostProbe, TEXT("post_node_actor"), CleanupValues);
+        CleanupAnimNodeIsolatedTempAsset(Temps.SourceBypassPath, TEXT("source_bypass_asset"), CleanupValues);
+        CleanupAnimNodeIsolatedTempAsset(Temps.PostNodePath, TEXT("post_node_asset"), CleanupValues);
+    }
+
+    TSharedPtr<FJsonObject> ResultObj = MakeShared<FJsonObject>();
+    ResultObj->SetBoolField(TEXT("success"), ErrorValues.Num() == 0);
+    ResultObj->SetBoolField(TEXT("read_only"), false);
+    ResultObj->SetBoolField(TEXT("runtime_only"), false);
+    ResultObj->SetBoolField(TEXT("asset_modified"), true);
+    ResultObj->SetBoolField(TEXT("saves_assets"), false);
+    ResultObj->SetBoolField(TEXT("dry_run"), false);
+    ResultObj->SetStringField(TEXT("mode"), TEXT("isolated_temp_components"));
+    ResultObj->SetStringField(TEXT("comparison_kind"), TEXT("isolated_temp_components"));
+    ResultObj->SetBoolField(TEXT("runtime_graph_prepost"), false);
+    ResultObj->SetBoolField(TEXT("same_instance_prepost"), false);
+    ResultObj->SetBoolField(TEXT("original_assets_modified"), false);
+    ResultObj->SetBoolField(TEXT("temp_assets_created"), true);
+    ResultObj->SetBoolField(TEXT("cleanup"), bCleanup);
+    ResultObj->SetStringField(TEXT("runtime_note"), TEXT("Compares a temp source-bypass AnimBP against a temp selected-node AnimBP on separate transient components. This is source-vs-output evidence, not same-instance compiled graph instrumentation."));
+    ResultObj->SetStringField(TEXT("blueprint_name"), BlueprintName);
+    ResultObj->SetStringField(TEXT("blueprint_path"), Blueprint ? Blueprint->GetPathName() : FString());
+    ResultObj->SetStringField(TEXT("skeletal_mesh"), SkeletalMesh->GetPathName());
+    ResultObj->SetStringField(TEXT("sampled_world_type"), BlueprintNodeWorldTypeToString(ProbeWorld));
+    ResultObj->SetStringField(TEXT("sampled_world_name"), ProbeWorld ? ProbeWorld->GetName() : FString());
+    ResultObj->SetObjectField(TEXT("target_node"), TargetNodeObject);
+    ResultObj->SetObjectField(TEXT("prepare_temp_assets"), PrepareObject);
+    ResultObj->SetObjectField(TEXT("source_bypass_probe"), SourceProbeObject);
+    ResultObj->SetObjectField(TEXT("post_node_probe"), PostProbeObject);
+    ResultObj->SetArrayField(TEXT("requested_sample_bones"), StringArrayToJsonValues(SampleBones));
+    ResultObj->SetArrayField(TEXT("requested_sample_sockets"), StringArrayToJsonValues(SampleSockets));
+    ResultObj->SetBoolField(TEXT("allow_missing_bones"), bAllowMissingSamples);
+    ResultObj->SetObjectField(TEXT("source_settle_tick"), SourceSettleTickObject);
+    ResultObj->SetObjectField(TEXT("post_settle_tick"), PostSettleTickObject);
+    ResultObj->SetObjectField(TEXT("source_tick"), SourceTickObject);
+    ResultObj->SetObjectField(TEXT("post_tick"), PostTickObject);
+    ResultObj->SetObjectField(TEXT("source_pose"), SourcePose.Json);
+    ResultObj->SetObjectField(TEXT("post_pose"), PostPose.Json);
+    ResultObj->SetObjectField(TEXT("deltas"), BuildAnimNodePoseDeltas(SourcePose, PostPose, SampleBones, SampleSockets));
+    ResultObj->SetArrayField(TEXT("cleanup_results"), CleanupValues);
+    ResultObj->SetArrayField(TEXT("errors"), ErrorValues);
+    ResultObj->SetArrayField(TEXT("warnings"), WarningValues);
+    AddGraphField(ResultObj, Blueprint, TargetGraph);
     return ResultObj;
 }
 
@@ -9686,6 +10295,22 @@ TSharedPtr<FJsonObject> FUnrealMCPBlueprintNodeCommands::HandleSampleAnimNodePre
 
     if (!bDryRun)
     {
+        const FString RuntimeMode = GetStringParam(Params, TEXT("mode"), TEXT("active_component_tick_delta"));
+        if (RuntimeMode.Equals(TEXT("isolated_temp_components"), ESearchCase::IgnoreCase))
+        {
+            return BuildAnimNodePrePostIsolatedTempComponentsResponse(
+                Params,
+                BlueprintName,
+                Blueprint,
+                TargetGraph,
+                TargetNode,
+                ResolveParams,
+                TargetNodeObject,
+                SampleBones,
+                SampleSockets,
+                bIsolatedSamplerSupported);
+        }
+
         return BuildAnimNodePrePostRuntimeTickDeltaResponse(
             Params,
             BlueprintName,
