@@ -1604,6 +1604,9 @@ def register_blueprint_node_tools(mcp: FastMCP):
         refresh_bone_transforms: bool = True,
         allow_missing_bones: bool = False,
         pose_link_max_depth: int = 4,
+        input_pose_mode: str = "first",
+        input_pose_field_path: str = "",
+        input_pose_index: int = -1,
         include_pins: bool = True,
         max_depth: int = 3,
         dry_run: bool = True
@@ -1617,8 +1620,8 @@ def register_blueprint_node_tools(mcp: FastMCP):
         runtime FPoseLink/FComponentSpacePoseLink link IDs. With
         mode="pose_watch_capture", it temporarily sets the AnimBP debug object,
         registers transient PoseWatch debug entries for the selected compiled
-        node output and first runtime input pose link, and samples both during
-        the same forced tick without adding PoseWatches to the AnimBP asset.
+        node output and selected runtime input pose link(s), and samples them
+        during the same forced tick without adding PoseWatches to the AnimBP asset.
         With
         mode="active_component_tick_delta" samples final SkeletalMeshComponent pose
         before and after forced ticks on a matched live component. With
@@ -1656,6 +1659,9 @@ def register_blueprint_node_tools(mcp: FastMCP):
             refresh_bone_transforms: Refresh bone transforms after forced ticks
             allow_missing_bones: Return partial samples instead of failing on missing bones/sockets
             pose_link_max_depth: Max struct recursion depth for compiled_graph_mapping and pose_watch_capture runtime pose-link inventory
+            input_pose_mode: PoseWatch input selection mode: first or all
+            input_pose_field_path: Exact runtime pose-link field path to capture
+            input_pose_index: Zero-based valid runtime pose-link index to capture
             include_pins: Include full pin data for the selected node
             max_depth: Reflected settings depth
             dry_run: Resolve only when true; run the selected mode when false
@@ -1680,6 +1686,7 @@ def register_blueprint_node_tools(mcp: FastMCP):
                 "allow_missing_bones": allow_missing_bones,
                 "anim_instance_source": anim_instance_source,
                 "pose_link_max_depth": pose_link_max_depth,
+                "input_pose_mode": input_pose_mode,
                 "include_pins": include_pins,
                 "max_depth": max_depth,
                 "dry_run": dry_run,
@@ -1712,6 +1719,10 @@ def register_blueprint_node_tools(mcp: FastMCP):
                 params["sample_bones"] = sample_bones
             if sample_sockets is not None:
                 params["sample_sockets"] = sample_sockets
+            if input_pose_field_path:
+                params["input_pose_field_path"] = input_pose_field_path
+            if input_pose_index >= 0:
+                params["input_pose_index"] = input_pose_index
             return send_node_command("sample_anim_node_pre_post_runtime_pose", params)
         except Exception as e:
             error_msg = f"Error resolving AnimGraph node pre/post runtime pose target: {e}"
@@ -1766,6 +1777,89 @@ def register_blueprint_node_tools(mcp: FastMCP):
             return send_node_command("sample_skeletal_bones_in_sie", params)
         except Exception as e:
             error_msg = f"Error sampling skeletal bones in SIE: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def sample_blendspace_runtime_pose_grid(
+        ctx: Context,
+        skeletal_mesh: str,
+        blendspace_path: str = "",
+        blendspaces: Optional[List[Any]] = None,
+        samples: Optional[List[Dict[str, Any]]] = None,
+        sample_bones: Optional[List[str]] = None,
+        sample_sockets: Optional[List[str]] = None,
+        actor_label: str = "MCP_BlendSpace_RuntimePoseGrid",
+        sample_time: float = 0.25,
+        settle_tick_count: int = 2,
+        tick_count: int = 1,
+        tick_delta_time: float = 1.0 / 30.0,
+        include_axis_extremes: bool = False,
+        allow_missing_bones: bool = False,
+        refresh_bone_transforms: bool = True,
+        cleanup: bool = True,
+        prefer_pie_world: bool = True,
+        require_pie_world: bool = True
+    ) -> Dict[str, Any]:
+        """
+        Evaluate BlendSpace inputs on a transient runtime SkeletalMeshActor and sample bone/socket poses.
+
+        This command does not start SIE by itself. By default it requires an active
+        PIE/SIE/play world, spawns a transient SkeletalMeshActor, configures
+        AnimationSingleNode BlendSpace playback, applies each requested input,
+        forces narrow component ticks, samples requested bones/sockets, and cleans
+        up the transient actor without saving assets.
+
+        Args:
+            skeletal_mesh: SkeletalMesh asset path for the transient probe actor
+            blendspace_path: Single BlendSpace asset path
+            blendspaces: Optional list of BlendSpace paths or objects with path/name/samples
+            samples: Optional sample inputs for single blendspace_path. Each object may include label and input or x/y/z.
+            sample_bones: Bone names to sample. Defaults to key humanoid bones in C++.
+            sample_sockets: Socket names to sample
+            actor_label: Transient actor label
+            sample_time: Single-node playback time applied before sampling
+            settle_tick_count: Forced ticks after setting each input before final tick
+            tick_count: Forced ticks immediately before sampling
+            tick_delta_time: Delta time for forced component ticks
+            include_axis_extremes: Include min/center/max axis probes when samples are not supplied
+            allow_missing_bones: Return partial sample data instead of failing on missing bones/sockets
+            refresh_bone_transforms: Refresh bones after each forced tick
+            cleanup: Destroy transient actor before returning
+            prefer_pie_world: Prefer active PIE/SIE/play worlds over editor world
+            require_pie_world: Fail without active PIE/SIE/play world
+
+        Returns:
+            Response with per-BlendSpace sample poses, weighted source samples, and deltas from each BlendSpace's first valid sample.
+        """
+        try:
+            params: Dict[str, Any] = {
+                "skeletal_mesh": skeletal_mesh,
+                "actor_label": actor_label,
+                "sample_time": sample_time,
+                "settle_tick_count": settle_tick_count,
+                "tick_count": tick_count,
+                "tick_delta_time": tick_delta_time,
+                "include_axis_extremes": include_axis_extremes,
+                "allow_missing_bones": allow_missing_bones,
+                "refresh_bone_transforms": refresh_bone_transforms,
+                "cleanup": cleanup,
+                "prefer_pie_world": prefer_pie_world,
+                "require_pie_world": require_pie_world,
+            }
+            if blendspace_path:
+                params["blendspace_path"] = blendspace_path
+            if blendspaces is not None:
+                params["blendspaces"] = blendspaces
+            if samples is not None:
+                params["samples"] = samples
+            if sample_bones is not None:
+                params["sample_bones"] = sample_bones
+            if sample_sockets is not None:
+                params["sample_sockets"] = sample_sockets
+            return send_node_command("sample_blendspace_runtime_pose_grid", params)
+        except Exception as e:
+            error_msg = f"Error sampling BlendSpace runtime pose grid: {e}"
             logger.error(error_msg)
             return {"success": False, "message": error_msg}
 

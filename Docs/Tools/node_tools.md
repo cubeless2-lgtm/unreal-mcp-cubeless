@@ -555,7 +555,7 @@ Use this command when you need a stable same-instance pre/post ControlRig solve 
 
 Resolve a target AnimGraph node or run a limited runtime pose/mapping probe.
 
-**Important scope note:** `dry_run=true` is a read-only target resolver. `dry_run=false` supports `mode=compiled_graph_mapping`, `mode=pose_watch_capture`, `mode=active_component_tick_delta`, and `mode=isolated_temp_components`. Compiled graph mapping resolves the selected editor AnimGraph node GUID to the compiled/live `FAnimNode_*` instance on a matched `AnimInstance` and reads that node's runtime `FPoseLink` / `FComponentSpacePoseLink` link IDs; this is a same-instance instrumentation preflight, not a pose sample. PoseWatch capture temporarily sets the AnimBP debug object, registers transient debug-data PoseWatch entries for the selected compiled node output and its first runtime input pose link, samples both during the same forced tick, then removes only the transient entries. Active tick-delta samples final `SkeletalMeshComponent` pose before and after forced ticks on a matched live component. Isolated temp mode duplicates the AnimBP under `_MCP_Temp`, bypasses the selected node in a source copy, and compares it against a selected-node copy on separate transient components. Runtime modes sample the component's main AnimInstance by default; set `anim_instance_source=post_process` when the selected node lives in the component's Post Process AnimBP. Only `pose_watch_capture` is intended to report `runtime_graph_prepost=true` / `same_instance_prepost=true` when both watched links evaluate successfully.
+**Important scope note:** `dry_run=true` is a read-only target resolver. `dry_run=false` supports `mode=compiled_graph_mapping`, `mode=pose_watch_capture`, `mode=active_component_tick_delta`, and `mode=isolated_temp_components`. Compiled graph mapping resolves the selected editor AnimGraph node GUID to the compiled/live `FAnimNode_*` instance on a matched `AnimInstance` and reads that node's runtime `FPoseLink` / `FComponentSpacePoseLink` link IDs; this is a same-instance instrumentation preflight, not a pose sample. PoseWatch capture temporarily sets the AnimBP debug object, registers transient debug-data PoseWatch entries for the selected compiled node output and selected runtime input pose link(s), samples them during the same forced tick, then removes only the transient entries. Active tick-delta samples final `SkeletalMeshComponent` pose before and after forced ticks on a matched live component. Isolated temp mode duplicates the AnimBP under `_MCP_Temp`, bypasses the selected node in a source copy, and compares it against a selected-node copy on separate transient components. Runtime modes sample the component's main AnimInstance by default; set `anim_instance_source=post_process` when the selected node lives in the component's Post Process AnimBP. Only `pose_watch_capture` is intended to report `runtime_graph_prepost=true` / `same_instance_prepost=true` when all watched links evaluate successfully.
 
 Use this command before implementing or running deeper AnimGraph node instrumentation so ambiguous node selectors are caught early.
 
@@ -586,6 +586,9 @@ Use this command before implementing or running deeper AnimGraph node instrument
 - `refresh_bone_transforms` (boolean, optional) - Refresh bone transforms after forced ticks. Defaults to `true`.
 - `allow_missing_bones` (boolean, optional) - Return partial samples instead of failing on missing bones/sockets. Defaults to `false`.
 - `pose_link_max_depth` (number, optional) - Max struct recursion depth for `compiled_graph_mapping` and `pose_watch_capture` runtime pose-link inventory. Defaults to `4`, clamped `0..8`.
+- `input_pose_mode` (string, optional) - PoseWatch input selection mode for `mode=pose_watch_capture`: `first` or `all`. Defaults to `first`.
+- `input_pose_field_path` (string, optional) - Exact runtime pose-link `field_path` to capture, overriding `input_pose_mode`.
+- `input_pose_index` (number, optional) - Zero-based valid runtime pose-link index to capture, overriding `input_pose_mode` when `input_pose_field_path` is not set.
 - `include_pins` (boolean, optional) - Include full selected-node pin data. Defaults to `true`.
 - `max_depth` (number, optional) - Reflected settings depth. Defaults to `3`.
 - `dry_run` (boolean, optional) - Resolve only when true; run `active_component_tick_delta` when false. Defaults to `true`.
@@ -597,7 +600,7 @@ Use this command before implementing or running deeper AnimGraph node instrument
 - `mode=dry_run_target_resolver` for dry-run
 - `mode=compiled_graph_mapping`, `comparison_kind=compiled_graph_node_mapping`, `runtime_node_mapping`, `runtime_pose_links`, and `same_anim_instance_node_mapping=true` when live same-instance node mapping succeeds
 - `runtime_pose_links.pose_links[]` with `field_path`, `link_id`, `source_link_id`, linked compiled property, linked visual node, cached linked-node pointer, and `linked_pointer_match` when a runtime pose link is present
-- `mode=pose_watch_capture`, `comparison_kind=runtime_pose_watch_prepost`, `pre_pose`, `post_pose`, `deltas`, `post_node_link_id`, `pre_input_link_id`, `transient_pose_watches=true`, and `debug_object_restored=true` when same-instance PoseWatch capture is requested
+- `mode=pose_watch_capture`, `comparison_kind=runtime_pose_watch_prepost`, `pre_pose`, `pre_input_poses`, `post_pose`, `deltas`, `deltas_by_input`, `post_node_link_id`, `pre_input_link_id`, `pre_input_pose_links`, `transient_pose_watches=true`, and `debug_object_restored=true` when same-instance PoseWatch capture is requested
 - `mode=active_component_tick_delta` and `comparison_kind=active_component_tick_delta` for runtime tick-delta sampling
 - `mode=isolated_temp_components` and `comparison_kind=isolated_temp_components` for temp source-vs-output sampling
 - `runtime_graph_prepost` and `same_instance_prepost`; currently these are true only for a successful `pose_watch_capture`
@@ -653,6 +656,27 @@ Use this command before implementing or running deeper AnimGraph node instrument
     "settle_tick_count": 2,
     "tick_count": 1,
     "sample_bones": ["Head_02", "TailEnd", "R_Stalk_04", "L_Stalk_04"]
+  }
+}
+```
+
+**PoseWatch all-input example:**
+```json
+{
+  "command": "sample_anim_node_pre_post_runtime_pose",
+  "params": {
+    "blueprint_name": "/Game/StackOBot/Characters/Bot/ABP_Bot.ABP_Bot",
+    "graph_name": "AnimGraph",
+    "graph_type": "function",
+    "node_type": "AnimGraphNode_LayeredBoneBlend",
+    "actor_label": "MCP_AnimNodeProbe_Bot",
+    "mode": "pose_watch_capture",
+    "input_pose_mode": "all",
+    "dry_run": false,
+    "require_pie_world": true,
+    "settle_tick_count": 2,
+    "tick_count": 1,
+    "sample_bones": ["pelvis", "spine_03", "head", "foot_l", "foot_r"]
   }
 }
 ```
@@ -751,6 +775,60 @@ Sample bone and socket world/component transforms from a live `SkeletalMeshCompo
     "bones": ["root", "pelvis", "spine_03", "head", "foot_l", "foot_r"],
     "sockets": ["head"],
     "prefer_pie_world": true
+  }
+}
+```
+
+### sample_blendspace_runtime_pose_grid
+
+Evaluate BlendSpace inputs on a transient runtime `SkeletalMeshActor` and return sampled bone/socket pose deltas.
+
+**Important scope note:** this command does not start SIE/PIE or switch maps. By default it requires an active PIE/SIE/play world, spawns one transient `SkeletalMeshActor`, configures `AnimationSingleNode` BlendSpace playback through `UAnimSingleNodeInstance`, applies each requested input, forces narrow component ticks, samples requested bones/sockets, and destroys the actor when `cleanup=true`. It does not save assets. Set `require_pie_world=false` only when an editor-world fallback is acceptable for a diagnostic gap probe.
+
+**Parameters:**
+- `skeletal_mesh` (string, required) - SkeletalMesh asset path used by the transient probe actor
+- `blendspace_path` or `blendspace` (string, optional) - Single BlendSpace asset path
+- `blendspaces` (array, optional) - BlendSpace path strings or objects with `path`/`blendspace_path`, optional `name`, and optional `samples`
+- `samples` (array, optional) - Single-BlendSpace input list. Each sample object may include `label` plus either `input`/`position` as `[x,y,z]` or object form, or separate `x`, `y`, and `z` fields.
+- `sample_bones` or `bones` (array, optional) - Bone names to sample. Defaults to `root`, `pelvis`, `spine_03`, `head`, `foot_l`, and `foot_r`.
+- `sample_sockets` or `sockets` (array, optional) - Socket names to sample
+- `sample_time` (number, optional) - Single-node playback time before sampling. Defaults to `0.25`.
+- `settle_tick_count` (number, optional) - Forced component ticks after setting each input. Defaults to `2`.
+- `tick_count` (number, optional) - Forced component ticks immediately before sampling. Defaults to `1`.
+- `tick_delta_time` (number, optional) - Delta time for forced ticks. Defaults to `1/30`.
+- `include_axis_extremes` (boolean, optional) - When no `samples` are supplied, add min/center/max axis probes after asset sample coordinates. Defaults to `false`.
+- `allow_missing_bones` (boolean, optional) - Return partial samples instead of failing on missing bones/sockets. Defaults to `false`.
+- `cleanup` (boolean, optional) - Destroy the transient actor before returning. Defaults to `true`.
+- `prefer_pie_world` (boolean, optional) - Prefer active PIE/SIE/play world before editor world. Defaults to `true`.
+- `require_pie_world` (boolean, optional) - Fail instead of falling back to editor world. Defaults to `true`.
+
+**Returns:**
+- `sampled_world_type`, `sampled_world_name`, and `is_play_session_active`
+- `probe_actor` and `probe_component` metadata
+- `blendspaces[]` entries with axes, asset sample coordinates, requested samples, per-sample poses, weighted source samples, and deltas from the first valid sample in that BlendSpace
+- per-BlendSpace `summary.max_location_delta_from_first`, `input_changed_pose`, and `top_location_deltas`
+- `cleanup_results`, `errors`, and `warnings`
+
+**Example:**
+```json
+{
+  "command": "sample_blendspace_runtime_pose_grid",
+  "params": {
+    "skeletal_mesh": "/Game/StackOBot/Characters/Bot/Mesh/SKM_Bot.SKM_Bot",
+    "blendspaces": [
+      {
+        "path": "/Game/StackOBot/Characters/Bot/Animations/BS_Bot_WalkRunLean.BS_Bot_WalkRunLean",
+        "samples": [
+          {"label": "walk_authored", "x": 0.0, "y": 96.978, "z": 0.0},
+          {"label": "run_authored", "x": 0.0, "y": 500.0, "z": 0.0},
+          {"label": "lean_left_authored", "x": 1.0, "y": 258.546, "z": 0.0},
+          {"label": "lean_right_authored", "x": -1.0, "y": 259.420, "z": 0.0}
+        ]
+      }
+    ],
+    "sample_bones": ["pelvis", "foot_l", "foot_r", "head"],
+    "require_pie_world": true,
+    "cleanup": true
   }
 }
 ```

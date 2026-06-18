@@ -8,8 +8,12 @@
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
 #include "Animation/AnimNodeBase.h"
+#include "Animation/AnimSequence.h"
+#include "Animation/AnimSingleNodeInstance.h"
 #include "Animation/AnimNode_StateMachine.h"
 #include "Animation/AnimStateMachineTypes.h"
+#include "Animation/BlendSpace.h"
+#include "Animation/SkeletalMeshActor.h"
 #include "AnimationGraphSchema.h"
 #include "AnimationStateMachineGraph.h"
 #include "AnimGraphNode_StateMachineBase.h"
@@ -123,6 +127,22 @@ FString NormalizeAssetObjectPathForLoad(const FString& AssetPath)
     }
 
     return NormalizedPath;
+}
+
+UObject* LoadAssetObjectForRuntimeProbe(const FString& AssetPath)
+{
+    const FString NormalizedPath = NormalizeAssetObjectPathForLoad(AssetPath);
+    if (NormalizedPath.IsEmpty())
+    {
+        return nullptr;
+    }
+
+    UObject* Asset = UEditorAssetLibrary::LoadAsset(NormalizedPath);
+    if (!Asset)
+    {
+        Asset = StaticLoadObject(UObject::StaticClass(), nullptr, *NormalizedPath);
+    }
+    return Asset;
 }
 
 FString GetPinDefaultString(const TSharedPtr<FJsonValue>& Value, const UEdGraphPin* Pin)
@@ -2684,6 +2704,425 @@ TSharedPtr<FJsonObject> SampleSocketTransformToJson(
     SampleObject->SetObjectField(TEXT("world"), TransformToJsonObject(Component->GetSocketTransform(SocketName, RTS_World)));
     SampleObject->SetObjectField(TEXT("component"), TransformToJsonObject(Component->GetSocketTransform(SocketName, RTS_Component)));
     return SampleObject;
+}
+
+struct FBlendSpaceRuntimePoseGridSample
+{
+    FString Label;
+    FVector Input = FVector::ZeroVector;
+};
+
+struct FBlendSpaceRuntimePoseGridTarget
+{
+    FString Name;
+    FString Path;
+    UBlendSpace* BlendSpace = nullptr;
+    TArray<FBlendSpaceRuntimePoseGridSample> Samples;
+};
+
+TSharedPtr<FJsonObject> BlendSpaceInputToJson(const FVector& Input)
+{
+    TSharedPtr<FJsonObject> Object = MakeShared<FJsonObject>();
+    Object->SetNumberField(TEXT("x"), Input.X);
+    Object->SetNumberField(TEXT("y"), Input.Y);
+    Object->SetNumberField(TEXT("z"), Input.Z);
+    Object->SetArrayField(TEXT("vector"), VectorToJsonArray(Input));
+    return Object;
+}
+
+TSharedPtr<FJsonObject> BlendSpaceAxisToJson(const FBlendParameter& Axis, int32 Index)
+{
+    TSharedPtr<FJsonObject> Object = MakeShared<FJsonObject>();
+    Object->SetNumberField(TEXT("index"), Index);
+    Object->SetStringField(TEXT("display_name"), Axis.DisplayName);
+    Object->SetNumberField(TEXT("min"), Axis.Min);
+    Object->SetNumberField(TEXT("max"), Axis.Max);
+    Object->SetNumberField(TEXT("grid_num"), Axis.GridNum);
+    Object->SetNumberField(TEXT("grid_size"), Axis.GridNum > 0 ? Axis.GetGridSize() : 0.0f);
+    Object->SetBoolField(TEXT("snap_to_grid"), Axis.bSnapToGrid);
+    Object->SetBoolField(TEXT("wrap_input"), Axis.bWrapInput);
+    return Object;
+}
+
+TArray<TSharedPtr<FJsonValue>> BlendSpaceAxesToJsonValues(const UBlendSpace* BlendSpace)
+{
+    TArray<TSharedPtr<FJsonValue>> Values;
+    if (!BlendSpace)
+    {
+        return Values;
+    }
+
+    for (int32 AxisIndex = 0; AxisIndex < 3; ++AxisIndex)
+    {
+        Values.Add(MakeShared<FJsonValueObject>(BlendSpaceAxisToJson(BlendSpace->GetBlendParameter(AxisIndex), AxisIndex)));
+    }
+    return Values;
+}
+
+TSharedPtr<FJsonObject> BlendSpaceAssetSampleToJson(const FBlendSample& Sample, int32 Index)
+{
+    TSharedPtr<FJsonObject> Object = MakeShared<FJsonObject>();
+    Object->SetNumberField(TEXT("index"), Index);
+    Object->SetStringField(TEXT("animation"), Sample.Animation ? Sample.Animation->GetPathName() : FString());
+    Object->SetStringField(TEXT("animation_name"), Sample.Animation ? Sample.Animation->GetName() : FString());
+    Object->SetObjectField(TEXT("sample_value"), BlendSpaceInputToJson(Sample.SampleValue));
+    Object->SetNumberField(TEXT("rate_scale"), Sample.RateScale);
+    Object->SetBoolField(TEXT("use_single_frame_for_blending"), Sample.bUseSingleFrameForBlending);
+    Object->SetNumberField(TEXT("frame_index_to_sample"), static_cast<double>(Sample.FrameIndexToSample));
+    return Object;
+}
+
+TArray<TSharedPtr<FJsonValue>> BlendSpaceAssetSamplesToJsonValues(const UBlendSpace* BlendSpace)
+{
+    TArray<TSharedPtr<FJsonValue>> Values;
+    if (!BlendSpace)
+    {
+        return Values;
+    }
+
+    const TArray<FBlendSample>& Samples = BlendSpace->GetBlendSamples();
+    for (int32 SampleIndex = 0; SampleIndex < Samples.Num(); ++SampleIndex)
+    {
+        Values.Add(MakeShared<FJsonValueObject>(BlendSpaceAssetSampleToJson(Samples[SampleIndex], SampleIndex)));
+    }
+    return Values;
+}
+
+bool TryParseBlendSpaceGridSampleObject(
+    const TSharedPtr<FJsonObject>& Object,
+    int32 SampleIndex,
+    FBlendSpaceRuntimePoseGridSample& OutSample,
+    FString& OutError)
+{
+    if (!Object.IsValid())
+    {
+        OutError = TEXT("Sample entry must be an object");
+        return false;
+    }
+
+    FString Label;
+    if (!Object->TryGetStringField(TEXT("label"), Label))
+    {
+        Object->TryGetStringField(TEXT("name"), Label);
+    }
+    OutSample.Label = Label.IsEmpty()
+        ? FString::Printf(TEXT("sample_%d"), SampleIndex)
+        : Label;
+
+    FVector Input = FVector::ZeroVector;
+    const TSharedPtr<FJsonValue> InputValue = Object->HasField(TEXT("input"))
+        ? Object->TryGetField(TEXT("input"))
+        : Object->TryGetField(TEXT("position"));
+    if (InputValue.IsValid())
+    {
+        if (!JsonValueToVector(InputValue, Input))
+        {
+            OutError = FString::Printf(TEXT("Sample '%s' input must be a vector array or object"), *OutSample.Label);
+            return false;
+        }
+    }
+    else
+    {
+        double X = 0.0;
+        double Y = 0.0;
+        double Z = 0.0;
+        Object->TryGetNumberField(TEXT("x"), X);
+        Object->TryGetNumberField(TEXT("y"), Y);
+        Object->TryGetNumberField(TEXT("z"), Z);
+        Input = FVector(X, Y, Z);
+    }
+
+    OutSample.Input = Input;
+    return true;
+}
+
+TArray<FBlendSpaceRuntimePoseGridSample> ParseBlendSpaceGridSamples(
+    const TSharedPtr<FJsonObject>& Object,
+    TArray<TSharedPtr<FJsonValue>>& ErrorValues)
+{
+    TArray<FBlendSpaceRuntimePoseGridSample> Samples;
+    const TArray<TSharedPtr<FJsonValue>>* SampleValues = nullptr;
+    if (!Object.IsValid() || !Object->TryGetArrayField(TEXT("samples"), SampleValues) || !SampleValues)
+    {
+        return Samples;
+    }
+
+    for (int32 SampleIndex = 0; SampleIndex < SampleValues->Num(); ++SampleIndex)
+    {
+        const TSharedPtr<FJsonValue>& SampleValue = (*SampleValues)[SampleIndex];
+        const TSharedPtr<FJsonObject>* SampleObject = nullptr;
+        if (!SampleValue.IsValid() || !SampleValue->TryGetObject(SampleObject) || !SampleObject || !SampleObject->IsValid())
+        {
+            ErrorValues.Add(MakeShared<FJsonValueString>(FString::Printf(TEXT("samples[%d] must be an object"), SampleIndex)));
+            continue;
+        }
+
+        FBlendSpaceRuntimePoseGridSample Sample;
+        FString Error;
+        if (!TryParseBlendSpaceGridSampleObject(*SampleObject, SampleIndex, Sample, Error))
+        {
+            ErrorValues.Add(MakeShared<FJsonValueString>(Error));
+            continue;
+        }
+        Samples.Add(Sample);
+    }
+
+    return Samples;
+}
+
+TArray<FBlendSpaceRuntimePoseGridSample> BuildDefaultBlendSpaceGridSamples(
+    const UBlendSpace* BlendSpace,
+    bool bIncludeAxisExtremes)
+{
+    TArray<FBlendSpaceRuntimePoseGridSample> Samples;
+    if (!BlendSpace)
+    {
+        return Samples;
+    }
+
+    const TArray<FBlendSample>& AssetSamples = BlendSpace->GetBlendSamples();
+    for (int32 SampleIndex = 0; SampleIndex < AssetSamples.Num(); ++SampleIndex)
+    {
+        const FBlendSample& AssetSample = AssetSamples[SampleIndex];
+        FBlendSpaceRuntimePoseGridSample Sample;
+        Sample.Label = AssetSample.Animation
+            ? AssetSample.Animation->GetName()
+            : FString::Printf(TEXT("asset_sample_%d"), SampleIndex);
+        Sample.Input = AssetSample.SampleValue;
+        Samples.Add(Sample);
+    }
+
+    if (bIncludeAxisExtremes)
+    {
+        const FBlendParameter& AxisX = BlendSpace->GetBlendParameter(0);
+        const FBlendParameter& AxisY = BlendSpace->GetBlendParameter(1);
+        const FVector Center(
+            (AxisX.Min + AxisX.Max) * 0.5f,
+            (AxisY.Min + AxisY.Max) * 0.5f,
+            0.0f);
+
+        FBlendSpaceRuntimePoseGridSample AxisMin;
+        AxisMin.Label = TEXT("axis_min");
+        AxisMin.Input = FVector(AxisX.Min, AxisY.Min, 0.0f);
+        Samples.Add(AxisMin);
+
+        FBlendSpaceRuntimePoseGridSample AxisCenter;
+        AxisCenter.Label = TEXT("axis_center");
+        AxisCenter.Input = Center;
+        Samples.Add(AxisCenter);
+
+        FBlendSpaceRuntimePoseGridSample AxisMax;
+        AxisMax.Label = TEXT("axis_max");
+        AxisMax.Input = FVector(AxisX.Max, AxisY.Max, 0.0f);
+        Samples.Add(AxisMax);
+    }
+
+    return Samples;
+}
+
+TSharedPtr<FJsonObject> BlendSpaceGridSampleToJson(const FBlendSpaceRuntimePoseGridSample& Sample, int32 SampleIndex)
+{
+    TSharedPtr<FJsonObject> Object = MakeShared<FJsonObject>();
+    Object->SetNumberField(TEXT("index"), SampleIndex);
+    Object->SetStringField(TEXT("label"), Sample.Label);
+    Object->SetObjectField(TEXT("input"), BlendSpaceInputToJson(Sample.Input));
+    return Object;
+}
+
+TArray<TSharedPtr<FJsonValue>> BlendSpaceGridSamplesToJsonValues(const TArray<FBlendSpaceRuntimePoseGridSample>& Samples)
+{
+    TArray<TSharedPtr<FJsonValue>> Values;
+    for (int32 SampleIndex = 0; SampleIndex < Samples.Num(); ++SampleIndex)
+    {
+        Values.Add(MakeShared<FJsonValueObject>(BlendSpaceGridSampleToJson(Samples[SampleIndex], SampleIndex)));
+    }
+    return Values;
+}
+
+TArray<TSharedPtr<FJsonValue>> BlendSpaceWeightedSamplesToJsonValues(
+    const UBlendSpace* BlendSpace,
+    const FVector& Input,
+    TArray<TSharedPtr<FJsonValue>>& WarningValues)
+{
+    TArray<TSharedPtr<FJsonValue>> Values;
+    if (!BlendSpace)
+    {
+        return Values;
+    }
+
+    TArray<FBlendSampleData> WeightedSamples;
+    int32 CachedTriangulationIndex = INDEX_NONE;
+    const bool bResolvedWeights = BlendSpace->GetSamplesFromBlendInput(Input, WeightedSamples, CachedTriangulationIndex, true);
+    if (!bResolvedWeights)
+    {
+        WarningValues.Add(MakeShared<FJsonValueString>(FString::Printf(
+            TEXT("BlendSpace '%s' returned no weighted samples for input [%s]"),
+            *BlendSpace->GetName(),
+            *Input.ToString())));
+        return Values;
+    }
+
+    const TArray<FBlendSample>& AssetSamples = BlendSpace->GetBlendSamples();
+    for (const FBlendSampleData& WeightedSample : WeightedSamples)
+    {
+        TSharedPtr<FJsonObject> Object = MakeShared<FJsonObject>();
+        Object->SetNumberField(TEXT("sample_data_index"), WeightedSample.SampleDataIndex);
+        Object->SetNumberField(TEXT("weight"), WeightedSample.GetClampedWeight());
+        if (AssetSamples.IsValidIndex(WeightedSample.SampleDataIndex))
+        {
+            const FBlendSample& AssetSample = AssetSamples[WeightedSample.SampleDataIndex];
+            Object->SetStringField(TEXT("animation"), AssetSample.Animation ? AssetSample.Animation->GetPathName() : FString());
+            Object->SetStringField(TEXT("animation_name"), AssetSample.Animation ? AssetSample.Animation->GetName() : FString());
+            Object->SetObjectField(TEXT("sample_value"), BlendSpaceInputToJson(AssetSample.SampleValue));
+        }
+        Values.Add(MakeShared<FJsonValueObject>(Object));
+    }
+    return Values;
+}
+
+bool ParseBlendSpaceRuntimePoseGridTargets(
+    const TSharedPtr<FJsonObject>& Params,
+    TArray<FBlendSpaceRuntimePoseGridTarget>& OutTargets,
+    TArray<TSharedPtr<FJsonValue>>& ErrorValues,
+    TArray<TSharedPtr<FJsonValue>>& WarningValues)
+{
+    auto LoadBlendSpaceTarget = [&ErrorValues, &WarningValues](
+        const FString& InPath,
+        const FString& InName,
+        const TArray<FBlendSpaceRuntimePoseGridSample>& InSamples,
+        bool bIncludeAxisExtremes,
+        int32 TargetIndex,
+        TArray<FBlendSpaceRuntimePoseGridTarget>& Targets)
+    {
+        FString Path = InPath;
+        Path.TrimStartAndEndInline();
+        if (Path.IsEmpty())
+        {
+            ErrorValues.Add(MakeShared<FJsonValueString>(FString::Printf(TEXT("BlendSpace target %d has no path"), TargetIndex)));
+            return;
+        }
+
+        UBlendSpace* BlendSpace = Cast<UBlendSpace>(LoadAssetObjectForRuntimeProbe(Path));
+        if (!BlendSpace)
+        {
+            ErrorValues.Add(MakeShared<FJsonValueString>(FString::Printf(TEXT("BlendSpace not found or not a UBlendSpace: %s"), *Path)));
+            return;
+        }
+
+        FBlendSpaceRuntimePoseGridTarget Target;
+        Target.Name = InName.IsEmpty() ? BlendSpace->GetName() : InName;
+        Target.Path = BlendSpace->GetPathName();
+        Target.BlendSpace = BlendSpace;
+        Target.Samples = InSamples.Num() > 0
+            ? InSamples
+            : BuildDefaultBlendSpaceGridSamples(BlendSpace, bIncludeAxisExtremes);
+        if (Target.Samples.Num() == 0)
+        {
+            WarningValues.Add(MakeShared<FJsonValueString>(FString::Printf(TEXT("BlendSpace '%s' has no sample inputs to evaluate"), *Target.Name)));
+        }
+        Targets.Add(Target);
+    };
+
+    const bool bIncludeAxisExtremes = GetBoolParam(Params, TEXT("include_axis_extremes"), false);
+    const TArray<TSharedPtr<FJsonValue>>* BlendSpaceValues = nullptr;
+    if (Params.IsValid() && Params->TryGetArrayField(TEXT("blendspaces"), BlendSpaceValues) && BlendSpaceValues && BlendSpaceValues->Num() > 0)
+    {
+        for (int32 TargetIndex = 0; TargetIndex < BlendSpaceValues->Num(); ++TargetIndex)
+        {
+            const TSharedPtr<FJsonValue>& TargetValue = (*BlendSpaceValues)[TargetIndex];
+            if (!TargetValue.IsValid())
+            {
+                ErrorValues.Add(MakeShared<FJsonValueString>(FString::Printf(TEXT("blendspaces[%d] is invalid"), TargetIndex)));
+                continue;
+            }
+
+            if (TargetValue->Type == EJson::String)
+            {
+                LoadBlendSpaceTarget(TargetValue->AsString(), FString(), TArray<FBlendSpaceRuntimePoseGridSample>(), bIncludeAxisExtremes, TargetIndex, OutTargets);
+                continue;
+            }
+
+            const TSharedPtr<FJsonObject>* TargetObject = nullptr;
+            if (!TargetValue->TryGetObject(TargetObject) || !TargetObject || !TargetObject->IsValid())
+            {
+                ErrorValues.Add(MakeShared<FJsonValueString>(FString::Printf(TEXT("blendspaces[%d] must be a string path or object"), TargetIndex)));
+                continue;
+            }
+
+            FString Path;
+            if (!(*TargetObject)->TryGetStringField(TEXT("path"), Path))
+            {
+                if (!(*TargetObject)->TryGetStringField(TEXT("blendspace_path"), Path))
+                {
+                    (*TargetObject)->TryGetStringField(TEXT("blendspace"), Path);
+                }
+            }
+
+            FString Name;
+            (*TargetObject)->TryGetStringField(TEXT("name"), Name);
+            const TArray<FBlendSpaceRuntimePoseGridSample> Samples = ParseBlendSpaceGridSamples(*TargetObject, ErrorValues);
+            LoadBlendSpaceTarget(Path, Name, Samples, bIncludeAxisExtremes, TargetIndex, OutTargets);
+        }
+        return OutTargets.Num() > 0;
+    }
+
+    FString SinglePath = GetStringParam(Params, TEXT("blendspace_path"), FString());
+    if (SinglePath.IsEmpty())
+    {
+        SinglePath = GetStringParam(Params, TEXT("blendspace"), FString());
+    }
+    FString SingleName = GetStringParam(Params, TEXT("blendspace_name"), FString());
+    const TArray<FBlendSpaceRuntimePoseGridSample> SingleSamples = ParseBlendSpaceGridSamples(Params, ErrorValues);
+    LoadBlendSpaceTarget(SinglePath, SingleName, SingleSamples, bIncludeAxisExtremes, 0, OutTargets);
+    return OutTargets.Num() > 0;
+}
+
+ASkeletalMeshActor* SpawnBlendSpaceRuntimePoseGridActor(
+    UWorld* World,
+    USkeletalMesh* SkeletalMesh,
+    const FString& ActorLabel,
+    const FVector& Location,
+    TArray<TSharedPtr<FJsonValue>>& ErrorValues)
+{
+    if (!World || !SkeletalMesh)
+    {
+        ErrorValues.Add(MakeShared<FJsonValueString>(TEXT("Cannot spawn BlendSpace pose-grid actor without world and SkeletalMesh")));
+        return nullptr;
+    }
+
+    FActorSpawnParameters SpawnParams;
+    SpawnParams.Name = MakeUniqueObjectName(World, ASkeletalMeshActor::StaticClass(), FName(*ActorLabel));
+    SpawnParams.ObjectFlags |= RF_Transient;
+    SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+    ASkeletalMeshActor* Actor = World->SpawnActor<ASkeletalMeshActor>(ASkeletalMeshActor::StaticClass(), Location, FRotator::ZeroRotator, SpawnParams);
+    if (!Actor)
+    {
+        ErrorValues.Add(MakeShared<FJsonValueString>(TEXT("Failed to spawn transient SkeletalMeshActor for BlendSpace pose grid")));
+        return nullptr;
+    }
+
+#if WITH_EDITOR
+    Actor->SetActorLabel(ActorLabel);
+#endif
+    Actor->SetFlags(RF_Transient);
+
+    USkeletalMeshComponent* Component = Actor->GetSkeletalMeshComponent();
+    if (!Component)
+    {
+        ErrorValues.Add(MakeShared<FJsonValueString>(TEXT("Spawned SkeletalMeshActor has no SkeletalMeshComponent")));
+        World->DestroyActor(Actor);
+        return nullptr;
+    }
+
+    Component->SetSkeletalMesh(SkeletalMesh);
+    Component->SetEnableAnimation(true);
+    Component->SetComponentTickEnabled(true);
+    Component->SetUpdateAnimationInEditor(true);
+    Component->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
+    Component->SetAnimationMode(EAnimationMode::AnimationSingleNode, true);
+    Component->RefreshBoneTransforms();
+    return Actor;
 }
 
 int32 GetClampedIntParam(
@@ -6664,17 +7103,35 @@ FAnimNodePoseCapture CaptureAnimNodePoseWatchPose(
     return Capture;
 }
 
-bool TryGetFirstRuntimePoseLinkID(const TSharedPtr<FJsonObject>& RuntimePoseLinksObject, int32& OutLinkID, FString& OutFieldPath)
+struct FRuntimePoseLinkSelection
 {
-    OutLinkID = INDEX_NONE;
-    OutFieldPath.Reset();
+    int32 Index = INDEX_NONE;
+    int32 LinkID = INDEX_NONE;
+    FString FieldPath;
+    TSharedPtr<FJsonObject> LinkObject;
+};
+
+TSharedPtr<FJsonObject> RuntimePoseLinkSelectionToJson(const FRuntimePoseLinkSelection& Selection)
+{
+    TSharedPtr<FJsonObject> Object = MakeShared<FJsonObject>();
+    Object->SetNumberField(TEXT("index"), Selection.Index);
+    Object->SetNumberField(TEXT("link_id"), Selection.LinkID);
+    Object->SetStringField(TEXT("field_path"), Selection.FieldPath);
+    Object->SetObjectField(TEXT("runtime_pose_link"), Selection.LinkObject);
+    return Object;
+}
+
+TArray<FRuntimePoseLinkSelection> GetValidRuntimePoseLinkSelections(const TSharedPtr<FJsonObject>& RuntimePoseLinksObject)
+{
+    TArray<FRuntimePoseLinkSelection> Selections;
 
     const TArray<TSharedPtr<FJsonValue>>* RuntimePoseLinkValues = nullptr;
     if (!RuntimePoseLinksObject.IsValid() || !RuntimePoseLinksObject->TryGetArrayField(TEXT("pose_links"), RuntimePoseLinkValues) || !RuntimePoseLinkValues)
     {
-        return false;
+        return Selections;
     }
 
+    int32 ValidIndex = 0;
     for (const TSharedPtr<FJsonValue>& LinkValue : *RuntimePoseLinkValues)
     {
         if (!LinkValue.IsValid() || LinkValue->Type != EJson::Object)
@@ -6692,13 +7149,99 @@ bool TryGetFirstRuntimePoseLinkID(const TSharedPtr<FJsonObject>& RuntimePoseLink
         const bool bValid = GetJsonBoolFieldOrDefault(LinkObject, TEXT("valid"), false);
         if (bValid && LinkObject->TryGetNumberField(TEXT("link_id"), LinkIDNumber) && static_cast<int32>(LinkIDNumber) != INDEX_NONE)
         {
-            OutLinkID = static_cast<int32>(LinkIDNumber);
-            OutFieldPath = GetJsonStringFieldOrDefault(LinkObject, TEXT("field_path"), FString());
-            return true;
+            FRuntimePoseLinkSelection Selection;
+            Selection.Index = ValidIndex++;
+            Selection.LinkID = static_cast<int32>(LinkIDNumber);
+            Selection.FieldPath = GetJsonStringFieldOrDefault(LinkObject, TEXT("field_path"), FString());
+            Selection.LinkObject = LinkObject;
+            Selections.Add(Selection);
         }
     }
 
-    return false;
+    return Selections;
+}
+
+bool SelectRuntimePoseLinksForPoseWatch(
+    const TSharedPtr<FJsonObject>& Params,
+    const TSharedPtr<FJsonObject>& RuntimePoseLinksObject,
+    TArray<FRuntimePoseLinkSelection>& OutSelections,
+    FString& OutMode,
+    TArray<TSharedPtr<FJsonValue>>& ErrorValues)
+{
+    OutSelections.Reset();
+    OutMode = GetStringParam(Params, TEXT("input_pose_mode"), TEXT("first"));
+    OutMode.TrimStartAndEndInline();
+    if (OutMode.IsEmpty())
+    {
+        OutMode = TEXT("first");
+    }
+
+    const TArray<FRuntimePoseLinkSelection> ValidSelections = GetValidRuntimePoseLinkSelections(RuntimePoseLinksObject);
+    if (ValidSelections.Num() == 0)
+    {
+        ErrorValues.Add(MakeShared<FJsonValueString>(TEXT("No runtime FPoseLink/FComponentSpacePoseLink input link was found on the selected node; cannot capture pre-node input pose.")));
+        return false;
+    }
+
+    FString RequestedFieldPath = GetStringParam(Params, TEXT("input_pose_field_path"));
+    RequestedFieldPath.TrimStartAndEndInline();
+    const bool bHasRequestedFieldPath = !RequestedFieldPath.IsEmpty();
+
+    double RequestedIndexNumber = -1.0;
+    const bool bHasRequestedIndex = Params.IsValid() && Params->TryGetNumberField(TEXT("input_pose_index"), RequestedIndexNumber);
+    const int32 RequestedIndex = FMath::RoundToInt(RequestedIndexNumber);
+
+    if (bHasRequestedFieldPath)
+    {
+        OutMode = TEXT("field_path");
+        for (const FRuntimePoseLinkSelection& Selection : ValidSelections)
+        {
+            if (Selection.FieldPath.Equals(RequestedFieldPath, ESearchCase::IgnoreCase))
+            {
+                OutSelections.Add(Selection);
+                return true;
+            }
+        }
+
+        ErrorValues.Add(MakeShared<FJsonValueString>(FString::Printf(TEXT("input_pose_field_path did not match a valid runtime pose link: %s"), *RequestedFieldPath)));
+        return false;
+    }
+
+    if (bHasRequestedIndex)
+    {
+        OutMode = TEXT("index");
+        if (!ValidSelections.IsValidIndex(RequestedIndex))
+        {
+            ErrorValues.Add(MakeShared<FJsonValueString>(FString::Printf(
+                TEXT("input_pose_index %d is out of range for %d valid runtime pose links"),
+                RequestedIndex,
+                ValidSelections.Num())));
+            return false;
+        }
+
+        OutSelections.Add(ValidSelections[RequestedIndex]);
+        return true;
+    }
+
+    if (OutMode.Equals(TEXT("all"), ESearchCase::IgnoreCase))
+    {
+        OutSelections = ValidSelections;
+        return OutSelections.Num() > 0;
+    }
+
+    if (!OutMode.Equals(TEXT("first"), ESearchCase::IgnoreCase)
+        && !OutMode.Equals(TEXT("preferred"), ESearchCase::IgnoreCase)
+        && !OutMode.Equals(TEXT("default"), ESearchCase::IgnoreCase))
+    {
+        ErrorValues.Add(MakeShared<FJsonValueString>(FString::Printf(
+            TEXT("Unsupported input_pose_mode '%s'. Use first, all, input_pose_field_path, or input_pose_index."),
+            *OutMode)));
+        return false;
+    }
+
+    OutMode = TEXT("first");
+    OutSelections.Add(ValidSelections[0]);
+    return true;
 }
 #endif
 
@@ -6795,9 +7338,11 @@ TSharedPtr<FJsonObject> BuildAnimNodePrePostPoseWatchCaptureResponse(
         Target.AnimInstance,
         PoseLinkMaxDepth);
 
-    int32 PreInputLinkID = INDEX_NONE;
-    FString PreInputFieldPath;
-    const bool bHasPreInputLink = TryGetFirstRuntimePoseLinkID(RuntimePoseLinksObject, PreInputLinkID, PreInputFieldPath);
+    TArray<FRuntimePoseLinkSelection> PreInputSelections;
+    FString InputPoseMode;
+    const bool bHasPreInputLink = SelectRuntimePoseLinksForPoseWatch(Params, RuntimePoseLinksObject, PreInputSelections, InputPoseMode, ErrorValues);
+    const int32 PreInputLinkID = PreInputSelections.Num() > 0 ? PreInputSelections[0].LinkID : INDEX_NONE;
+    const FString PreInputFieldPath = PreInputSelections.Num() > 0 ? PreInputSelections[0].FieldPath : FString();
 
     UAnimBlueprint* RuntimeAnimBlueprint = RuntimeAnimClass ? Cast<UAnimBlueprint>(RuntimeAnimClass->ClassGeneratedBy) : nullptr;
     UAnimBlueprint* RootAnimBlueprint = RuntimeAnimBlueprint ? UAnimBlueprint::FindRootAnimBlueprint(RuntimeAnimBlueprint) : nullptr;
@@ -6824,11 +7369,6 @@ TSharedPtr<FJsonObject> BuildAnimNodePrePostPoseWatchCaptureResponse(
         return ErrorObj;
     }
 
-    if (!bHasPreInputLink)
-    {
-        ErrorValues.Add(MakeShared<FJsonValueString>(TEXT("No runtime FPoseLink/FComponentSpacePoseLink input link was found on the selected node; cannot capture pre-node input pose.")));
-    }
-
     const TWeakObjectPtr<UObject> PreviousDebugObject = DebugAnimBlueprint->GetObjectBeingDebugged();
     const bool bDebugObjectWasAlreadyTarget = PreviousDebugObject.Get() == Target.AnimInstance;
     if (!bDebugObjectWasAlreadyTarget)
@@ -6841,18 +7381,29 @@ TSharedPtr<FJsonObject> BuildAnimNodePrePostPoseWatchCaptureResponse(
     RegisterTransientAnimPoseWatch(DebugData, DebugAnimBlueprint, PostNodeLinkID, TEXT("post_node_output"), PostRegistration, ErrorValues);
     Registrations.Add(PostRegistration);
 
-    FTransientAnimPoseWatchRegistration PreRegistration;
-    if (bHasPreInputLink && PreInputLinkID != PostNodeLinkID)
+    for (const FRuntimePoseLinkSelection& Selection : PreInputSelections)
     {
-        RegisterTransientAnimPoseWatch(DebugData, DebugAnimBlueprint, PreInputLinkID, TEXT("pre_input_pose"), PreRegistration, ErrorValues);
+        FTransientAnimPoseWatchRegistration PreRegistration;
+        const FString Role = FString::Printf(TEXT("pre_input_pose[%d]"), Selection.Index);
+        if (Selection.LinkID != PostNodeLinkID)
+        {
+            RegisterTransientAnimPoseWatch(DebugData, DebugAnimBlueprint, Selection.LinkID, Role, PreRegistration, ErrorValues);
+        }
+        else
+        {
+            WarningValues.Add(MakeShared<FJsonValueString>(FString::Printf(
+                TEXT("Pre input link '%s' matched the selected post node link ID; only one pose watch was registered for that link."),
+                *Selection.FieldPath)));
+            PreRegistration = PostRegistration;
+            PreRegistration.Role = Role;
+        }
         Registrations.Add(PreRegistration);
     }
-    else if (bHasPreInputLink)
+
+    TArray<TSharedPtr<FJsonValue>> SelectedInputValues;
+    for (const FRuntimePoseLinkSelection& Selection : PreInputSelections)
     {
-        WarningValues.Add(MakeShared<FJsonValueString>(TEXT("Pre input link ID matched the selected post node link ID; only one pose watch was registered.")));
-        PreRegistration = PostRegistration;
-        PreRegistration.Role = TEXT("pre_input_pose");
-        Registrations.Add(PreRegistration);
+        SelectedInputValues.Add(MakeShared<FJsonValueObject>(RuntimePoseLinkSelectionToJson(Selection)));
     }
 
     TArray<TSharedPtr<FJsonValue>> RegistrationValues;
@@ -6874,26 +7425,40 @@ TSharedPtr<FJsonObject> BuildAnimNodePrePostPoseWatchCaptureResponse(
         bRefreshBoneTransforms,
         WarningValues);
 
-    FAnimNodePoseCapture PrePose;
+    TArray<FAnimNodePoseCapture> PreInputPoseCaptures;
+    TArray<TSharedPtr<FJsonValue>> PreInputPoseValues;
     if (bHasPreInputLink)
     {
-        PrePose = CaptureAnimNodePoseWatchPose(
-            DebugData,
-            PreInputLinkID,
-            TEXT("pre_input_pose"),
-            Target.AnimInstance,
-            Target.Component,
-            SampleBones,
-            bAllowMissingSamples,
-            ErrorValues,
-            WarningValues);
+        for (const FRuntimePoseLinkSelection& Selection : PreInputSelections)
+        {
+            const FString Role = FString::Printf(TEXT("pre_input_pose[%d]"), Selection.Index);
+            FAnimNodePoseCapture InputPose = CaptureAnimNodePoseWatchPose(
+                DebugData,
+                Selection.LinkID,
+                Role,
+                Target.AnimInstance,
+                Target.Component,
+                SampleBones,
+                bAllowMissingSamples,
+                ErrorValues,
+                WarningValues);
+            InputPose.Json->SetNumberField(TEXT("input_pose_index"), Selection.Index);
+            InputPose.Json->SetNumberField(TEXT("input_pose_link_id"), Selection.LinkID);
+            InputPose.Json->SetStringField(TEXT("input_pose_field_path"), Selection.FieldPath);
+            InputPose.Json->SetObjectField(TEXT("runtime_pose_link"), Selection.LinkObject);
+            PreInputPoseValues.Add(MakeShared<FJsonValueObject>(InputPose.Json));
+            PreInputPoseCaptures.Add(InputPose);
+        }
     }
     else
     {
-        PrePose.Json->SetStringField(TEXT("role"), TEXT("pre_input_pose"));
-        PrePose.Json->SetNumberField(TEXT("node_id"), INDEX_NONE);
-        PrePose.Json->SetBoolField(TEXT("valid"), false);
-        PrePose.Json->SetStringField(TEXT("error"), TEXT("No pre input pose link was found"));
+        FAnimNodePoseCapture MissingPrePose;
+        MissingPrePose.Json->SetStringField(TEXT("role"), TEXT("pre_input_pose"));
+        MissingPrePose.Json->SetNumberField(TEXT("node_id"), INDEX_NONE);
+        MissingPrePose.Json->SetBoolField(TEXT("valid"), false);
+        MissingPrePose.Json->SetStringField(TEXT("error"), TEXT("No pre input pose link was found"));
+        PreInputPoseValues.Add(MakeShared<FJsonValueObject>(MissingPrePose.Json));
+        PreInputPoseCaptures.Add(MissingPrePose);
     }
 
     FAnimNodePoseCapture PostPose = CaptureAnimNodePoseWatchPose(
@@ -6916,7 +7481,26 @@ TSharedPtr<FJsonObject> BuildAnimNodePrePostPoseWatchCaptureResponse(
         bDebugObjectRestored = DebugAnimBlueprint->GetObjectBeingDebugged() == PreviousDebugObject.Get();
     }
 
-    const bool bRuntimeGraphPrePost = ErrorValues.Num() == 0 && GetJsonBoolFieldOrDefault(PrePose.Json, TEXT("valid"), false) && GetJsonBoolFieldOrDefault(PostPose.Json, TEXT("valid"), false);
+    bool bAllPreInputPosesValid = PreInputPoseCaptures.Num() > 0;
+    for (const FAnimNodePoseCapture& InputPose : PreInputPoseCaptures)
+    {
+        bAllPreInputPosesValid &= GetJsonBoolFieldOrDefault(InputPose.Json, TEXT("valid"), false);
+    }
+
+    TArray<TSharedPtr<FJsonValue>> DeltaByInputValues;
+    for (int32 Index = 0; Index < PreInputPoseCaptures.Num(); ++Index)
+    {
+        TSharedPtr<FJsonObject> DeltaObject = MakeShared<FJsonObject>();
+        const FRuntimePoseLinkSelection* Selection = PreInputSelections.IsValidIndex(Index) ? &PreInputSelections[Index] : nullptr;
+        DeltaObject->SetNumberField(TEXT("input_pose_index"), Selection ? Selection->Index : INDEX_NONE);
+        DeltaObject->SetNumberField(TEXT("input_pose_link_id"), Selection ? Selection->LinkID : INDEX_NONE);
+        DeltaObject->SetStringField(TEXT("input_pose_field_path"), Selection ? Selection->FieldPath : FString());
+        DeltaObject->SetObjectField(TEXT("deltas"), BuildAnimNodePoseDeltas(PreInputPoseCaptures[Index], PostPose, SampleBones, TArray<FString>()));
+        DeltaByInputValues.Add(MakeShared<FJsonValueObject>(DeltaObject));
+    }
+
+    const FAnimNodePoseCapture& PrimaryPrePose = PreInputPoseCaptures[0];
+    const bool bRuntimeGraphPrePost = ErrorValues.Num() == 0 && bAllPreInputPosesValid && GetJsonBoolFieldOrDefault(PostPose.Json, TEXT("valid"), false);
     TSharedPtr<FJsonObject> ResultObj = MakeShared<FJsonObject>();
     ResultObj->SetBoolField(TEXT("success"), bRuntimeGraphPrePost);
     ResultObj->SetBoolField(TEXT("read_only"), false);
@@ -6938,12 +7522,15 @@ TSharedPtr<FJsonObject> BuildAnimNodePrePostPoseWatchCaptureResponse(
     ResultObj->SetBoolField(TEXT("debug_object_restored"), bDebugObjectRestored);
     ResultObj->SetStringField(TEXT("previous_debug_object"), PreviousDebugObject.IsValid() ? PreviousDebugObject->GetPathName() : FString());
     ResultObj->SetStringField(TEXT("debug_anim_blueprint"), DebugAnimBlueprint ? DebugAnimBlueprint->GetPathName() : FString());
-    ResultObj->SetStringField(TEXT("runtime_note"), TEXT("Temporarily sets the AnimBP debug object and registers transient PoseWatch entries in debug data to capture the selected compiled node output and its first runtime pose-link input during the same forced tick. It does not add PoseWatches to the AnimBP asset arrays or save assets."));
+    ResultObj->SetStringField(TEXT("runtime_note"), TEXT("Temporarily sets the AnimBP debug object and registers transient PoseWatch entries in debug data to capture the selected compiled node output and selected runtime pose-link inputs during the same forced tick. It does not add PoseWatches to the AnimBP asset arrays or save assets."));
     ResultObj->SetStringField(TEXT("blueprint_name"), BlueprintName);
     ResultObj->SetStringField(TEXT("blueprint_path"), Blueprint ? Blueprint->GetPathName() : FString());
     ResultObj->SetNumberField(TEXT("post_node_link_id"), PostNodeLinkID);
     ResultObj->SetNumberField(TEXT("pre_input_link_id"), PreInputLinkID);
     ResultObj->SetStringField(TEXT("pre_input_field_path"), PreInputFieldPath);
+    ResultObj->SetStringField(TEXT("input_pose_mode"), InputPoseMode);
+    ResultObj->SetNumberField(TEXT("input_pose_selection_count"), PreInputSelections.Num());
+    ResultObj->SetArrayField(TEXT("pre_input_pose_links"), SelectedInputValues);
     ResultObj->SetObjectField(TEXT("target_node"), TargetNodeObject);
     ResultObj->SetObjectField(TEXT("runtime_node_mapping"), MappingObject);
     ResultObj->SetObjectField(TEXT("runtime_pose_links"), RuntimePoseLinksObject);
@@ -6953,9 +7540,11 @@ TSharedPtr<FJsonObject> BuildAnimNodePrePostPoseWatchCaptureResponse(
     ResultObj->SetBoolField(TEXT("allow_missing_bones"), bAllowMissingSamples);
     ResultObj->SetObjectField(TEXT("settle_tick"), SettleTickObject);
     ResultObj->SetObjectField(TEXT("tick"), TickObject);
-    ResultObj->SetObjectField(TEXT("pre_pose"), PrePose.Json);
+    ResultObj->SetObjectField(TEXT("pre_pose"), PrimaryPrePose.Json);
+    ResultObj->SetArrayField(TEXT("pre_input_poses"), PreInputPoseValues);
     ResultObj->SetObjectField(TEXT("post_pose"), PostPose.Json);
-    ResultObj->SetObjectField(TEXT("deltas"), BuildAnimNodePoseDeltas(PrePose, PostPose, SampleBones, TArray<FString>()));
+    ResultObj->SetObjectField(TEXT("deltas"), BuildAnimNodePoseDeltas(PrimaryPrePose, PostPose, SampleBones, TArray<FString>()));
+    ResultObj->SetArrayField(TEXT("deltas_by_input"), DeltaByInputValues);
     PopulateAnimInstanceRuntimeTargetFields(ResultObj, Target, bPreferPIEWorld, bRequirePIEWorld);
     AddGraphField(ResultObj, Blueprint, TargetGraph);
     ResultObj->SetArrayField(TEXT("errors"), ErrorValues);
@@ -8210,6 +8799,10 @@ TSharedPtr<FJsonObject> FUnrealMCPBlueprintNodeCommands::HandleCommand(const FSt
     else if (CommandType == TEXT("sample_skeletal_bones_in_sie"))
     {
         return HandleSampleSkeletalBonesInSIE(Params);
+    }
+    else if (CommandType == TEXT("sample_blendspace_runtime_pose_grid"))
+    {
+        return HandleSampleBlendSpaceRuntimePoseGrid(Params);
     }
     else if (CommandType == TEXT("inspect_anim_instance_runtime_state"))
     {
@@ -12854,6 +13447,331 @@ TSharedPtr<FJsonObject> FUnrealMCPBlueprintNodeCommands::HandleSampleSkeletalBon
     ResultObj->SetObjectField(TEXT("component"), SkeletalComponentToSamplerJson(MatchedComponent));
     ResultObj->SetObjectField(TEXT("bone_samples"), BoneSamplesObject);
     ResultObj->SetObjectField(TEXT("socket_samples"), SocketSamplesObject);
+    ResultObj->SetArrayField(TEXT("errors"), ErrorValues);
+    ResultObj->SetArrayField(TEXT("warnings"), WarningValues);
+    return ResultObj;
+}
+
+TSharedPtr<FJsonObject> FUnrealMCPBlueprintNodeCommands::HandleSampleBlendSpaceRuntimePoseGrid(const TSharedPtr<FJsonObject>& Params)
+{
+    if (!Params.IsValid())
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Missing params"));
+    }
+
+    TArray<TSharedPtr<FJsonValue>> ErrorValues;
+    TArray<TSharedPtr<FJsonValue>> WarningValues;
+    TArray<TSharedPtr<FJsonValue>> CleanupValues;
+
+    TArray<FBlendSpaceRuntimePoseGridTarget> Targets;
+    ParseBlendSpaceRuntimePoseGridTargets(Params, Targets, ErrorValues, WarningValues);
+    if (Targets.Num() == 0)
+    {
+        TSharedPtr<FJsonObject> ErrorObj = FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("No valid BlendSpace targets were provided"));
+        ErrorObj->SetArrayField(TEXT("errors"), ErrorValues);
+        ErrorObj->SetArrayField(TEXT("warnings"), WarningValues);
+        return ErrorObj;
+    }
+
+    FString SkeletalMeshPath = GetStringParam(Params, TEXT("skeletal_mesh"), FString());
+    SkeletalMeshPath.TrimStartAndEndInline();
+    if (SkeletalMeshPath.IsEmpty())
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("sample_blendspace_runtime_pose_grid requires 'skeletal_mesh'"));
+    }
+
+    USkeletalMesh* SkeletalMesh = Cast<USkeletalMesh>(LoadAssetObjectForRuntimeProbe(SkeletalMeshPath));
+    if (!SkeletalMesh)
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("SkeletalMesh not found: %s"), *SkeletalMeshPath));
+    }
+
+    bool bPreferPIEWorld = true;
+    Params->TryGetBoolField(TEXT("prefer_pie_world"), bPreferPIEWorld);
+    const bool bRequirePIEWorld = GetBoolParam(Params, TEXT("require_pie_world"), true);
+    const bool bCleanup = GetBoolParam(Params, TEXT("cleanup"), true);
+    const bool bAllowMissingSamples = GetBoolParam(Params, TEXT("allow_missing_bones"), false)
+        || GetBoolParam(Params, TEXT("allow_missing_samples"), false);
+    const bool bRefreshBoneTransforms = GetBoolParam(Params, TEXT("refresh_bone_transforms"), true);
+    const int32 SettleTickCount = GetClampedIntParam(Params, TEXT("settle_tick_count"), 2, 0, 240);
+    const int32 TickCount = GetClampedIntParam(Params, TEXT("tick_count"), 1, 0, 240);
+    const double TickDeltaTime = GetClampedNumberParam(Params, TEXT("tick_delta_time"), 1.0 / 30.0, 0.0, 1.0);
+    const double SampleTime = GetClampedNumberParam(Params, TEXT("sample_time"), 0.25, 0.0, 3600.0);
+    const FString ActorLabel = GetStringParam(Params, TEXT("actor_label"), TEXT("MCP_BlendSpace_RuntimePoseGrid"));
+
+    const TArray<FString> DefaultBones = {
+        TEXT("root"),
+        TEXT("pelvis"),
+        TEXT("spine_03"),
+        TEXT("head"),
+        TEXT("foot_l"),
+        TEXT("foot_r")
+    };
+    const TArray<FString> SampleBones = GetStringArrayParam(Params, TEXT("sample_bones"), GetStringArrayParam(Params, TEXT("bones"), DefaultBones));
+    const TArray<FString> SampleSockets = GetStringArrayParam(Params, TEXT("sample_sockets"), GetStringArrayParam(Params, TEXT("sockets"), TArray<FString>()));
+
+    UWorld* ProbeWorld = nullptr;
+    const TArray<UWorld*> CandidateWorlds = GetCandidateWorldsForSkeletalSampling(bPreferPIEWorld, !bRequirePIEWorld);
+    for (UWorld* World : CandidateWorlds)
+    {
+        if (World)
+        {
+            ProbeWorld = World;
+            break;
+        }
+    }
+    if (!ProbeWorld)
+    {
+        TSharedPtr<FJsonObject> ErrorObj = FUnrealMCPCommonUtils::CreateErrorResponse(bRequirePIEWorld
+            ? TEXT("No active PIE/SIE/play world available for BlendSpace runtime pose grid")
+            : TEXT("No candidate editor/PIE world available for BlendSpace runtime pose grid"));
+        ErrorObj->SetArrayField(TEXT("errors"), ErrorValues);
+        ErrorObj->SetArrayField(TEXT("warnings"), WarningValues);
+        return ErrorObj;
+    }
+
+    ASkeletalMeshActor* ProbeActor = nullptr;
+    USkeletalMeshComponent* ProbeComponent = nullptr;
+    bool bTransientActorSpawned = false;
+    if (ErrorValues.Num() == 0)
+    {
+        ProbeActor = SpawnBlendSpaceRuntimePoseGridActor(
+            ProbeWorld,
+            SkeletalMesh,
+            ActorLabel,
+            FVector(0.0, 0.0, 120.0),
+            ErrorValues);
+        ProbeComponent = ProbeActor ? ProbeActor->GetSkeletalMeshComponent() : nullptr;
+        bTransientActorSpawned = ProbeActor != nullptr;
+        if (!ProbeComponent)
+        {
+            ErrorValues.Add(MakeShared<FJsonValueString>(TEXT("BlendSpace runtime pose-grid actor has no SkeletalMeshComponent")));
+        }
+    }
+
+    TArray<TSharedPtr<FJsonValue>> TargetValues;
+    TSharedPtr<FJsonObject> ProbeActorObject = MakeShared<FJsonObject>();
+    TSharedPtr<FJsonObject> ProbeComponentObject = MakeShared<FJsonObject>();
+
+    if (ErrorValues.Num() == 0 && ProbeComponent)
+    {
+        ProbeActorObject = ActorToSkeletalSamplerJson(ProbeActor);
+        ProbeComponentObject = SkeletalComponentToSamplerJson(ProbeComponent);
+
+        for (const FBlendSpaceRuntimePoseGridTarget& Target : Targets)
+        {
+            TArray<TSharedPtr<FJsonValue>> TargetSampleValues;
+            FAnimNodePoseCapture BaselinePose;
+            bool bHasBaselinePose = false;
+            int32 ValidPoseCount = 0;
+            double MaxLocationDeltaFromFirst = 0.0;
+            TArray<TSharedPtr<FJsonValue>> TopDeltaValues;
+
+            TSharedPtr<FJsonObject> ConfigureObject = MakeShared<FJsonObject>();
+            ProbeComponent->SetAnimationMode(EAnimationMode::AnimationSingleNode, true);
+            ProbeComponent->SetAnimation(Target.BlendSpace);
+            ProbeComponent->Play(false);
+
+            UAnimSingleNodeInstance* SingleNodeInstance = ProbeComponent->GetSingleNodeInstance();
+            if (!SingleNodeInstance)
+            {
+                ErrorValues.Add(MakeShared<FJsonValueString>(FString::Printf(
+                    TEXT("Failed to create UAnimSingleNodeInstance for BlendSpace '%s'"),
+                    *Target.Name)));
+                continue;
+            }
+
+            SingleNodeInstance->SetAnimationAsset(Target.BlendSpace, true, 0.0f);
+            SingleNodeInstance->SetLooping(true);
+            SingleNodeInstance->SetPlayRate(0.0f);
+            SingleNodeInstance->SetPlaying(false);
+            ConfigureObject->SetObjectField(TEXT("single_node_instance"), AnimInstanceToRuntimeJson(SingleNodeInstance));
+
+            for (int32 SampleIndex = 0; SampleIndex < Target.Samples.Num(); ++SampleIndex)
+            {
+                const FBlendSpaceRuntimePoseGridSample& GridSample = Target.Samples[SampleIndex];
+                TArray<TSharedPtr<FJsonValue>> SampleErrorValues;
+                TArray<TSharedPtr<FJsonValue>> SampleWarningValues;
+
+                SingleNodeInstance->SetAnimationAsset(Target.BlendSpace, true, 0.0f);
+                SingleNodeInstance->SetBlendSpacePosition(GridSample.Input);
+                SingleNodeInstance->SetPosition(static_cast<float>(SampleTime), false);
+                SingleNodeInstance->SetPlaying(false);
+                ProbeComponent->SetPosition(static_cast<float>(SampleTime), false);
+
+                TSharedPtr<FJsonObject> SettleTickObject = TickSkeletalComponentForAnimRuntimeProbe(
+                    ProbeComponent,
+                    SettleTickCount,
+                    TickDeltaTime,
+                    bRefreshBoneTransforms,
+                    SampleWarningValues);
+                TSharedPtr<FJsonObject> TickObject = TickSkeletalComponentForAnimRuntimeProbe(
+                    ProbeComponent,
+                    TickCount,
+                    TickDeltaTime,
+                    bRefreshBoneTransforms,
+                    SampleWarningValues);
+
+                FAnimNodePoseCapture Pose = CaptureAnimNodeProbePose(
+                    ProbeComponent,
+                    SampleBones,
+                    SampleSockets,
+                    bAllowMissingSamples,
+                    SampleErrorValues,
+                    SampleWarningValues);
+
+                TSharedPtr<FJsonObject> SampleObject = BlendSpaceGridSampleToJson(GridSample, SampleIndex);
+                SampleObject->SetStringField(TEXT("blendspace"), Target.Name);
+                SampleObject->SetStringField(TEXT("blendspace_path"), Target.Path);
+                SampleObject->SetNumberField(TEXT("sample_time"), SampleTime);
+                SampleObject->SetObjectField(TEXT("settle_tick"), SettleTickObject);
+                SampleObject->SetObjectField(TEXT("tick"), TickObject);
+                SampleObject->SetObjectField(TEXT("pose"), Pose.Json);
+                SampleObject->SetArrayField(TEXT("weighted_samples"), BlendSpaceWeightedSamplesToJsonValues(Target.BlendSpace, GridSample.Input, SampleWarningValues));
+                SampleObject->SetArrayField(TEXT("errors"), SampleErrorValues);
+                SampleObject->SetArrayField(TEXT("warnings"), SampleWarningValues);
+
+                const bool bPoseValid = SampleErrorValues.Num() == 0;
+                SampleObject->SetBoolField(TEXT("pose_valid"), bPoseValid);
+                if (bPoseValid)
+                {
+                    ++ValidPoseCount;
+                }
+
+                if (!bHasBaselinePose && bPoseValid)
+                {
+                    BaselinePose = Pose;
+                    bHasBaselinePose = true;
+                    SampleObject->SetBoolField(TEXT("is_blendspace_baseline"), true);
+                }
+                else
+                {
+                    SampleObject->SetBoolField(TEXT("is_blendspace_baseline"), false);
+                }
+
+                if (bHasBaselinePose)
+                {
+                    TSharedPtr<FJsonObject> DeltaObject = BuildAnimNodePoseDeltas(BaselinePose, Pose, SampleBones, SampleSockets);
+                    SampleObject->SetObjectField(TEXT("delta_from_blendspace_first"), DeltaObject);
+
+                    const TSharedPtr<FJsonObject>* BoneDeltaObject = nullptr;
+                    if (DeltaObject->TryGetObjectField(TEXT("bone_deltas"), BoneDeltaObject) && BoneDeltaObject && BoneDeltaObject->IsValid())
+                    {
+                        for (const FString& BoneName : SampleBones)
+                        {
+                            const TSharedPtr<FJsonObject>* OneBoneDelta = nullptr;
+                            if ((*BoneDeltaObject)->TryGetObjectField(BoneName, OneBoneDelta) && OneBoneDelta && OneBoneDelta->IsValid())
+                            {
+                                double LocationDelta = 0.0;
+                                if ((*OneBoneDelta)->TryGetNumberField(TEXT("world_translation_distance"), LocationDelta))
+                                {
+                                    MaxLocationDeltaFromFirst = FMath::Max(MaxLocationDeltaFromFirst, LocationDelta);
+                                    TSharedPtr<FJsonObject> TopDelta = MakeShared<FJsonObject>();
+                                    TopDelta->SetStringField(TEXT("sample"), GridSample.Label);
+                                    TopDelta->SetStringField(TEXT("bone"), BoneName);
+                                    TopDelta->SetNumberField(TEXT("world_translation_distance"), LocationDelta);
+                                    TopDeltaValues.Add(MakeShared<FJsonValueObject>(TopDelta));
+                                }
+                            }
+                        }
+                    }
+                }
+
+                for (const TSharedPtr<FJsonValue>& SampleError : SampleErrorValues)
+                {
+                    ErrorValues.Add(SampleError);
+                }
+                for (const TSharedPtr<FJsonValue>& SampleWarning : SampleWarningValues)
+                {
+                    WarningValues.Add(SampleWarning);
+                }
+
+                TargetSampleValues.Add(MakeShared<FJsonValueObject>(SampleObject));
+            }
+
+            TopDeltaValues.Sort([](const TSharedPtr<FJsonValue>& Left, const TSharedPtr<FJsonValue>& Right)
+            {
+                const TSharedPtr<FJsonObject>* LeftObject = nullptr;
+                const TSharedPtr<FJsonObject>* RightObject = nullptr;
+                double LeftDelta = 0.0;
+                double RightDelta = 0.0;
+                if (Left.IsValid() && Left->TryGetObject(LeftObject) && LeftObject && LeftObject->IsValid())
+                {
+                    (*LeftObject)->TryGetNumberField(TEXT("world_translation_distance"), LeftDelta);
+                }
+                if (Right.IsValid() && Right->TryGetObject(RightObject) && RightObject && RightObject->IsValid())
+                {
+                    (*RightObject)->TryGetNumberField(TEXT("world_translation_distance"), RightDelta);
+                }
+                return LeftDelta > RightDelta;
+            });
+            if (TopDeltaValues.Num() > 10)
+            {
+                TopDeltaValues.SetNum(10);
+            }
+
+            TSharedPtr<FJsonObject> SummaryObject = MakeShared<FJsonObject>();
+            SummaryObject->SetNumberField(TEXT("sample_count"), Target.Samples.Num());
+            SummaryObject->SetNumberField(TEXT("valid_pose_count"), ValidPoseCount);
+            SummaryObject->SetNumberField(TEXT("max_location_delta_from_first"), MaxLocationDeltaFromFirst);
+            SummaryObject->SetBoolField(TEXT("input_changed_pose"), MaxLocationDeltaFromFirst > 0.01);
+            SummaryObject->SetArrayField(TEXT("top_location_deltas"), TopDeltaValues);
+
+            TSharedPtr<FJsonObject> TargetObject = MakeShared<FJsonObject>();
+            TargetObject->SetStringField(TEXT("name"), Target.Name);
+            TargetObject->SetStringField(TEXT("path"), Target.Path);
+            TargetObject->SetStringField(TEXT("class"), Target.BlendSpace ? Target.BlendSpace->GetClass()->GetPathName() : FString());
+            TargetObject->SetObjectField(TEXT("configure"), ConfigureObject);
+            TargetObject->SetArrayField(TEXT("axes"), BlendSpaceAxesToJsonValues(Target.BlendSpace));
+            TargetObject->SetArrayField(TEXT("asset_samples"), BlendSpaceAssetSamplesToJsonValues(Target.BlendSpace));
+            TargetObject->SetArrayField(TEXT("requested_samples"), BlendSpaceGridSamplesToJsonValues(Target.Samples));
+            TargetObject->SetArrayField(TEXT("samples"), TargetSampleValues);
+            TargetObject->SetObjectField(TEXT("summary"), SummaryObject);
+            TargetValues.Add(MakeShared<FJsonValueObject>(TargetObject));
+        }
+    }
+
+    if (bCleanup && ProbeWorld && ProbeActor)
+    {
+        TSharedPtr<FJsonObject> CleanupObject = MakeShared<FJsonObject>();
+        CleanupObject->SetStringField(TEXT("label"), TEXT("blendspace_pose_grid_actor"));
+        CleanupObject->SetStringField(TEXT("actor_name"), ProbeActor->GetName());
+        CleanupObject->SetBoolField(TEXT("destroyed"), ProbeWorld->DestroyActor(ProbeActor));
+        CleanupValues.Add(MakeShared<FJsonValueObject>(CleanupObject));
+        ProbeActor = nullptr;
+        ProbeComponent = nullptr;
+    }
+
+    TSharedPtr<FJsonObject> ResultObj = MakeShared<FJsonObject>();
+    ResultObj->SetBoolField(TEXT("success"), ErrorValues.Num() == 0);
+    ResultObj->SetBoolField(TEXT("read_only"), false);
+    ResultObj->SetBoolField(TEXT("runtime_only"), true);
+    ResultObj->SetBoolField(TEXT("asset_modified"), false);
+    ResultObj->SetBoolField(TEXT("saves_assets"), false);
+    ResultObj->SetBoolField(TEXT("starts_sie"), false);
+    ResultObj->SetBoolField(TEXT("cleanup"), bCleanup);
+    ResultObj->SetBoolField(TEXT("transient_actor_spawned"), bTransientActorSpawned);
+    ResultObj->SetStringField(TEXT("runtime_source"), TEXT("transient_single_node_blendspace_component"));
+    ResultObj->SetStringField(TEXT("runtime_note"), TEXT("Spawns a transient SkeletalMeshActor in an active PIE/SIE/play world by default, evaluates AnimationSingleNode BlendSpace inputs through UAnimSingleNodeInstance, samples requested bones/sockets, then optionally destroys the actor. It does not start SIE and does not save assets."));
+    ResultObj->SetStringField(TEXT("skeletal_mesh"), SkeletalMesh->GetPathName());
+    ResultObj->SetStringField(TEXT("sampled_world_type"), BlueprintNodeWorldTypeToString(ProbeWorld));
+    ResultObj->SetStringField(TEXT("sampled_world_name"), ProbeWorld ? ProbeWorld->GetName() : FString());
+    ResultObj->SetBoolField(TEXT("prefer_pie_world"), bPreferPIEWorld);
+    ResultObj->SetBoolField(TEXT("require_pie_world"), bRequirePIEWorld);
+    ResultObj->SetBoolField(TEXT("is_play_session_active"), IsBlueprintNodePlaySessionActive());
+    ResultObj->SetNumberField(TEXT("sample_time"), SampleTime);
+    ResultObj->SetNumberField(TEXT("settle_tick_count"), SettleTickCount);
+    ResultObj->SetNumberField(TEXT("tick_count"), TickCount);
+    ResultObj->SetNumberField(TEXT("tick_delta_time"), TickDeltaTime);
+    ResultObj->SetBoolField(TEXT("refresh_bone_transforms"), bRefreshBoneTransforms);
+    ResultObj->SetBoolField(TEXT("allow_missing_bones"), bAllowMissingSamples);
+    ResultObj->SetArrayField(TEXT("requested_sample_bones"), StringArrayToJsonValues(SampleBones));
+    ResultObj->SetArrayField(TEXT("requested_sample_sockets"), StringArrayToJsonValues(SampleSockets));
+    ResultObj->SetObjectField(TEXT("probe_actor"), ProbeActorObject);
+    ResultObj->SetObjectField(TEXT("probe_component"), ProbeComponentObject);
+    ResultObj->SetArrayField(TEXT("blendspaces"), TargetValues);
+    ResultObj->SetNumberField(TEXT("blendspace_count"), Targets.Num());
+    ResultObj->SetArrayField(TEXT("cleanup_results"), CleanupValues);
     ResultObj->SetArrayField(TEXT("errors"), ErrorValues);
     ResultObj->SetArrayField(TEXT("warnings"), WarningValues);
     return ResultObj;
