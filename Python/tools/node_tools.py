@@ -1229,6 +1229,74 @@ def register_blueprint_node_tools(mcp: FastMCP):
             return {"success": False, "message": error_msg}
 
     @mcp.tool()
+    def inspect_blueprint_graph_call_topology(
+        ctx: Context,
+        blueprint_name: str,
+        graph_name: str = "",
+        graph_id: str = "",
+        graph_type: str = "",
+        graph_name_contains: str = "",
+        node_type: str = "",
+        title_contains: str = "",
+        reference_contains: str = "",
+        include_pins: bool = False,
+        include_links: bool = True,
+        include_references: bool = True,
+        max_graphs: int = 64,
+        max_nodes_per_graph: int = 512,
+        max_links_per_graph: int = 1024,
+        max_references_per_node: int = 64
+    ) -> Dict[str, Any]:
+        """
+        Read static Blueprint graph call/link topology.
+
+        This command is read-only. It reports graph nodes, classified K2 node kinds,
+        function/variable/event member references, asset/reference paths, and pin links.
+        It does not prove runtime execution.
+
+        Args:
+            blueprint_name: Blueprint name or path
+            graph_name: Optional exact graph name selector
+            graph_id: Optional graph GUID selector
+            graph_type: Optional graph type selector: event, function, macro, delegate, or any
+            graph_name_contains: Optional graph name substring filter
+            node_type: Optional node class/title substring filter
+            title_contains: Optional node title substring filter
+            reference_contains: Optional substring filter across function, variable, event, pin, and reference text
+            include_pins: Include full per-node pin metadata
+            include_links: Include normalized pin links
+            include_references: Include per-node reference_paths
+            max_graphs: Maximum graphs to include, -1 for unlimited
+            max_nodes_per_graph: Maximum matching nodes per graph, -1 for unlimited
+            max_links_per_graph: Maximum links per graph, -1 for unlimited
+            max_references_per_node: Maximum reference paths per node, -1 for unlimited
+
+        Returns:
+            Response containing static Blueprint graph topology.
+        """
+        try:
+            params = {
+                "blueprint_name": blueprint_name,
+                "graph_name_contains": graph_name_contains,
+                "node_type": node_type,
+                "title_contains": title_contains,
+                "reference_contains": reference_contains,
+                "include_pins": include_pins,
+                "include_links": include_links,
+                "include_references": include_references,
+                "max_graphs": max_graphs,
+                "max_nodes_per_graph": max_nodes_per_graph,
+                "max_links_per_graph": max_links_per_graph,
+                "max_references_per_node": max_references_per_node,
+            }
+            add_graph_selector(params, graph_name, graph_id, graph_type)
+            return send_node_command("inspect_blueprint_graph_call_topology", params)
+        except Exception as e:
+            error_msg = f"Error inspecting Blueprint graph call topology: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
     def inspect_anim_graph_node_settings(
         ctx: Context,
         blueprint_name: str,

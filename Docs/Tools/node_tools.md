@@ -276,6 +276,45 @@ List graphs in a Blueprint and return stable graph IDs.
 - `blueprint_name` (string) - Blueprint name or path
 - `graph_type` (string, optional) - Filter by graph type
 
+### inspect_blueprint_graph_call_topology
+
+Read static Blueprint graph call/reference/link topology. The command is read-only and does not compile, save, or modify the Blueprint.
+
+Use this when a study pass needs to prove which Blueprint nodes reference functions, variables, events, input actions, casts, delegates, components, or asset/class paths. The response is static graph structure only; combine it with PIE/SIE runtime probes when you need proof that a branch actually fired.
+
+**Parameters:**
+- `blueprint_name` (string) - Blueprint name or path
+- `graph_name` (string, optional) - Exact graph name selector
+- `graph_id` (string, optional) - Graph GUID selector
+- `graph_type` (string, optional) - `event`, `function`, `macro`, `delegate`, or `any`
+- `graph_name_contains` (string, optional) - Graph name substring filter
+- `node_type` (string, optional) - Node class/title substring filter
+- `title_contains` (string, optional) - Node title substring filter
+- `reference_contains` (string, optional) - Substring filter across function, variable, event, pin, and reference text
+- `include_pins` (boolean, optional) - Include full per-node pin metadata; defaults to `false`
+- `include_links` (boolean, optional) - Include normalized pin links; defaults to `true`
+- `include_references` (boolean, optional) - Include per-node `reference_paths`; defaults to `true`
+- `max_graphs` (number, optional) - Max graphs, `-1` for unlimited
+- `max_nodes_per_graph` (number, optional) - Max matching nodes per graph, `-1` for unlimited
+- `max_links_per_graph` (number, optional) - Max links per graph, `-1` for unlimited
+- `max_references_per_node` (number, optional) - Max reference paths per node, `-1` for unlimited
+
+Returned graph entries include `nodes` and `links`. Node entries include `node_kind` values such as `call_function`, `variable_get`, `variable_set`, `event`, `input_action`, `enhanced_input_action`, `input_axis`, `dynamic_cast`, `delegate_bind`, `delegate_call`, `custom_event`, and `macro_instance`, plus available member-reference fields.
+
+**Example:**
+```json
+{
+  "command": "inspect_blueprint_graph_call_topology",
+  "params": {
+    "blueprint_name": "/Game/StackOBot/Blueprints/BP_Bot.BP_Bot",
+    "graph_type": "event",
+    "reference_contains": "Interact",
+    "include_links": true,
+    "max_nodes_per_graph": 128
+  }
+}
+```
+
 ### inspect_anim_graph_node_settings
 
 Read reflected runtime settings from AnimGraph nodes. This is useful for learning or validating nodes such as `RigidBody`, `Trail`, `ControlRig`, `Transform (Modify) Bone`, and other editor nodes that wrap an internal `FAnimNode_*` struct.

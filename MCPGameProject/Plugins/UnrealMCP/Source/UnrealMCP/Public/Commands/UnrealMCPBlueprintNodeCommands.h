@@ -49,6 +49,7 @@ private:
     TSharedPtr<FJsonObject> HandleListBlueprintNodes(const TSharedPtr<FJsonObject>& Params);
     TSharedPtr<FJsonObject> HandleInspectAnimGraphNodeSettings(const TSharedPtr<FJsonObject>& Params);
     TSharedPtr<FJsonObject> HandleInspectAnimStateMachineTransitions(const TSharedPtr<FJsonObject>& Params);
+    TSharedPtr<FJsonObject> HandleInspectBlueprintGraphCallTopology(const TSharedPtr<FJsonObject>& Params);
     TSharedPtr<FJsonObject> HandleControlRigDirectGateProbe(const TSharedPtr<FJsonObject>& Params);
     TSharedPtr<FJsonObject> HandleSampleControlRigPrePostRuntimePose(const TSharedPtr<FJsonObject>& Params);
     TSharedPtr<FJsonObject> HandleSampleAnimNodePrePostRuntimePose(const TSharedPtr<FJsonObject>& Params);

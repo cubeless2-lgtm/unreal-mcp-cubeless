@@ -43,6 +43,8 @@
 #include "K2Node_InputAction.h"
 #include "K2Node_InputAxisEvent.h"
 #include "K2Node_EnhancedInputAction.h"
+#include "K2Node_ActorBoundEvent.h"
+#include "K2Node_ComponentBoundEvent.h"
 #include "K2Node_Self.h"
 #include "K2Node_IfThenElse.h"
 #include "K2Node_ExecutionSequence.h"
@@ -62,6 +64,7 @@
 #include "K2Node_MacroInstance.h"
 #include "K2Node_CallArrayFunction.h"
 #include "K2Node_MakeArray.h"
+#include "K2Node_Variable.h"
 #include "Kismet2/BlueprintEditorUtils.h"
 #include "Kismet2/KismetEditorUtilities.h"
 #include "GameFramework/InputSettings.h"
@@ -936,6 +939,394 @@ TSharedPtr<FJsonObject> NodeToJson(UEdGraphNode* Node, bool bIncludePins)
     }
 
     return NodeObject;
+}
+
+void AddUniqueJsonString(TArray<TSharedPtr<FJsonValue>>& Values, TSet<FString>& SeenValues, const FString& Value, int32 MaxValues, bool& bOutTruncated)
+{
+    FString TrimmedValue = Value;
+    TrimmedValue.TrimStartAndEndInline();
+    if (TrimmedValue.IsEmpty() || SeenValues.Contains(TrimmedValue))
+    {
+        return;
+    }
+
+    SeenValues.Add(TrimmedValue);
+    if (MaxValues >= 0 && Values.Num() >= MaxValues)
+    {
+        bOutTruncated = true;
+        return;
+    }
+
+    Values.Add(MakeShared<FJsonValueString>(TrimmedValue));
+}
+
+void AddObjectReferencePath(TArray<TSharedPtr<FJsonValue>>& Values, TSet<FString>& SeenValues, const UObject* Object, int32 MaxValues, bool& bOutTruncated)
+{
+    if (Object)
+    {
+        AddUniqueJsonString(Values, SeenValues, Object->GetPathName(), MaxValues, bOutTruncated);
+    }
+}
+
+TSharedPtr<FJsonObject> MemberReferenceToJson(const FMemberReference& MemberReference)
+{
+    TSharedPtr<FJsonObject> ReferenceObject = MakeShared<FJsonObject>();
+    ReferenceObject->SetStringField(TEXT("member_name"), MemberReference.GetMemberName().ToString());
+    ReferenceObject->SetStringField(TEXT("member_scope"), MemberReference.GetMemberScopeName());
+    ReferenceObject->SetStringField(TEXT("member_guid"), MemberReference.GetMemberGuid().IsValid() ? MemberReference.GetMemberGuid().ToString() : FString());
+    ReferenceObject->SetBoolField(TEXT("is_self_context"), MemberReference.IsSelfContext());
+    ReferenceObject->SetBoolField(TEXT("is_local_scope"), MemberReference.IsLocalScope());
+    if (UClass* ParentClass = MemberReference.GetMemberParentClass())
+    {
+        ReferenceObject->SetStringField(TEXT("member_parent_class"), ParentClass->GetPathName());
+    }
+    return ReferenceObject;
+}
+
+FString GetBlueprintTopologyNodeSearchText(UEdGraphNode* Node)
+{
+    if (!Node)
+    {
+        return FString();
+    }
+
+    TArray<FString> SearchParts;
+    SearchParts.Add(Node->GetName());
+    SearchParts.Add(Node->GetClass()->GetName());
+    SearchParts.Add(Node->GetNodeTitle(ENodeTitleType::FullTitle).ToString());
+
+    if (UK2Node_CallFunction* FunctionNode = Cast<UK2Node_CallFunction>(Node))
+    {
+        SearchParts.Add(FunctionNode->GetFunctionName().ToString());
+        SearchParts.Add(FunctionNode->FunctionReference.GetMemberName().ToString());
+        SearchParts.Add(FunctionNode->FunctionReference.GetMemberScopeName());
+        if (UClass* ParentClass = FunctionNode->FunctionReference.GetMemberParentClass())
+        {
+            SearchParts.Add(ParentClass->GetPathName());
+        }
+        if (UFunction* Function = FunctionNode->GetTargetFunction())
+        {
+            SearchParts.Add(Function->GetPathName());
+            if (UClass* OwnerClass = Function->GetOwnerClass())
+            {
+                SearchParts.Add(OwnerClass->GetPathName());
+            }
+        }
+    }
+
+    if (UK2Node_Variable* VariableNode = Cast<UK2Node_Variable>(Node))
+    {
+        SearchParts.Add(VariableNode->GetVarNameString());
+        SearchParts.Add(VariableNode->VariableReference.GetMemberName().ToString());
+        SearchParts.Add(VariableNode->VariableReference.GetMemberScopeName());
+        if (UClass* SourceClass = VariableNode->GetVariableSourceClass())
+        {
+            SearchParts.Add(SourceClass->GetPathName());
+        }
+        if (FProperty* Property = VariableNode->GetPropertyForVariable())
+        {
+            SearchParts.Add(Property->GetName());
+            SearchParts.Add(Property->GetCPPType());
+            if (UStruct* OwnerStruct = Property->GetOwnerStruct())
+            {
+                SearchParts.Add(OwnerStruct->GetPathName());
+            }
+        }
+    }
+
+    if (UK2Node_Event* EventNode = Cast<UK2Node_Event>(Node))
+    {
+        SearchParts.Add(EventNode->GetFunctionName().ToString());
+        SearchParts.Add(EventNode->EventReference.GetMemberName().ToString());
+        SearchParts.Add(EventNode->EventReference.GetMemberScopeName());
+    }
+
+    if (UK2Node_InputAction* InputActionNode = Cast<UK2Node_InputAction>(Node))
+    {
+        SearchParts.Add(InputActionNode->InputActionName.ToString());
+    }
+
+    if (UK2Node_EnhancedInputAction* EnhancedInputActionNode = Cast<UK2Node_EnhancedInputAction>(Node))
+    {
+        if (EnhancedInputActionNode->InputAction)
+        {
+            SearchParts.Add(EnhancedInputActionNode->InputAction->GetPathName());
+            SearchParts.Add(EnhancedInputActionNode->InputAction->GetName());
+        }
+    }
+
+    if (UK2Node_DynamicCast* DynamicCastNode = Cast<UK2Node_DynamicCast>(Node))
+    {
+        if (DynamicCastNode->TargetType)
+        {
+            SearchParts.Add(DynamicCastNode->TargetType->GetPathName());
+        }
+    }
+
+    for (UEdGraphPin* Pin : Node->Pins)
+    {
+        if (!Pin)
+        {
+            continue;
+        }
+        SearchParts.Add(Pin->PinName.ToString());
+        SearchParts.Add(Pin->DefaultValue);
+        if (Pin->DefaultObject)
+        {
+            SearchParts.Add(Pin->DefaultObject->GetPathName());
+        }
+        if (Pin->PinType.PinSubCategoryObject.IsValid())
+        {
+            SearchParts.Add(Pin->PinType.PinSubCategoryObject->GetPathName());
+        }
+    }
+
+    return FString::Join(SearchParts, TEXT(" "));
+}
+
+TSharedPtr<FJsonObject> BlueprintTopologyNodeToJson(UEdGraphNode* Node, bool bIncludePins, bool bIncludeReferences, int32 MaxReferencesPerNode)
+{
+    TSharedPtr<FJsonObject> NodeObject = NodeToJson(Node, bIncludePins);
+    if (!Node)
+    {
+        return NodeObject;
+    }
+
+    FString NodeKind = TEXT("node");
+    TArray<TSharedPtr<FJsonValue>> ReferenceValues;
+    TSet<FString> SeenReferences;
+    bool bReferencesTruncated = false;
+
+    auto AddReference = [&ReferenceValues, &SeenReferences, MaxReferencesPerNode, &bReferencesTruncated](const FString& Value)
+    {
+        AddUniqueJsonString(ReferenceValues, SeenReferences, Value, MaxReferencesPerNode, bReferencesTruncated);
+    };
+    auto AddObjectReference = [&ReferenceValues, &SeenReferences, MaxReferencesPerNode, &bReferencesTruncated](const UObject* Object)
+    {
+        AddObjectReferencePath(ReferenceValues, SeenReferences, Object, MaxReferencesPerNode, bReferencesTruncated);
+    };
+
+    if (UK2Node* K2Node = Cast<UK2Node>(Node))
+    {
+        NodeObject->SetBoolField(TEXT("is_k2_node"), true);
+        NodeObject->SetBoolField(TEXT("is_pure"), K2Node->IsNodePure());
+    }
+    else
+    {
+        NodeObject->SetBoolField(TEXT("is_k2_node"), false);
+    }
+
+    if (UK2Node_CallFunction* FunctionNode = Cast<UK2Node_CallFunction>(Node))
+    {
+        NodeKind = TEXT("call_function");
+        NodeObject->SetStringField(TEXT("function_name"), FunctionNode->GetFunctionName().ToString());
+        NodeObject->SetObjectField(TEXT("function_reference"), MemberReferenceToJson(FunctionNode->FunctionReference));
+        if (UClass* ParentClass = FunctionNode->FunctionReference.GetMemberParentClass())
+        {
+            AddObjectReference(ParentClass);
+        }
+        if (UFunction* Function = FunctionNode->GetTargetFunction())
+        {
+            NodeObject->SetStringField(TEXT("function_path"), Function->GetPathName());
+            NodeObject->SetBoolField(TEXT("is_latent"), FunctionNode->IsLatentFunction());
+            NodeObject->SetBoolField(TEXT("is_const"), Function->HasAnyFunctionFlags(FUNC_Const));
+            NodeObject->SetBoolField(TEXT("is_blueprint_callable"), Function->HasAnyFunctionFlags(FUNC_BlueprintCallable));
+            NodeObject->SetBoolField(TEXT("is_blueprint_pure"), Function->HasAnyFunctionFlags(FUNC_BlueprintPure));
+            AddObjectReference(Function);
+            if (UClass* OwnerClass = Function->GetOwnerClass())
+            {
+                NodeObject->SetStringField(TEXT("function_owner_class"), OwnerClass->GetPathName());
+                AddObjectReference(OwnerClass);
+            }
+        }
+    }
+    else if (UK2Node_VariableGet* VariableGetNode = Cast<UK2Node_VariableGet>(Node))
+    {
+        NodeKind = TEXT("variable_get");
+        NodeObject->SetStringField(TEXT("variable_name"), VariableGetNode->GetVarNameString());
+        NodeObject->SetObjectField(TEXT("variable_reference"), MemberReferenceToJson(VariableGetNode->VariableReference));
+        if (UClass* SourceClass = VariableGetNode->GetVariableSourceClass())
+        {
+            NodeObject->SetStringField(TEXT("variable_source_class"), SourceClass->GetPathName());
+            AddObjectReference(SourceClass);
+        }
+        if (FProperty* Property = VariableGetNode->GetPropertyForVariable())
+        {
+            NodeObject->SetStringField(TEXT("variable_property"), Property->GetName());
+            NodeObject->SetStringField(TEXT("variable_cpp_type"), Property->GetCPPType());
+            if (UStruct* OwnerStruct = Property->GetOwnerStruct())
+            {
+                NodeObject->SetStringField(TEXT("variable_owner_struct"), OwnerStruct->GetPathName());
+                AddObjectReference(OwnerStruct);
+            }
+        }
+    }
+    else if (UK2Node_VariableSet* VariableSetNode = Cast<UK2Node_VariableSet>(Node))
+    {
+        NodeKind = TEXT("variable_set");
+        NodeObject->SetStringField(TEXT("variable_name"), VariableSetNode->GetVarNameString());
+        NodeObject->SetObjectField(TEXT("variable_reference"), MemberReferenceToJson(VariableSetNode->VariableReference));
+        if (UClass* SourceClass = VariableSetNode->GetVariableSourceClass())
+        {
+            NodeObject->SetStringField(TEXT("variable_source_class"), SourceClass->GetPathName());
+            AddObjectReference(SourceClass);
+        }
+        if (FProperty* Property = VariableSetNode->GetPropertyForVariable())
+        {
+            NodeObject->SetStringField(TEXT("variable_property"), Property->GetName());
+            NodeObject->SetStringField(TEXT("variable_cpp_type"), Property->GetCPPType());
+            if (UStruct* OwnerStruct = Property->GetOwnerStruct())
+            {
+                NodeObject->SetStringField(TEXT("variable_owner_struct"), OwnerStruct->GetPathName());
+                AddObjectReference(OwnerStruct);
+            }
+        }
+    }
+    else if (UK2Node_Event* EventNode = Cast<UK2Node_Event>(Node))
+    {
+        NodeKind = TEXT("event");
+        NodeObject->SetStringField(TEXT("event_name"), EventNode->GetFunctionName().ToString());
+        NodeObject->SetObjectField(TEXT("event_reference"), MemberReferenceToJson(EventNode->EventReference));
+        if (UClass* ParentClass = EventNode->EventReference.GetMemberParentClass())
+        {
+            AddObjectReference(ParentClass);
+        }
+
+        if (UK2Node_ComponentBoundEvent* ComponentBoundEvent = Cast<UK2Node_ComponentBoundEvent>(Node))
+        {
+            NodeKind = TEXT("component_bound_event");
+            NodeObject->SetStringField(TEXT("delegate_property_name"), ComponentBoundEvent->DelegatePropertyName.ToString());
+            NodeObject->SetStringField(TEXT("component_property_name"), ComponentBoundEvent->GetComponentPropertyName().ToString());
+            AddObjectReference(ComponentBoundEvent->DelegateOwnerClass);
+        }
+        else if (UK2Node_ActorBoundEvent* ActorBoundEvent = Cast<UK2Node_ActorBoundEvent>(Node))
+        {
+            NodeKind = TEXT("actor_bound_event");
+            NodeObject->SetStringField(TEXT("delegate_property_name"), ActorBoundEvent->DelegatePropertyName.ToString());
+            AddObjectReference(ActorBoundEvent->DelegateOwnerClass);
+            AddObjectReference(ActorBoundEvent->EventOwner);
+        }
+    }
+    else if (UK2Node_InputAction* InputActionNode = Cast<UK2Node_InputAction>(Node))
+    {
+        NodeKind = TEXT("input_action");
+        NodeObject->SetStringField(TEXT("input_action_name"), InputActionNode->InputActionName.ToString());
+        NodeObject->SetBoolField(TEXT("consume_input"), InputActionNode->bConsumeInput != 0);
+        NodeObject->SetBoolField(TEXT("execute_when_paused"), InputActionNode->bExecuteWhenPaused != 0);
+        NodeObject->SetBoolField(TEXT("override_parent_binding"), InputActionNode->bOverrideParentBinding != 0);
+    }
+    else if (UK2Node_EnhancedInputAction* EnhancedInputActionNode = Cast<UK2Node_EnhancedInputAction>(Node))
+    {
+        NodeKind = TEXT("enhanced_input_action");
+        if (EnhancedInputActionNode->InputAction)
+        {
+            NodeObject->SetStringField(TEXT("input_action"), EnhancedInputActionNode->InputAction->GetPathName());
+            AddObjectReference(EnhancedInputActionNode->InputAction);
+        }
+    }
+    else if (UK2Node_InputAxisEvent* InputAxisNode = Cast<UK2Node_InputAxisEvent>(Node))
+    {
+        NodeKind = TEXT("input_axis");
+        NodeObject->SetStringField(TEXT("input_axis_name"), InputAxisNode->InputAxisName.ToString());
+        NodeObject->SetBoolField(TEXT("consume_input"), InputAxisNode->bConsumeInput != 0);
+        NodeObject->SetBoolField(TEXT("execute_when_paused"), InputAxisNode->bExecuteWhenPaused != 0);
+        NodeObject->SetBoolField(TEXT("override_parent_binding"), InputAxisNode->bOverrideParentBinding != 0);
+    }
+    else if (UK2Node_DynamicCast* DynamicCastNode = Cast<UK2Node_DynamicCast>(Node))
+    {
+        NodeKind = TEXT("dynamic_cast");
+        if (DynamicCastNode->TargetType)
+        {
+            NodeObject->SetStringField(TEXT("target_type"), DynamicCastNode->TargetType->GetPathName());
+            AddObjectReference(DynamicCastNode->TargetType);
+        }
+    }
+    else if (Node->IsA<UK2Node_AddDelegate>())
+    {
+        NodeKind = TEXT("delegate_bind");
+    }
+    else if (Node->IsA<UK2Node_RemoveDelegate>())
+    {
+        NodeKind = TEXT("delegate_unbind");
+    }
+    else if (Node->IsA<UK2Node_ClearDelegate>())
+    {
+        NodeKind = TEXT("delegate_clear");
+    }
+    else if (Node->IsA<UK2Node_CallDelegate>())
+    {
+        NodeKind = TEXT("delegate_call");
+    }
+    else if (Node->IsA<UK2Node_AssignDelegate>())
+    {
+        NodeKind = TEXT("delegate_assign");
+    }
+    else if (Node->IsA<UK2Node_CustomEvent>())
+    {
+        NodeKind = TEXT("custom_event");
+    }
+    else if (Node->IsA<UK2Node_MacroInstance>())
+    {
+        NodeKind = TEXT("macro_instance");
+    }
+
+    if (bIncludeReferences)
+    {
+        for (UEdGraphPin* Pin : Node->Pins)
+        {
+            if (!Pin)
+            {
+                continue;
+            }
+            AddObjectReference(Pin->DefaultObject);
+            if (Pin->PinType.PinSubCategoryObject.IsValid())
+            {
+                AddObjectReference(Pin->PinType.PinSubCategoryObject.Get());
+            }
+        }
+        NodeObject->SetArrayField(TEXT("reference_paths"), ReferenceValues);
+        NodeObject->SetNumberField(TEXT("reference_count"), ReferenceValues.Num());
+        NodeObject->SetBoolField(TEXT("reference_paths_truncated"), bReferencesTruncated);
+    }
+
+    NodeObject->SetStringField(TEXT("node_kind"), NodeKind);
+    return NodeObject;
+}
+
+TSharedPtr<FJsonObject> BlueprintLinkToJson(const UBlueprint* Blueprint, UEdGraphPin* Pin, UEdGraphPin* LinkedPin)
+{
+    TSharedPtr<FJsonObject> LinkObject = MakeShared<FJsonObject>();
+    if (!Pin || !LinkedPin || !Pin->GetOwningNode() || !LinkedPin->GetOwningNode())
+    {
+        return LinkObject;
+    }
+
+    UEdGraphPin* SourcePin = Pin->Direction == EGPD_Output ? Pin : LinkedPin;
+    UEdGraphPin* TargetPin = Pin->Direction == EGPD_Output ? LinkedPin : Pin;
+    UEdGraphNode* SourceNode = SourcePin->GetOwningNode();
+    UEdGraphNode* TargetNode = TargetPin->GetOwningNode();
+
+    LinkObject->SetStringField(TEXT("source_node_id"), SourceNode->NodeGuid.ToString());
+    LinkObject->SetStringField(TEXT("source_node_name"), SourceNode->GetName());
+    LinkObject->SetStringField(TEXT("source_node_title"), SourceNode->GetNodeTitle(ENodeTitleType::FullTitle).ToString());
+    LinkObject->SetStringField(TEXT("source_pin"), SourcePin->PinName.ToString());
+    LinkObject->SetStringField(TEXT("target_node_id"), TargetNode->NodeGuid.ToString());
+    LinkObject->SetStringField(TEXT("target_node_name"), TargetNode->GetName());
+    LinkObject->SetStringField(TEXT("target_node_title"), TargetNode->GetNodeTitle(ENodeTitleType::FullTitle).ToString());
+    LinkObject->SetStringField(TEXT("target_pin"), TargetPin->PinName.ToString());
+    LinkObject->SetStringField(TEXT("pin_category"), SourcePin->PinType.PinCategory.ToString());
+    LinkObject->SetStringField(TEXT("link_kind"), SourcePin->PinType.PinCategory == UEdGraphSchema_K2::PC_Exec ? TEXT("exec") : TEXT("data"));
+
+    if (UEdGraph* SourceGraph = SourceNode->GetGraph())
+    {
+        LinkObject->SetObjectField(TEXT("source_graph"), GraphToJson(Blueprint, SourceGraph));
+    }
+    if (UEdGraph* TargetGraph = TargetNode->GetGraph())
+    {
+        LinkObject->SetObjectField(TEXT("target_graph"), GraphToJson(Blueprint, TargetGraph));
+    }
+
+    return LinkObject;
 }
 
 FString ExportPropertyValueToText(const FProperty* Property, const void* ValuePtr)
@@ -6534,6 +6925,10 @@ TSharedPtr<FJsonObject> FUnrealMCPBlueprintNodeCommands::HandleCommand(const FSt
     {
         return HandleInspectAnimStateMachineTransitions(Params);
     }
+    else if (CommandType == TEXT("inspect_blueprint_graph_call_topology"))
+    {
+        return HandleInspectBlueprintGraphCallTopology(Params);
+    }
     else if (CommandType == TEXT("controlrig_direct_gate_probe"))
     {
         return HandleControlRigDirectGateProbe(Params);
@@ -9790,6 +10185,195 @@ TSharedPtr<FJsonObject> FUnrealMCPBlueprintNodeCommands::HandleInspectAnimStateM
     ResultObj->SetNumberField(TEXT("transition_count"), TotalTransitionCount);
     ResultObj->SetBoolField(TEXT("read_only"), true);
     ResultObj->SetArrayField(TEXT("state_machines"), StateMachineValues);
+    return ResultObj;
+}
+
+TSharedPtr<FJsonObject> FUnrealMCPBlueprintNodeCommands::HandleInspectBlueprintGraphCallTopology(const TSharedPtr<FJsonObject>& Params)
+{
+    FString BlueprintName;
+    if (!Params->TryGetStringField(TEXT("blueprint_name"), BlueprintName))
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Missing 'blueprint_name' parameter"));
+    }
+
+    UBlueprint* Blueprint = FUnrealMCPCommonUtils::FindBlueprint(BlueprintName);
+    if (!Blueprint)
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("Blueprint not found: %s"), *BlueprintName));
+    }
+
+    const FString GraphId = GetStringParam(Params, TEXT("graph_id"));
+    const FString GraphName = GetStringParam(Params, TEXT("graph_name"));
+    const FString GraphNameContains = GetStringParam(Params, TEXT("graph_name_contains"));
+    const FString GraphType = GetStringParam(Params, TEXT("graph_type"));
+    const FString NormalizedGraphType = NormalizeGraphType(GraphType);
+    const FString NodeType = GetStringParam(Params, TEXT("node_type"));
+    const FString TitleContains = GetStringParam(Params, TEXT("title_contains"));
+    const FString ReferenceContains = GetStringParam(Params, TEXT("reference_contains"));
+    const bool bIncludePins = GetBoolParam(Params, TEXT("include_pins"), false);
+    const bool bIncludeLinks = GetBoolParam(Params, TEXT("include_links"), true);
+    const bool bIncludeReferences = GetBoolParam(Params, TEXT("include_references"), true);
+    const int32 MaxGraphs = GetClampedIntParam(Params, TEXT("max_graphs"), 64, -1, 4096);
+    const int32 MaxNodesPerGraph = GetClampedIntParam(Params, TEXT("max_nodes_per_graph"), 512, -1, 10000);
+    const int32 MaxLinksPerGraph = GetClampedIntParam(Params, TEXT("max_links_per_graph"), 1024, -1, 50000);
+    const int32 MaxReferencesPerNode = GetClampedIntParam(Params, TEXT("max_references_per_node"), 64, -1, 4096);
+    const bool bHasGraphSelector = !GraphId.IsEmpty() || !GraphName.IsEmpty() || !NormalizedGraphType.IsEmpty();
+
+    TArray<UEdGraph*> AllGraphs;
+    Blueprint->GetAllGraphs(AllGraphs);
+
+    TArray<TSharedPtr<FJsonValue>> GraphValues;
+    int32 MatchingGraphCount = 0;
+    int32 IncludedGraphCount = 0;
+    int32 TotalMatchingNodeCount = 0;
+    int32 TotalIncludedNodeCount = 0;
+    int32 TotalIncludedLinkCount = 0;
+    bool bGraphsTruncated = false;
+
+    for (UEdGraph* Graph : AllGraphs)
+    {
+        if (!Graph)
+        {
+            continue;
+        }
+
+        if (bHasGraphSelector && !GraphMatchesSelector(Blueprint, Graph, GraphId, GraphName, GraphType))
+        {
+            continue;
+        }
+        if (!GraphNameContains.IsEmpty() && !Graph->GetName().Contains(GraphNameContains, ESearchCase::IgnoreCase))
+        {
+            continue;
+        }
+
+        ++MatchingGraphCount;
+        if (MaxGraphs >= 0 && IncludedGraphCount >= MaxGraphs)
+        {
+            bGraphsTruncated = true;
+            continue;
+        }
+
+        TArray<TSharedPtr<FJsonValue>> NodeValues;
+        TArray<TSharedPtr<FJsonValue>> LinkValues;
+        TSet<FString> SeenLinkKeys;
+        int32 MatchingNodeCount = 0;
+        int32 IncludedNodeCount = 0;
+        int32 LinkCountBeforeTruncation = 0;
+        bool bNodesTruncated = false;
+        bool bLinksTruncated = false;
+
+        for (UEdGraphNode* Node : Graph->Nodes)
+        {
+            if (!Node)
+            {
+                continue;
+            }
+            if (!MatchesNodeFilter(Node, NodeType, TitleContains))
+            {
+                continue;
+            }
+            if (!ReferenceContains.IsEmpty() && !GetBlueprintTopologyNodeSearchText(Node).Contains(ReferenceContains, ESearchCase::IgnoreCase))
+            {
+                continue;
+            }
+
+            ++MatchingNodeCount;
+            if (MaxNodesPerGraph >= 0 && IncludedNodeCount >= MaxNodesPerGraph)
+            {
+                bNodesTruncated = true;
+                continue;
+            }
+
+            NodeValues.Add(MakeShared<FJsonValueObject>(BlueprintTopologyNodeToJson(Node, bIncludePins, bIncludeReferences, MaxReferencesPerNode)));
+            ++IncludedNodeCount;
+
+            if (bIncludeLinks)
+            {
+                for (UEdGraphPin* Pin : Node->Pins)
+                {
+                    if (!Pin)
+                    {
+                        continue;
+                    }
+                    for (UEdGraphPin* LinkedPin : Pin->LinkedTo)
+                    {
+                        if (!LinkedPin || !LinkedPin->GetOwningNode())
+                        {
+                            continue;
+                        }
+
+                        UEdGraphPin* SourcePin = Pin->Direction == EGPD_Output ? Pin : LinkedPin;
+                        UEdGraphPin* TargetPin = Pin->Direction == EGPD_Output ? LinkedPin : Pin;
+                        if (!SourcePin || !TargetPin || !SourcePin->GetOwningNode() || !TargetPin->GetOwningNode())
+                        {
+                            continue;
+                        }
+
+                        const FString LinkKey = FString::Printf(
+                            TEXT("%s:%s->%s:%s"),
+                            *SourcePin->GetOwningNode()->NodeGuid.ToString(),
+                            *SourcePin->PinName.ToString(),
+                            *TargetPin->GetOwningNode()->NodeGuid.ToString(),
+                            *TargetPin->PinName.ToString());
+                        if (SeenLinkKeys.Contains(LinkKey))
+                        {
+                            continue;
+                        }
+                        SeenLinkKeys.Add(LinkKey);
+                        ++LinkCountBeforeTruncation;
+
+                        if (MaxLinksPerGraph >= 0 && LinkValues.Num() >= MaxLinksPerGraph)
+                        {
+                            bLinksTruncated = true;
+                            continue;
+                        }
+
+                        LinkValues.Add(MakeShared<FJsonValueObject>(BlueprintLinkToJson(Blueprint, Pin, LinkedPin)));
+                    }
+                }
+            }
+        }
+
+        TSharedPtr<FJsonObject> GraphObject = GraphToJson(Blueprint, Graph);
+        GraphObject->SetArrayField(TEXT("nodes"), NodeValues);
+        GraphObject->SetArrayField(TEXT("links"), LinkValues);
+        GraphObject->SetNumberField(TEXT("matching_node_count"), MatchingNodeCount);
+        GraphObject->SetNumberField(TEXT("included_node_count"), IncludedNodeCount);
+        GraphObject->SetNumberField(TEXT("included_link_count"), LinkValues.Num());
+        GraphObject->SetNumberField(TEXT("matching_link_count"), LinkCountBeforeTruncation);
+        GraphObject->SetBoolField(TEXT("nodes_truncated"), bNodesTruncated);
+        GraphObject->SetBoolField(TEXT("links_truncated"), bLinksTruncated);
+        GraphValues.Add(MakeShared<FJsonValueObject>(GraphObject));
+
+        ++IncludedGraphCount;
+        TotalMatchingNodeCount += MatchingNodeCount;
+        TotalIncludedNodeCount += IncludedNodeCount;
+        TotalIncludedLinkCount += LinkValues.Num();
+    }
+
+    TSharedPtr<FJsonObject> ResultObj = MakeShared<FJsonObject>();
+    ResultObj->SetBoolField(TEXT("success"), true);
+    ResultObj->SetStringField(TEXT("blueprint_name"), BlueprintName);
+    ResultObj->SetStringField(TEXT("blueprint_path"), Blueprint->GetPathName());
+    ResultObj->SetStringField(TEXT("graph_id"), GraphId);
+    ResultObj->SetStringField(TEXT("graph_name"), GraphName);
+    ResultObj->SetStringField(TEXT("graph_name_contains"), GraphNameContains);
+    ResultObj->SetStringField(TEXT("graph_type"), GraphType);
+    ResultObj->SetStringField(TEXT("node_type"), NodeType);
+    ResultObj->SetStringField(TEXT("title_contains"), TitleContains);
+    ResultObj->SetStringField(TEXT("reference_contains"), ReferenceContains);
+    ResultObj->SetBoolField(TEXT("include_pins"), bIncludePins);
+    ResultObj->SetBoolField(TEXT("include_links"), bIncludeLinks);
+    ResultObj->SetBoolField(TEXT("include_references"), bIncludeReferences);
+    ResultObj->SetNumberField(TEXT("matching_graph_count"), MatchingGraphCount);
+    ResultObj->SetNumberField(TEXT("included_graph_count"), IncludedGraphCount);
+    ResultObj->SetNumberField(TEXT("matching_node_count"), TotalMatchingNodeCount);
+    ResultObj->SetNumberField(TEXT("included_node_count"), TotalIncludedNodeCount);
+    ResultObj->SetNumberField(TEXT("included_link_count"), TotalIncludedLinkCount);
+    ResultObj->SetBoolField(TEXT("graphs_truncated"), bGraphsTruncated);
+    ResultObj->SetBoolField(TEXT("read_only"), true);
+    ResultObj->SetStringField(TEXT("scope_note"), TEXT("Static Blueprint graph topology only. This does not prove runtime execution order or whether a branch fired in PIE/SIE."));
+    ResultObj->SetArrayField(TEXT("graphs"), GraphValues);
     return ResultObj;
 }
 
