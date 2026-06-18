@@ -1864,6 +1864,74 @@ def register_blueprint_node_tools(mcp: FastMCP):
             return {"success": False, "message": error_msg}
 
     @mcp.tool()
+    def ensure_blendspace_sample_variant(
+        ctx: Context,
+        source_blendspace: str,
+        variant_name: str = "Variant",
+        target_root: str = "/Game/_MCP_Sample/AnimStudy",
+        target_blendspace: str = "",
+        axis_edits: Optional[List[Dict[str, Any]]] = None,
+        sample_edits: Optional[List[Dict[str, Any]]] = None,
+        add_samples: Optional[List[Dict[str, Any]]] = None,
+        overwrite_existing: bool = False,
+        save: bool = True,
+        dry_run: bool = False,
+        validate_only: bool = False,
+        allow_non_sample: bool = False,
+    ) -> Dict[str, Any]:
+        """
+        Create or reuse a sample-only BlendSpace variant and apply explicit axis/sample edits.
+
+        By default this command refuses targets outside /Game/_MCP_Sample. It duplicates
+        the source BlendSpace to a sample path, applies axis range/grid changes,
+        edits existing sample coordinates or sample animations, optionally adds samples
+        with compatible AnimSequence assets, validates/resamples the BlendSpace, and saves
+        only the target asset. Use sample_blendspace_runtime_pose_grid after this command
+        for runtime pose evidence.
+
+        Args:
+            source_blendspace: Source BlendSpace path
+            variant_name: Name segment used for default target path
+            target_root: Sample output folder, defaults to /Game/_MCP_Sample/AnimStudy
+            target_blendspace: Optional explicit target BlendSpace package path
+            axis_edits: Optional axis edits. Each entry accepts index/axis plus min, max, grid_num, display_name, snap_to_grid, wrap_input.
+            sample_edits: Optional existing sample edits. Select by index/sample_index, animation, or animation_name; set input/position/sample_value, x/y/z, offset/delta, or replacement_animation.
+            add_samples: Optional samples to add. Each entry requires animation and input/position/sample_value or x/y/z.
+            overwrite_existing: Delete and recreate existing target asset before applying edits
+            save: Save the target BlendSpace after edits
+            dry_run: Validate paths/request and return without editing assets
+            validate_only: Same as dry_run for command-routing compatibility
+            allow_non_sample: Allow target paths outside /Game/_MCP_Sample
+
+        Returns:
+            Response with target path, before/after axes and samples, edit results, save result, and safety flags.
+        """
+        try:
+            params: Dict[str, Any] = {
+                "source_blendspace": source_blendspace,
+                "variant_name": variant_name,
+                "target_root": target_root,
+                "overwrite_existing": overwrite_existing,
+                "save": save,
+                "dry_run": dry_run,
+                "validate_only": validate_only,
+                "allow_non_sample": allow_non_sample,
+            }
+            if target_blendspace:
+                params["target_blendspace"] = target_blendspace
+            if axis_edits is not None:
+                params["axis_edits"] = axis_edits
+            if sample_edits is not None:
+                params["sample_edits"] = sample_edits
+            if add_samples is not None:
+                params["add_samples"] = add_samples
+            return send_node_command("ensure_blendspace_sample_variant", params)
+        except Exception as e:
+            error_msg = f"Error ensuring BlendSpace sample variant: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
     def inspect_anim_instance_runtime_state(
         ctx: Context,
         actor_label: str = "",

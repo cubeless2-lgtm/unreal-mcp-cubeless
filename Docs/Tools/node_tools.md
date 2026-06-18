@@ -833,6 +833,48 @@ Evaluate BlendSpace inputs on a transient runtime `SkeletalMeshActor` and return
 }
 ```
 
+### ensure_blendspace_sample_variant
+
+Create or reuse a sample-only BlendSpace variant and apply explicit axis/sample edits.
+
+**Important scope note:** by default this command refuses target paths outside `/Game/_MCP_Sample`. It duplicates the source BlendSpace to a sample path, applies requested axis edits and sample-coordinate edits, validates/resamples the target BlendSpace, and saves only the target asset. It does not modify the source BlendSpace. Run `sample_blendspace_runtime_pose_grid` afterwards to prove runtime pose impact.
+
+**Parameters:**
+- `source_blendspace` or `source_blendspace_path` (string, required) - Source BlendSpace asset path.
+- `variant_name` (string, optional) - Name segment for the default target path. Defaults to `Variant`.
+- `target_root` (string, optional) - Sample output folder. Defaults to `/Game/_MCP_Sample/AnimStudy`.
+- `target_blendspace` or `target_blendspace_path` (string, optional) - Explicit target BlendSpace package path.
+- `axis_edits` (array, optional) - Axis edits. Each entry accepts `index`/`axis_index` or `axis` (`x`, `y`, `z`, or display name), plus optional `display_name`, `min`, `max`, `grid_num`, `snap_to_grid`, and `wrap_input`.
+- `sample_edits` (array, optional) - Existing sample edits. Select a sample by `index`/`sample_index`, `animation`, or `animation_name`; set an absolute `input`/`position`/`sample_value`, component fields `x`/`y`/`z`, an `offset`/`delta`, or `replacement_animation`.
+- `add_samples` (array, optional) - Samples to add. Each entry requires `animation` and `input`/`position`/`sample_value` or `x`/`y`/`z`. Animation-less add is intentionally unsupported because Unreal asserts on asset BlendSpaces.
+- `overwrite_existing` (boolean, optional) - Delete and recreate the target asset before editing. Defaults to `false`.
+- `save` (boolean, optional) - Save the target BlendSpace after edits. Defaults to `true`.
+- `dry_run` or `validate_only` (boolean, optional) - Validate paths and request shape without duplicating, editing, or saving assets.
+- `allow_non_sample` (boolean, optional) - Allow target paths outside `/Game/_MCP_Sample`. Defaults to `false`.
+
+**Returns:**
+- `source_blendspace`, `target_blendspace`, source/target class and skeleton metadata
+- `source_axes`, `source_samples`, `target_axes`, and `target_samples`
+- `axis_edit_results`, `sample_edit_results`, and `add_sample_results`
+- `target_blendspace_created`, `target_blendspace_reused`, `changed`, `save`, `original_assets_modified=false`, `errors`, and `warnings`
+
+**Example:**
+```json
+{
+  "command": "ensure_blendspace_sample_variant",
+  "params": {
+    "source_blendspace": "/Game/StackOBot/Characters/Bot/Animations/BS_Bot_WalkRunLean.BS_Bot_WalkRunLean",
+    "variant_name": "LeanWideStudy",
+    "sample_edits": [
+      {"animation_name": "A_Bot_Run_LeanLeft", "x": 1.25},
+      {"animation_name": "A_Bot_Run_LeanRight", "x": -1.25}
+    ],
+    "save": true,
+    "allow_non_sample": false
+  }
+}
+```
+
 ### inspect_anim_instance_runtime_state
 
 Inspect runtime `AnimInstance` state from a matched live `SkeletalMeshComponent` without modifying or saving assets.
