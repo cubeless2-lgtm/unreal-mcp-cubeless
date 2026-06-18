@@ -422,6 +422,7 @@ FString UUnrealMCPBridge::ExecuteCommand(const FString& CommandType, const TShar
                      CommandType == TEXT("set_anim_graph_rigidbody_settings") ||
                      CommandType == TEXT("ensure_anim_graph_input_pose_passthrough") ||
                      CommandType == TEXT("ensure_anim_graph_modify_bone_demo") ||
+                     CommandType == TEXT("ensure_postprocess_anim_demo_variant") ||
                      CommandType == TEXT("ensure_anim_graph_modify_curve_demo") ||
                      CommandType == TEXT("set_anim_graph_controlrig_input_defaults") ||
                      CommandType == TEXT("ensure_controlrig_forced_driver_animbp") ||

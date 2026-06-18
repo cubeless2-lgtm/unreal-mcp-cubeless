@@ -78,6 +78,53 @@ The Modify Bone node is configured to ignore translation and scale, use additive
 }
 ```
 
+### ensure_postprocess_anim_demo_variant
+
+Create or reuse a sample Post Process AnimBP demo variant and assign it to a duplicated SkeletalMesh. The command is intended for animation learning fixtures where the original character assets should remain untouched.
+
+The command performs this sequence:
+
+`source AnimBP + source SkeletalMesh -> target sample AnimBP + target sample SkeletalMesh -> Modify Bone demo chain -> compile AnimBP -> assign SkeletalMesh PostProcessAnimBlueprint -> save`
+
+By default the target AnimBP and target SkeletalMesh must be under `/Game/_MCP_Sample/`. Source assets may be normal project assets because they are loaded and duplicated, not modified.
+
+**Parameters:**
+- `source_blueprint_name` (string) - Source Anim Blueprint name or path to duplicate
+- `source_skeletal_mesh` (string) - Source SkeletalMesh package/object path to duplicate
+- `variant_name` (string, optional) - Name segment used for default target paths; defaults to `Variant`
+- `target_root` (string, optional) - Target content folder; defaults to `/Game/_MCP_Sample/AnimStudy`
+- `target_blueprint_name` (string, optional) - Explicit target AnimBP package path
+- `target_skeletal_mesh` (string, optional) - Explicit target SkeletalMesh package path
+- `graph_name` (string, optional) - Defaults to `AnimGraph`
+- `graph_id` (string, optional) - Target graph GUID
+- `graph_type` (string, optional) - Defaults to `function`
+- `bone_name` (string, optional) - Bone modified by the Post Process demo; defaults to `head`
+- `rotation` (array, optional) - `[Pitch, Yaw, Roll]` additive rotation in bone space; defaults to `[0, 0, 6]`
+- `replace_existing` (boolean, optional) - Replace existing pose links needed to install the Modify Bone chain; defaults to `true`
+- `overwrite_existing` (boolean, optional) - Delete and recreate existing target assets instead of reusing them
+- `compile` (boolean, optional) - Compile the target AnimBP before assignment; defaults to `true`
+- `save` (boolean, optional) - Save target AnimBP and SkeletalMesh; defaults to `true`
+- `dry_run` (boolean, optional) - Validate and report paths without editing assets
+- `allow_non_sample` (boolean, optional) - Allow target paths outside `/Game/_MCP_Sample/`
+
+**Example:**
+```json
+{
+  "command": "ensure_postprocess_anim_demo_variant",
+  "params": {
+    "source_blueprint_name": "/Game/_MCP_Sample/AnimStudy/ABP_Bot_PostProcess_Study.ABP_Bot_PostProcess_Study",
+    "source_skeletal_mesh": "/Game/StackOBot/Characters/Bot/Mesh/SKM_Bot.SKM_Bot",
+    "variant_name": "HeadPitch",
+    "target_blueprint_name": "/Game/_MCP_Sample/AnimStudy/ABP_Bot_PostProcess_Study_HeadPitch",
+    "target_skeletal_mesh": "/Game/_MCP_Sample/AnimStudy/SKM_Bot_PostProcess_Study_HeadPitch",
+    "bone_name": "head",
+    "rotation": [6, 0, 0],
+    "replace_existing": true,
+    "overwrite_existing": false
+  }
+}
+```
+
 ### ensure_anim_graph_modify_curve_demo
 
 Ensure an Animation Blueprint `AnimGraph` contains a simple Modify Curve demo chain. This is intended for sample-only animation learning fixtures where the incoming pose should pass through forced curve values, especially ControlRig gate experiments.

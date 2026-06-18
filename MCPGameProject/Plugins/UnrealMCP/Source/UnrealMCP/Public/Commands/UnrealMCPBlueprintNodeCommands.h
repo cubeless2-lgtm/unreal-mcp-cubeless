@@ -61,6 +61,7 @@ private:
     TSharedPtr<FJsonObject> HandleSetAnimGraphRigidBodySettings(const TSharedPtr<FJsonObject>& Params);
     TSharedPtr<FJsonObject> HandleEnsureAnimGraphInputPosePassthrough(const TSharedPtr<FJsonObject>& Params);
     TSharedPtr<FJsonObject> HandleEnsureAnimGraphModifyBoneDemo(const TSharedPtr<FJsonObject>& Params);
+    TSharedPtr<FJsonObject> HandleEnsurePostProcessAnimDemoVariant(const TSharedPtr<FJsonObject>& Params);
     TSharedPtr<FJsonObject> HandleEnsureAnimGraphModifyCurveDemo(const TSharedPtr<FJsonObject>& Params);
     TSharedPtr<FJsonObject> HandleSetAnimGraphControlRigInputDefaults(const TSharedPtr<FJsonObject>& Params);
     TSharedPtr<FJsonObject> HandleEnsureControlRigForcedDriverAnimBP(const TSharedPtr<FJsonObject>& Params);

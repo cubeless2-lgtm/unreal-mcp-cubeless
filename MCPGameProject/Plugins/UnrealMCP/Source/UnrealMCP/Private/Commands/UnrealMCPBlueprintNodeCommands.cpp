@@ -7301,6 +7301,136 @@ bool IsAllowedAnimNodeProbeTempRoot(const FString& TempRoot)
         || TempRoot.StartsWith(TEXT("/Game/_MCP_Temp/"), ESearchCase::IgnoreCase);
 }
 
+FString NormalizePackagePathForPostProcessVariant(const FString& RawPath)
+{
+    FString PackagePath = FPackageName::ExportTextPathToObjectPath(RawPath).TrimStartAndEnd();
+    PackagePath.TrimQuotesInline();
+    PackagePath.ReplaceInline(TEXT("\\"), TEXT("/"));
+
+    int32 DotIndex = INDEX_NONE;
+    if (PackagePath.FindChar(TEXT('.'), DotIndex))
+    {
+        PackagePath.LeftInline(DotIndex);
+    }
+
+    while (PackagePath.Contains(TEXT("//")))
+    {
+        PackagePath.ReplaceInline(TEXT("//"), TEXT("/"));
+    }
+
+    while (PackagePath.EndsWith(TEXT("/")))
+    {
+        PackagePath.LeftChopInline(1);
+    }
+
+    return PackagePath;
+}
+
+FString NormalizeSampleRootForPostProcessVariant(const FString& RawRoot)
+{
+    FString Root = NormalizePackagePathForPostProcessVariant(RawRoot.IsEmpty() ? TEXT("/Game/_MCP_Sample/AnimStudy") : RawRoot);
+    return Root.IsEmpty() ? TEXT("/Game/_MCP_Sample/AnimStudy") : Root;
+}
+
+bool IsAllowedPostProcessVariantTargetPath(const FString& PackagePath)
+{
+    return PackagePath.Equals(TEXT("/Game/_MCP_Sample"), ESearchCase::IgnoreCase)
+        || PackagePath.StartsWith(TEXT("/Game/_MCP_Sample/"), ESearchCase::IgnoreCase);
+}
+
+bool IsValidGamePackagePathForPostProcessVariant(const FString& PackagePath, FString& OutError)
+{
+    if (PackagePath.IsEmpty())
+    {
+        OutError = TEXT("Package path cannot be empty");
+        return false;
+    }
+    if (!PackagePath.StartsWith(TEXT("/Game/"), ESearchCase::CaseSensitive))
+    {
+        OutError = FString::Printf(TEXT("Expected a /Game package path, got: %s"), *PackagePath);
+        return false;
+    }
+    if (PackagePath.Contains(TEXT(".")))
+    {
+        OutError = FString::Printf(TEXT("Expected a package path without object suffix, got: %s"), *PackagePath);
+        return false;
+    }
+    return true;
+}
+
+UObject* DuplicateOrReusePostProcessVariantAsset(
+    UObject* SourceAsset,
+    const FString& TargetPath,
+    UClass* ExpectedClass,
+    const FString& AssetLabel,
+    bool bOverwrite,
+    bool& bOutCreated,
+    bool& bOutReused,
+    TArray<TSharedPtr<FJsonValue>>& ErrorValues)
+{
+    bOutCreated = false;
+    bOutReused = false;
+
+    if (!SourceAsset)
+    {
+        ErrorValues.Add(MakeShared<FJsonValueString>(FString::Printf(TEXT("Cannot duplicate null source %s"), *AssetLabel)));
+        return nullptr;
+    }
+
+    if (UEditorAssetLibrary::DoesAssetExist(TargetPath))
+    {
+        UObject* ExistingAsset = UEditorAssetLibrary::LoadAsset(TargetPath);
+        if (ExpectedClass && ExistingAsset && !ExistingAsset->IsA(ExpectedClass))
+        {
+            if (!bOverwrite)
+            {
+                ErrorValues.Add(MakeShared<FJsonValueString>(FString::Printf(
+                    TEXT("Existing target %s has unexpected class '%s': %s"),
+                    *AssetLabel,
+                    *ExistingAsset->GetClass()->GetName(),
+                    *TargetPath)));
+                return nullptr;
+            }
+        }
+        else if (ExistingAsset && !bOverwrite)
+        {
+            bOutReused = true;
+            return ExistingAsset;
+        }
+
+        if (!bOverwrite)
+        {
+            ErrorValues.Add(MakeShared<FJsonValueString>(FString::Printf(TEXT("Existing target %s could not be loaded: %s"), *AssetLabel, *TargetPath)));
+            return nullptr;
+        }
+        if (!UEditorAssetLibrary::DeleteAsset(TargetPath))
+        {
+            ErrorValues.Add(MakeShared<FJsonValueString>(FString::Printf(TEXT("Failed to delete existing target %s: %s"), *AssetLabel, *TargetPath)));
+            return nullptr;
+        }
+    }
+
+    const FString TargetDirectory = FPackageName::GetLongPackagePath(TargetPath);
+    if (!TargetDirectory.IsEmpty())
+    {
+        UEditorAssetLibrary::MakeDirectory(TargetDirectory);
+    }
+
+    UObject* DuplicatedAsset = UEditorAssetLibrary::DuplicateAsset(SourceAsset->GetOutermost()->GetName(), TargetPath);
+    if (!DuplicatedAsset || (ExpectedClass && !DuplicatedAsset->IsA(ExpectedClass)))
+    {
+        ErrorValues.Add(MakeShared<FJsonValueString>(FString::Printf(
+            TEXT("Failed to duplicate %s '%s' to '%s'"),
+            *AssetLabel,
+            *SourceAsset->GetOutermost()->GetName(),
+            *TargetPath)));
+        return nullptr;
+    }
+
+    bOutCreated = true;
+    return DuplicatedAsset;
+}
+
 TSharedPtr<FJsonObject> AnimNodeProbeCompileBlueprint(UBlueprint* Blueprint)
 {
     TSharedPtr<FJsonObject> CompileObject = MakeShared<FJsonObject>();
@@ -8112,6 +8242,10 @@ TSharedPtr<FJsonObject> FUnrealMCPBlueprintNodeCommands::HandleCommand(const FSt
     else if (CommandType == TEXT("ensure_anim_graph_modify_bone_demo"))
     {
         return HandleEnsureAnimGraphModifyBoneDemo(Params);
+    }
+    else if (CommandType == TEXT("ensure_postprocess_anim_demo_variant"))
+    {
+        return HandleEnsurePostProcessAnimDemoVariant(Params);
     }
     else if (CommandType == TEXT("ensure_anim_graph_modify_curve_demo"))
     {
@@ -13661,6 +13795,260 @@ TSharedPtr<FJsonObject> FUnrealMCPBlueprintNodeCommands::HandleEnsureAnimGraphMo
     ResultObj->SetObjectField(TEXT("component_to_local_node"), NodeToJson(ComponentToLocalNode, true));
     ResultObj->SetObjectField(TEXT("root_node"), NodeToJson(RootNode, true));
     AddGraphField(ResultObj, Blueprint, TargetGraph);
+    return ResultObj;
+}
+
+TSharedPtr<FJsonObject> FUnrealMCPBlueprintNodeCommands::HandleEnsurePostProcessAnimDemoVariant(const TSharedPtr<FJsonObject>& Params)
+{
+    FString SourceBlueprintName;
+    if (!Params->TryGetStringField(TEXT("source_blueprint_name"), SourceBlueprintName))
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Missing 'source_blueprint_name' parameter"));
+    }
+
+    FString SourceSkeletalMeshPath = GetStringParam(Params, TEXT("source_skeletal_mesh"));
+    SourceSkeletalMeshPath.TrimStartAndEndInline();
+    if (SourceSkeletalMeshPath.IsEmpty())
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Missing 'source_skeletal_mesh' parameter"));
+    }
+
+    FString VariantName = GetStringParam(Params, TEXT("variant_name"), TEXT("Variant"));
+    VariantName = SanitizeAssetNameSegmentForAnimNodeProbe(VariantName);
+
+    const FString TargetRoot = NormalizeSampleRootForPostProcessVariant(GetStringParam(Params, TEXT("target_root"), TEXT("/Game/_MCP_Sample/AnimStudy")));
+    const FString TargetBlueprintPath = NormalizePackagePathForPostProcessVariant(GetStringParam(
+        Params,
+        TEXT("target_blueprint_name"),
+        FString::Printf(TEXT("%s/ABP_PostProcess_Demo_%s"), *TargetRoot, *VariantName)));
+    const FString TargetSkeletalMeshPath = NormalizePackagePathForPostProcessVariant(GetStringParam(
+        Params,
+        TEXT("target_skeletal_mesh"),
+        FString::Printf(TEXT("%s/SKM_PostProcess_Demo_%s"), *TargetRoot, *VariantName)));
+
+    FString PathError;
+    if (!IsValidGamePackagePathForPostProcessVariant(TargetRoot, PathError))
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("Invalid target_root. %s"), *PathError));
+    }
+    if (!IsValidGamePackagePathForPostProcessVariant(TargetBlueprintPath, PathError))
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("Invalid target_blueprint_name. %s"), *PathError));
+    }
+    if (!IsValidGamePackagePathForPostProcessVariant(TargetSkeletalMeshPath, PathError))
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("Invalid target_skeletal_mesh. %s"), *PathError));
+    }
+
+    bool bAllowNonSample = false;
+    Params->TryGetBoolField(TEXT("allow_non_sample"), bAllowNonSample);
+    if (!bAllowNonSample && (!IsAllowedPostProcessVariantTargetPath(TargetBlueprintPath) || !IsAllowedPostProcessVariantTargetPath(TargetSkeletalMeshPath)))
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(
+            TEXT("Refusing to create Post Process demo targets outside /Game/_MCP_Sample. target_blueprint='%s' target_skeletal_mesh='%s'. Pass allow_non_sample=true only for intentional non-sample edits."),
+            *TargetBlueprintPath,
+            *TargetSkeletalMeshPath));
+    }
+
+    UBlueprint* SourceBlueprint = FUnrealMCPCommonUtils::FindBlueprint(SourceBlueprintName);
+    if (!SourceBlueprint)
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("Source Anim Blueprint not found: %s"), *SourceBlueprintName));
+    }
+    if (!Cast<UAnimBlueprint>(SourceBlueprint))
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("Source blueprint is not an Anim Blueprint: %s"), *SourceBlueprint->GetPathName()));
+    }
+
+    const FString SourceBlueprintPackagePath = SourceBlueprint->GetOutermost()->GetName();
+    if (SourceBlueprintPackagePath.Equals(TargetBlueprintPath, ESearchCase::IgnoreCase))
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Refusing to use the source Anim Blueprint as the target demo variant"));
+    }
+
+    USkeletalMesh* SourceSkeletalMesh = Cast<USkeletalMesh>(UEditorAssetLibrary::LoadAsset(NormalizePackagePathForPostProcessVariant(SourceSkeletalMeshPath)));
+    if (!SourceSkeletalMesh)
+    {
+        SourceSkeletalMesh = Cast<USkeletalMesh>(LoadObject<UObject>(nullptr, *NormalizeAssetObjectPathForLoad(SourceSkeletalMeshPath)));
+    }
+    if (!SourceSkeletalMesh)
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("Source SkeletalMesh not found: %s"), *SourceSkeletalMeshPath));
+    }
+
+    const FString SourceSkeletalMeshPackagePath = SourceSkeletalMesh->GetOutermost()->GetName();
+    if (SourceSkeletalMeshPackagePath.Equals(TargetSkeletalMeshPath, ESearchCase::IgnoreCase))
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Refusing to use the source SkeletalMesh as the target demo variant"));
+    }
+
+    const bool bDryRun = GetBoolParam(Params, TEXT("dry_run"), false);
+    const bool bOverwriteExisting = GetBoolParam(Params, TEXT("overwrite_existing"), false);
+    const bool bReplaceExisting = GetBoolParam(Params, TEXT("replace_existing"), true);
+    const bool bCompile = GetBoolParam(Params, TEXT("compile"), true);
+    const bool bSave = GetBoolParam(Params, TEXT("save"), true);
+
+    TSharedPtr<FJsonObject> ResultObj = MakeShared<FJsonObject>();
+    ResultObj->SetBoolField(TEXT("success"), true);
+    ResultObj->SetBoolField(TEXT("dry_run"), bDryRun);
+    ResultObj->SetBoolField(TEXT("original_assets_modified"), false);
+    ResultObj->SetStringField(TEXT("variant_name"), VariantName);
+    ResultObj->SetStringField(TEXT("target_root"), TargetRoot);
+    ResultObj->SetStringField(TEXT("source_blueprint"), SourceBlueprint->GetPathName());
+    ResultObj->SetStringField(TEXT("source_skeletal_mesh"), SourceSkeletalMesh->GetPathName());
+    ResultObj->SetStringField(TEXT("target_blueprint"), TargetBlueprintPath);
+    ResultObj->SetStringField(TEXT("target_skeletal_mesh"), TargetSkeletalMeshPath);
+    ResultObj->SetBoolField(TEXT("overwrite_existing"), bOverwriteExisting);
+    ResultObj->SetBoolField(TEXT("replace_existing"), bReplaceExisting);
+
+    if (bDryRun)
+    {
+        ResultObj->SetStringField(TEXT("runtime_note"), TEXT("Dry run only: no assets were duplicated, edited, compiled, or saved."));
+        return ResultObj;
+    }
+
+    TArray<TSharedPtr<FJsonValue>> ErrorValues;
+
+    bool bBlueprintCreated = false;
+    bool bBlueprintReused = false;
+    UBlueprint* TargetBlueprint = Cast<UBlueprint>(DuplicateOrReusePostProcessVariantAsset(
+        SourceBlueprint,
+        TargetBlueprintPath,
+        UAnimBlueprint::StaticClass(),
+        TEXT("Anim Blueprint"),
+        bOverwriteExisting,
+        bBlueprintCreated,
+        bBlueprintReused,
+        ErrorValues));
+
+    bool bSkeletalMeshCreated = false;
+    bool bSkeletalMeshReused = false;
+    USkeletalMesh* TargetSkeletalMesh = Cast<USkeletalMesh>(DuplicateOrReusePostProcessVariantAsset(
+        SourceSkeletalMesh,
+        TargetSkeletalMeshPath,
+        USkeletalMesh::StaticClass(),
+        TEXT("SkeletalMesh"),
+        bOverwriteExisting,
+        bSkeletalMeshCreated,
+        bSkeletalMeshReused,
+        ErrorValues));
+
+    if (!TargetBlueprint || !TargetSkeletalMesh || ErrorValues.Num() > 0)
+    {
+        TSharedPtr<FJsonObject> ErrorObj = FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Failed to prepare Post Process demo target assets"));
+        ErrorObj->SetArrayField(TEXT("errors"), ErrorValues);
+        ErrorObj->SetStringField(TEXT("source_blueprint"), SourceBlueprint->GetPathName());
+        ErrorObj->SetStringField(TEXT("source_skeletal_mesh"), SourceSkeletalMesh->GetPathName());
+        ErrorObj->SetStringField(TEXT("target_blueprint"), TargetBlueprintPath);
+        ErrorObj->SetStringField(TEXT("target_skeletal_mesh"), TargetSkeletalMeshPath);
+        ErrorObj->SetBoolField(TEXT("original_assets_modified"), false);
+        return ErrorObj;
+    }
+
+    TSharedPtr<FJsonObject> GraphParams = MakeShared<FJsonObject>();
+    GraphParams->SetStringField(TEXT("blueprint_name"), TargetBlueprintPath);
+    GraphParams->SetStringField(TEXT("graph_name"), GetStringParam(Params, TEXT("graph_name"), TEXT("AnimGraph")));
+    GraphParams->SetStringField(TEXT("graph_type"), GetStringParam(Params, TEXT("graph_type"), TEXT("function")));
+    const FString GraphId = GetStringParam(Params, TEXT("graph_id"));
+    if (!GraphId.IsEmpty())
+    {
+        GraphParams->SetStringField(TEXT("graph_id"), GraphId);
+    }
+    GraphParams->SetStringField(TEXT("bone_name"), GetStringParam(Params, TEXT("bone_name"), TEXT("head")));
+    GraphParams->SetBoolField(TEXT("replace_existing"), bReplaceExisting);
+    if (Params->HasField(TEXT("rotation")))
+    {
+        GraphParams->SetField(TEXT("rotation"), Params->TryGetField(TEXT("rotation")));
+    }
+
+    TSharedPtr<FJsonObject> GraphResult = HandleEnsureAnimGraphModifyBoneDemo(GraphParams);
+    const bool bGraphSuccess = GraphResult.IsValid()
+        && (!GraphResult->HasField(TEXT("success")) || GraphResult->GetBoolField(TEXT("success")));
+    if (!bGraphSuccess)
+    {
+        TSharedPtr<FJsonObject> ErrorObj = FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Failed to configure target Post Process AnimGraph"));
+        ErrorObj->SetObjectField(TEXT("graph_result"), GraphResult);
+        ErrorObj->SetStringField(TEXT("target_blueprint"), TargetBlueprintPath);
+        ErrorObj->SetStringField(TEXT("target_skeletal_mesh"), TargetSkeletalMeshPath);
+        ErrorObj->SetBoolField(TEXT("target_blueprint_created"), bBlueprintCreated);
+        ErrorObj->SetBoolField(TEXT("target_blueprint_reused"), bBlueprintReused);
+        ErrorObj->SetBoolField(TEXT("target_skeletal_mesh_created"), bSkeletalMeshCreated);
+        ErrorObj->SetBoolField(TEXT("target_skeletal_mesh_reused"), bSkeletalMeshReused);
+        ErrorObj->SetBoolField(TEXT("original_assets_modified"), false);
+        return ErrorObj;
+    }
+
+    TSharedPtr<FJsonObject> CompileResult = MakeShared<FJsonObject>();
+    CompileResult->SetBoolField(TEXT("requested"), bCompile);
+    CompileResult->SetBoolField(TEXT("forced_for_generated_class"), false);
+    if (bCompile || !TargetBlueprint->GeneratedClass)
+    {
+        CompileResult = AnimNodeProbeCompileBlueprint(TargetBlueprint);
+        CompileResult->SetBoolField(TEXT("forced_for_generated_class"), !bCompile);
+    }
+    else
+    {
+        CompileResult->SetBoolField(TEXT("success"), TargetBlueprint->GeneratedClass != nullptr);
+        CompileResult->SetStringField(TEXT("blueprint"), TargetBlueprint->GetPathName());
+        CompileResult->SetStringField(TEXT("generated_class"), TargetBlueprint->GeneratedClass ? TargetBlueprint->GeneratedClass->GetPathName() : FString());
+    }
+
+    UClass* TargetAnimClass = TargetBlueprint->GeneratedClass;
+    if (!TargetAnimClass || !TargetAnimClass->IsChildOf(UAnimInstance::StaticClass()))
+    {
+        TSharedPtr<FJsonObject> ErrorObj = FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Target Anim Blueprint generated class is missing or is not an AnimInstance class"));
+        ErrorObj->SetObjectField(TEXT("compile"), CompileResult);
+        ErrorObj->SetObjectField(TEXT("graph_result"), GraphResult);
+        ErrorObj->SetBoolField(TEXT("original_assets_modified"), false);
+        return ErrorObj;
+    }
+
+    const UClass* PreviousPostProcessClass = TargetSkeletalMesh->GetPostProcessAnimBlueprint().Get();
+    const bool bPostProcessChanged = PreviousPostProcessClass != TargetAnimClass;
+    if (bPostProcessChanged)
+    {
+        TargetSkeletalMesh->Modify();
+        TargetSkeletalMesh->SetPostProcessAnimBlueprint(TSubclassOf<UAnimInstance>(TargetAnimClass));
+        TargetSkeletalMesh->MarkPackageDirty();
+        if (UPackage* MeshPackage = TargetSkeletalMesh->GetOutermost())
+        {
+            MeshPackage->MarkPackageDirty();
+        }
+        TargetSkeletalMesh->PostEditChange();
+    }
+
+    TSharedPtr<FJsonObject> SaveResult = MakeShared<FJsonObject>();
+    SaveResult->SetBoolField(TEXT("requested"), bSave);
+    if (bSave)
+    {
+        SaveResult->SetBoolField(TEXT("blueprint_saved"), UEditorAssetLibrary::SaveAsset(TargetBlueprintPath, false));
+        SaveResult->SetBoolField(TEXT("skeletal_mesh_saved"), UEditorAssetLibrary::SaveAsset(TargetSkeletalMeshPath, false));
+        if (!SaveResult->GetBoolField(TEXT("blueprint_saved")) || !SaveResult->GetBoolField(TEXT("skeletal_mesh_saved")))
+        {
+            TSharedPtr<FJsonObject> ErrorObj = FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Failed to save one or more Post Process demo target assets"));
+            ErrorObj->SetStringField(TEXT("target_blueprint"), TargetBlueprintPath);
+            ErrorObj->SetStringField(TEXT("target_skeletal_mesh"), TargetSkeletalMeshPath);
+            ErrorObj->SetObjectField(TEXT("graph_result"), GraphResult);
+            ErrorObj->SetObjectField(TEXT("compile"), CompileResult);
+            ErrorObj->SetObjectField(TEXT("save"), SaveResult);
+            ErrorObj->SetBoolField(TEXT("original_assets_modified"), false);
+            return ErrorObj;
+        }
+    }
+
+    ResultObj->SetBoolField(TEXT("target_blueprint_created"), bBlueprintCreated);
+    ResultObj->SetBoolField(TEXT("target_blueprint_reused"), bBlueprintReused);
+    ResultObj->SetStringField(TEXT("target_blueprint_object_path"), TargetBlueprint->GetPathName());
+    ResultObj->SetBoolField(TEXT("target_skeletal_mesh_created"), bSkeletalMeshCreated);
+    ResultObj->SetBoolField(TEXT("target_skeletal_mesh_reused"), bSkeletalMeshReused);
+    ResultObj->SetStringField(TEXT("target_skeletal_mesh_object_path"), TargetSkeletalMesh->GetPathName());
+    ResultObj->SetBoolField(TEXT("post_process_anim_blueprint_changed"), bPostProcessChanged);
+    ResultObj->SetStringField(TEXT("previous_post_process_anim_blueprint_class"), PreviousPostProcessClass ? PreviousPostProcessClass->GetPathName() : FString());
+    ResultObj->SetStringField(TEXT("post_process_anim_blueprint_class"), TargetAnimClass->GetPathName());
+    ResultObj->SetObjectField(TEXT("graph_result"), GraphResult);
+    ResultObj->SetObjectField(TEXT("compile"), CompileResult);
+    ResultObj->SetObjectField(TEXT("save"), SaveResult);
+    ResultObj->SetStringField(TEXT("runtime_note"), TEXT("The target SkeletalMesh points to the generated Post Process AnimBlueprint class. For runtime pre/post pose proof, spawn a component using this mesh or use component override sampling."));
     return ResultObj;
 }
 

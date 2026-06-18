@@ -2210,6 +2210,84 @@ def register_blueprint_node_tools(mcp: FastMCP):
             return {"success": False, "message": error_msg}
 
     @mcp.tool()
+    def ensure_postprocess_anim_demo_variant(
+        ctx: Context,
+        source_blueprint_name: str,
+        source_skeletal_mesh: str,
+        variant_name: str = "Variant",
+        target_root: str = "/Game/_MCP_Sample/AnimStudy",
+        target_blueprint_name: str = "",
+        target_skeletal_mesh: str = "",
+        bone_name: str = "head",
+        rotation = None,
+        graph_name: str = "AnimGraph",
+        graph_id: str = "",
+        graph_type: str = "function",
+        replace_existing: bool = True,
+        overwrite_existing: bool = False,
+        compile: bool = True,
+        save: bool = True,
+        dry_run: bool = False,
+        allow_non_sample: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Create or reuse a sample Post Process AnimBP demo variant and assign it to a duplicated SkeletalMesh.
+
+        The command duplicates the source AnimBP/SkeletalMesh to target sample paths, ensures the
+        target AnimGraph contains the Modify Bone demo chain, compiles the AnimBP, and sets the
+        target SkeletalMesh Post Process AnimBlueprint to the generated class.
+
+        Args:
+            source_blueprint_name: Source Anim Blueprint name or path to duplicate
+            source_skeletal_mesh: Source SkeletalMesh path to duplicate
+            variant_name: Name segment used for default target paths
+            target_root: Target content folder, defaults to /Game/_MCP_Sample/AnimStudy
+            target_blueprint_name: Optional explicit target AnimBP package path
+            target_skeletal_mesh: Optional explicit target SkeletalMesh package path
+            bone_name: Bone to modify in the Post Process AnimGraph
+            rotation: Optional [Pitch, Yaw, Roll] additive rotation in bone space
+            graph_name: Target animation graph name, defaults to AnimGraph
+            graph_id: Optional target graph GUID
+            graph_type: Graph selector type, defaults to function
+            replace_existing: Replace existing pose links needed for the demo chain
+            overwrite_existing: Delete and recreate existing target assets instead of reusing them
+            compile: Compile the target AnimBP before assigning it
+            save: Save target AnimBP and SkeletalMesh assets
+            dry_run: Validate and report paths without editing assets
+            allow_non_sample: Allow target paths outside /Game/_MCP_Sample
+
+        Returns:
+            Response with target asset paths, graph result, compile result, and save result.
+        """
+        try:
+            if rotation is None:
+                rotation = [0, 0, 6]
+            params = {
+                "source_blueprint_name": source_blueprint_name,
+                "source_skeletal_mesh": source_skeletal_mesh,
+                "variant_name": variant_name,
+                "target_root": target_root,
+                "bone_name": bone_name,
+                "rotation": rotation,
+                "replace_existing": replace_existing,
+                "overwrite_existing": overwrite_existing,
+                "compile": compile,
+                "save": save,
+                "dry_run": dry_run,
+                "allow_non_sample": allow_non_sample,
+            }
+            if target_blueprint_name:
+                params["target_blueprint_name"] = target_blueprint_name
+            if target_skeletal_mesh:
+                params["target_skeletal_mesh"] = target_skeletal_mesh
+            add_graph_selector(params, graph_name, graph_id, graph_type)
+            return send_node_command("ensure_postprocess_anim_demo_variant", params)
+        except Exception as e:
+            error_msg = f"Error ensuring Post Process AnimBP demo variant: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
     def ensure_anim_graph_modify_curve_demo(
         ctx: Context,
         blueprint_name: str,
