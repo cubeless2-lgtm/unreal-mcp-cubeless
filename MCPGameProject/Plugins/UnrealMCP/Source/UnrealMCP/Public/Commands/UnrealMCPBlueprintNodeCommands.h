@@ -51,6 +51,7 @@ private:
     TSharedPtr<FJsonObject> HandleInspectAnimStateMachineTransitions(const TSharedPtr<FJsonObject>& Params);
     TSharedPtr<FJsonObject> HandleControlRigDirectGateProbe(const TSharedPtr<FJsonObject>& Params);
     TSharedPtr<FJsonObject> HandleSampleControlRigPrePostRuntimePose(const TSharedPtr<FJsonObject>& Params);
+    TSharedPtr<FJsonObject> HandleSampleAnimNodePrePostRuntimePose(const TSharedPtr<FJsonObject>& Params);
     TSharedPtr<FJsonObject> HandleSampleSkeletalBonesInSIE(const TSharedPtr<FJsonObject>& Params);
     TSharedPtr<FJsonObject> HandleInspectAnimInstanceRuntimeState(const TSharedPtr<FJsonObject>& Params);
     TSharedPtr<FJsonObject> HandleSetAnimInstanceRuntimePropertyForProbe(const TSharedPtr<FJsonObject>& Params);

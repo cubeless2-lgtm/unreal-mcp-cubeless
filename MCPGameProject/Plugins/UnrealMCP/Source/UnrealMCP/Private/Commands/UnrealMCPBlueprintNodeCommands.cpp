@@ -5191,6 +5191,55 @@ bool IsAnimationGraph(const UEdGraph* Graph)
         && Graph->GetSchema()->GetClass()->GetName().Contains(TEXT("AnimationGraphSchema"));
 }
 
+FString GetAnimNodePrePostMVPKind(UAnimGraphNode_Base* Node)
+{
+    if (Cast<UAnimGraphNode_RigidBody>(Node))
+    {
+        return TEXT("rigidbody");
+    }
+    if (Cast<UAnimGraphNode_Trail>(Node))
+    {
+        return TEXT("trail");
+    }
+    if (Cast<UAnimGraphNode_ControlRig>(Node))
+    {
+        return TEXT("controlrig");
+    }
+    return TEXT("unsupported");
+}
+
+FString GetAnimNodePrePostSupportNote(UAnimGraphNode_Base* Node)
+{
+    if (Cast<UAnimGraphNode_RigidBody>(Node))
+    {
+        return TEXT("MVP target for isolated source-vs-output sampling with temporary probe assets.");
+    }
+    if (Cast<UAnimGraphNode_Trail>(Node))
+    {
+        return TEXT("MVP target for isolated source-vs-output sampling with safe _MCP_Temp or _MCP_Sample probe assets.");
+    }
+    if (Cast<UAnimGraphNode_ControlRig>(Node))
+    {
+        return TEXT("Direct transient ControlRig pre/post probing already exists; compiled AnimGraph-internal ControlRig source-vs-output attribution remains a later instrumentation mode.");
+    }
+    return TEXT("Dry-run resolver can identify this AnimGraph node, but the isolated runtime sampler MVP does not support it yet.");
+}
+
+TArray<TSharedPtr<FJsonValue>> LinkedPinsToJsonValues(const UEdGraphPin* Pin)
+{
+    TArray<TSharedPtr<FJsonValue>> Values;
+    if (!Pin)
+    {
+        return Values;
+    }
+
+    for (UEdGraphPin* LinkedPin : Pin->LinkedTo)
+    {
+        Values.Add(MakeShared<FJsonValueObject>(PinToJson(LinkedPin)));
+    }
+    return Values;
+}
+
 UEdGraphPin* FindPreferredInputPosePinForNode(UEdGraphNode* Node)
 {
     if (UEdGraphPin* ComponentPosePin = FindFirstComponentPosePin(Node, EGPD_Input, { TEXT("ComponentPose") }))
@@ -5407,6 +5456,10 @@ TSharedPtr<FJsonObject> FUnrealMCPBlueprintNodeCommands::HandleCommand(const FSt
     else if (CommandType == TEXT("sample_controlrig_pre_post_runtime_pose"))
     {
         return HandleSampleControlRigPrePostRuntimePose(Params);
+    }
+    else if (CommandType == TEXT("sample_anim_node_pre_post_runtime_pose"))
+    {
+        return HandleSampleAnimNodePrePostRuntimePose(Params);
     }
     else if (CommandType == TEXT("sample_skeletal_bones_in_sie"))
     {
@@ -9096,6 +9149,178 @@ TSharedPtr<FJsonObject> FUnrealMCPBlueprintNodeCommands::HandleSampleControlRigP
     ResultObj->SetArrayField(TEXT("cases"), CaseValues);
     ResultObj->SetArrayField(TEXT("errors"), ErrorValues);
     ResultObj->SetArrayField(TEXT("warnings"), WarningValues);
+    return ResultObj;
+}
+
+TSharedPtr<FJsonObject> FUnrealMCPBlueprintNodeCommands::HandleSampleAnimNodePrePostRuntimePose(const TSharedPtr<FJsonObject>& Params)
+{
+    if (!Params.IsValid())
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Missing params"));
+    }
+
+    const bool bDryRun = GetBoolParam(Params, TEXT("dry_run"), true);
+    if (!bDryRun)
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Only dry_run target resolution is implemented for sample_anim_node_pre_post_runtime_pose. Runtime sampling will be added after resolver review."));
+    }
+
+    FString BlueprintName = GetStringParam(Params, TEXT("blueprint_name"));
+    if (BlueprintName.IsEmpty())
+    {
+        BlueprintName = GetStringParam(Params, TEXT("anim_blueprint"));
+    }
+    if (BlueprintName.IsEmpty())
+    {
+        BlueprintName = GetStringParam(Params, TEXT("anim_blueprint_path"));
+    }
+    if (BlueprintName.IsEmpty())
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Missing 'blueprint_name' or 'anim_blueprint' parameter"));
+    }
+
+    UBlueprint* Blueprint = FUnrealMCPCommonUtils::FindBlueprint(BlueprintName);
+    if (!Blueprint)
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("Blueprint not found: %s"), *BlueprintName));
+    }
+
+    TSharedPtr<FJsonObject> ResolveParams = MakeShared<FJsonObject>();
+    ResolveParams->Values = Params->Values;
+    const bool bHasGraphSelector =
+        ResolveParams->HasField(TEXT("graph_id")) ||
+        ResolveParams->HasField(TEXT("graph_name")) ||
+        ResolveParams->HasField(TEXT("graph_type"));
+    if (!bHasGraphSelector)
+    {
+        ResolveParams->SetStringField(TEXT("graph_name"), TEXT("AnimGraph"));
+        ResolveParams->SetStringField(TEXT("graph_type"), TEXT("function"));
+    }
+
+    bool bCreated = false;
+    FString GraphError;
+    UEdGraph* TargetGraph = ResolveBlueprintGraph(Blueprint, ResolveParams, false, bCreated, GraphError);
+    if (!TargetGraph)
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(GraphError);
+    }
+
+    if (!IsAnimationGraph(TargetGraph))
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(
+            TEXT("Target graph is not an AnimationGraph. graph='%s' schema='%s'"),
+            *TargetGraph->GetName(),
+            TargetGraph->GetSchema() ? *TargetGraph->GetSchema()->GetClass()->GetName() : TEXT("<none>")));
+    }
+
+    const FString NodeId = GetStringParam(Params, TEXT("node_id"));
+    const FString NodeType = GetStringParam(Params, TEXT("node_type"));
+    const FString TitleContains = GetStringParam(Params, TEXT("title_contains"));
+    const bool bIncludePins = GetBoolParam(Params, TEXT("include_pins"), true);
+    const int32 MaxDepth = GetClampedIntParam(Params, TEXT("max_depth"), 3, 1, 8);
+
+    TArray<UAnimGraphNode_Base*> Candidates;
+    TArray<TSharedPtr<FJsonValue>> CandidateValues;
+    bool bNodeIdMatchedNonAnimNode = false;
+    for (UEdGraphNode* Node : TargetGraph->Nodes)
+    {
+        if (!Node)
+        {
+            continue;
+        }
+
+        const bool bMatchesNodeId = NodeId.IsEmpty() || Node->NodeGuid.ToString().Equals(NodeId, ESearchCase::IgnoreCase);
+        if (!bMatchesNodeId)
+        {
+            continue;
+        }
+
+        UAnimGraphNode_Base* AnimGraphNode = Cast<UAnimGraphNode_Base>(Node);
+        if (!AnimGraphNode)
+        {
+            if (!NodeId.IsEmpty())
+            {
+                bNodeIdMatchedNonAnimNode = true;
+            }
+            continue;
+        }
+
+        if (!MatchesNodeFilter(Node, NodeType, TitleContains))
+        {
+            continue;
+        }
+
+        Candidates.Add(AnimGraphNode);
+
+        TSharedPtr<FJsonObject> CandidateObject = NodeToJson(AnimGraphNode, false);
+        CandidateObject->SetStringField(TEXT("mvp_kind"), GetAnimNodePrePostMVPKind(AnimGraphNode));
+        CandidateObject->SetBoolField(TEXT("isolated_sampler_mvp_supported"), Cast<UAnimGraphNode_RigidBody>(AnimGraphNode) || Cast<UAnimGraphNode_Trail>(AnimGraphNode));
+        CandidateValues.Add(MakeShared<FJsonValueObject>(CandidateObject));
+    }
+
+    if (Candidates.Num() != 1)
+    {
+        FString ErrorText;
+        if (bNodeIdMatchedNonAnimNode)
+        {
+            ErrorText = FString::Printf(TEXT("node_id '%s' matched a non-AnimGraph node"), *NodeId);
+        }
+        else if (Candidates.Num() == 0)
+        {
+            ErrorText = FString::Printf(TEXT("No AnimGraph node matched node_id='%s', node_type='%s', title_contains='%s'"), *NodeId, *NodeType, *TitleContains);
+        }
+        else
+        {
+            ErrorText = FString::Printf(TEXT("Ambiguous AnimGraph node selector matched %d nodes; provide node_id"), Candidates.Num());
+        }
+
+        TSharedPtr<FJsonObject> ErrorObj = FUnrealMCPCommonUtils::CreateErrorResponse(ErrorText);
+        ErrorObj->SetStringField(TEXT("blueprint_name"), BlueprintName);
+        ErrorObj->SetStringField(TEXT("blueprint_path"), Blueprint->GetPathName());
+        AddGraphField(ErrorObj, Blueprint, TargetGraph);
+        ErrorObj->SetArrayField(TEXT("candidates"), CandidateValues);
+        return ErrorObj;
+    }
+
+    UAnimGraphNode_Base* TargetNode = Candidates[0];
+    UEdGraphPin* InputPosePin = FindPreferredInputPosePinForNode(TargetNode);
+    UEdGraphPin* OutputPosePin = FindPreferredOutputPosePinForNode(TargetNode);
+    const FString MVPKind = GetAnimNodePrePostMVPKind(TargetNode);
+    const bool bIsolatedSamplerSupported = Cast<UAnimGraphNode_RigidBody>(TargetNode) || Cast<UAnimGraphNode_Trail>(TargetNode);
+
+    TSharedPtr<FJsonObject> TargetNodeObject = NodeToJson(TargetNode, bIncludePins);
+    TargetNodeObject->SetStringField(TEXT("mvp_kind"), MVPKind);
+    TargetNodeObject->SetBoolField(TEXT("isolated_sampler_mvp_supported"), bIsolatedSamplerSupported);
+    TargetNodeObject->SetStringField(TEXT("support_note"), GetAnimNodePrePostSupportNote(TargetNode));
+    TargetNodeObject->SetObjectField(TEXT("settings"), AnimGraphNodeSettingsToJson(TargetNode, MaxDepth));
+    TargetNodeObject->SetObjectField(TEXT("preferred_input_pose_pin"), PinToJson(InputPosePin));
+    TargetNodeObject->SetObjectField(TEXT("preferred_output_pose_pin"), PinToJson(OutputPosePin));
+    TargetNodeObject->SetArrayField(TEXT("upstream_pose_links"), LinkedPinsToJsonValues(InputPosePin));
+    TargetNodeObject->SetArrayField(TEXT("downstream_pose_links"), LinkedPinsToJsonValues(OutputPosePin));
+
+    const TArray<FString> SampleBones = GetStringArrayParam(Params, TEXT("sample_bones"), TArray<FString>());
+    const TArray<FString> SampleSockets = GetStringArrayParam(Params, TEXT("sample_sockets"), TArray<FString>());
+
+    TSharedPtr<FJsonObject> ResultObj = MakeShared<FJsonObject>();
+    ResultObj->SetBoolField(TEXT("success"), true);
+    ResultObj->SetBoolField(TEXT("read_only"), true);
+    ResultObj->SetBoolField(TEXT("asset_modified"), false);
+    ResultObj->SetBoolField(TEXT("runtime_only"), false);
+    ResultObj->SetBoolField(TEXT("dry_run"), true);
+    ResultObj->SetStringField(TEXT("mode"), TEXT("dry_run_target_resolver"));
+    ResultObj->SetBoolField(TEXT("runtime_graph_prepost"), false);
+    ResultObj->SetBoolField(TEXT("same_instance_prepost"), false);
+    ResultObj->SetBoolField(TEXT("original_assets_modified"), false);
+    ResultObj->SetBoolField(TEXT("temp_assets_created"), false);
+    ResultObj->SetStringField(TEXT("next_implementation_mode"), TEXT("isolated_temp_components"));
+    ResultObj->SetStringField(TEXT("runtime_note"), TEXT("Phase 1 resolves one AnimGraph node and reports feasibility only. It does not tick components or sample poses."));
+    ResultObj->SetStringField(TEXT("blueprint_name"), BlueprintName);
+    ResultObj->SetStringField(TEXT("blueprint_path"), Blueprint->GetPathName());
+    ResultObj->SetNumberField(TEXT("max_depth"), MaxDepth);
+    ResultObj->SetObjectField(TEXT("target_node"), TargetNodeObject);
+    ResultObj->SetArrayField(TEXT("requested_sample_bones"), StringArrayToJsonValues(SampleBones));
+    ResultObj->SetArrayField(TEXT("requested_sample_sockets"), StringArrayToJsonValues(SampleSockets));
+    AddGraphField(ResultObj, Blueprint, TargetGraph);
     return ResultObj;
 }
 

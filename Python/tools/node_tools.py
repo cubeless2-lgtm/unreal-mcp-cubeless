@@ -1438,6 +1438,79 @@ def register_blueprint_node_tools(mcp: FastMCP):
             return {"success": False, "message": error_msg}
 
     @mcp.tool()
+    def sample_anim_node_pre_post_runtime_pose(
+        ctx: Context,
+        blueprint_name: str = "",
+        anim_blueprint: str = "",
+        graph_name: str = "AnimGraph",
+        graph_id: str = "",
+        graph_type: str = "function",
+        node_id: str = "",
+        node_type: str = "",
+        title_contains: str = "",
+        sample_bones: Optional[List[str]] = None,
+        sample_sockets: Optional[List[str]] = None,
+        include_pins: bool = True,
+        max_depth: int = 3,
+        dry_run: bool = True
+    ) -> Dict[str, Any]:
+        """
+        Resolve a target AnimGraph node for a future pre/post runtime pose probe.
+
+        Phase 1 is a dry-run target resolver only. It reports the selected node,
+        preferred pose pins, upstream/downstream pose links, reflected settings,
+        and whether the isolated runtime sampler MVP can support that node kind.
+        It does not tick components or sample poses yet.
+
+        Args:
+            blueprint_name: Anim Blueprint name or path
+            anim_blueprint: Alternative Anim Blueprint name or path
+            graph_name: AnimGraph graph name, defaults to AnimGraph
+            graph_id: Optional graph GUID
+            graph_type: Graph type, defaults to function for AnimGraph
+            node_id: Exact target node GUID. Required when filters are ambiguous.
+            node_type: Node class/title filter such as AnimGraphNode_RigidBody
+            title_contains: Node title substring filter
+            sample_bones: Optional future sample bone list echoed in the response
+            sample_sockets: Optional future sample socket list echoed in the response
+            include_pins: Include full pin data for the selected node
+            max_depth: Reflected settings depth
+            dry_run: Must remain true in Phase 1
+
+        Returns:
+            Dry-run resolver response with target node metadata and feasibility flags.
+        """
+        try:
+            params: Dict[str, Any] = {
+                "graph_name": graph_name,
+                "graph_type": graph_type,
+                "include_pins": include_pins,
+                "max_depth": max_depth,
+                "dry_run": dry_run,
+            }
+            if blueprint_name:
+                params["blueprint_name"] = blueprint_name
+            if anim_blueprint:
+                params["anim_blueprint"] = anim_blueprint
+            if graph_id:
+                params["graph_id"] = graph_id
+            if node_id:
+                params["node_id"] = node_id
+            if node_type:
+                params["node_type"] = node_type
+            if title_contains:
+                params["title_contains"] = title_contains
+            if sample_bones is not None:
+                params["sample_bones"] = sample_bones
+            if sample_sockets is not None:
+                params["sample_sockets"] = sample_sockets
+            return send_node_command("sample_anim_node_pre_post_runtime_pose", params)
+        except Exception as e:
+            error_msg = f"Error resolving AnimGraph node pre/post runtime pose target: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
     def sample_skeletal_bones_in_sie(
         ctx: Context,
         actor_label: str = "",

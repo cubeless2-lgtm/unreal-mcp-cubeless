@@ -425,6 +425,50 @@ Use this command when you need a stable same-instance pre/post ControlRig solve 
 }
 ```
 
+### sample_anim_node_pre_post_runtime_pose
+
+Resolve a target AnimGraph node for a future pre/post runtime pose probe.
+
+**Important scope note:** Phase 1 is a dry-run target resolver only. It reports one selected AnimGraph node, preferred pose pins, upstream/downstream pose links, reflected settings, and isolated sampler feasibility. It does not tick components, spawn actors, create temporary assets, or sample runtime poses yet. Responses intentionally report `runtime_graph_prepost=false` and `same_instance_prepost=false`.
+
+Use this command before implementing or running deeper AnimGraph node instrumentation so ambiguous node selectors are caught early.
+
+**Parameters:**
+- `blueprint_name` or `anim_blueprint` (string) - Animation Blueprint name or path
+- `graph_name` (string, optional) - Defaults to `AnimGraph`
+- `graph_id` (string, optional) - Exact graph GUID
+- `graph_type` (string, optional) - Defaults to `function` for AnimGraph
+- `node_id` (string, optional) - Exact target node GUID. Required when filters are ambiguous.
+- `node_type` (string, optional) - Node class/title filter, such as `AnimGraphNode_RigidBody`, `AnimGraphNode_Trail`, or `AnimGraphNode_ControlRig`
+- `title_contains` (string, optional) - Node title substring filter
+- `sample_bones` (array, optional) - Future sample bone list echoed in the response
+- `sample_sockets` (array, optional) - Future sample socket list echoed in the response
+- `include_pins` (boolean, optional) - Include full selected-node pin data. Defaults to `true`.
+- `max_depth` (number, optional) - Reflected settings depth. Defaults to `3`.
+- `dry_run` (boolean, optional) - Must remain `true` in Phase 1. Defaults to `true`.
+
+**Returns:**
+- `target_node` with node metadata, reflected settings, preferred input/output pose pins, upstream/downstream pose links, `mvp_kind`, and `isolated_sampler_mvp_supported`
+- `mode=dry_run_target_resolver`
+- `runtime_graph_prepost=false`
+- `same_instance_prepost=false`
+- `next_implementation_mode=isolated_temp_components`
+- warning/error details when the selector matches no node or multiple nodes
+
+**Example:**
+```json
+{
+  "command": "sample_anim_node_pre_post_runtime_pose",
+  "params": {
+    "blueprint_name": "/Game/StackOBot/Characters/Blobling/Anim/ABP_Baddy.ABP_Baddy",
+    "graph_name": "AnimGraph",
+    "graph_type": "function",
+    "node_type": "AnimGraphNode_RigidBody",
+    "sample_bones": ["Head_02", "TailEnd", "R_Stalk_04", "L_Stalk_04"]
+  }
+}
+```
+
 ### sample_skeletal_bones_in_sie
 
 Sample bone and socket world/component transforms from a live `SkeletalMeshComponent` without modifying or saving assets.

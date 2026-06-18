@@ -412,6 +412,7 @@ FString UUnrealMCPBridge::ExecuteCommand(const FString& CommandType, const TShar
                      CommandType == TEXT("inspect_anim_state_machine_transitions") ||
                      CommandType == TEXT("controlrig_direct_gate_probe") ||
                      CommandType == TEXT("sample_controlrig_pre_post_runtime_pose") ||
+                     CommandType == TEXT("sample_anim_node_pre_post_runtime_pose") ||
                      CommandType == TEXT("sample_skeletal_bones_in_sie") ||
                      CommandType == TEXT("inspect_anim_instance_runtime_state") ||
                      CommandType == TEXT("set_anim_instance_runtime_property_for_probe") ||
