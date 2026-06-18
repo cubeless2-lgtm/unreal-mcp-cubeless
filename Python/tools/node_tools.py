@@ -1229,6 +1229,952 @@ def register_blueprint_node_tools(mcp: FastMCP):
             return {"success": False, "message": error_msg}
 
     @mcp.tool()
+    def inspect_anim_graph_node_settings(
+        ctx: Context,
+        blueprint_name: str,
+        node_id: str = "",
+        node_type: str = "",
+        title_contains: str = "",
+        include_pins: bool = True,
+        max_depth: int = 4,
+        graph_name: str = "AnimGraph",
+        graph_id: str = "",
+        graph_type: str = "function"
+    ) -> Dict[str, Any]:
+        """
+        Read AnimGraph node runtime settings from the internal FAnimNode struct.
+
+        Args:
+            blueprint_name: Animation Blueprint name or path
+            node_id: Optional node GUID filter
+            node_type: Optional class or title substring filter
+            title_contains: Optional title substring filter
+            include_pins: Include pin metadata and links in the result
+            max_depth: Maximum nested property depth for struct/array dumping
+            graph_name: Target animation graph name, defaults to AnimGraph
+            graph_id: Optional target graph GUID
+            graph_type: Graph selector type, defaults to function because AnimGraph is reported there
+
+        Returns:
+            Response containing node metadata and reflected anim-node settings.
+        """
+        try:
+            params = {
+                "blueprint_name": blueprint_name,
+                "node_id": node_id,
+                "node_type": node_type,
+                "title_contains": title_contains,
+                "include_pins": include_pins,
+                "max_depth": max_depth,
+            }
+            add_graph_selector(params, graph_name, graph_id, graph_type)
+            return send_node_command("inspect_anim_graph_node_settings", params)
+        except Exception as e:
+            error_msg = f"Error inspecting AnimGraph node settings: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def inspect_anim_state_machine_transitions(
+        ctx: Context,
+        blueprint_name: str,
+        state_machine_name: str = "",
+        include_pins: bool = True,
+        include_rule_graph_nodes: bool = True,
+        include_state_nodes: bool = True,
+        max_rule_graph_nodes: int = 256
+    ) -> Dict[str, Any]:
+        """
+        Read Animation Blueprint state-machine transition topology.
+
+        This command is read-only. It reports state-machine nodes, source/target states,
+        transition rule graphs, rule graph nodes, and transition blend/priority settings.
+
+        Args:
+            blueprint_name: Animation Blueprint name or path
+            state_machine_name: Optional state machine name/title substring filter
+            include_pins: Include pin metadata and links on returned graph nodes
+            include_rule_graph_nodes: Include nodes inside each transition rule graph
+            include_state_nodes: Include state node summaries for each state machine
+            max_rule_graph_nodes: Maximum rule graph nodes per transition, -1 for unlimited
+
+        Returns:
+            Response containing state machines and transition topology.
+        """
+        try:
+            params = {
+                "blueprint_name": blueprint_name,
+                "state_machine_name": state_machine_name,
+                "include_pins": include_pins,
+                "include_rule_graph_nodes": include_rule_graph_nodes,
+                "include_state_nodes": include_state_nodes,
+                "max_rule_graph_nodes": max_rule_graph_nodes,
+            }
+            return send_node_command("inspect_anim_state_machine_transitions", params)
+        except Exception as e:
+            error_msg = f"Error inspecting AnimBP state-machine transitions: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def controlrig_direct_gate_probe(
+        ctx: Context,
+        control_rig_path: str = "",
+        control_rig_class: str = "",
+        cases: Optional[List[Dict[str, Any]]] = None,
+        sample_elements: Optional[List[Any]] = None,
+        execute_events: Optional[List[str]] = None,
+        should_trace_property: str = "ShouldDoIKTrace",
+        interaction_location_property: str = "InteractionWorldLocation"
+    ) -> Dict[str, Any]:
+        """
+        Run a transient direct ControlRig gate probe without modifying or saving assets.
+
+        The default case set matches the StackOBot ControlRig learning pass: it toggles
+        ShouldDoIKTrace, InteractionWorldLocation, IKBlend_l, and IK_blend_interact,
+        executes Construction/Forwards Solve/Post Forwards Solve, samples hierarchy
+        transforms, and reports deltas from the first case.
+
+        Args:
+            control_rig_path: ControlRig Blueprint asset path
+            control_rig_class: Optional generated ControlRig class path
+            cases: Optional case list. Each case may include name, properties, should_trace,
+                loc or interaction_world_location, and curves.
+            sample_elements: Optional hierarchy element names or {type, name} objects
+            execute_events: Optional ControlRig event names to execute
+            should_trace_property: Property name used by shorthand should_trace
+            interaction_location_property: Property name used by shorthand loc
+
+        Returns:
+            Response containing case outputs, transform samples, deltas, and errors.
+        """
+        try:
+            params: Dict[str, Any] = {
+                "should_trace_property": should_trace_property,
+                "interaction_location_property": interaction_location_property,
+            }
+            if control_rig_path:
+                params["control_rig_path"] = control_rig_path
+            if control_rig_class:
+                params["control_rig_class"] = control_rig_class
+            if cases is not None:
+                params["cases"] = cases
+            if sample_elements is not None:
+                params["sample_elements"] = sample_elements
+            if execute_events is not None:
+                params["execute_events"] = execute_events
+            return send_node_command("controlrig_direct_gate_probe", params)
+        except Exception as e:
+            error_msg = f"Error running ControlRig direct gate probe: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def sample_controlrig_pre_post_runtime_pose(
+        ctx: Context,
+        control_rig_path: str = "",
+        control_rig_class: str = "",
+        input_defaults: Optional[Dict[str, Any]] = None,
+        curve_values: Optional[Dict[str, float]] = None,
+        cases: Optional[List[Dict[str, Any]]] = None,
+        sample_elements: Optional[List[Any]] = None,
+        execute_events: Optional[List[str]] = None,
+        should_trace_property: str = "ShouldDoIKTrace",
+        interaction_location_property: str = "InteractionWorldLocation"
+    ) -> Dict[str, Any]:
+        """
+        Sample ControlRig hierarchy transforms before and after execute events.
+
+        This is a read-only transient ControlRig pre/post probe. It does not
+        instrument the compiled AnimGraph node stack; the response labels this as
+        runtime_source=direct_transient_controlrig and runtime_graph_prepost=false.
+
+        Args:
+            control_rig_path: ControlRig Blueprint asset path
+            control_rig_class: Optional generated ControlRig class path
+            input_defaults: Optional ControlRig property defaults
+            curve_values: Optional hierarchy curve values
+            cases: Optional case list. Each case may include name, properties, should_trace,
+                loc or interaction_world_location, and curves.
+            sample_elements: Optional hierarchy element names or {type, name} objects
+            execute_events: Optional ControlRig event names to execute, default Forwards Solve
+            should_trace_property: Property name used by shorthand should_trace
+            interaction_location_property: Property name used by shorthand loc
+
+        Returns:
+            Response containing pre_pose, post_pose, deltas, echoes, and execution status.
+        """
+        try:
+            if input_defaults is None:
+                input_defaults = {
+                    "ShouldDoIKTrace": True,
+                    "InteractionWorldLocation": [80, -40, 80],
+                }
+            if curve_values is None:
+                curve_values = {
+                    "IK_blend_interact": 1.0,
+                    "IKBlend_l": 1.0,
+                }
+            params: Dict[str, Any] = {
+                "input_defaults": input_defaults,
+                "curve_values": curve_values,
+                "should_trace_property": should_trace_property,
+                "interaction_location_property": interaction_location_property,
+            }
+            if control_rig_path:
+                params["control_rig_path"] = control_rig_path
+            if control_rig_class:
+                params["control_rig_class"] = control_rig_class
+            if cases is not None:
+                params["cases"] = cases
+            if sample_elements is not None:
+                params["sample_elements"] = sample_elements
+            if execute_events is not None:
+                params["execute_events"] = execute_events
+            return send_node_command("sample_controlrig_pre_post_runtime_pose", params)
+        except Exception as e:
+            error_msg = f"Error sampling ControlRig pre/post runtime pose: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def sample_skeletal_bones_in_sie(
+        ctx: Context,
+        actor_label: str = "",
+        actor_name: str = "",
+        actor_path: str = "",
+        component_name: str = "",
+        bones: Optional[List[str]] = None,
+        sockets: Optional[List[str]] = None,
+        prefer_pie_world: bool = True,
+        require_pie_world: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Sample SkeletalMeshComponent bone/socket transforms from the active PIE/SIE/play world.
+
+        This is a read-only immediate sampler. It prefers a live PIE/SIE/play world when
+        available, falls back to the editor world, and reports the sampled world type.
+        It does not start or tick SIE by itself.
+
+        Args:
+            actor_label: Optional actor label filter, case-insensitive exact match
+            actor_name: Optional actor object name filter, case-insensitive exact match
+            actor_path: Optional actor path filter, exact or path suffix match
+            component_name: Optional SkeletalMeshComponent object name
+            bones: Optional bone names to sample. Defaults to key StackOBot-style bones.
+            sockets: Optional socket names to sample
+            prefer_pie_world: Prefer active PIE/SIE/play world before editor world
+            require_pie_world: Fail instead of falling back to the editor world when no PIE/SIE/play world matches
+
+        Returns:
+            Response containing actor/component metadata, sampled world type, and transforms.
+        """
+        try:
+            params: Dict[str, Any] = {
+                "actor_label": actor_label,
+                "actor_name": actor_name,
+                "actor_path": actor_path,
+                "component_name": component_name,
+                "prefer_pie_world": prefer_pie_world,
+                "require_pie_world": require_pie_world,
+            }
+            if bones is not None:
+                params["bones"] = bones
+            if sockets is not None:
+                params["sockets"] = sockets
+            return send_node_command("sample_skeletal_bones_in_sie", params)
+        except Exception as e:
+            error_msg = f"Error sampling skeletal bones in SIE: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def inspect_anim_instance_runtime_state(
+        ctx: Context,
+        actor_label: str = "",
+        actor_name: str = "",
+        actor_path: str = "",
+        component_name: str = "",
+        state_machine_name: str = "",
+        include_states: bool = True,
+        include_montages: bool = True,
+        include_curves: bool = False,
+        curve_names: Optional[List[str]] = None,
+        max_state_machines: int = 32,
+        max_state_machine_instances_to_probe: int = 256,
+        max_states_per_machine: int = 64,
+        max_curves: int = 128,
+        prefer_pie_world: bool = True,
+        require_pie_world: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Inspect runtime AnimInstance state from an active PIE/SIE/play SkeletalMeshComponent.
+
+        This is read-only. It prefers a live PIE/SIE/play world when available,
+        falls back to the editor world, and does not start or tick SIE by itself.
+
+        Args:
+            actor_label: Optional actor label filter, case-insensitive exact match
+            actor_name: Optional actor object name filter, case-insensitive exact match
+            actor_path: Optional actor path filter, exact or path suffix match
+            component_name: Optional SkeletalMeshComponent object name
+            state_machine_name: Optional state-machine name substring filter
+            include_states: Include per-state metadata for each state machine. Per-state weights/timing are omitted in the safe MVP.
+            include_montages: Include current active montage data
+            include_curves: Include curve values
+            curve_names: Optional curve names. If omitted and include_curves is true, active/all names are used.
+            max_state_machines: Maximum state machines to include
+            max_state_machine_instances_to_probe: Maximum runtime AnimNode indexes to probe for state-machine instances
+            max_states_per_machine: Maximum states per included machine
+            max_curves: Maximum curves to include
+            prefer_pie_world: Prefer active PIE/SIE/play world before editor world
+            require_pie_world: Fail instead of falling back to the editor world when no PIE/SIE/play world matches
+
+        Returns:
+            Response containing AnimInstance metadata, state-machine state, montage, and curves.
+        """
+        try:
+            params: Dict[str, Any] = {
+                "actor_label": actor_label,
+                "actor_name": actor_name,
+                "actor_path": actor_path,
+                "component_name": component_name,
+                "state_machine_name": state_machine_name,
+                "include_states": include_states,
+                "include_montages": include_montages,
+                "include_curves": include_curves,
+                "max_state_machines": max_state_machines,
+                "max_state_machine_instances_to_probe": max_state_machine_instances_to_probe,
+                "max_states_per_machine": max_states_per_machine,
+                "max_curves": max_curves,
+                "prefer_pie_world": prefer_pie_world,
+                "require_pie_world": require_pie_world,
+            }
+            if curve_names is not None:
+                params["curve_names"] = curve_names
+            return send_node_command("inspect_anim_instance_runtime_state", params)
+        except Exception as e:
+            error_msg = f"Error inspecting AnimInstance runtime state: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def set_anim_instance_runtime_property_for_probe(
+        ctx: Context,
+        actor_label: str = "",
+        actor_name: str = "",
+        actor_path: str = "",
+        component_name: str = "",
+        properties: Optional[Dict[str, Any]] = None,
+        property_name: str = "",
+        value: Any = None,
+        tick_after_set: bool = False,
+        tick_count: int = 1,
+        tick_delta_time: float = 1.0 / 30.0,
+        refresh_bone_transforms: bool = True,
+        include_snapshot_after: bool = True,
+        include_previous_values: bool = True,
+        state_machine_name: str = "",
+        include_states: bool = True,
+        include_montages: bool = True,
+        include_curves: bool = False,
+        curve_names: Optional[List[str]] = None,
+        prefer_pie_world: bool = True,
+        require_pie_world: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Set properties on the matched live AnimInstance for runtime probing only.
+
+        This modifies the current runtime object, not the Animation Blueprint asset.
+
+        Args:
+            actor_label: Optional actor label filter
+            actor_name: Optional actor object name filter
+            actor_path: Optional actor path filter
+            component_name: Optional SkeletalMeshComponent object name
+            properties: Property map such as {"GroundSpeed": 250.0}
+            property_name: Single property name alternative
+            value: Single property value alternative
+            tick_after_set: Force a narrow component animation tick after setting
+            tick_count: Number of forced component animation ticks
+            tick_delta_time: Delta time per forced tick
+            refresh_bone_transforms: Refresh component bone transforms during/after forced ticks when tick_count > 0
+            include_snapshot_after: Include state-machine/montage/curve snapshot after the set
+            include_previous_values: Include previous property values in the response
+            state_machine_name: Optional state-machine name substring filter for snapshots
+            include_states: Include per-state metadata in snapshots
+            include_montages: Include active montage data in snapshots
+            include_curves: Include curve values in snapshots
+            curve_names: Optional curve names for snapshots
+            prefer_pie_world: Prefer active PIE/SIE/play world before editor world
+            require_pie_world: Fail instead of falling back to the editor world when no PIE/SIE/play world matches
+
+        Returns:
+            Response containing applied runtime properties and optional post-set snapshot.
+        """
+        try:
+            params: Dict[str, Any] = {
+                "actor_label": actor_label,
+                "actor_name": actor_name,
+                "actor_path": actor_path,
+                "component_name": component_name,
+                "tick_after_set": tick_after_set,
+                "tick_count": tick_count,
+                "tick_delta_time": tick_delta_time,
+                "refresh_bone_transforms": refresh_bone_transforms,
+                "include_snapshot_after": include_snapshot_after,
+                "include_previous_values": include_previous_values,
+                "state_machine_name": state_machine_name,
+                "include_states": include_states,
+                "include_montages": include_montages,
+                "include_curves": include_curves,
+                "prefer_pie_world": prefer_pie_world,
+                "require_pie_world": require_pie_world,
+            }
+            if properties is not None:
+                params["properties"] = properties
+            if property_name:
+                params["property_name"] = property_name
+                params["value"] = value
+            if curve_names is not None:
+                params["curve_names"] = curve_names
+            return send_node_command("set_anim_instance_runtime_property_for_probe", params)
+        except Exception as e:
+            error_msg = f"Error setting AnimInstance runtime property for probe: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def sample_anim_state_machine_runtime_response(
+        ctx: Context,
+        actor_label: str = "",
+        actor_name: str = "",
+        actor_path: str = "",
+        component_name: str = "",
+        cases: Optional[List[Dict[str, Any]]] = None,
+        properties: Optional[Dict[str, Any]] = None,
+        name: str = "case_0",
+        tick_count: int = 1,
+        tick_delta_time: float = 1.0 / 30.0,
+        refresh_bone_transforms: bool = True,
+        restore_after_case: bool = True,
+        include_baseline: bool = True,
+        state_machine_name: str = "",
+        include_states: bool = True,
+        include_montages: bool = True,
+        include_curves: bool = False,
+        curve_names: Optional[List[str]] = None,
+        max_state_machines: int = 32,
+        max_state_machine_instances_to_probe: int = 256,
+        max_states_per_machine: int = 64,
+        max_curves: int = 128,
+        prefer_pie_world: bool = True,
+        require_pie_world: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Apply runtime AnimInstance property cases, tick narrowly, and sample state-machine response.
+
+        This is a runtime probe only. By default it restores each successfully
+        changed property after the case and never saves Animation Blueprint assets.
+
+        Args:
+            actor_label: Optional actor label filter
+            actor_name: Optional actor object name filter
+            actor_path: Optional actor path filter
+            component_name: Optional SkeletalMeshComponent object name
+            cases: Case list. Each case can include name, properties, tick_count, tick_delta_time, restore_after_case.
+            properties: Single-case property map used when cases is omitted
+            name: Single-case name used when cases is omitted
+            tick_count: Default forced component animation tick count per case
+            tick_delta_time: Default delta time per forced tick
+            refresh_bone_transforms: Refresh component bone transforms during/after forced ticks when tick_count > 0
+            restore_after_case: Restore successful property changes after each case
+            include_baseline: Capture state before cases
+            state_machine_name: Optional state-machine name substring filter
+            include_states: Include per-state metadata
+            include_montages: Include active montage data
+            include_curves: Include curve values
+            curve_names: Optional curve names
+            max_state_machines: Maximum state machines to include
+            max_state_machine_instances_to_probe: Maximum runtime AnimNode indexes to probe
+            max_states_per_machine: Maximum states per included machine
+            max_curves: Maximum curves to include
+            prefer_pie_world: Prefer active PIE/SIE/play world before editor world
+            require_pie_world: Fail instead of falling back to the editor world when no PIE/SIE/play world matches
+
+        Returns:
+            Response containing baseline and per-case state-machine snapshots.
+        """
+        try:
+            params: Dict[str, Any] = {
+                "actor_label": actor_label,
+                "actor_name": actor_name,
+                "actor_path": actor_path,
+                "component_name": component_name,
+                "name": name,
+                "tick_count": tick_count,
+                "tick_delta_time": tick_delta_time,
+                "refresh_bone_transforms": refresh_bone_transforms,
+                "restore_after_case": restore_after_case,
+                "include_baseline": include_baseline,
+                "state_machine_name": state_machine_name,
+                "include_states": include_states,
+                "include_montages": include_montages,
+                "include_curves": include_curves,
+                "max_state_machines": max_state_machines,
+                "max_state_machine_instances_to_probe": max_state_machine_instances_to_probe,
+                "max_states_per_machine": max_states_per_machine,
+                "max_curves": max_curves,
+                "prefer_pie_world": prefer_pie_world,
+                "require_pie_world": require_pie_world,
+            }
+            if cases is not None:
+                params["cases"] = cases
+            if properties is not None:
+                params["properties"] = properties
+            if curve_names is not None:
+                params["curve_names"] = curve_names
+            return send_node_command("sample_anim_state_machine_runtime_response", params)
+        except Exception as e:
+            error_msg = f"Error sampling AnimInstance state-machine runtime response: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def set_anim_graph_rigidbody_settings(
+        ctx: Context,
+        blueprint_name: str,
+        node_id: str = "",
+        alpha = None,
+        external_force = None,
+        simulation_space: str = "",
+        enable_world_geometry = None,
+        allow_non_sample: bool = False,
+        graph_name: str = "AnimGraph",
+        graph_id: str = "",
+        graph_type: str = "function"
+    ) -> Dict[str, Any]:
+        """
+        Set a narrow set of RigidBody AnimGraph node settings.
+
+        By default this refuses to modify Animation Blueprints outside `/Game/_MCP_Sample/`.
+
+        Args:
+            blueprint_name: Animation Blueprint name or path
+            node_id: Optional RigidBody node GUID filter
+            alpha: Optional RigidBody alpha value
+            external_force: Optional [X, Y, Z] external force vector
+            simulation_space: Optional ComponentSpace, WorldSpace, or BaseBoneSpace
+            enable_world_geometry: Optional world geometry collision toggle
+            allow_non_sample: Allow editing non-`/Game/_MCP_Sample/` assets
+            graph_name: Target animation graph name, defaults to AnimGraph
+            graph_id: Optional target graph GUID
+            graph_type: Graph selector type, defaults to function
+
+        Returns:
+            Response containing updated RigidBody node metadata and reflected settings.
+        """
+        try:
+            params = {
+                "blueprint_name": blueprint_name,
+                "node_id": node_id,
+                "allow_non_sample": allow_non_sample,
+            }
+            if alpha is not None:
+                params["alpha"] = alpha
+            if external_force is not None:
+                params["external_force"] = external_force
+            if simulation_space:
+                params["simulation_space"] = simulation_space
+            if enable_world_geometry is not None:
+                params["enable_world_geometry"] = enable_world_geometry
+            add_graph_selector(params, graph_name, graph_id, graph_type)
+            return send_node_command("set_anim_graph_rigidbody_settings", params)
+        except Exception as e:
+            error_msg = f"Error setting AnimGraph RigidBody settings: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def ensure_anim_graph_input_pose_passthrough(
+        ctx: Context,
+        blueprint_name: str,
+        graph_name: str = "AnimGraph",
+        graph_id: str = "",
+        graph_type: str = "function",
+        replace_existing: bool = False,
+        input_node_position = None
+    ) -> Dict[str, Any]:
+        """
+        Ensure an Animation Blueprint AnimGraph passes the incoming input pose to the root output.
+
+        This is intended for Post Process AnimBP learning/setup: it creates or reuses a
+        Linked Input Pose node and connects its pose output to the AnimGraph root Result pin.
+
+        Args:
+            blueprint_name: Anim Blueprint name or path
+            graph_name: Target animation graph name, defaults to AnimGraph
+            graph_id: Optional target graph GUID
+            graph_type: Graph selector type, defaults to function because AnimGraph is reported there
+            replace_existing: Replace an existing root Result pose link when it is not the input pose
+            input_node_position: Optional [X, Y] position for a newly created input pose node
+
+        Returns:
+            Response containing created/reused node metadata and connection status.
+        """
+        try:
+            if input_node_position is None:
+                input_node_position = [-320, 0]
+            params = {
+                "blueprint_name": blueprint_name,
+                "replace_existing": replace_existing,
+                "input_node_position": input_node_position,
+            }
+            add_graph_selector(params, graph_name, graph_id, graph_type)
+            return send_node_command("ensure_anim_graph_input_pose_passthrough", params)
+        except Exception as e:
+            error_msg = f"Error ensuring AnimGraph input pose pass-through: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def ensure_anim_graph_modify_bone_demo(
+        ctx: Context,
+        blueprint_name: str,
+        bone_name: str = "head",
+        rotation = None,
+        graph_name: str = "AnimGraph",
+        graph_id: str = "",
+        graph_type: str = "function",
+        replace_existing: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Ensure an AnimGraph contains a safe Modify Bone demonstration chain.
+
+        The resulting chain is:
+        Linked Input Pose -> Local To Component Space -> Transform (Modify) Bone ->
+        Component To Local Space -> Root Result.
+
+        Args:
+            blueprint_name: Anim Blueprint name or path
+            bone_name: Bone to modify, defaults to head
+            rotation: Optional [Pitch, Yaw, Roll] additive rotation in bone space
+            graph_name: Target animation graph name, defaults to AnimGraph
+            graph_id: Optional target graph GUID
+            graph_type: Graph selector type, defaults to function because AnimGraph is reported there
+            replace_existing: Replace existing pose links on the target chain pins
+
+        Returns:
+            Response containing chain node metadata and connection status.
+        """
+        try:
+            if rotation is None:
+                rotation = [0, 0, 6]
+            params = {
+                "blueprint_name": blueprint_name,
+                "bone_name": bone_name,
+                "rotation": rotation,
+                "replace_existing": replace_existing,
+            }
+            add_graph_selector(params, graph_name, graph_id, graph_type)
+            return send_node_command("ensure_anim_graph_modify_bone_demo", params)
+        except Exception as e:
+            error_msg = f"Error ensuring AnimGraph Modify Bone demo chain: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def ensure_anim_graph_modify_curve_demo(
+        ctx: Context,
+        blueprint_name: str,
+        curve_values: Optional[Dict[str, float]] = None,
+        alpha: float = 1.0,
+        apply_mode: str = "Add",
+        graph_name: str = "AnimGraph",
+        graph_id: str = "",
+        graph_type: str = "function",
+        replace_existing: bool = False,
+        allow_non_sample: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Ensure an AnimGraph contains a safe Modify Curve demonstration chain.
+
+        The resulting chain is:
+        Linked Input Pose -> Modify Curve -> Root Result.
+
+        By default this command only modifies `/Game/_MCP_Sample/` AnimBPs.
+        The default curve values are tuned for the StackOBot ControlRig gate study:
+        IK_blend_interact=1.0 and IKBlend_l=1.0.
+
+        Args:
+            blueprint_name: Anim Blueprint name or path
+            curve_values: Optional curve name to value map
+            alpha: Modify Curve alpha, clamped by Unreal to 0..1
+            apply_mode: Add, Scale, Blend, WeightedMovingAverage, or RemapCurve
+            graph_name: Target animation graph name, defaults to AnimGraph
+            graph_id: Optional target graph GUID
+            graph_type: Graph selector type, defaults to function because AnimGraph is reported there
+            replace_existing: Replace existing pose links on the target chain pins
+            allow_non_sample: Allow editing non-`/Game/_MCP_Sample/` AnimBPs
+
+        Returns:
+            Response containing chain node metadata and reflected Modify Curve settings.
+        """
+        try:
+            if curve_values is None:
+                curve_values = {
+                    "IK_blend_interact": 1.0,
+                    "IKBlend_l": 1.0,
+                }
+            params = {
+                "blueprint_name": blueprint_name,
+                "curve_values": curve_values,
+                "alpha": alpha,
+                "apply_mode": apply_mode,
+                "replace_existing": replace_existing,
+                "allow_non_sample": allow_non_sample,
+            }
+            add_graph_selector(params, graph_name, graph_id, graph_type)
+            return send_node_command("ensure_anim_graph_modify_curve_demo", params)
+        except Exception as e:
+            error_msg = f"Error ensuring AnimGraph Modify Curve demo chain: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def set_anim_graph_controlrig_input_defaults(
+        ctx: Context,
+        blueprint_name: str,
+        input_defaults: Optional[Dict[str, Any]] = None,
+        graph_name: str = "AnimGraph",
+        graph_id: str = "",
+        graph_type: str = "function",
+        node_id: str = "",
+        node_name: str = "",
+        title_contains: str = "",
+        control_rig_class: str = "",
+        disconnect_existing_links: bool = False,
+        allow_non_sample: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Expose ControlRig AnimGraph input pins and set their default values.
+
+        By default this command only modifies `/Game/_MCP_Sample/` AnimBPs.
+        The default inputs are tuned for the StackOBot ControlRig forced-driver study:
+        ShouldDoIKTrace=true and InteractionWorldLocation=[80, -40, 80].
+
+        Args:
+            blueprint_name: Anim Blueprint name or path
+            input_defaults: Optional input/control name to value map
+            graph_name: Target animation graph name, defaults to AnimGraph
+            graph_id: Optional target graph GUID
+            graph_type: Graph selector type, defaults to function because AnimGraph is reported there
+            node_id: Optional ControlRig node GUID or object name filter
+            node_name: Optional ControlRig node object name filter
+            title_contains: Optional ControlRig node title substring filter
+            control_rig_class: Optional ControlRig generated class path or substring filter
+            disconnect_existing_links: Disconnect existing links on target pins so defaults drive the sample
+            allow_non_sample: Allow editing non-`/Game/_MCP_Sample/` AnimBPs
+
+        Returns:
+            Response containing node metadata, available input names, and applied defaults.
+        """
+        try:
+            if input_defaults is None:
+                input_defaults = {
+                    "ShouldDoIKTrace": True,
+                    "InteractionWorldLocation": [80, -40, 80],
+                }
+            params = {
+                "blueprint_name": blueprint_name,
+                "input_defaults": input_defaults,
+                "disconnect_existing_links": disconnect_existing_links,
+                "allow_non_sample": allow_non_sample,
+            }
+            if node_id:
+                params["node_id"] = node_id
+            if node_name:
+                params["node_name"] = node_name
+            if title_contains:
+                params["title_contains"] = title_contains
+            if control_rig_class:
+                params["control_rig_class"] = control_rig_class
+            add_graph_selector(params, graph_name, graph_id, graph_type)
+            return send_node_command("set_anim_graph_controlrig_input_defaults", params)
+        except Exception as e:
+            error_msg = f"Error setting ControlRig AnimGraph input defaults: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def ensure_controlrig_forced_driver_animbp(
+        ctx: Context,
+        blueprint_name: str,
+        curve_values: Optional[Dict[str, float]] = None,
+        input_defaults: Optional[Dict[str, Any]] = None,
+        alpha: float = 1.0,
+        apply_mode: str = "Add",
+        graph_name: str = "AnimGraph",
+        graph_id: str = "",
+        graph_type: str = "function",
+        node_id: str = "",
+        node_name: str = "",
+        title_contains: str = "",
+        control_rig_class: str = "",
+        replace_existing: bool = True,
+        disconnect_existing_links: bool = True,
+        allow_non_sample: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Ensure a sample AnimBP has a forced ControlRig driver path.
+
+        The command inserts a Modify Curve node directly before the selected
+        ControlRig node, sets forced curve values, exposes/sets ControlRig input
+        defaults, and can disconnect existing input links so defaults drive the sample.
+
+        By default this command only modifies `/Game/_MCP_Sample/` AnimBPs.
+
+        Args:
+            blueprint_name: Anim Blueprint name or path
+            curve_values: Optional curve name to value map
+            input_defaults: Optional ControlRig input/control name to value map
+            alpha: Modify Curve alpha, clamped by Unreal to 0..1
+            apply_mode: Add, Scale, Blend, WeightedMovingAverage, or RemapCurve
+            graph_name: Target animation graph name, defaults to AnimGraph
+            graph_id: Optional target graph GUID
+            graph_type: Graph selector type, defaults to function because AnimGraph is reported there
+            node_id: Optional ControlRig node GUID or object name filter
+            node_name: Optional ControlRig node object name filter
+            title_contains: Optional ControlRig node title substring filter
+            control_rig_class: Optional ControlRig generated class path or substring filter
+            replace_existing: Replace pose links needed to insert Modify Curve before ControlRig
+            disconnect_existing_links: Disconnect target ControlRig input links so defaults drive the sample
+            allow_non_sample: Allow editing non-`/Game/_MCP_Sample/` AnimBPs
+
+        Returns:
+            Response containing ControlRig/ModifyCurve node metadata, applied curves, and input defaults.
+        """
+        try:
+            if curve_values is None:
+                curve_values = {
+                    "IK_blend_interact": 1.0,
+                    "IKBlend_l": 1.0,
+                }
+            if input_defaults is None:
+                input_defaults = {
+                    "ShouldDoIKTrace": True,
+                    "InteractionWorldLocation": [80, -40, 80],
+                }
+            params = {
+                "blueprint_name": blueprint_name,
+                "curve_values": curve_values,
+                "input_defaults": input_defaults,
+                "alpha": alpha,
+                "apply_mode": apply_mode,
+                "replace_existing": replace_existing,
+                "disconnect_existing_links": disconnect_existing_links,
+                "allow_non_sample": allow_non_sample,
+            }
+            if node_id:
+                params["node_id"] = node_id
+            if node_name:
+                params["node_name"] = node_name
+            if title_contains:
+                params["title_contains"] = title_contains
+            if control_rig_class:
+                params["control_rig_class"] = control_rig_class
+            add_graph_selector(params, graph_name, graph_id, graph_type)
+            return send_node_command("ensure_controlrig_forced_driver_animbp", params)
+        except Exception as e:
+            error_msg = f"Error ensuring ControlRig forced-driver AnimBP: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def ensure_anim_graph_trail_demo(
+        ctx: Context,
+        blueprint_name: str,
+        trail_bone: str = "VB VBHead",
+        base_joint: str = "head",
+        chain_length: int = 2,
+        chain_bone_axis: str = "X",
+        alpha: float = 1.0,
+        fake_velocity = None,
+        graph_name: str = "AnimGraph",
+        graph_id: str = "",
+        graph_type: str = "function",
+        replace_existing: bool = False,
+        allow_non_sample: bool = False,
+        invert_chain_bone_axis: bool = False,
+        reorient_parent_to_child: bool = True,
+        actor_space_fake_velocity: bool = False,
+        relaxation_speed_scale: float = 1.0,
+        limit_stretch: bool = False,
+        stretch_limit: float = 0.0,
+        max_delta_time: float = 0.0
+    ) -> Dict[str, Any]:
+        """
+        Ensure an AnimGraph contains a Trail Controller demonstration chain.
+
+        The resulting chain is:
+        Linked Input Pose -> Local To Component Space -> Trail ->
+        Component To Local Space -> Root Result.
+
+        By default this command only modifies `/Game/_MCP_Sample/` AnimBPs.
+
+        Args:
+            blueprint_name: Anim Blueprint name or path
+            trail_bone: Active trail bone, defaults to StackOBot's VB VBHead
+            base_joint: Base joint for velocity, defaults to head
+            chain_length: Number of bones in the trail chain, minimum 2
+            chain_bone_axis: X, Y, or Z
+            alpha: Trail node alpha
+            fake_velocity: Optional [X, Y, Z] fake velocity for static preview tests
+            graph_name: Target animation graph name, defaults to AnimGraph
+            graph_id: Optional target graph GUID
+            graph_type: Graph selector type, defaults to function because AnimGraph is reported there
+            replace_existing: Replace existing pose links on the target chain pins
+            allow_non_sample: Allow editing non-`/Game/_MCP_Sample/` AnimBPs
+            invert_chain_bone_axis: Invert the selected chain bone axis
+            reorient_parent_to_child: Reorient parent bones toward children
+            actor_space_fake_velocity: Apply fake velocity in actor space instead of world space
+            relaxation_speed_scale: Trail relaxation scale
+            limit_stretch: Enable stretch limiting
+            stretch_limit: Stretch limit when enabled
+            max_delta_time: Optional timestep clamp
+
+        Returns:
+            Response containing chain node metadata and reflected Trail settings.
+        """
+        try:
+            if fake_velocity is None:
+                fake_velocity = [0, 0, 0]
+            params = {
+                "blueprint_name": blueprint_name,
+                "trail_bone": trail_bone,
+                "base_joint": base_joint,
+                "chain_length": chain_length,
+                "chain_bone_axis": chain_bone_axis,
+                "alpha": alpha,
+                "fake_velocity": fake_velocity,
+                "replace_existing": replace_existing,
+                "allow_non_sample": allow_non_sample,
+                "invert_chain_bone_axis": invert_chain_bone_axis,
+                "reorient_parent_to_child": reorient_parent_to_child,
+                "actor_space_fake_velocity": actor_space_fake_velocity,
+                "relaxation_speed_scale": relaxation_speed_scale,
+                "limit_stretch": limit_stretch,
+                "stretch_limit": stretch_limit,
+                "max_delta_time": max_delta_time,
+            }
+            add_graph_selector(params, graph_name, graph_id, graph_type)
+            return send_node_command("ensure_anim_graph_trail_demo", params)
+        except Exception as e:
+            error_msg = f"Error ensuring AnimGraph Trail demo chain: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
     def add_blueprint_branch_node(
         ctx: Context,
         blueprint_name: str,

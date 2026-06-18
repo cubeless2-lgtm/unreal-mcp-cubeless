@@ -6,6 +6,12 @@ This document provides detailed information about the editor tools available in 
 
 Editor tools allow you to control the Unreal Editor viewport and other editor functionality through MCP commands. These tools are particularly useful for automating tasks like focusing the camera on specific actors or locations.
 
+## Bridge Port
+
+The Unreal-side bridge listens on `127.0.0.1:55557` by default.
+
+For local smoke tests that need to run a second Unreal project while another editor already owns the default port, start Unreal with `-UnrealMCPPort=<port>` or set `UNREAL_MCP_PORT=<port>` for both Unreal and the Python MCP wrapper. The default port remains unchanged when no override is supplied.
+
 ## Editor Tools
 
 ### focus_viewport
@@ -126,6 +132,61 @@ Safely preflight or open an editor level through the native UnrealMCP bridge. Th
   "params": {
     "level_path": "/Game/_MCP_Temp/PCG/LVL_PCG_LandscapeValidation_MCP",
     "dry_run": true
+  }
+}
+```
+
+### safe_new_preview_map
+
+Safely preflight or create a new preview map through the native UnrealMCP bridge. The command only allows targets under `/Game/_MCP_Temp/`, defaults to `dry_run=true`, blocks dirty packages by default, and creates the map through native C++ editor APIs instead of Python map-loading helpers.
+
+**Parameters:**
+- `target_path` (string, required) - Long package path, object path, or `.umap` filename
+- `dry_run` (boolean, optional) - Validate only, default `true`
+- `allow_dirty_packages` (boolean, optional) - Allow real creation while dirty packages exist, default `false`
+- `overwrite_existing` (boolean, optional) - Allow replacing an existing target map, default `false`
+- `is_partitioned_world` (boolean, optional) - Create a world-partitioned preview map, default `false`
+
+**Returns:**
+- `target_long_package_name`, `target_filename`, `target_exists`
+- `allowed_root`, `under_allowed_root`
+- `current_world_package_name`
+- `can_create`, `blocked_reasons`
+- `dirty_package_count_before`, `dirty_packages_before`
+- `create_attempted`, `created`, `saved`
+
+**Example:**
+```json
+{
+  "command": "safe_new_preview_map",
+  "params": {
+    "target_path": "/Game/_MCP_Temp/AnimStudy/M_Baddy_RigidBody_Compare_MCP",
+    "dry_run": true
+  }
+}
+```
+
+### spawn_blueprint_actor
+
+Spawn an actor from a Blueprint in the currently open editor level. `blueprint_name` accepts the legacy short-name form under `/Game/Blueprints/`, a long package path, an object path, or a generated class path ending in `_C`.
+
+**Parameters:**
+- `blueprint_name` (string, required) - Blueprint short name, package path, object path, or generated class path
+- `actor_name` (string, required) - Name for the spawned actor
+- `location` (array, optional) - `[X, Y, Z]` world location
+- `rotation` (array, optional) - `[Pitch, Yaw, Roll]` rotation in degrees
+- `scale` (array, optional) - `[X, Y, Z]` actor scale
+
+**Example:**
+```json
+{
+  "command": "spawn_blueprint_actor",
+  "params": {
+    "blueprint_name": "/Game/_MCP_Sample/AnimStudy/BP_Baddy_RigidBody_StudyActor.BP_Baddy_RigidBody_StudyActor",
+    "actor_name": "MCP_BaddyStudyActor",
+    "location": [0, 0, 120],
+    "rotation": [0, 0, 0],
+    "scale": [1, 1, 1]
   }
 }
 ```

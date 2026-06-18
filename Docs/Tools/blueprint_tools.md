@@ -143,6 +143,36 @@ Set a property on a component in a Blueprint.
 }
 ```
 
+### set_skeletal_mesh_component_anim_defaults
+
+Safely set SkeletalMeshComponent mesh and Animation Blueprint defaults on a Blueprint component template.
+
+Use this command for SkeletalMeshComponent mesh/AnimClass default changes instead of generic `set_component_property`. It uses the component API, marks the Blueprint modified, and can compile/save the Blueprint after the update.
+
+**Parameters:**
+- `blueprint_name` (string) - Blueprint name, package path, object path, or generated class path
+- `component_name` (string) - The SkeletalMeshComponent template name
+- `skeletal_mesh` (string, optional) - Skeletal mesh asset path
+- `anim_class` (string, optional) - Animation Blueprint generated class path
+- `compile` (boolean, optional, default: true) - Compile and validate the Blueprint after editing
+- `save` (boolean, optional, default: true) - Save the Blueprint after successful editing
+
+**Returns:**
+- Blueprint path, component name, resolved skeletal mesh, resolved anim class, compile result, validation result, saved state, and dirty state
+
+**Example:**
+```json
+{
+  "command": "set_skeletal_mesh_component_anim_defaults",
+  "params": {
+    "blueprint_name": "/Game/_MCP_Sample/AnimStudy/BP_Baddy_RigidBody_StudyActor.BP_Baddy_RigidBody_StudyActor",
+    "component_name": "BaddyStudyMesh",
+    "skeletal_mesh": "/Game/_MCP_Sample/AnimStudy/SKM_Baddy_RigidBody_Study.SKM_Baddy_RigidBody_Study",
+    "anim_class": "/Game/_MCP_Sample/AnimStudy/ABP_Baddy_RigidBody_Study.ABP_Baddy_RigidBody_Study_C"
+  }
+}
+```
+
 ### get_component_property
 
 Read a property from a Blueprint component template.

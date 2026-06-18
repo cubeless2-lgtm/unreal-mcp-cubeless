@@ -17,6 +17,257 @@ Most node authoring commands accept optional graph selector fields:
 
 When no graph selector is supplied, commands keep the legacy behavior and target the Blueprint event graph.
 
+### ensure_anim_graph_input_pose_passthrough
+
+Ensure an Animation Blueprint `AnimGraph` passes the incoming input pose through to the root output. This is intended for safe Post Process AnimBP setup and learning fixtures.
+
+The command creates or reuses an `AnimGraphNode_LinkedInputPose` node and connects its `Pose` output to the root node's `Result` input. If the root result pin is already linked to another node, the command fails unless `replace_existing` is `true`.
+
+**Parameters:**
+- `blueprint_name` (string) - Anim Blueprint name or path
+- `graph_name` (string, optional) - Defaults to `AnimGraph`
+- `graph_id` (string, optional) - Target graph GUID
+- `graph_type` (string, optional) - Defaults to `function`, because Unreal reports AnimGraph through the Blueprint function graph list
+- `replace_existing` (boolean, optional) - Replace an existing root pose link
+- `input_node_position` (array, optional) - `[X, Y]` editor position for a newly created input pose node
+
+**Example:**
+```json
+{
+  "command": "ensure_anim_graph_input_pose_passthrough",
+  "params": {
+    "blueprint_name": "/Game/_MCP_Sample/AnimStudy/ABP_Bot_PostProcess_Study.ABP_Bot_PostProcess_Study",
+    "graph_name": "AnimGraph",
+    "graph_type": "function",
+    "replace_existing": false
+  }
+}
+```
+
+### ensure_anim_graph_modify_bone_demo
+
+Ensure an Animation Blueprint `AnimGraph` contains a simple component-space Modify Bone demo chain. This is intended for Post Process AnimBP learning fixtures where the incoming pose should pass through a visible, reversible bone offset.
+
+The command creates or reuses this chain:
+
+`LinkedInputPose -> LocalToComponentSpace -> Transform (Modify) Bone -> ComponentToLocalSpace -> Root`
+
+The Modify Bone node is configured to ignore translation and scale, use additive rotation in bone space, and write the requested rotation both to the runtime node settings and the exposed `Rotation` input pin default.
+
+**Parameters:**
+- `blueprint_name` (string) - Anim Blueprint name or path
+- `graph_name` (string, optional) - Defaults to `AnimGraph`
+- `graph_id` (string, optional) - Target graph GUID
+- `graph_type` (string, optional) - Defaults to `function`
+- `bone_name` (string, optional) - Target skeleton bone; defaults to `head`
+- `rotation` (array, optional) - `[Pitch, Yaw, Roll]` additive rotation in degrees; defaults to `[0, 0, 6]`
+- `replace_existing` (boolean, optional) - Replace existing pose links needed to install the demo chain
+
+**Example:**
+```json
+{
+  "command": "ensure_anim_graph_modify_bone_demo",
+  "params": {
+    "blueprint_name": "/Game/_MCP_Sample/AnimStudy/ABP_Bot_PostProcess_Study.ABP_Bot_PostProcess_Study",
+    "graph_name": "AnimGraph",
+    "graph_type": "function",
+    "bone_name": "head",
+    "rotation": [0, 0, 4],
+    "replace_existing": true
+  }
+}
+```
+
+### ensure_anim_graph_modify_curve_demo
+
+Ensure an Animation Blueprint `AnimGraph` contains a simple Modify Curve demo chain. This is intended for sample-only animation learning fixtures where the incoming pose should pass through forced curve values, especially ControlRig gate experiments.
+
+The command creates or reuses this chain:
+
+`LinkedInputPose -> ModifyCurve -> Root`
+
+By default the command refuses to modify AnimBPs outside `/Game/_MCP_Sample/`. Pass `allow_non_sample=true` only for intentional non-sample edits.
+
+The default curve values are tuned for the StackOBot ControlRig gate study:
+
+- `IK_blend_interact=1.0`
+- `IKBlend_l=1.0`
+
+**Parameters:**
+- `blueprint_name` (string) - Anim Blueprint name or path
+- `graph_name` (string, optional) - Defaults to `AnimGraph`
+- `graph_id` (string, optional) - Target graph GUID
+- `graph_type` (string, optional) - Defaults to `function`
+- `curve_values` (object or array, optional) - Curve values as `{ "CurveName": 1.0 }` or `[{"name":"CurveName","value":1.0}]`
+- `alpha` (number, optional) - Modify Curve alpha; defaults to `1.0`
+- `apply_mode` (string, optional) - `Add`, `Scale`, `Blend`, `WeightedMovingAverage`, or `RemapCurve`; defaults to `Add`
+- `replace_existing` (boolean, optional) - Replace existing pose links needed to install the demo chain
+- `allow_non_sample` (boolean, optional) - Allow non-`/Game/_MCP_Sample/` AnimBP edits
+
+**Example:**
+```json
+{
+  "command": "ensure_anim_graph_modify_curve_demo",
+  "params": {
+    "blueprint_name": "/Game/_MCP_Sample/AnimStudy/ABP_Bot_ControlRig_ForcedCurve_Study.ABP_Bot_ControlRig_ForcedCurve_Study",
+    "graph_name": "AnimGraph",
+    "graph_type": "function",
+    "curve_values": {
+      "IK_blend_interact": 1.0,
+      "IKBlend_l": 1.0
+    },
+    "apply_mode": "Add",
+    "replace_existing": true
+  }
+}
+```
+
+### set_anim_graph_controlrig_input_defaults
+
+Expose ControlRig AnimGraph input pins and set their default values. This is intended for sample-only animation learning fixtures that need to force ControlRig driver inputs without hand-editing protected AnimGraph internals.
+
+By default the command refuses to modify AnimBPs outside `/Game/_MCP_Sample/`. Pass `allow_non_sample=true` only for intentional non-sample edits.
+
+The default input values are tuned for the StackOBot ControlRig forced-driver study:
+
+- `ShouldDoIKTrace=true`
+- `InteractionWorldLocation=[80, -40, 80]`
+
+**C++ API note:** this command exists because ControlRig AnimGraph custom input pins are backed by protected editor-node optional-pin state. Python cannot safely expose and rebuild those pins directly on UE 5.7.
+
+**Parameters:**
+- `blueprint_name` (string) - Anim Blueprint name or path
+- `graph_name` (string, optional) - Defaults to `AnimGraph`
+- `graph_id` (string, optional) - Target graph GUID
+- `graph_type` (string, optional) - Defaults to `function`
+- `input_defaults` (object or array, optional) - Input defaults as `{ "InputName": value }` or `[{"name":"InputName","value":value}]`
+- `node_id` (string, optional) - ControlRig node GUID or object-name filter
+- `node_name` (string, optional) - ControlRig node object-name filter
+- `title_contains` (string, optional) - ControlRig node title substring filter
+- `control_rig_class` (string, optional) - ControlRig generated class path or substring filter
+- `disconnect_existing_links` (boolean, optional) - Disconnect existing links on target pins so defaults drive the sample; defaults to `false`
+- `allow_non_sample` (boolean, optional) - Allow non-`/Game/_MCP_Sample/` AnimBP edits
+
+**Example:**
+```json
+{
+  "command": "set_anim_graph_controlrig_input_defaults",
+  "params": {
+    "blueprint_name": "/Game/_MCP_Sample/AnimStudy/ABP_Bot_ControlRig_InputDefaults_Study.ABP_Bot_ControlRig_InputDefaults_Study",
+    "graph_name": "AnimGraph",
+    "graph_type": "function",
+    "control_rig_class": "CR_Bot_Correction",
+    "input_defaults": {
+      "ShouldDoIKTrace": true,
+      "InteractionWorldLocation": [80, -40, 80]
+    },
+    "disconnect_existing_links": true
+  }
+}
+```
+
+### ensure_controlrig_forced_driver_animbp
+
+Ensure a sample Animation Blueprint has a forced ControlRig driver path. The command inserts or reuses a `ModifyCurve` node directly before the selected ControlRig node, preserves the existing upstream source pose, forces curve values, exposes ControlRig input pins, and can disconnect existing input links so the requested defaults drive the sample.
+
+By default the command refuses to modify AnimBPs outside `/Game/_MCP_Sample/`. Pass `allow_non_sample=true` only for intentional non-sample edits.
+
+The default forced-driver values are tuned for the StackOBot ControlRig study:
+
+- Curves: `IK_blend_interact=1.0`, `IKBlend_l=1.0`
+- ControlRig inputs: `ShouldDoIKTrace=true`, `InteractionWorldLocation=[80, -40, 80]`
+
+**C++ API note:** this command is required because a safe forced-driver sample must rewire protected AnimGraph pose links around a ControlRig node and expose ControlRig custom input pins. Plain Python reflection should not hand-edit that graph state on UE 5.7.
+
+**Parameters:**
+- `blueprint_name` (string) - Anim Blueprint name or path
+- `graph_name` (string, optional) - Defaults to `AnimGraph`
+- `graph_id` (string, optional) - Target graph GUID
+- `graph_type` (string, optional) - Defaults to `function`
+- `curve_values` (object or array, optional) - Forced curve values as `{ "CurveName": 1.0 }` or `[{"name":"CurveName","value":1.0}]`
+- `input_defaults` (object or array, optional) - ControlRig input defaults as `{ "InputName": value }` or `[{"name":"InputName","value":value}]`
+- `alpha` (number, optional) - Modify Curve alpha; defaults to `1.0`
+- `apply_mode` (string, optional) - `Add`, `Scale`, `Blend`, `WeightedMovingAverage`, or `RemapCurve`; defaults to `Add`
+- `node_id` (string, optional) - ControlRig node GUID or object-name filter
+- `node_name` (string, optional) - ControlRig node object-name filter
+- `title_contains` (string, optional) - ControlRig node title substring filter
+- `control_rig_class` (string, optional) - ControlRig generated class path or substring filter
+- `replace_existing` (boolean, optional) - Replace pose links needed to insert ModifyCurve before ControlRig; defaults to `true`
+- `disconnect_existing_links` (boolean, optional) - Disconnect existing ControlRig input links so defaults drive the sample; defaults to `true`
+- `allow_non_sample` (boolean, optional) - Allow non-`/Game/_MCP_Sample/` AnimBP edits
+
+**Example:**
+```json
+{
+  "command": "ensure_controlrig_forced_driver_animbp",
+  "params": {
+    "blueprint_name": "/Game/_MCP_Sample/AnimStudy/ABP_Bot_ControlRig_ForcedDriver_Study.ABP_Bot_ControlRig_ForcedDriver_Study",
+    "graph_name": "AnimGraph",
+    "graph_type": "function",
+    "control_rig_class": "CR_Bot_Correction",
+    "curve_values": {
+      "IK_blend_interact": 1.0,
+      "IKBlend_l": 1.0
+    },
+    "input_defaults": {
+      "ShouldDoIKTrace": true,
+      "InteractionWorldLocation": [80, -40, 80]
+    },
+    "replace_existing": true,
+    "disconnect_existing_links": true
+  }
+}
+```
+
+### ensure_anim_graph_trail_demo
+
+Ensure an Animation Blueprint `AnimGraph` contains a Trail Controller demo chain. This is intended for sample-only animation learning fixtures where the incoming pose should pass through an active component-space `Trail` node without modifying original project assets.
+
+The command creates or reuses this chain:
+
+`LinkedInputPose -> LocalToComponentSpace -> Trail -> ComponentToLocalSpace -> Root`
+
+By default the command refuses to modify AnimBPs outside `/Game/_MCP_Sample/`. Pass `allow_non_sample=true` only for intentional non-sample edits.
+
+**Parameters:**
+- `blueprint_name` (string) - Anim Blueprint name or path
+- `graph_name` (string, optional) - Defaults to `AnimGraph`
+- `graph_id` (string, optional) - Target graph GUID
+- `graph_type` (string, optional) - Defaults to `function`
+- `trail_bone` (string, optional) - Active trail bone; defaults to `VB VBHead`
+- `base_joint` (string, optional) - Base joint for velocity; defaults to `head`
+- `chain_length` (number, optional) - Trail chain length; minimum `2`
+- `chain_bone_axis` (string, optional) - `X`, `Y`, or `Z`; defaults to `X`
+- `alpha` (number, optional) - Trail node alpha; defaults to `1.0`
+- `fake_velocity` (array, optional) - `[X, Y, Z]` fake velocity for static preview tests; defaults to `[0, 0, 0]`
+- `replace_existing` (boolean, optional) - Replace existing pose links needed to install the demo chain
+- `allow_non_sample` (boolean, optional) - Allow non-`/Game/_MCP_Sample/` AnimBP edits
+- `invert_chain_bone_axis` (boolean, optional) - Invert the selected chain bone axis
+- `reorient_parent_to_child` (boolean, optional) - Reorient parent bones toward children; defaults to `true`
+- `actor_space_fake_velocity` (boolean, optional) - Apply fake velocity in actor space instead of world space
+- `relaxation_speed_scale` (number, optional) - Trail relaxation scale; defaults to `1.0`
+- `limit_stretch` (boolean, optional) - Enable stretch limiting
+- `stretch_limit` (number, optional) - Stretch limit when enabled
+- `max_delta_time` (number, optional) - Optional timestep clamp
+
+**Example:**
+```json
+{
+  "command": "ensure_anim_graph_trail_demo",
+  "params": {
+    "blueprint_name": "/Game/_MCP_Sample/AnimStudy/ABP_Bot_Trail_Study.ABP_Bot_Trail_Study",
+    "graph_name": "AnimGraph",
+    "graph_type": "function",
+    "trail_bone": "VB VBHead",
+    "base_joint": "head",
+    "chain_length": 2,
+    "chain_bone_axis": "X",
+    "fake_velocity": [0, 0, 0],
+    "replace_existing": true
+  }
+}
+```
+
 ### list_blueprint_graphs
 
 List graphs in a Blueprint and return stable graph IDs.
@@ -24,6 +275,370 @@ List graphs in a Blueprint and return stable graph IDs.
 **Parameters:**
 - `blueprint_name` (string) - Blueprint name or path
 - `graph_type` (string, optional) - Filter by graph type
+
+### inspect_anim_graph_node_settings
+
+Read reflected runtime settings from AnimGraph nodes. This is useful for learning or validating nodes such as `RigidBody`, `Trail`, `ControlRig`, `Transform (Modify) Bone`, and other editor nodes that wrap an internal `FAnimNode_*` struct.
+
+The command is read-only. It returns normal node metadata plus a `settings` object containing the wrapped anim-node struct type and UPROPERTY values.
+
+**Parameters:**
+- `blueprint_name` (string) - Animation Blueprint name or path
+- `graph_name` (string, optional) - Defaults to `AnimGraph`
+- `graph_id` (string, optional) - Target graph GUID
+- `graph_type` (string, optional) - Defaults to `function`
+- `node_id` (string, optional) - Node GUID filter
+- `node_type` (string, optional) - Node class or title substring filter, such as `RigidBody`
+- `title_contains` (string, optional) - Node title substring filter
+- `include_pins` (boolean, optional) - Include pin metadata and links
+- `max_depth` (number, optional) - Nested struct/array dump depth, clamped from `1` to `8`
+
+**Example:**
+```json
+{
+  "command": "inspect_anim_graph_node_settings",
+  "params": {
+    "blueprint_name": "/Game/StackOBot/Characters/Blobling/Anim/ABP_Baddy.ABP_Baddy",
+    "graph_name": "AnimGraph",
+    "graph_type": "function",
+    "node_type": "RigidBody",
+    "max_depth": 5
+  }
+}
+```
+
+### inspect_anim_state_machine_transitions
+
+Read Animation Blueprint state-machine transition topology. The command is read-only and does not compile, save, or modify the Blueprint.
+
+The response includes state-machine nodes, optional state summaries, transition source/target states, transition blend/priority settings, the bound transition rule graph, and optional rule graph nodes/pins.
+
+**Parameters:**
+- `blueprint_name` (string) - Animation Blueprint name or path
+- `state_machine_name` (string, optional) - State machine name/title substring filter
+- `include_pins` (boolean, optional) - Include pin metadata and links on returned graph nodes
+- `include_rule_graph_nodes` (boolean, optional) - Include nodes inside each transition rule graph
+- `include_state_nodes` (boolean, optional) - Include state node summaries for each state machine
+- `max_rule_graph_nodes` (number, optional) - Max rule graph nodes per transition, `-1` for unlimited
+
+**Example:**
+```json
+{
+  "command": "inspect_anim_state_machine_transitions",
+  "params": {
+    "blueprint_name": "/Game/StackOBot/Characters/Bot/ABP_Bot.ABP_Bot",
+    "state_machine_name": "AirLocomotion",
+    "include_pins": true,
+    "include_rule_graph_nodes": true,
+    "max_rule_graph_nodes": 64
+  }
+}
+```
+
+### controlrig_direct_gate_probe
+
+Run a transient direct ControlRig gate probe without modifying or saving assets. The command creates a runtime ControlRig instance per case, applies requested UPROPERTY values and hierarchy curve values, executes ControlRig events, samples hierarchy transforms, and reports deltas from the first successful case.
+
+The default case set is tuned for the StackOBot Control Rig learning pass:
+
+- `ShouldDoIKTrace`
+- `InteractionWorldLocation`
+- `IKBlend_l`
+- `IK_blend_interact`
+- sampled elements such as `foot_l`, `foot_r`, `IK_foot_L`, and `IK_foot_R`
+
+**Parameters:**
+- `control_rig_path` (string, optional) - ControlRig Blueprint asset path
+- `control_rig_class` (string, optional) - Generated ControlRig class path; use this instead of `control_rig_path` when probing a native/generated class directly
+- `cases` (array, optional) - Case objects. Each case may include `name`, `properties`, shorthand `should_trace`, shorthand `loc` or `interaction_world_location`, and `curves`
+- `sample_elements` (array, optional) - Hierarchy element names or objects such as `{"type":"Control","name":"IK_foot_L"}`
+- `execute_events` (array, optional) - ControlRig event names; defaults to `Construction`, `Forwards Solve`, and `Post Forwards Solve`
+- `should_trace_property` (string, optional) - Property used by shorthand `should_trace`; defaults to `ShouldDoIKTrace`
+- `interaction_location_property` (string, optional) - Property used by shorthand `loc`; defaults to `InteractionWorldLocation`
+
+**Example:**
+```json
+{
+  "command": "controlrig_direct_gate_probe",
+  "params": {
+    "control_rig_path": "/Game/StackOBot/Characters/Bot/Rig/CR_Bot_Correction.CR_Bot_Correction",
+    "sample_elements": ["foot_l", "foot_r", "Control:IK_foot_L", "Control:IK_foot_R"],
+    "cases": [
+      {
+        "name": "baseline",
+        "should_trace": false,
+        "loc": [0, 0, 0],
+        "curves": {"IKBlend_l": 0, "IK_blend_interact": 0}
+      },
+      {
+        "name": "interact_side",
+        "should_trace": true,
+        "loc": [80, -40, 80],
+        "curves": {"IKBlend_l": 1, "IK_blend_interact": 1}
+      }
+    ]
+  }
+}
+```
+
+### sample_controlrig_pre_post_runtime_pose
+
+Sample ControlRig hierarchy transforms before and after execute events without modifying or saving assets. The default case is tuned for the StackOBot forced-driver study: `ShouldDoIKTrace=true`, `InteractionWorldLocation=[80, -40, 80]`, `IKBlend_l=1.0`, and `IK_blend_interact=1.0`.
+
+**Important scope note:** this command currently samples a transient ControlRig instance directly. It reports `runtime_source=direct_transient_controlrig` and `runtime_graph_prepost=false`; it does not instrument the compiled AnimGraph node stack or capture the actual upstream AnimBP pose inside a running SkeletalMeshComponent.
+
+Use this command when you need a stable same-instance pre/post ControlRig solve measurement before building deeper runtime AnimGraph instrumentation.
+
+**Parameters:**
+- `control_rig_path` (string, optional) - ControlRig Blueprint asset path
+- `control_rig_class` (string, optional) - Generated ControlRig class path; use this instead of `control_rig_path` when probing a native/generated class directly
+- `input_defaults` (object, optional) - ControlRig property defaults; defaults to `ShouldDoIKTrace=true` and `InteractionWorldLocation=[80, -40, 80]`
+- `curve_values` (object, optional) - Hierarchy curve values; defaults to `IKBlend_l=1.0` and `IK_blend_interact=1.0`
+- `cases` (array, optional) - Case objects. If provided, each case may include `name`, `properties`, shorthand `should_trace`, shorthand `loc` or `interaction_world_location`, and `curves`
+- `sample_elements` (array, optional) - Hierarchy element names or objects such as `{"type":"Control","name":"IK_foot_L"}`
+- `execute_events` (array, optional) - ControlRig event names to execute between pre/post samples; defaults to `Forwards Solve`
+- `should_trace_property` (string, optional) - Property used by shorthand `should_trace`; defaults to `ShouldDoIKTrace`
+- `interaction_location_property` (string, optional) - Property used by shorthand `loc`; defaults to `InteractionWorldLocation`
+
+**Returns:**
+- `pre_pose` and `post_pose` hierarchy transform samples per case
+- `deltas` with translation distance, rotation delta in degrees, and scale delta
+- property/curve inputs and echoes
+- execute result list and warning/error arrays
+
+**Example:**
+```json
+{
+  "command": "sample_controlrig_pre_post_runtime_pose",
+  "params": {
+    "control_rig_path": "/Game/StackOBot/Characters/Bot/Rig/CR_Bot_Correction.CR_Bot_Correction",
+    "sample_elements": ["foot_l", "foot_r", "Control:IK_foot_L", "Control:IK_foot_R"],
+    "input_defaults": {
+      "ShouldDoIKTrace": true,
+      "InteractionWorldLocation": [80, -40, 80]
+    },
+    "curve_values": {
+      "IKBlend_l": 1.0,
+      "IK_blend_interact": 1.0
+    }
+  }
+}
+```
+
+### sample_skeletal_bones_in_sie
+
+Sample bone and socket world/component transforms from a live `SkeletalMeshComponent` without modifying or saving assets.
+
+**Important scope note:** this command is an immediate read-only sampler. It prefers an active PIE/SIE/play world, falls back to the editor world, and reports `sampled_world_type` plus `is_play_session_active`. It does not start SIE, spawn actors, or tick frames by itself. Use Python/editor automation to create or advance the runtime pose first, then call this command to capture the current pose.
+
+**Parameters:**
+- `actor_label` (string, optional) - Actor label filter, case-insensitive exact match
+- `actor_name` (string, optional) - Actor object name filter, case-insensitive exact match
+- `actor_path` (string, optional) - Actor path filter, exact or path suffix match
+- `component_name` (string, optional) - SkeletalMeshComponent object name. If omitted, the first skeletal component on the matched actor is sampled.
+- `bones` (array, optional) - Bone names to sample. Defaults to `root`, `pelvis`, `spine_03`, `head`, `foot_l`, and `foot_r`.
+- `sockets` (array, optional) - Socket names to sample
+- `prefer_pie_world` (boolean, optional) - Prefer active PIE/SIE/play world before editor world. Defaults to `true`.
+- `require_pie_world` (boolean, optional) - Fail instead of falling back to the editor world when no PIE/SIE/play world matches. Defaults to `false`.
+
+**Returns:**
+- `actor` and `component` metadata for the sampled target
+- `sampled_world_type`, `sampled_world_name`, and `is_play_session_active`
+- `bone_samples` and `socket_samples` with `world` and `component` transforms
+- warning/error arrays for missing bones, ambiguous matches, or missing sockets
+
+**Example:**
+```json
+{
+  "command": "sample_skeletal_bones_in_sie",
+  "params": {
+    "actor_label": "MCP_BlendSpace_SIE_Bot",
+    "component_name": "SkeletalMeshComponent0",
+    "bones": ["root", "pelvis", "spine_03", "head", "foot_l", "foot_r"],
+    "sockets": ["head"],
+    "prefer_pie_world": true
+  }
+}
+```
+
+### inspect_anim_instance_runtime_state
+
+Inspect runtime `AnimInstance` state from a matched live `SkeletalMeshComponent` without modifying or saving assets.
+
+**Important scope note:** this command is an immediate read-only inspector. It prefers an active PIE/SIE/play world, falls back to the editor world, and reports `sampled_world_type` plus `is_play_session_active`. It does not start SIE, spawn actors, or tick frames by itself. Use Python/editor automation to create or advance the runtime state first, then call this command to read the current AnimInstance state.
+
+**Parameters:**
+- `actor_label` (string, optional) - Actor label filter, case-insensitive exact match
+- `actor_name` (string, optional) - Actor object name filter, case-insensitive exact match
+- `actor_path` (string, optional) - Actor path filter, exact or path suffix match
+- `component_name` (string, optional) - SkeletalMeshComponent object name. If omitted, the first skeletal component on the matched actor is inspected.
+- `state_machine_name` (string, optional) - State-machine name substring filter
+- `include_states` (boolean, optional) - Include per-state metadata. Per-state weights and relevant animation timing are intentionally omitted in the safe MVP. Defaults to `true`.
+- `include_montages` (boolean, optional) - Include the current active montage summary. Defaults to `true`.
+- `include_curves` (boolean, optional) - Include curve values. Defaults to `false`.
+- `curve_names` (array, optional) - Specific curve names to sample when `include_curves=true`
+- `max_state_machines` (number, optional) - Maximum state machines to include. Defaults to `32`.
+- `max_state_machine_instances_to_probe` (number, optional) - Maximum runtime AnimNode indexes to probe for state-machine instances. Defaults to `256`.
+- `max_states_per_machine` (number, optional) - Maximum states per state machine. Defaults to `64`.
+- `max_curves` (number, optional) - Maximum curves to include. Defaults to `128`.
+- `prefer_pie_world` (boolean, optional) - Prefer active PIE/SIE/play world before editor world. Defaults to `true`.
+- `require_pie_world` (boolean, optional) - Fail instead of falling back to the editor world when no PIE/SIE/play world matches. Defaults to `false`.
+
+**Returns:**
+- `actor`, `component`, and `anim_instance` metadata
+- `sampled_world_type`, `sampled_world_name`, and `is_play_session_active`
+- `state_machines` with current state name/index, elapsed time, runtime/class machine indexes, and optional per-state metadata
+- optional `active_montage`
+- optional `curves`
+- warning/error arrays for ambiguous matches, missing state machines, or missing curves
+
+The state-machine reader uses live `FAnimNode_StateMachine` instances and maps them back to baked class data with `StateMachineIndexInClass`. This avoids unsafe `UAnimInstance` helper calls whose machine indexes do not always match baked state-machine array indexes.
+
+**Example:**
+```json
+{
+  "command": "inspect_anim_instance_runtime_state",
+  "params": {
+    "actor_label": "MCP_AnimState_Smoke",
+    "state_machine_name": "Locomotion",
+    "include_states": true,
+    "include_curves": true,
+    "curve_names": ["GroundSpeed", "IK_blend_interact"],
+    "prefer_pie_world": true
+  }
+}
+```
+
+### set_anim_instance_runtime_property_for_probe
+
+Set properties on the matched live `AnimInstance` object for runtime probing.
+
+**Important scope note:** this command modifies only the current runtime `AnimInstance`; it does not modify or save the Animation Blueprint asset. The response reports `read_only=false`, `runtime_only=true`, `asset_modified=false`, and `saves_assets=false`.
+
+Supported value types follow the shared runtime property writer: booleans, numbers, strings/names, `Vector`, `Rotator`, and `Transform`.
+
+**Parameters:**
+- `actor_label` (string, optional) - Actor label filter, case-insensitive exact match
+- `actor_name` (string, optional) - Actor object name filter, case-insensitive exact match
+- `actor_path` (string, optional) - Actor path filter, exact or path suffix match
+- `component_name` (string, optional) - SkeletalMeshComponent object name
+- `properties` (object or array, optional) - Property assignments, either `{ "GroundSpeed": 250.0 }` or `[{"name":"GroundSpeed","value":250.0}]`
+- `property_name` + `value` (optional) - Single-property assignment alternative
+- `tick_after_set` (boolean, optional) - Force component animation ticks after assignment. Defaults to `false`.
+- `tick_count` (number, optional) - Forced `USkeletalMeshComponent::TickAnimation` count when `tick_after_set=true`. Defaults to `1`.
+- `tick_delta_time` (number, optional) - Delta time per forced tick. Defaults to `1/30`.
+- `refresh_bone_transforms` (boolean, optional) - Refresh bone transforms during/after forced ticks when `tick_after_set=true` and `tick_count > 0`. Defaults to `true`.
+- `include_snapshot_after` (boolean, optional) - Include state-machine/montage/curve snapshot after assignment. Defaults to `true`.
+- `include_previous_values` (boolean, optional) - Include previous property values in the assignment result. Defaults to `true`.
+- Snapshot filters from `inspect_anim_instance_runtime_state`, such as `state_machine_name`, `include_states`, `include_curves`, and `curve_names`.
+- Target/world selection options from `inspect_anim_instance_runtime_state`, such as `prefer_pie_world` and `require_pie_world`.
+
+**Example:**
+```json
+{
+  "command": "set_anim_instance_runtime_property_for_probe",
+  "params": {
+    "actor_label": "MCP_AnimState_Smoke",
+    "properties": {
+      "GroundSpeed": 250.0
+    },
+    "tick_after_set": true,
+    "tick_count": 2,
+    "prefer_pie_world": true
+  }
+}
+```
+
+### sample_anim_state_machine_runtime_response
+
+Apply runtime `AnimInstance` property cases, force a narrow component animation tick, and sample state-machine response.
+
+**Important scope note:** this is a controlled runtime probe. It does not start SIE/PIE, spawn actors, or save assets. By default each successful property change is restored after the case so repeated cases can start from the current pre-probe value.
+
+**Parameters:**
+- `actor_label`, `actor_name`, `actor_path`, `component_name` - Same target filters as `inspect_anim_instance_runtime_state`
+- `cases` (array, optional) - Case objects. Each case may include `name`, `properties`, `tick_count`, `tick_delta_time`, and `restore_after_case`.
+- `properties` (object, optional) - Single-case property assignments when `cases` is omitted
+- `name` (string, optional) - Single-case name when `cases` is omitted
+- `tick_count` (number, optional) - Default forced tick count per case. Defaults to `1`.
+- `tick_delta_time` (number, optional) - Default delta time per forced tick. Defaults to `1/30`.
+- `refresh_bone_transforms` (boolean, optional) - Refresh bone transforms during/after forced ticks when `tick_count > 0`. Defaults to `true`.
+- `restore_after_case` (boolean, optional) - Restore successful property changes after each case. Defaults to `true`.
+- `include_baseline` (boolean, optional) - Capture state before applying cases. Defaults to `true`.
+- Snapshot filters from `inspect_anim_instance_runtime_state`, such as `state_machine_name`, `include_states`, `include_curves`, `curve_names`, and state-machine limits.
+- Target/world selection options from `inspect_anim_instance_runtime_state`, such as `prefer_pie_world` and `require_pie_world`.
+
+**Returns:**
+- Target actor/component/AnimInstance metadata
+- Optional `baseline`
+- `cases` array, each with applied property echo, tick result, state-machine snapshot, restore result, warnings, and errors
+- `asset_modified=false` and `saves_assets=false`
+
+**Example:**
+```json
+{
+  "command": "sample_anim_state_machine_runtime_response",
+  "params": {
+    "actor_label": "MCP_AnimState_Smoke",
+    "cases": [
+      {
+        "name": "speed_0",
+        "properties": {"GroundSpeed": 0.0},
+        "tick_count": 2
+      },
+      {
+        "name": "speed_500",
+        "properties": {"GroundSpeed": 500.0},
+        "tick_count": 4
+      }
+    ],
+    "restore_after_case": true,
+    "prefer_pie_world": true
+  }
+}
+```
+
+### set_anim_graph_rigidbody_settings
+
+Set a narrow group of `RigidBody` AnimGraph node settings. This is intended for sample Animation Blueprint experiments, especially under `/Game/_MCP_Sample/`.
+
+By default the command refuses to modify Animation Blueprints outside `/Game/_MCP_Sample/`. Pass `allow_non_sample=true` only for deliberate non-sample edits.
+
+Supported settings:
+
+- `alpha`
+- `external_force`
+- `simulation_space`: `ComponentSpace`, `WorldSpace`, or `BaseBoneSpace`
+- `enable_world_geometry`
+
+The command updates both runtime node fields and exposed input pin defaults for `Alpha` and `ExternalForce`.
+
+**Parameters:**
+- `blueprint_name` (string) - Animation Blueprint name or path
+- `graph_name` (string, optional) - Defaults to `AnimGraph`
+- `graph_id` (string, optional) - Target graph GUID
+- `graph_type` (string, optional) - Defaults to `function`
+- `node_id` (string, optional) - RigidBody node GUID filter
+- `alpha` (number, optional) - RigidBody alpha
+- `external_force` (array, optional) - `[X, Y, Z]` external force
+- `simulation_space` (string, optional) - `ComponentSpace`, `WorldSpace`, or `BaseBoneSpace`
+- `enable_world_geometry` (boolean, optional) - Enable world geometry collision
+- `allow_non_sample` (boolean, optional) - Allow editing non-sample assets
+
+**Example:**
+```json
+{
+  "command": "set_anim_graph_rigidbody_settings",
+  "params": {
+    "blueprint_name": "/Game/_MCP_Sample/AnimStudy/ABP_Baddy_RigidBody_Study_ForceZ",
+    "graph_name": "AnimGraph",
+    "graph_type": "function",
+    "alpha": 1.0,
+    "external_force": [0, 0, 350],
+    "simulation_space": "ComponentSpace"
+  }
+}
+```
 
 ### resolve_blueprint_graph
 

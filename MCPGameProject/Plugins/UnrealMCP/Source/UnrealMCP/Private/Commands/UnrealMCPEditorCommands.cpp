@@ -455,6 +455,93 @@ namespace
         return FVector((*Array)[0]->AsNumber(), (*Array)[1]->AsNumber(), (*Array)[2]->AsNumber());
     }
 
+    FString BuildObjectPathFromPackageName(const FString& PackageName)
+    {
+        return FString::Printf(TEXT("%s.%s"), *PackageName, *FPackageName::GetShortName(PackageName));
+    }
+
+    FString NormalizeBlueprintActorInputPath(const FString& InBlueprintPath)
+    {
+        FString BlueprintPath = FPackageName::ExportTextPathToObjectPath(InBlueprintPath).TrimStartAndEnd();
+        BlueprintPath.TrimQuotesInline();
+        BlueprintPath.ReplaceInline(TEXT("\\"), TEXT("/"));
+
+        if (BlueprintPath.EndsWith(TEXT(".uasset"), ESearchCase::IgnoreCase))
+        {
+            FString LongPackageName;
+            if (FPackageName::TryConvertFilenameToLongPackageName(BlueprintPath, LongPackageName))
+            {
+                BlueprintPath = LongPackageName;
+            }
+        }
+
+        if (!BlueprintPath.StartsWith(TEXT("/")))
+        {
+            BlueprintPath = FString::Printf(TEXT("/Game/Blueprints/%s"), *BlueprintPath);
+        }
+
+        if (!BlueprintPath.Contains(TEXT(".")))
+        {
+            BlueprintPath = BuildObjectPathFromPackageName(BlueprintPath);
+        }
+
+        return BlueprintPath;
+    }
+
+    bool ResolveBlueprintActorClass(
+        const FString& InBlueprintPath,
+        UClass*& OutActorClass,
+        FString& OutResolvedObjectPath,
+        FString& OutError)
+    {
+        OutActorClass = nullptr;
+        OutResolvedObjectPath = NormalizeBlueprintActorInputPath(InBlueprintPath);
+
+        TArray<FString> TriedPaths;
+        TriedPaths.Add(OutResolvedObjectPath);
+
+        UBlueprint* Blueprint = LoadObject<UBlueprint>(nullptr, *OutResolvedObjectPath);
+        if (Blueprint && Blueprint->GeneratedClass)
+        {
+            OutActorClass = Blueprint->GeneratedClass;
+        }
+
+        if (!OutActorClass)
+        {
+            FString ClassObjectPath = OutResolvedObjectPath;
+            if (!ClassObjectPath.EndsWith(TEXT("_C")))
+            {
+                ClassObjectPath += TEXT("_C");
+            }
+            TriedPaths.Add(ClassObjectPath);
+            OutActorClass = LoadObject<UClass>(nullptr, *ClassObjectPath);
+            if (OutActorClass)
+            {
+                OutResolvedObjectPath = ClassObjectPath;
+            }
+        }
+
+        if (!OutActorClass)
+        {
+            OutError = FString::Printf(
+                TEXT("Blueprint actor class not found for '%s'. Tried: %s"),
+                *InBlueprintPath,
+                *FString::Join(TriedPaths, TEXT(", ")));
+            return false;
+        }
+
+        if (!OutActorClass->IsChildOf(AActor::StaticClass()))
+        {
+            OutError = FString::Printf(
+                TEXT("Resolved class is not an Actor class for '%s': %s"),
+                *InBlueprintPath,
+                *OutActorClass->GetPathName());
+            return false;
+        }
+
+        return true;
+    }
+
     TArray<double> GetNumberArrayParam(const TSharedPtr<FJsonObject>& Params, const TCHAR* FieldName, const TArray<double>& DefaultValue, double MinValue, double MaxValue, int32 MaxCount)
     {
         if (!Params.IsValid() || !Params->HasTypedField<EJson::Array>(FieldName))
@@ -653,6 +740,10 @@ TSharedPtr<FJsonObject> FUnrealMCPEditorCommands::HandleCommand(const FString& C
     else if (CommandType == TEXT("open_editor_level"))
     {
         return HandleOpenEditorLevel(Params);
+    }
+    else if (CommandType == TEXT("safe_new_preview_map"))
+    {
+        return HandleSafeNewPreviewMap(Params);
     }
     else if (CommandType == TEXT("open_niagara_preview_player"))
     {
@@ -917,6 +1008,135 @@ TSharedPtr<FJsonObject> FUnrealMCPEditorCommands::HandleOpenEditorLevel(const TS
     {
         ResultObj->SetBoolField(TEXT("success"), false);
         ResultObj->SetStringField(TEXT("message"), TEXT("FEditorFileUtils::LoadMap returned false"));
+    }
+
+    return ResultObj;
+}
+
+TSharedPtr<FJsonObject> FUnrealMCPEditorCommands::HandleSafeNewPreviewMap(const TSharedPtr<FJsonObject>& Params)
+{
+    FString RequestedMapPath;
+    if (!Params->TryGetStringField(TEXT("target_path"), RequestedMapPath) &&
+        !Params->TryGetStringField(TEXT("map_path"), RequestedMapPath) &&
+        !Params->TryGetStringField(TEXT("level_path"), RequestedMapPath))
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Missing 'target_path' parameter"));
+    }
+
+    bool bDryRun = true;
+    Params->TryGetBoolField(TEXT("dry_run"), bDryRun);
+
+    bool bAllowDirtyPackages = false;
+    Params->TryGetBoolField(TEXT("allow_dirty_packages"), bAllowDirtyPackages);
+
+    bool bOverwriteExisting = false;
+    Params->TryGetBoolField(TEXT("overwrite_existing"), bOverwriteExisting);
+
+    bool bIsPartitionedWorld = false;
+    Params->TryGetBoolField(TEXT("is_partitioned_world"), bIsPartitionedWorld);
+
+    const FString TargetLongPackageName = NormalizeLevelPackageName(RequestedMapPath);
+    FText InvalidPackageReason;
+    if (TargetLongPackageName.IsEmpty() ||
+        TargetLongPackageName.Contains(TEXT("//")) ||
+        !FPackageName::IsValidLongPackageName(TargetLongPackageName, true, &InvalidPackageReason))
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(
+            TEXT("Invalid preview map package path '%s': %s"),
+            *RequestedMapPath,
+            *InvalidPackageReason.ToString()));
+    }
+
+    const FString AllowedRoot = TEXT("/Game/_MCP_Temp/");
+    const bool bUnderAllowedRoot = TargetLongPackageName.StartsWith(AllowedRoot);
+    const FString TargetFilename = FPackageName::LongPackageNameToFilename(
+        TargetLongPackageName,
+        FPackageName::GetMapPackageExtension());
+    const bool bTargetExists = FPaths::FileExists(TargetFilename) || FPackageName::DoesPackageExist(TargetLongPackageName);
+    const FString CurrentWorldPackageName = GetCurrentEditorWorldPackageName();
+    const TArray<FString> DirtyPackagesBeforeCommand = GetDirtyPackageNames();
+
+    TArray<FString> BlockedReasons;
+    if (!bUnderAllowedRoot)
+    {
+        BlockedReasons.Add(TEXT("target_not_under_game_mcp_temp"));
+    }
+    if (bTargetExists && !bOverwriteExisting)
+    {
+        BlockedReasons.Add(TEXT("target_map_already_exists"));
+    }
+    if (DirtyPackagesBeforeCommand.Num() > 0 && !bAllowDirtyPackages)
+    {
+        BlockedReasons.Add(TEXT("dirty_packages_present"));
+    }
+    if (!GEditor)
+    {
+        BlockedReasons.Add(TEXT("g_editor_unavailable"));
+    }
+
+    TSharedPtr<FJsonObject> ResultObj = MakeShared<FJsonObject>();
+    ResultObj->SetBoolField(TEXT("success"), true);
+    ResultObj->SetStringField(TEXT("requested_map_path"), RequestedMapPath);
+    ResultObj->SetStringField(TEXT("target_long_package_name"), TargetLongPackageName);
+    ResultObj->SetStringField(TEXT("target_filename"), TargetFilename);
+    ResultObj->SetBoolField(TEXT("target_exists"), bTargetExists);
+    ResultObj->SetStringField(TEXT("allowed_root"), AllowedRoot);
+    ResultObj->SetBoolField(TEXT("under_allowed_root"), bUnderAllowedRoot);
+    ResultObj->SetStringField(TEXT("current_world_package_name"), CurrentWorldPackageName);
+    ResultObj->SetBoolField(TEXT("dry_run"), bDryRun);
+    ResultObj->SetBoolField(TEXT("allow_dirty_packages"), bAllowDirtyPackages);
+    ResultObj->SetBoolField(TEXT("overwrite_existing"), bOverwriteExisting);
+    ResultObj->SetBoolField(TEXT("is_partitioned_world"), bIsPartitionedWorld);
+    ResultObj->SetBoolField(TEXT("can_create"), BlockedReasons.Num() == 0);
+    ResultObj->SetArrayField(TEXT("blocked_reasons"), StringArrayToJsonArray(BlockedReasons));
+    ResultObj->SetNumberField(TEXT("dirty_package_count_before"), DirtyPackagesBeforeCommand.Num());
+    ResultObj->SetArrayField(TEXT("dirty_packages_before"), StringArrayToJsonArray(DirtyPackagesBeforeCommand));
+
+    if (bDryRun || BlockedReasons.Num() > 0)
+    {
+        ResultObj->SetBoolField(TEXT("create_attempted"), false);
+        ResultObj->SetBoolField(TEXT("created"), false);
+        ResultObj->SetBoolField(TEXT("saved"), false);
+        ResultObj->SetStringField(
+            TEXT("message"),
+            bDryRun
+                ? TEXT("Dry run only; no preview map was created")
+                : TEXT("Preview map creation blocked"));
+        return ResultObj;
+    }
+
+    UWorld* NewWorld = GEditor->NewMap(bIsPartitionedWorld);
+    ResultObj->SetBoolField(TEXT("create_attempted"), true);
+    ResultObj->SetBoolField(TEXT("created"), NewWorld != nullptr);
+
+    if (!NewWorld)
+    {
+        ResultObj->SetBoolField(TEXT("success"), false);
+        ResultObj->SetBoolField(TEXT("saved"), false);
+        ResultObj->SetStringField(TEXT("message"), TEXT("GEditor->NewMap returned null"));
+        AddDirtyPackageCommandDelta(ResultObj, DirtyPackagesBeforeCommand);
+        return ResultObj;
+    }
+
+    const FString TargetDirectory = FPaths::GetPath(TargetFilename);
+    if (!TargetDirectory.IsEmpty())
+    {
+        IFileManager::Get().MakeDirectory(*TargetDirectory, true);
+    }
+
+    const bool bSaved = FEditorFileUtils::SaveMap(NewWorld, TargetFilename);
+    ResultObj->SetBoolField(TEXT("saved"), bSaved);
+    ResultObj->SetStringField(TEXT("current_world_package_name_after"), GetCurrentEditorWorldPackageName());
+    AddDirtyPackageCommandDelta(ResultObj, DirtyPackagesBeforeCommand);
+
+    if (!bSaved)
+    {
+        ResultObj->SetBoolField(TEXT("success"), false);
+        ResultObj->SetStringField(TEXT("message"), TEXT("FEditorFileUtils::SaveMap returned false"));
+    }
+    else
+    {
+        ResultObj->SetStringField(TEXT("message"), TEXT("Preview map created and saved"));
     }
 
     return ResultObj;
@@ -1255,24 +1475,18 @@ TSharedPtr<FJsonObject> FUnrealMCPEditorCommands::HandleSpawnBlueprintActor(cons
         return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Missing 'actor_name' parameter"));
     }
 
-    // Find the blueprint
+    // Find the blueprint actor class
     if (BlueprintName.IsEmpty())
     {
         return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Blueprint name is empty"));
     }
 
-    FString Root      = TEXT("/Game/Blueprints/");
-    FString AssetPath = Root + BlueprintName;
-
-    if (!FPackageName::DoesPackageExist(AssetPath))
+    UClass* BlueprintActorClass = nullptr;
+    FString ResolvedBlueprintPath;
+    FString ResolveError;
+    if (!ResolveBlueprintActorClass(BlueprintName, BlueprintActorClass, ResolvedBlueprintPath, ResolveError))
     {
-        return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("Blueprint '%s' not found – it must reside under /Game/Blueprints"), *BlueprintName));
-    }
-
-    UBlueprint* Blueprint = LoadObject<UBlueprint>(nullptr, *AssetPath);
-    if (!Blueprint)
-    {
-        return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("Blueprint not found: %s"), *BlueprintName));
+        return FUnrealMCPCommonUtils::CreateErrorResponse(ResolveError);
     }
 
     // Get transform parameters
@@ -1308,10 +1522,14 @@ TSharedPtr<FJsonObject> FUnrealMCPEditorCommands::HandleSpawnBlueprintActor(cons
     FActorSpawnParameters SpawnParams;
     SpawnParams.Name = *ActorName;
 
-    AActor* NewActor = World->SpawnActor<AActor>(Blueprint->GeneratedClass, SpawnTransform, SpawnParams);
+    AActor* NewActor = World->SpawnActor<AActor>(BlueprintActorClass, SpawnTransform, SpawnParams);
     if (NewActor)
     {
-        return FUnrealMCPCommonUtils::ActorToJsonObject(NewActor, true);
+        TSharedPtr<FJsonObject> ResultObj = FUnrealMCPCommonUtils::ActorToJsonObject(NewActor, true);
+        ResultObj->SetStringField(TEXT("blueprint_input"), BlueprintName);
+        ResultObj->SetStringField(TEXT("resolved_blueprint_path"), ResolvedBlueprintPath);
+        ResultObj->SetStringField(TEXT("spawned_class"), BlueprintActorClass->GetPathName());
+        return ResultObj;
     }
 
     return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Failed to spawn blueprint actor"));

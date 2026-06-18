@@ -63,7 +63,7 @@ logger = logging.getLogger("UnrealMCP")
 
 # Configuration
 UNREAL_HOST = "127.0.0.1"
-UNREAL_PORT = 55557
+UNREAL_PORT = int(os.environ.get("UNREAL_MCP_PORT", "55557"))
 UNREAL_RESPONSE_TIMEOUT_SECONDS = int(os.environ.get("UNREAL_MCP_RESPONSE_TIMEOUT_SECONDS", "120"))
 UNREAL_MCP_LOG_PAYLOAD_CHARS = int(os.environ.get("UNREAL_MCP_LOG_PAYLOAD_CHARS", "1200"))
 
@@ -420,6 +420,21 @@ def info():
     ## Blueprint Node Management
     - `list_blueprint_graphs(blueprint_name, graph_type="")` - List Blueprint graphs with graph_id metadata
     - `resolve_blueprint_graph(blueprint_name, graph_name="", graph_id="", graph_type="", create_if_missing=False)` - Resolve or create a Blueprint graph
+    - `inspect_anim_graph_node_settings(blueprint_name, node_type="", graph_name="AnimGraph")` - Read reflected FAnimNode settings for AnimGraph nodes
+    - `inspect_anim_state_machine_transitions(blueprint_name, state_machine_name="")` - Read AnimBP state-machine transition source/target/rule graph topology
+    - `controlrig_direct_gate_probe(control_rig_path="", control_rig_class="", cases?)` - Run transient ControlRig property/curve gate probes and return hierarchy transform deltas without saving assets
+    - `sample_controlrig_pre_post_runtime_pose(control_rig_path="", control_rig_class="", input_defaults?, curve_values?)` - Sample transient ControlRig hierarchy pre/post execute transforms and deltas
+    - `sample_skeletal_bones_in_sie(actor_label="", actor_name="", component_name="", bones?, sockets?, require_pie_world=False)` - Sample live PIE/SIE/play SkeletalMeshComponent bone/socket transforms without modifying assets
+    - `inspect_anim_instance_runtime_state(actor_label="", actor_name="", component_name="", state_machine_name="", require_pie_world=False)` - Read live PIE/SIE/play AnimInstance state-machine, montage, and curve state
+    - `set_anim_instance_runtime_property_for_probe(actor_label="", properties?, require_pie_world=False)` - Set live AnimInstance runtime properties for probing without saving assets
+    - `sample_anim_state_machine_runtime_response(actor_label="", cases?, require_pie_world=False)` - Apply runtime property cases, tick narrowly, and sample state-machine response
+    - `set_anim_graph_rigidbody_settings(blueprint_name, alpha?, external_force?, simulation_space?)` - Modify a sample RigidBody AnimGraph node
+    - `ensure_anim_graph_input_pose_passthrough(blueprint_name, graph_name="AnimGraph", replace_existing=False)` - Create/reuse a Linked Input Pose node and connect it to the AnimGraph root Result pin
+    - `ensure_anim_graph_modify_bone_demo(blueprint_name, bone_name="head", rotation=[0,0,6], replace_existing=False)` - Create/reuse a safe Post Process AnimBP Modify Bone demo chain
+    - `ensure_anim_graph_modify_curve_demo(blueprint_name, curve_values?)` - Create/reuse a sample Modify Curve demo chain, defaulting to StackOBot ControlRig gate curves
+    - `set_anim_graph_controlrig_input_defaults(blueprint_name, input_defaults?)` - Expose sample ControlRig AnimGraph input pins and set defaults
+    - `ensure_controlrig_forced_driver_animbp(blueprint_name, curve_values?, input_defaults?)` - Insert sample Modify Curve before ControlRig and force input defaults
+    - `ensure_anim_graph_trail_demo(blueprint_name, trail_bone="VB VBHead", base_joint="head", replace_existing=False)` - Create/reuse a sample Trail Controller demo chain
     - `add_blueprint_event_node(blueprint_name, event_type)` - Add event nodes
     - `add_blueprint_input_action_node(blueprint_name, action_name)` - Add input nodes
     - `add_blueprint_function_node(blueprint_name, target, function_name)` - Add function nodes

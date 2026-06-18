@@ -266,6 +266,55 @@ def register_blueprint_tools(mcp: FastMCP):
             return {"success": False, "message": error_msg}
 
     @mcp.tool()
+    def set_skeletal_mesh_component_anim_defaults(
+        ctx: Context,
+        blueprint_name: str,
+        component_name: str,
+        skeletal_mesh: str = "",
+        anim_class: str = "",
+        compile: bool = True,
+        save: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Safely set SkeletalMeshComponent mesh and AnimBP defaults on a Blueprint component template.
+
+        Args:
+            blueprint_name: Target Blueprint name or object path.
+            component_name: SkeletalMeshComponent variable name.
+            skeletal_mesh: Skeletal mesh object path.
+            anim_class: AnimBlueprint generated class path ending in _C.
+            compile: Compile after mutation.
+            save: Save after successful compile.
+        """
+        from unreal_mcp_server import get_unreal_connection
+
+        try:
+            unreal = get_unreal_connection()
+            if not unreal:
+                logger.error("Failed to connect to Unreal Engine")
+                return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+            params = {
+                "blueprint_name": blueprint_name,
+                "component_name": component_name,
+                "compile": compile,
+                "save": save,
+            }
+            if skeletal_mesh:
+                params["skeletal_mesh"] = skeletal_mesh
+            if anim_class:
+                params["anim_class"] = anim_class
+
+            logger.info(f"Setting skeletal mesh component defaults with params: {params}")
+            response = unreal.send_command("set_skeletal_mesh_component_anim_defaults", params)
+            return response or {"success": False, "message": "No response from Unreal Engine"}
+
+        except Exception as e:
+            error_msg = f"Error setting skeletal mesh component defaults: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
     def get_component_property(
         ctx: Context,
         blueprint_name: str,

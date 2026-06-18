@@ -460,21 +460,70 @@ def register_editor_tools(mcp: FastMCP):
             return {"success": False, "message": str(e)}
 
     @mcp.tool()
+    def safe_new_preview_map(
+        ctx: Context,
+        target_path: str,
+        dry_run: bool = True,
+        allow_dirty_packages: bool = False,
+        overwrite_existing: bool = False,
+        is_partitioned_world: bool = False,
+    ) -> Dict[str, Any]:
+        """
+        Safely preflight or create a new preview map under /Game/_MCP_Temp.
+
+        Args:
+            target_path: Long package path, object path, or .umap filename.
+            dry_run: If true, only validate and report blockers.
+            allow_dirty_packages: If false, block real creation when dirty packages exist.
+            overwrite_existing: If false, block when the target map already exists.
+            is_partitioned_world: Create a world-partitioned preview map.
+
+        Returns:
+            Dict with target path, dirty package summary, can_create,
+            blocked_reasons, create_attempted, created, and saved.
+        """
+        from unreal_mcp_server import get_unreal_connection
+
+        try:
+            unreal = get_unreal_connection()
+            if not unreal:
+                logger.error("Failed to connect to Unreal Engine")
+                return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+            response = unreal.send_command(
+                "safe_new_preview_map",
+                {
+                    "target_path": target_path,
+                    "dry_run": dry_run,
+                    "allow_dirty_packages": allow_dirty_packages,
+                    "overwrite_existing": overwrite_existing,
+                    "is_partitioned_world": is_partitioned_world,
+                },
+            )
+            return response or {}
+
+        except Exception as e:
+            logger.error(f"Error creating preview map: {e}")
+            return {"success": False, "message": str(e)}
+
+    @mcp.tool()
     def spawn_blueprint_actor(
         ctx: Context,
         blueprint_name: str,
         actor_name: str,
         location: List[float] = [0.0, 0.0, 0.0],
-        rotation: List[float] = [0.0, 0.0, 0.0]
+        rotation: List[float] = [0.0, 0.0, 0.0],
+        scale: Optional[List[float]] = None,
     ) -> Dict[str, Any]:
         """Spawn an actor from a Blueprint.
         
         Args:
             ctx: The MCP context
-            blueprint_name: Name of the Blueprint to spawn from
+            blueprint_name: Blueprint short name, package path, object path, or generated class path
             actor_name: Name to give the spawned actor
             location: The [x, y, z] world location to spawn at
             rotation: The [pitch, yaw, roll] rotation in degrees
+            scale: Optional [x, y, z] actor scale
             
         Returns:
             Dict containing the spawned actor's properties
@@ -494,9 +543,13 @@ def register_editor_tools(mcp: FastMCP):
                 "location": location or [0.0, 0.0, 0.0],
                 "rotation": rotation or [0.0, 0.0, 0.0]
             }
+            if scale is not None:
+                params["scale"] = scale
             
             # Validate location and rotation formats
-            for param_name in ["location", "rotation"]:
+            for param_name in ["location", "rotation", "scale"]:
+                if param_name not in params:
+                    continue
                 param_value = params[param_name]
                 if not isinstance(param_value, list) or len(param_value) != 3:
                     logger.error(f"Invalid {param_name} format: {param_value}. Must be a list of 3 float values.")
