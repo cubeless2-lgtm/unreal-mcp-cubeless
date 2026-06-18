@@ -346,6 +346,46 @@ The command is read-only. It returns normal node metadata plus a `settings` obje
 }
 ```
 
+### inspect_anim_graph_protected_topology
+
+Read protected AnimGraph editor topology in a stable read-only format. Use this when Python reflection can find an AnimGraph but cannot safely read its protected `Nodes` or pin/link arrays.
+
+The command does not compile, save, or modify assets. It reports static editor topology only; combine it with PIE/SIE runtime probes when you need proof that a node evaluated at runtime.
+
+**Parameters:**
+- `blueprint_name` (string) - Animation Blueprint name or path
+- `graph_name` (string, optional) - Defaults to `AnimGraph`
+- `graph_id` (string, optional) - Target graph GUID
+- `graph_type` (string, optional) - Defaults to `function`
+- `node_id` (string, optional) - Node GUID filter
+- `node_type` (string, optional) - Node class or title substring filter, such as `ControlRig`, `Trail`, or `RigidBody`
+- `title_contains` (string, optional) - Node title substring filter
+- `include_pins` (boolean, optional) - Include full per-node pin metadata; defaults to `true`
+- `include_pose_pins` (boolean, optional) - Include pose-pin summaries and preferred input/output pose pins; defaults to `true`
+- `include_links` (boolean, optional) - Include normalized graph links; defaults to `true`
+- `include_non_pose_links` (boolean, optional) - Include non-pose data links in addition to pose/component-pose links; defaults to `false`
+- `include_settings` (boolean, optional) - Include reflected `FAnimNode_*` settings; defaults to `false`
+- `max_depth` (number, optional) - Nested settings depth when `include_settings=true`, clamped from `1` to `8`
+- `max_nodes` (number, optional) - Max matching nodes to include, `-1` for unlimited
+- `max_links` (number, optional) - Max links to include, `-1` for unlimited
+
+Returned node entries include `node_kind`, `is_anim_graph_node`, optional `pins`, and `pose_pins`. Link entries include `link_kind`, `is_pose_link`, and `is_component_pose_link`.
+
+**Example:**
+```json
+{
+  "command": "inspect_anim_graph_protected_topology",
+  "params": {
+    "blueprint_name": "/Game/StackOBot/Characters/Bot/ABP_Bot.ABP_Bot",
+    "graph_name": "AnimGraph",
+    "graph_type": "function",
+    "node_type": "ControlRig",
+    "include_settings": true,
+    "max_depth": 3
+  }
+}
+```
+
 ### inspect_anim_state_machine_transitions
 
 Read Animation Blueprint state-machine transition topology. The command is read-only and does not compile, save, or modify the Blueprint.

@@ -8053,6 +8053,10 @@ TSharedPtr<FJsonObject> FUnrealMCPBlueprintNodeCommands::HandleCommand(const FSt
     {
         return HandleInspectAnimGraphNodeSettings(Params);
     }
+    else if (CommandType == TEXT("inspect_anim_graph_protected_topology"))
+    {
+        return HandleInspectAnimGraphProtectedTopology(Params);
+    }
     else if (CommandType == TEXT("inspect_anim_state_machine_transitions"))
     {
         return HandleInspectAnimStateMachineTransitions(Params);
@@ -11108,6 +11112,372 @@ TSharedPtr<FJsonObject> FUnrealMCPBlueprintNodeCommands::HandleListBlueprintNode
     ResultObj->SetStringField(TEXT("graph_name"), TargetGraph->GetName());
     AddGraphField(ResultObj, Blueprint, TargetGraph);
     ResultObj->SetArrayField(TEXT("nodes"), Nodes);
+    return ResultObj;
+}
+
+FString GetAnimGraphTopologyNodeKind(UEdGraphNode* Node)
+{
+    if (!Node)
+    {
+        return TEXT("unknown");
+    }
+    if (Cast<UAnimGraphNode_Root>(Node))
+    {
+        return TEXT("root");
+    }
+    if (Cast<UAnimGraphNode_StateMachineBase>(Node))
+    {
+        return TEXT("state_machine");
+    }
+    if (Cast<UAnimGraphNode_ControlRig>(Node))
+    {
+        return TEXT("controlrig");
+    }
+    if (Cast<UAnimGraphNode_RigidBody>(Node))
+    {
+        return TEXT("rigidbody");
+    }
+    if (Cast<UAnimGraphNode_Trail>(Node))
+    {
+        return TEXT("trail");
+    }
+    if (Cast<UAnimGraphNode_ModifyBone>(Node))
+    {
+        return TEXT("modify_bone");
+    }
+    if (Cast<UAnimGraphNode_ModifyCurve>(Node))
+    {
+        return TEXT("modify_curve");
+    }
+    if (Cast<UAnimGraphNode_LinkedInputPose>(Node))
+    {
+        return TEXT("linked_input_pose");
+    }
+    if (Cast<UAnimGraphNode_LocalToComponentSpace>(Node))
+    {
+        return TEXT("local_to_component_space");
+    }
+    if (Cast<UAnimGraphNode_ComponentToLocalSpace>(Node))
+    {
+        return TEXT("component_to_local_space");
+    }
+    return Cast<UAnimGraphNode_Base>(Node) ? TEXT("anim_graph_node") : TEXT("graph_node");
+}
+
+TSharedPtr<FJsonObject> AnimGraphTopologyPosePinsToJson(UEdGraphNode* Node)
+{
+    TArray<TSharedPtr<FJsonValue>> InputPosePins;
+    TArray<TSharedPtr<FJsonValue>> OutputPosePins;
+    TArray<TSharedPtr<FJsonValue>> InputComponentPosePins;
+    TArray<TSharedPtr<FJsonValue>> OutputComponentPosePins;
+    int32 LinkedPosePinCount = 0;
+
+    auto AddPosePin = [&LinkedPosePinCount](UEdGraphPin* Pin, TArray<TSharedPtr<FJsonValue>>& Values)
+    {
+        Values.Add(MakeShared<FJsonValueObject>(PinToJson(Pin)));
+        if (Pin && Pin->LinkedTo.Num() > 0)
+        {
+            ++LinkedPosePinCount;
+        }
+    };
+
+    if (Node)
+    {
+        for (UEdGraphPin* Pin : Node->Pins)
+        {
+            if (!Pin || Pin->ParentPin)
+            {
+                continue;
+            }
+
+            if (IsPoseLinkPin(Pin))
+            {
+                AddPosePin(Pin, Pin->Direction == EGPD_Output ? OutputPosePins : InputPosePins);
+            }
+            else if (IsComponentPoseLinkPin(Pin))
+            {
+                AddPosePin(Pin, Pin->Direction == EGPD_Output ? OutputComponentPosePins : InputComponentPosePins);
+            }
+        }
+    }
+
+    TSharedPtr<FJsonObject> PosePinsObject = MakeShared<FJsonObject>();
+    PosePinsObject->SetArrayField(TEXT("input_pose_pins"), InputPosePins);
+    PosePinsObject->SetArrayField(TEXT("output_pose_pins"), OutputPosePins);
+    PosePinsObject->SetArrayField(TEXT("input_component_pose_pins"), InputComponentPosePins);
+    PosePinsObject->SetArrayField(TEXT("output_component_pose_pins"), OutputComponentPosePins);
+    PosePinsObject->SetNumberField(TEXT("input_pose_pin_count"), InputPosePins.Num());
+    PosePinsObject->SetNumberField(TEXT("output_pose_pin_count"), OutputPosePins.Num());
+    PosePinsObject->SetNumberField(TEXT("input_component_pose_pin_count"), InputComponentPosePins.Num());
+    PosePinsObject->SetNumberField(TEXT("output_component_pose_pin_count"), OutputComponentPosePins.Num());
+    PosePinsObject->SetNumberField(TEXT("linked_pose_pin_count"), LinkedPosePinCount);
+    PosePinsObject->SetBoolField(TEXT("has_pose_pins"),
+        InputPosePins.Num() > 0 ||
+        OutputPosePins.Num() > 0 ||
+        InputComponentPosePins.Num() > 0 ||
+        OutputComponentPosePins.Num() > 0);
+    PosePinsObject->SetBoolField(TEXT("has_linked_pose_pins"), LinkedPosePinCount > 0);
+
+    if (UEdGraphPin* PreferredInput = FindPreferredInputPosePinForNode(Node))
+    {
+        PosePinsObject->SetObjectField(TEXT("preferred_input_pose_pin"), PinToJson(PreferredInput));
+    }
+    if (UEdGraphPin* PreferredOutput = FindPreferredOutputPosePinForNode(Node))
+    {
+        PosePinsObject->SetObjectField(TEXT("preferred_output_pose_pin"), PinToJson(PreferredOutput));
+    }
+    return PosePinsObject;
+}
+
+TSharedPtr<FJsonObject> AnimGraphTopologyNodeToJson(
+    UEdGraphNode* Node,
+    bool bIncludePins,
+    bool bIncludePosePins,
+    bool bIncludeSettings,
+    int32 MaxDepth)
+{
+    TSharedPtr<FJsonObject> NodeObject = NodeToJson(Node, bIncludePins);
+    UAnimGraphNode_Base* AnimGraphNode = Cast<UAnimGraphNode_Base>(Node);
+    NodeObject->SetStringField(TEXT("node_kind"), GetAnimGraphTopologyNodeKind(Node));
+    NodeObject->SetBoolField(TEXT("is_anim_graph_node"), AnimGraphNode != nullptr);
+
+    if (bIncludePosePins)
+    {
+        NodeObject->SetObjectField(TEXT("pose_pins"), AnimGraphTopologyPosePinsToJson(Node));
+    }
+
+    if (bIncludeSettings)
+    {
+        if (AnimGraphNode)
+        {
+            NodeObject->SetObjectField(TEXT("settings"), AnimGraphNodeSettingsToJson(AnimGraphNode, MaxDepth));
+        }
+        else
+        {
+            TSharedPtr<FJsonObject> SettingsObject = MakeShared<FJsonObject>();
+            SettingsObject->SetBoolField(TEXT("has_anim_node_struct"), false);
+            NodeObject->SetObjectField(TEXT("settings"), SettingsObject);
+        }
+    }
+
+    return NodeObject;
+}
+
+TSharedPtr<FJsonObject> AnimGraphTopologyLinkToJson(const UBlueprint* Blueprint, UEdGraphPin* Pin, UEdGraphPin* LinkedPin)
+{
+    TSharedPtr<FJsonObject> LinkObject = BlueprintLinkToJson(Blueprint, Pin, LinkedPin);
+    if (!Pin || !LinkedPin)
+    {
+        return LinkObject;
+    }
+
+    UEdGraphPin* SourcePin = Pin->Direction == EGPD_Output ? Pin : LinkedPin;
+    UEdGraphPin* TargetPin = Pin->Direction == EGPD_Output ? LinkedPin : Pin;
+    const bool bPoseLink = IsPoseLinkPin(SourcePin) || IsPoseLinkPin(TargetPin);
+    const bool bComponentPoseLink = IsComponentPoseLinkPin(SourcePin) || IsComponentPoseLinkPin(TargetPin);
+    FString LinkKind = TEXT("data");
+    if (bComponentPoseLink)
+    {
+        LinkKind = TEXT("component_pose");
+    }
+    else if (bPoseLink)
+    {
+        LinkKind = TEXT("pose");
+    }
+    else if (SourcePin && SourcePin->PinType.PinCategory == UEdGraphSchema_K2::PC_Exec)
+    {
+        LinkKind = TEXT("exec");
+    }
+
+    LinkObject->SetStringField(TEXT("link_kind"), LinkKind);
+    LinkObject->SetBoolField(TEXT("is_pose_link"), bPoseLink);
+    LinkObject->SetBoolField(TEXT("is_component_pose_link"), bComponentPoseLink);
+    if (SourcePin)
+    {
+        LinkObject->SetObjectField(TEXT("source_pin_type"), PinTypeToJson(SourcePin->PinType));
+    }
+    if (TargetPin)
+    {
+        LinkObject->SetObjectField(TEXT("target_pin_type"), PinTypeToJson(TargetPin->PinType));
+    }
+    return LinkObject;
+}
+
+TSharedPtr<FJsonObject> FUnrealMCPBlueprintNodeCommands::HandleInspectAnimGraphProtectedTopology(const TSharedPtr<FJsonObject>& Params)
+{
+    if (!Params.IsValid())
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Missing params"));
+    }
+
+    FString BlueprintName;
+    if (!Params->TryGetStringField(TEXT("blueprint_name"), BlueprintName))
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Missing 'blueprint_name' parameter"));
+    }
+
+    UBlueprint* Blueprint = FUnrealMCPCommonUtils::FindBlueprint(BlueprintName);
+    if (!Blueprint)
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("Blueprint not found: %s"), *BlueprintName));
+    }
+
+    TSharedPtr<FJsonObject> ResolveParams = MakeShared<FJsonObject>(*Params);
+    if (!ResolveParams->HasField(TEXT("graph_id")) &&
+        !ResolveParams->HasField(TEXT("graph_name")) &&
+        !ResolveParams->HasField(TEXT("graph_type")))
+    {
+        ResolveParams->SetStringField(TEXT("graph_name"), TEXT("AnimGraph"));
+        ResolveParams->SetStringField(TEXT("graph_type"), TEXT("function"));
+    }
+
+    FString GraphError;
+    UEdGraph* TargetGraph = ResolveBlueprintGraphForNodeCommand(Blueprint, ResolveParams, GraphError);
+    if (!TargetGraph)
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(GraphError);
+    }
+    if (!IsAnimationGraph(TargetGraph))
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(
+            TEXT("Target graph is not an AnimationGraph. graph='%s' schema='%s'"),
+            *TargetGraph->GetName(),
+            TargetGraph->GetSchema() ? *TargetGraph->GetSchema()->GetClass()->GetName() : TEXT("<none>")));
+    }
+
+    const FString NodeId = GetStringParam(Params, TEXT("node_id"));
+    const FString NodeType = GetStringParam(Params, TEXT("node_type"));
+    const FString TitleContains = GetStringParam(Params, TEXT("title_contains"));
+    const bool bIncludePins = GetBoolParam(Params, TEXT("include_pins"), true);
+    const bool bIncludePosePins = GetBoolParam(Params, TEXT("include_pose_pins"), true);
+    const bool bIncludeLinks = GetBoolParam(Params, TEXT("include_links"), true);
+    const bool bIncludeNonPoseLinks = GetBoolParam(Params, TEXT("include_non_pose_links"), false);
+    const bool bIncludeSettings = GetBoolParam(Params, TEXT("include_settings"), false);
+    const int32 MaxDepth = GetClampedIntParam(Params, TEXT("max_depth"), 3, 1, 8);
+    const int32 MaxNodes = GetClampedIntParam(Params, TEXT("max_nodes"), 512, -1, 10000);
+    const int32 MaxLinks = GetClampedIntParam(Params, TEXT("max_links"), 2048, -1, 50000);
+
+    TArray<TSharedPtr<FJsonValue>> NodeValues;
+    TArray<TSharedPtr<FJsonValue>> LinkValues;
+    TSet<FString> SeenLinkKeys;
+    int32 MatchingNodeCount = 0;
+    int32 IncludedNodeCount = 0;
+    int32 MatchingLinkCount = 0;
+    bool bNodesTruncated = false;
+    bool bLinksTruncated = false;
+
+    for (UEdGraphNode* Node : TargetGraph->Nodes)
+    {
+        if (!Node)
+        {
+            continue;
+        }
+        if (!NodeId.IsEmpty() && !Node->NodeGuid.ToString().Equals(NodeId, ESearchCase::IgnoreCase))
+        {
+            continue;
+        }
+        if (!MatchesNodeFilter(Node, NodeType, TitleContains))
+        {
+            continue;
+        }
+
+        ++MatchingNodeCount;
+        if (MaxNodes >= 0 && IncludedNodeCount >= MaxNodes)
+        {
+            bNodesTruncated = true;
+            continue;
+        }
+
+        NodeValues.Add(MakeShared<FJsonValueObject>(AnimGraphTopologyNodeToJson(
+            Node,
+            bIncludePins,
+            bIncludePosePins,
+            bIncludeSettings,
+            MaxDepth)));
+        ++IncludedNodeCount;
+
+        if (!bIncludeLinks)
+        {
+            continue;
+        }
+
+        for (UEdGraphPin* Pin : Node->Pins)
+        {
+            if (!Pin)
+            {
+                continue;
+            }
+            for (UEdGraphPin* LinkedPin : Pin->LinkedTo)
+            {
+                if (!LinkedPin || !LinkedPin->GetOwningNode())
+                {
+                    continue;
+                }
+
+                UEdGraphPin* SourcePin = Pin->Direction == EGPD_Output ? Pin : LinkedPin;
+                UEdGraphPin* TargetPin = Pin->Direction == EGPD_Output ? LinkedPin : Pin;
+                if (!SourcePin || !TargetPin || !SourcePin->GetOwningNode() || !TargetPin->GetOwningNode())
+                {
+                    continue;
+                }
+
+                const bool bPoseLink = IsPoseLinkPin(SourcePin) || IsPoseLinkPin(TargetPin);
+                const bool bComponentPoseLink = IsComponentPoseLinkPin(SourcePin) || IsComponentPoseLinkPin(TargetPin);
+                if (!bIncludeNonPoseLinks && !bPoseLink && !bComponentPoseLink)
+                {
+                    continue;
+                }
+
+                const FString LinkKey = FString::Printf(
+                    TEXT("%s:%s->%s:%s"),
+                    *SourcePin->GetOwningNode()->NodeGuid.ToString(),
+                    *SourcePin->PinName.ToString(),
+                    *TargetPin->GetOwningNode()->NodeGuid.ToString(),
+                    *TargetPin->PinName.ToString());
+                if (SeenLinkKeys.Contains(LinkKey))
+                {
+                    continue;
+                }
+                SeenLinkKeys.Add(LinkKey);
+                ++MatchingLinkCount;
+
+                if (MaxLinks >= 0 && LinkValues.Num() >= MaxLinks)
+                {
+                    bLinksTruncated = true;
+                    continue;
+                }
+
+                LinkValues.Add(MakeShared<FJsonValueObject>(AnimGraphTopologyLinkToJson(Blueprint, Pin, LinkedPin)));
+            }
+        }
+    }
+
+    TSharedPtr<FJsonObject> ResultObj = MakeShared<FJsonObject>();
+    ResultObj->SetBoolField(TEXT("success"), true);
+    ResultObj->SetBoolField(TEXT("read_only"), true);
+    ResultObj->SetBoolField(TEXT("asset_modified"), false);
+    ResultObj->SetBoolField(TEXT("saves_assets"), false);
+    ResultObj->SetStringField(TEXT("blueprint_name"), BlueprintName);
+    ResultObj->SetStringField(TEXT("blueprint_path"), Blueprint->GetPathName());
+    ResultObj->SetStringField(TEXT("node_id"), NodeId);
+    ResultObj->SetStringField(TEXT("node_type"), NodeType);
+    ResultObj->SetStringField(TEXT("title_contains"), TitleContains);
+    ResultObj->SetBoolField(TEXT("include_pins"), bIncludePins);
+    ResultObj->SetBoolField(TEXT("include_pose_pins"), bIncludePosePins);
+    ResultObj->SetBoolField(TEXT("include_links"), bIncludeLinks);
+    ResultObj->SetBoolField(TEXT("include_non_pose_links"), bIncludeNonPoseLinks);
+    ResultObj->SetBoolField(TEXT("include_settings"), bIncludeSettings);
+    ResultObj->SetNumberField(TEXT("max_depth"), MaxDepth);
+    ResultObj->SetNumberField(TEXT("matching_node_count"), MatchingNodeCount);
+    ResultObj->SetNumberField(TEXT("included_node_count"), IncludedNodeCount);
+    ResultObj->SetNumberField(TEXT("matching_link_count"), MatchingLinkCount);
+    ResultObj->SetNumberField(TEXT("included_link_count"), LinkValues.Num());
+    ResultObj->SetBoolField(TEXT("nodes_truncated"), bNodesTruncated);
+    ResultObj->SetBoolField(TEXT("links_truncated"), bLinksTruncated);
+    ResultObj->SetStringField(TEXT("scope_note"), TEXT("Static AnimGraph editor topology only. This reads protected graph nodes, pins, and pose links; it does not prove runtime execution or sample pose values."));
+    AddGraphField(ResultObj, Blueprint, TargetGraph);
+    ResultObj->SetArrayField(TEXT("nodes"), NodeValues);
+    ResultObj->SetArrayField(TEXT("links"), LinkValues);
     return ResultObj;
 }
 

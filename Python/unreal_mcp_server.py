@@ -421,6 +421,7 @@ def info():
     - `list_blueprint_graphs(blueprint_name, graph_type="")` - List Blueprint graphs with graph_id metadata
     - `resolve_blueprint_graph(blueprint_name, graph_name="", graph_id="", graph_type="", create_if_missing=False)` - Resolve or create a Blueprint graph
     - `inspect_blueprint_graph_call_topology(blueprint_name, graph_type="", reference_contains="")` - Read static Blueprint graph call/reference/link topology
+    - `inspect_anim_graph_protected_topology(blueprint_name, node_type="", graph_name="AnimGraph")` - Read protected AnimGraph nodes, pins, and pose links without modifying assets
     - `inspect_anim_graph_node_settings(blueprint_name, node_type="", graph_name="AnimGraph")` - Read reflected FAnimNode settings for AnimGraph nodes
     - `inspect_anim_state_machine_transitions(blueprint_name, state_machine_name="")` - Read AnimBP state-machine transition source/target/rule graph topology
     - `controlrig_direct_gate_probe(control_rig_path="", control_rig_class="", cases?)` - Run transient ControlRig property/curve gate probes and return hierarchy transform deltas without saving assets

@@ -1297,6 +1297,73 @@ def register_blueprint_node_tools(mcp: FastMCP):
             return {"success": False, "message": error_msg}
 
     @mcp.tool()
+    def inspect_anim_graph_protected_topology(
+        ctx: Context,
+        blueprint_name: str,
+        node_id: str = "",
+        node_type: str = "",
+        title_contains: str = "",
+        include_pins: bool = True,
+        include_pose_pins: bool = True,
+        include_links: bool = True,
+        include_non_pose_links: bool = False,
+        include_settings: bool = False,
+        max_depth: int = 3,
+        max_nodes: int = 512,
+        max_links: int = 2048,
+        graph_name: str = "AnimGraph",
+        graph_id: str = "",
+        graph_type: str = "function"
+    ) -> Dict[str, Any]:
+        """
+        Read protected AnimGraph editor topology in a stable read-only format.
+
+        This command reports AnimGraph nodes, pins, pose pins, and normalized links.
+        It does not compile, save, modify assets, or prove runtime execution.
+
+        Args:
+            blueprint_name: Animation Blueprint name or path
+            node_id: Optional node GUID filter
+            node_type: Optional class or title substring filter
+            title_contains: Optional title substring filter
+            include_pins: Include full per-node pin metadata
+            include_pose_pins: Include pose-pin summaries and preferred input/output pose pins
+            include_links: Include normalized graph links
+            include_non_pose_links: Include non-pose data links in addition to pose/component-pose links
+            include_settings: Include reflected FAnimNode settings through the existing settings dumper
+            max_depth: Maximum nested property depth when include_settings is true
+            max_nodes: Maximum nodes to include, -1 for unlimited
+            max_links: Maximum links to include, -1 for unlimited
+            graph_name: Target animation graph name, defaults to AnimGraph
+            graph_id: Optional target graph GUID
+            graph_type: Graph selector type, defaults to function because AnimGraph is reported there
+
+        Returns:
+            Response containing static AnimGraph topology.
+        """
+        try:
+            params = {
+                "blueprint_name": blueprint_name,
+                "node_id": node_id,
+                "node_type": node_type,
+                "title_contains": title_contains,
+                "include_pins": include_pins,
+                "include_pose_pins": include_pose_pins,
+                "include_links": include_links,
+                "include_non_pose_links": include_non_pose_links,
+                "include_settings": include_settings,
+                "max_depth": max_depth,
+                "max_nodes": max_nodes,
+                "max_links": max_links,
+            }
+            add_graph_selector(params, graph_name, graph_id, graph_type)
+            return send_node_command("inspect_anim_graph_protected_topology", params)
+        except Exception as e:
+            error_msg = f"Error inspecting AnimGraph protected topology: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
     def inspect_anim_graph_node_settings(
         ctx: Context,
         blueprint_name: str,

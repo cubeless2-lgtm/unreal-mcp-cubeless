@@ -409,6 +409,7 @@ FString UUnrealMCPBridge::ExecuteCommand(const FString& CommandType, const TShar
                      CommandType == TEXT("resolve_blueprint_graph") ||
                      CommandType == TEXT("list_blueprint_nodes") ||
                      CommandType == TEXT("inspect_anim_graph_node_settings") ||
+                     CommandType == TEXT("inspect_anim_graph_protected_topology") ||
                      CommandType == TEXT("inspect_anim_state_machine_transitions") ||
                      CommandType == TEXT("inspect_blueprint_graph_call_topology") ||
                      CommandType == TEXT("controlrig_direct_gate_probe") ||
