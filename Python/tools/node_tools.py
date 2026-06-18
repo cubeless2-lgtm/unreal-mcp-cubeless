@@ -1528,6 +1528,7 @@ def register_blueprint_node_tools(mcp: FastMCP):
         actor_name: str = "",
         actor_path: str = "",
         component_name: str = "",
+        anim_instance_source: str = "main",
         prefer_pie_world: bool = True,
         require_pie_world: bool = False,
         tick_count: int = 1,
@@ -1579,6 +1580,7 @@ def register_blueprint_node_tools(mcp: FastMCP):
             actor_name: Live actor object name to sample
             actor_path: Live actor object path to sample
             component_name: SkeletalMeshComponent name to sample
+            anim_instance_source: AnimInstance source on the sampled component: main or post_process
             prefer_pie_world: Prefer PIE/SIE/play worlds over editor world
             require_pie_world: Refuse editor-world fallback
             tick_count: Forced tick count between pre/post samples
@@ -1609,6 +1611,7 @@ def register_blueprint_node_tools(mcp: FastMCP):
                 "settle_tick_count": settle_tick_count,
                 "refresh_bone_transforms": refresh_bone_transforms,
                 "allow_missing_bones": allow_missing_bones,
+                "anim_instance_source": anim_instance_source,
                 "pose_link_max_depth": pose_link_max_depth,
                 "include_pins": include_pins,
                 "max_depth": max_depth,

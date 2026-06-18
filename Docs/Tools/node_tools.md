@@ -468,7 +468,7 @@ Use this command when you need a stable same-instance pre/post ControlRig solve 
 
 Resolve a target AnimGraph node or run a limited runtime pose/mapping probe.
 
-**Important scope note:** `dry_run=true` is a read-only target resolver. `dry_run=false` supports `mode=compiled_graph_mapping`, `mode=pose_watch_capture`, `mode=active_component_tick_delta`, and `mode=isolated_temp_components`. Compiled graph mapping resolves the selected editor AnimGraph node GUID to the compiled/live `FAnimNode_*` instance on a matched `AnimInstance` and reads that node's runtime `FPoseLink` / `FComponentSpacePoseLink` link IDs; this is a same-instance instrumentation preflight, not a pose sample. PoseWatch capture temporarily sets the AnimBP debug object, registers transient debug-data PoseWatch entries for the selected compiled node output and its first runtime input pose link, samples both during the same forced tick, then removes only the transient entries. Active tick-delta samples final `SkeletalMeshComponent` pose before and after forced ticks on a matched live component. Isolated temp mode duplicates the AnimBP under `_MCP_Temp`, bypasses the selected node in a source copy, and compares it against a selected-node copy on separate transient components. Only `pose_watch_capture` is intended to report `runtime_graph_prepost=true` / `same_instance_prepost=true` when both watched links evaluate successfully.
+**Important scope note:** `dry_run=true` is a read-only target resolver. `dry_run=false` supports `mode=compiled_graph_mapping`, `mode=pose_watch_capture`, `mode=active_component_tick_delta`, and `mode=isolated_temp_components`. Compiled graph mapping resolves the selected editor AnimGraph node GUID to the compiled/live `FAnimNode_*` instance on a matched `AnimInstance` and reads that node's runtime `FPoseLink` / `FComponentSpacePoseLink` link IDs; this is a same-instance instrumentation preflight, not a pose sample. PoseWatch capture temporarily sets the AnimBP debug object, registers transient debug-data PoseWatch entries for the selected compiled node output and its first runtime input pose link, samples both during the same forced tick, then removes only the transient entries. Active tick-delta samples final `SkeletalMeshComponent` pose before and after forced ticks on a matched live component. Isolated temp mode duplicates the AnimBP under `_MCP_Temp`, bypasses the selected node in a source copy, and compares it against a selected-node copy on separate transient components. Runtime modes sample the component's main AnimInstance by default; set `anim_instance_source=post_process` when the selected node lives in the component's Post Process AnimBP. Only `pose_watch_capture` is intended to report `runtime_graph_prepost=true` / `same_instance_prepost=true` when both watched links evaluate successfully.
 
 Use this command before implementing or running deeper AnimGraph node instrumentation so ambiguous node selectors are caught early.
 
@@ -490,6 +490,7 @@ Use this command before implementing or running deeper AnimGraph node instrument
 - `run_id` (string, optional) - Stable suffix for generated temp asset/actor names
 - `actor_label`, `actor_name`, `actor_path` (string, optional) - Live actor selector for runtime mode
 - `component_name` (string, optional) - Live `SkeletalMeshComponent` selector for runtime mode
+- `anim_instance_source` (string, optional) - Live AnimInstance source on the sampled component. Defaults to `main`; use `post_process` for Post Process AnimBP nodes.
 - `prefer_pie_world` (boolean, optional) - Prefer PIE/SIE/play worlds over editor world. Defaults to `true`.
 - `require_pie_world` (boolean, optional) - Refuse editor-world fallback. Defaults to `false`.
 - `tick_count` (number, optional) - Forced tick count between pre/post samples, clamped `0..240`. Defaults to `1`.
@@ -505,6 +506,7 @@ Use this command before implementing or running deeper AnimGraph node instrument
 **Returns:**
 - `target_node` with node metadata, reflected settings, preferred input/output pose pins, upstream/downstream pose links, `mvp_kind`, and `isolated_sampler_mvp_supported`
 - `target_node.compiled_node_mapping` with the dry-run compiled property mapping for the selected editor node
+- `requested_anim_instance_source` and `anim_instance_source` on runtime responses
 - `mode=dry_run_target_resolver` for dry-run
 - `mode=compiled_graph_mapping`, `comparison_kind=compiled_graph_node_mapping`, `runtime_node_mapping`, `runtime_pose_links`, and `same_anim_instance_node_mapping=true` when live same-instance node mapping succeeds
 - `runtime_pose_links.pose_links[]` with `field_path`, `link_id`, `source_link_id`, linked compiled property, linked visual node, cached linked-node pointer, and `linked_pointer_match` when a runtime pose link is present
@@ -564,6 +566,27 @@ Use this command before implementing or running deeper AnimGraph node instrument
     "settle_tick_count": 2,
     "tick_count": 1,
     "sample_bones": ["Head_02", "TailEnd", "R_Stalk_04", "L_Stalk_04"]
+  }
+}
+```
+
+**PoseWatch Post Process AnimBP example:**
+```json
+{
+  "command": "sample_anim_node_pre_post_runtime_pose",
+  "params": {
+    "blueprint_name": "/Game/_MCP_Sample/AnimStudy/ABP_Bot_Trail_Study.ABP_Bot_Trail_Study",
+    "graph_name": "AnimGraph",
+    "graph_type": "function",
+    "node_id": "E6CA339B47B4B75F5CCCB19B09796556",
+    "actor_label": "MCP_PoseWatch_Trail_Smoke_Bot",
+    "mode": "pose_watch_capture",
+    "anim_instance_source": "post_process",
+    "dry_run": false,
+    "require_pie_world": true,
+    "settle_tick_count": 2,
+    "tick_count": 1,
+    "sample_bones": ["head", "antenna_02_l", "antenna_03_l", "antenna_04_l"]
   }
 }
 ```

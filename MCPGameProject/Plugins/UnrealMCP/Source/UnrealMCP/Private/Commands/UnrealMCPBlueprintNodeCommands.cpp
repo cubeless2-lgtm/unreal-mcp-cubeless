@@ -3043,6 +3043,8 @@ struct FAnimInstanceRuntimeTarget
     UWorld* World = nullptr;
     int32 MatchedActorCount = 0;
     int32 MatchedComponentCount = 0;
+    FString RequestedAnimInstanceSource;
+    FString AnimInstanceSource = TEXT("main");
     FString ActorLabel;
     FString ActorName;
     FString ActorPath;
@@ -3094,6 +3096,32 @@ bool FindAnimInstanceRuntimeTarget(
     OutTarget.ActorName = GetStringParam(Params, TEXT("actor_name"), FString());
     OutTarget.ActorPath = GetStringParam(Params, TEXT("actor_path"), FString());
     OutTarget.ComponentName = GetStringParam(Params, TEXT("component_name"), FString());
+    OutTarget.RequestedAnimInstanceSource = GetStringParam(Params, TEXT("anim_instance_source"), TEXT("main")).TrimStartAndEnd();
+    if (OutTarget.RequestedAnimInstanceSource.IsEmpty())
+    {
+        OutTarget.RequestedAnimInstanceSource = TEXT("main");
+    }
+
+    const FString NormalizedAnimInstanceSource = OutTarget.RequestedAnimInstanceSource.ToLower();
+    const bool bUseMainAnimInstance =
+        NormalizedAnimInstanceSource == TEXT("main") ||
+        NormalizedAnimInstanceSource == TEXT("primary") ||
+        NormalizedAnimInstanceSource == TEXT("anim_instance");
+    const bool bUsePostProcessAnimInstance =
+        NormalizedAnimInstanceSource == TEXT("post_process") ||
+        NormalizedAnimInstanceSource == TEXT("postprocess") ||
+        NormalizedAnimInstanceSource == TEXT("post_process_anim_bp") ||
+        NormalizedAnimInstanceSource == TEXT("postprocess_anim_bp");
+
+    if (!bUseMainAnimInstance && !bUsePostProcessAnimInstance)
+    {
+        OutError = FString::Printf(
+            TEXT("Unsupported anim_instance_source='%s'. Expected 'main' or 'post_process'"),
+            *OutTarget.RequestedAnimInstanceSource);
+        return false;
+    }
+
+    OutTarget.AnimInstanceSource = bUsePostProcessAnimInstance ? TEXT("post_process") : TEXT("main");
 
     const TArray<UWorld*> CandidateWorlds = GetCandidateWorldsForSkeletalSampling(bPreferPIEWorld, !bRequirePIEWorld);
     for (UWorld* World : CandidateWorlds)
@@ -3161,14 +3189,33 @@ bool FindAnimInstanceRuntimeTarget(
             *ActionText)));
     }
 
-    OutTarget.AnimInstance = OutTarget.Component->GetAnimInstance();
+    OutTarget.AnimInstance = bUsePostProcessAnimInstance
+        ? OutTarget.Component->GetPostProcessInstance()
+        : OutTarget.Component->GetAnimInstance();
     if (!OutTarget.AnimInstance)
     {
-        OutError = FString::Printf(
-            TEXT("Matched SkeletalMeshComponent '%s' has no AnimInstance. animation_mode=%s anim_class=%s"),
-            *OutTarget.Component->GetName(),
-            *AnimationModeToString(OutTarget.Component->GetAnimationMode()),
-            OutTarget.Component->GetAnimClass() ? *OutTarget.Component->GetAnimClass()->GetPathName() : TEXT("<none>"));
+        UClass* PostProcessClass = OutTarget.Component->GetPostProcessAnimBPClassToBeUsed();
+        if (bUsePostProcessAnimInstance)
+        {
+            OutError = FString::Printf(
+                TEXT("Matched SkeletalMeshComponent '%s' has no post-process AnimInstance. anim_instance_source=%s animation_mode=%s anim_class=%s post_process_class=%s post_process_disabled=%s"),
+                *OutTarget.Component->GetName(),
+                *OutTarget.AnimInstanceSource,
+                *AnimationModeToString(OutTarget.Component->GetAnimationMode()),
+                OutTarget.Component->GetAnimClass() ? *OutTarget.Component->GetAnimClass()->GetPathName() : TEXT("<none>"),
+                PostProcessClass ? *PostProcessClass->GetPathName() : TEXT("<none>"),
+                OutTarget.Component->GetDisablePostProcessBlueprint() ? TEXT("true") : TEXT("false"));
+        }
+        else
+        {
+            OutError = FString::Printf(
+                TEXT("Matched SkeletalMeshComponent '%s' has no AnimInstance. anim_instance_source=%s animation_mode=%s anim_class=%s post_process_class=%s"),
+                *OutTarget.Component->GetName(),
+                *OutTarget.AnimInstanceSource,
+                *AnimationModeToString(OutTarget.Component->GetAnimationMode()),
+                OutTarget.Component->GetAnimClass() ? *OutTarget.Component->GetAnimClass()->GetPathName() : TEXT("<none>"),
+                PostProcessClass ? *PostProcessClass->GetPathName() : TEXT("<none>"));
+        }
         return false;
     }
 
@@ -3192,6 +3239,8 @@ void PopulateAnimInstanceRuntimeTargetFields(
     ResultObj->SetStringField(TEXT("requested_actor_name"), Target.ActorName);
     ResultObj->SetStringField(TEXT("requested_actor_path"), Target.ActorPath);
     ResultObj->SetStringField(TEXT("requested_component_name"), Target.ComponentName);
+    ResultObj->SetStringField(TEXT("requested_anim_instance_source"), Target.RequestedAnimInstanceSource);
+    ResultObj->SetStringField(TEXT("anim_instance_source"), Target.AnimInstanceSource);
     ResultObj->SetObjectField(TEXT("actor"), ActorToSkeletalSamplerJson(Target.Actor));
     ResultObj->SetObjectField(TEXT("component"), SkeletalComponentToSamplerJson(Target.Component));
     ResultObj->SetObjectField(TEXT("anim_instance"), AnimInstanceToRuntimeJson(Target.AnimInstance));
