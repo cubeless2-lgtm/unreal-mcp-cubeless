@@ -50,6 +50,13 @@ PYTHON_ONLY_TOOLS: Mapping[str, str] = {
     "list_pcg_components": "Unreal Python inventory helper.",
     "set_pcg_debug_enabled": "Unreal Python debug flag helper.",
     "resave_pcg_assets": "Unreal Python maintenance helper.",
+    "create_pcg_graph_from_spec": "Unreal Python PCG graph authoring helper.",
+    "audit_pcg_graph_contract": "Unreal Python read-only PCG graph contract audit.",
+    "validate_pcg_source_independence": "Unreal Python PCG dependency guard.",
+    "set_pcg_static_mesh_spawner_entries": "Unreal Python PCG spawner entry setter.",
+    "read_pcg_node_contract": "Unreal Python PCG node contract readback helper.",
+    "promote_pcg_temp_graph": "Unreal Python guarded PCG graph promotion helper.",
+    "pcg_actor_smoke_test": "Unreal Python guarded PCG component smoke-test helper.",
 }
 
 

@@ -544,6 +544,20 @@ def info():
     - `analyze_blueprint_widget_fallbacks_mcp(source_root, target_root)` - Diagnose Blueprint/Widget duplicate fallback safety for MCP-generated content
     - `run_content_validation_pipeline_mcp(source_root, target_root, map_path="")` - Run the MCP recreate/postprocess/world-repair validation pipeline
 
+    ## PCG Graph Tools
+    - `list_pcg_assets(root_path="/Game")` - List PCG-related assets under a content path
+    - `refresh_pcg_components(actor_name="", selected_only=False, cleanup=True, generate=True)` - Refresh or generate PCG components in the current editor level
+    - `create_pcg_graph_from_spec(graph_spec, overwrite_existing=False)` - Create a PCG graph from a deterministic JSON-style spec
+    - `audit_pcg_graph_contract(graph_path)` - Read-only PCG graph audit with nodes, pins, spawners, actor selectors, edges, and dependencies
+    - `validate_pcg_source_independence(graph_path)` - Check that a recreated graph avoids forbidden source dependencies such as `/Game/Cubeless/PCG/PCGStudy`
+    - `set_pcg_static_mesh_spawner_entries(graph_path, node_id, mesh_entries)` - Replace weighted Static Mesh Spawner entries on a PCG graph node
+    - `read_pcg_node_contract(graph_path, node_id="")` - Read stable node contract data: title, class, position, pins, spawner selector, and actor selector
+    - `promote_pcg_temp_graph(source_graph_path, target_graph_path, dry_run=True)` - Guarded temp-to-library PCG graph promotion after source-independence validation
+    - `pcg_actor_smoke_test(graph_path, dry_run=True)` - Dry-run or run a guarded current-level PCG component smoke test without map switching
+    - `resolve_pcg_graph(graph_path)` - Resolve a PCG graph by short name, package path, or object path
+    - `list_pcg_graph_nodes(graph_path)` - List native PCG graph nodes and pins
+    - `add_pcg_node(graph_path, settings_class)` / `connect_pcg_nodes(...)` / `set_pcg_node_setting(...)` / `save_pcg_graph(graph_path)` - Low-level PCG graph editing helpers
+
     ## Runtime Tool Management
     - `manage_tools(action="status", tool_name="", category="", enabled=None, include_tools=True, include_recent=True, ping_unreal=False)` - Inspect or adjust runtime-only MCP tool/category enablement. Use `action="health"` for registry, telemetry, guard, and optional Unreal bridge ping. Use `action="heartbeat"` for a required Unreal bridge ping. Defaults to all tools enabled, resets on server restart, cannot disable itself, and requires `enabled` for `set_tool`/`set_category`.
 
