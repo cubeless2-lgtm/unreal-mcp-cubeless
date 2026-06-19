@@ -12,9 +12,10 @@ The extension deliberately avoids adding a separate C++ command for every TA ope
 - Python MCP tools call that command.
 - PCG-specific behavior lives in Python and can evolve quickly.
 
-## Current Branch
+## Current Branch Model
 
-- Branch: `local/pcg-tools`
+- Cubeless integration/default branch: `main`
+- Legacy extension branch: `local/pcg-tools`
 - Base upstream at time of extension: `4e5f00d`
 - Initial extension commit: `ecab023`
 
@@ -60,7 +61,7 @@ The extension deliberately avoids adding a separate C++ command for every TA ope
 - `MCPGameProject/Source/MCPGameProjectEditor.Target.cs`
   - Set to UE 5.7 build settings/include order.
 - `mcp.json`
-  - Points to `D:/Git/unreal-mcp/Python`.
+  - Historical sample MCP launcher config. Active Cubeless projects should use a relative sibling path such as `../unreal-mcp-cubeless/Python`.
 
 ## Added MCP Tools
 
@@ -112,9 +113,10 @@ The AI texture tools are BaseColor-first. They do not claim to create full PBR m
 When the user asks for "최신 업데이트", "업데이트 풀", "원본 pull", "upstream 최신", or similar wording, the expected behavior is:
 
 - Keep the PCG/Python extension.
-- Pull/fetch from `upstream`.
-- Fast-forward local `main` to `upstream/main`.
-- Rebase `local/pcg-tools` onto `main`.
+- Pull/fetch from `origin`.
+- Fetch from `upstream`.
+- Fast-forward local `main` from `origin/main`.
+- Start a no-commit merge from `upstream/main`.
 - Resolve conflicts in favor of preserving:
   - generic `execute_python` C++ bridge
   - `Python/tools/python_tools.py`
@@ -122,27 +124,20 @@ When the user asks for "최신 업데이트", "업데이트 풀", "원본 pull",
   - AI texture services/tools/docs
   - tool registration in `Python/unreal_mcp_server.py`
   - docs and update script
-- Run Python verification.
-- Push `local/pcg-tools` to `origin`; use `--force-with-lease` after a successful rebase.
+- Run Python verification before committing the merge.
+- Commit the pending merge only after verification passes.
+- Push `main` to `origin` only when push was requested.
 
 Use this shape when updating:
 
 ```powershell
-cd D:\Git\unreal-mcp
-git fetch upstream
-git checkout main
-git merge --ff-only upstream/main
-git checkout local/pcg-tools
-git rebase main
-uv --directory D:\Git\unreal-mcp\Python run python -m py_compile unreal_mcp_server.py tools\python_tools.py tools\pcg_tools.py
-uv --directory D:\Git\unreal-mcp\Python run python -c "import unreal_mcp_server; print('server import ok')"
-git push origin local/pcg-tools --force-with-lease
+.\scripts\update_with_pcg_extension.ps1
 ```
 
 If the remote names are not set yet, the recommended layout is:
 
 - `upstream`: `https://github.com/chongdashu/unreal-mcp`
-- `origin`: user's own GitHub repository
+- `origin`: `https://github.com/cubeless2-lgtm/unreal-mcp-cubeless`
 
 ## Verification Already Done
 

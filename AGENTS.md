@@ -1,13 +1,23 @@
-# Repository Instructions for Codex
+# unreal-mcp-cubeless Codex Adapter
 
-Read this file before making changes in this repository.
+## Shared Ops Bootstrap
+
+- Every new Codex session in this repository must first resolve and apply the shared Cubeless agent rules.
+- Resolve `../CubelessOps/AGENTS.md` relative to this repository parent first.
+- If that sibling is missing, try `CUBELESS_OPS_ROOT\AGENTS.md`.
+- If neither path resolves, report that `CubelessOps` is missing, continue only with the critical local rules in this file, and do not pretend the shared rules were loaded.
+- After loading shared Ops, read `../CubelessOps/projects/unreal-mcp-cubeless.md` for this repository's binding.
+- For MCP implementation, upstream sync, and release checks, use the MCP role files referenced by that binding.
+- For local Cubeless work on any PC, prefer the maximum local-work Codex permission profile documented in `../CubelessOps/docs/policies/local-permission-profile.md`.
+- Keep Git status, diffs, staging, commits, pushes, and summaries separate for `unreal-mcp-cubeless`, `../CubelessOps`, consuming projects, and Unreal plugin submodules.
 
 ## Branch Context
 
 This checkout is intended to keep a local TA-focused extension of `chongdashu/unreal-mcp`.
 
 - Upstream repository: `https://github.com/chongdashu/unreal-mcp`
-- Local extension branch: `local/pcg-tools`
+- Cubeless integration/default branch: `main`
+- Legacy local extension branch: `local/pcg-tools`
 - Primary target engine for the user: Unreal Engine 5.7.4. Resolve the engine checkout from `UE_ENGINE_ROOT` or `UE_SOURCE_ROOT` when set, otherwise from a local workspace sibling such as `../UnrealEngine`.
 - User workflow: Unreal TA work with heavy PCG, Blueprint, and Python automation.
 
@@ -41,7 +51,7 @@ If the user says any of the following, treat it as a request to update from upst
 - "chongdashu 최신으로 업데이트해줘"
 - Similar Korean/English wording about getting the latest original/upstream changes.
 
-For those requests, update `main` from `upstream/main`, rebase `local/pcg-tools` on top, resolve conflicts by preserving the local extension, run verification, then push `local/pcg-tools` to `origin` with `--force-with-lease` if the rebase rewrote history.
+For those requests, use the shared workflow in `../CubelessOps/docs/workflows/mcp-upstream-update.md`. By default, update `main` by merging `upstream/main`, preserve the local Cubeless extension, run verification, and push only when the user explicitly asks for push intent.
 
 Preferred update flow:
 
