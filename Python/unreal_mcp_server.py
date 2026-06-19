@@ -317,6 +317,13 @@ def info():
     ### Viewport and Screenshots
     - `focus_viewport(target, location, distance, orientation)` - Focus viewport
     - `take_screenshot(filename, show_ui, resolution)` - Capture screenshots
+    - `open_niagara_preview_player()` - Open the level-independent Niagara Preview Player Slate drop surface
+    - `get_niagara_preview_player_state()` - Inspect Niagara Preview Player window and latest dropped asset/actor state
+    - `get_niagara_preview_lab_state()` - Inspect Niagara Preview Lab map, dirty, and preview actor safety state
+    - `cleanup_niagara_preview_lab()` - Delete Niagara Preview Lab preview actors without saving or reloading the map
+    - `capture_niagara_preview_lab_view(filepath, view=1)` - Capture a clean Niagara Preview Lab PNG; auto-frames preview actors when present
+    - `preview_niagara_system_in_preview_lab(system_path, filepath, view=1, label="", warmup_time=0.35, cleanup_after=True)` - One-call optimized Niagara preview: spawn, warm up, auto-frame capture, and optional cleanup
+    - `sample_niagara_system_in_preview_lab(system_path, output_dir="", label="", warmup_times=[...], views=[...])` - Multi-candidate optimized Niagara preview sampling in one MCP round trip
 
     ### Actor Management
     - `get_actors_in_level()` - List all actors in current level

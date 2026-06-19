@@ -366,4 +366,248 @@ def register_editor_tools(mcp: FastMCP):
             logger.error(error_msg)
             return {"success": False, "message": error_msg}
 
+    @mcp.tool()
+    def open_niagara_preview_player(ctx: Context) -> Dict[str, Any]:
+        """Open the level-independent Niagara Preview Player window.
+
+        The current MVP is a Slate drop surface. It accepts Content Browser
+        assets and World Outliner actors, then exposes the latest drop through
+        get_niagara_preview_player_state().
+        """
+        from unreal_mcp_server import get_unreal_connection
+
+        try:
+            unreal = get_unreal_connection()
+            if not unreal:
+                logger.error("Failed to connect to Unreal Engine")
+                return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+            response = unreal.send_command("open_niagara_preview_player", {})
+            return response or {}
+
+        except Exception as e:
+            logger.error(f"Error opening Niagara Preview Player: {e}")
+            return {"success": False, "message": str(e)}
+
+    @mcp.tool()
+    def get_niagara_preview_player_state(ctx: Context) -> Dict[str, Any]:
+        """Get Niagara Preview Player window/drop state."""
+        from unreal_mcp_server import get_unreal_connection
+
+        try:
+            unreal = get_unreal_connection()
+            if not unreal:
+                logger.error("Failed to connect to Unreal Engine")
+                return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+            response = unreal.send_command("get_niagara_preview_player_state", {})
+            return response or {}
+
+        except Exception as e:
+            logger.error(f"Error getting Niagara Preview Player state: {e}")
+            return {"success": False, "message": str(e)}
+
+    @mcp.tool()
+    def get_niagara_preview_lab_state(ctx: Context) -> Dict[str, Any]:
+        """Get the current Niagara Preview Lab map, dirty, safety, and preview actor state."""
+        from unreal_mcp_server import get_unreal_connection
+
+        try:
+            unreal = get_unreal_connection()
+            if not unreal:
+                logger.error("Failed to connect to Unreal Engine")
+                return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+            response = unreal.send_command("get_niagara_preview_lab_state", {})
+            return response or {}
+
+        except Exception as e:
+            logger.error(f"Error getting Niagara Preview Lab state: {e}")
+            return {"success": False, "message": str(e)}
+
+    @mcp.tool()
+    def cleanup_niagara_preview_lab(ctx: Context) -> Dict[str, Any]:
+        """Delete Niagara Preview Lab preview actors without saving or reloading the map."""
+        from unreal_mcp_server import get_unreal_connection
+
+        try:
+            unreal = get_unreal_connection()
+            if not unreal:
+                logger.error("Failed to connect to Unreal Engine")
+                return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+            response = unreal.send_command("cleanup_niagara_preview_lab", {})
+            return response or {}
+
+        except Exception as e:
+            logger.error(f"Error cleaning Niagara Preview Lab: {e}")
+            return {"success": False, "message": str(e)}
+
+    @mcp.tool()
+    def capture_niagara_preview_lab_view(
+        ctx: Context,
+        filepath: str,
+        view: int = 1,
+    ) -> Dict[str, Any]:
+        """Capture a clean Niagara Preview Lab screenshot.
+
+        When Preview Lab actors exist, Unreal auto-frames those temporary actors.
+        The view number is a near/mid/far distance hint and a fallback when no
+        preview actor exists.
+
+        Args:
+            filepath: PNG output path. Relative paths are resolved under Saved/MCP/NiagaraReviews.
+            view: Preview Lab view number. Use 1 first; use 2 or 3 only when the auto-framed effect is too large, clipped, or not reviewable.
+        """
+        from unreal_mcp_server import get_unreal_connection
+
+        try:
+            unreal = get_unreal_connection()
+            if not unreal:
+                logger.error("Failed to connect to Unreal Engine")
+                return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+            response = unreal.send_command("capture_niagara_preview_lab_view", {
+                "filepath": filepath,
+                "view": int(view),
+            })
+            return response or {}
+
+        except Exception as e:
+            logger.error(f"Error capturing Niagara Preview Lab view: {e}")
+            return {"success": False, "message": str(e)}
+
+    @mcp.tool()
+    def preview_niagara_system_in_preview_lab(
+        ctx: Context,
+        system_path: str,
+        filepath: str,
+        view: int = 1,
+        label: str = "",
+        warmup_time: float = 0.35,
+        warmup_tick_delta: float = 1.0 / 30.0,
+        cleanup_before: bool = True,
+        cleanup_after: bool = True,
+        location: Optional[List[float]] = None,
+        scale: Optional[List[float]] = None,
+    ) -> Dict[str, Any]:
+        """Run a one-call Niagara Preview Lab still preview.
+
+        This optimized route loads a read-only Niagara system, deletes prior
+        Preview Lab actors if requested, spawns one transient preview actor,
+        advances simulation for warmup, captures with auto framing, and
+        optionally removes the actor afterward.
+
+        Args:
+            system_path: Niagara system object path or package path.
+            filepath: PNG output path. Relative paths are resolved under Saved/MCP/NiagaraReviews.
+            view: Near/mid/far distance hint, 1 to 3.
+            label: Optional preview actor label suffix.
+            warmup_time: Seconds to advance simulation before capture.
+            warmup_tick_delta: Simulation tick size for warmup.
+            cleanup_before: Delete existing Preview Lab actors before spawning.
+            cleanup_after: Delete Preview Lab actors after capture.
+            location: Optional [x, y, z] spawn location. Defaults to [0, 0, 120].
+            scale: Optional [x, y, z] actor scale. Defaults to [1, 1, 1].
+        """
+        from unreal_mcp_server import get_unreal_connection
+
+        try:
+            unreal = get_unreal_connection()
+            if not unreal:
+                logger.error("Failed to connect to Unreal Engine")
+                return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+            params: Dict[str, Any] = {
+                "system_path": system_path,
+                "filepath": filepath,
+                "view": int(view),
+                "warmup_time": float(warmup_time),
+                "warmup_tick_delta": float(warmup_tick_delta),
+                "cleanup_before": bool(cleanup_before),
+                "cleanup_after": bool(cleanup_after),
+            }
+            if label:
+                params["label"] = label
+            if location is not None:
+                params["location"] = location
+            if scale is not None:
+                params["scale"] = scale
+
+            response = unreal.send_command("preview_niagara_system_in_preview_lab", params)
+            return response or {}
+
+        except Exception as e:
+            logger.error(f"Error previewing Niagara system in Preview Lab: {e}")
+            return {"success": False, "message": str(e)}
+
+    @mcp.tool()
+    def sample_niagara_system_in_preview_lab(
+        ctx: Context,
+        system_path: str,
+        output_dir: str = "",
+        label: str = "",
+        warmup_times: Optional[List[float]] = None,
+        views: Optional[List[int]] = None,
+        warmup_tick_delta: float = 1.0 / 30.0,
+        cleanup_before: bool = True,
+        cleanup_after_each: bool = True,
+        cleanup_after_all: bool = True,
+        location: Optional[List[float]] = None,
+        scale: Optional[List[float]] = None,
+    ) -> Dict[str, Any]:
+        """Capture multiple Niagara Preview Lab candidates in one MCP round trip.
+
+        Use this when a Niagara effect is timing-sensitive or not visible in the
+        first still. The Unreal-side command loops over warmup times and views,
+        captures each candidate with auto framing, and returns sample metadata.
+
+        Args:
+            system_path: Niagara system object path or package path.
+            output_dir: Relative output folder under Saved/MCP/NiagaraReviews.
+            label: File and actor label stem.
+            warmup_times: Seconds to advance simulation before each capture.
+            views: Near/mid/far distance hints, values 1 to 3.
+            warmup_tick_delta: Simulation tick size for warmup.
+            cleanup_before: Delete existing Preview Lab actors before sampling.
+            cleanup_after_each: Delete the sample actor after each capture.
+            cleanup_after_all: Final cleanup pass after all samples.
+            location: Optional [x, y, z] spawn location.
+            scale: Optional [x, y, z] actor scale.
+        """
+        from unreal_mcp_server import get_unreal_connection
+
+        try:
+            unreal = get_unreal_connection()
+            if not unreal:
+                logger.error("Failed to connect to Unreal Engine")
+                return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+            params: Dict[str, Any] = {
+                "system_path": system_path,
+                "warmup_tick_delta": float(warmup_tick_delta),
+                "cleanup_before": bool(cleanup_before),
+                "cleanup_after_each": bool(cleanup_after_each),
+                "cleanup_after_all": bool(cleanup_after_all),
+            }
+            if output_dir:
+                params["output_dir"] = output_dir
+            if label:
+                params["label"] = label
+            if warmup_times is not None:
+                params["warmup_times"] = warmup_times
+            if views is not None:
+                params["views"] = views
+            if location is not None:
+                params["location"] = location
+            if scale is not None:
+                params["scale"] = scale
+
+            response = unreal.send_command("sample_niagara_system_in_preview_lab", params)
+            return response or {}
+
+        except Exception as e:
+            logger.error(f"Error sampling Niagara system in Preview Lab: {e}")
+            return {"success": False, "message": str(e)}
+
     logger.info("Editor tools registered successfully")
