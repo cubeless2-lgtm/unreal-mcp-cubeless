@@ -37,7 +37,7 @@ def register_ieta_tools(mcp: FastMCP):
             Response from Unreal, or a not-connected result if the bridge cannot
             be reached.
         """
-        from unreal_mcp_server import get_unreal_connection
+        from unreal_mcp_server import UNREAL_HOST, UNREAL_PORT, get_unreal_connection
 
         try:
             unreal = get_unreal_connection()
@@ -46,7 +46,7 @@ def register_ieta_tools(mcp: FastMCP):
                     "success": False,
                     "status": "not connected",
                     "slate_call": "failed",
-                    "message": "Failed to connect to Unreal Engine bridge at 127.0.0.1:55557",
+                    "message": f"Failed to connect to Unreal Engine bridge at {UNREAL_HOST}:{UNREAL_PORT}",
                 }
 
             response = unreal.send_command(

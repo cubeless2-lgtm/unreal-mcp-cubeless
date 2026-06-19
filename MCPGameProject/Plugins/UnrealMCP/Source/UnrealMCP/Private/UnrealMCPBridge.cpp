@@ -24,6 +24,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Async/Async.h"
 #include "Containers/Ticker.h"
+#include "HAL/PlatformMisc.h"
+#include "Misc/CommandLine.h"
 // Add Blueprint related includes
 #include "Engine/Blueprint.h"
 #include "Engine/BlueprintGeneratedClass.h"
@@ -67,6 +69,29 @@
 #define MCP_SERVER_HOST "127.0.0.1"
 #define MCP_SERVER_PORT 55557
 
+namespace
+{
+uint16 ResolveUnrealMCPBridgePort()
+{
+    int32 ParsedPort = MCP_SERVER_PORT;
+    FParse::Value(FCommandLine::Get(), TEXT("UnrealMCPPort="), ParsedPort);
+
+    const FString EnvPort = FPlatformMisc::GetEnvironmentVariable(TEXT("UNREAL_MCP_PORT"));
+    if (!EnvPort.IsEmpty())
+    {
+        ParsedPort = FCString::Atoi(*EnvPort);
+    }
+
+    if (ParsedPort <= 0 || ParsedPort > TNumericLimits<uint16>::Max())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("UnrealMCPBridge: Invalid port override '%d'; falling back to %d"), ParsedPort, MCP_SERVER_PORT);
+        return MCP_SERVER_PORT;
+    }
+
+    return static_cast<uint16>(ParsedPort);
+}
+}
+
 UUnrealMCPBridge::UUnrealMCPBridge()
 {
     EditorCommands = MakeShared<FUnrealMCPEditorCommands>();
@@ -101,7 +126,7 @@ void UUnrealMCPBridge::Initialize(FSubsystemCollectionBase& Collection)
     ConnectionSocket = nullptr;
     ServerRunnable = nullptr;
     ServerThread = nullptr;
-    Port = MCP_SERVER_PORT;
+    Port = ResolveUnrealMCPBridgePort();
     FIPv4Address::Parse(MCP_SERVER_HOST, ServerAddress);
 
     // Start the server automatically
@@ -365,6 +390,7 @@ FString UUnrealMCPBridge::ExecuteCommand(const FString& CommandType, const TShar
                      CommandType == TEXT("list_blueprint_components") ||
                      CommandType == TEXT("set_component_property") || 
                      CommandType == TEXT("get_component_property") ||
+                     CommandType == TEXT("set_skeletal_mesh_component_anim_defaults") ||
                      CommandType == TEXT("set_physics_properties") ||
                      CommandType == TEXT("compile_blueprint") || 
                      CommandType == TEXT("compile_and_save_blueprint") ||
@@ -382,6 +408,26 @@ FString UUnrealMCPBridge::ExecuteCommand(const FString& CommandType, const TShar
                      CommandType == TEXT("list_blueprint_graphs") ||
                      CommandType == TEXT("resolve_blueprint_graph") ||
                      CommandType == TEXT("list_blueprint_nodes") ||
+                     CommandType == TEXT("inspect_anim_graph_node_settings") ||
+                     CommandType == TEXT("inspect_anim_graph_protected_topology") ||
+                     CommandType == TEXT("inspect_anim_state_machine_transitions") ||
+                     CommandType == TEXT("inspect_blueprint_graph_call_topology") ||
+                     CommandType == TEXT("controlrig_direct_gate_probe") ||
+                     CommandType == TEXT("sample_controlrig_pre_post_runtime_pose") ||
+                     CommandType == TEXT("sample_anim_node_pre_post_runtime_pose") ||
+                     CommandType == TEXT("sample_skeletal_bones_in_sie") ||
+                     CommandType == TEXT("sample_blendspace_runtime_pose_grid") ||
+                     CommandType == TEXT("inspect_anim_instance_runtime_state") ||
+                     CommandType == TEXT("set_anim_instance_runtime_property_for_probe") ||
+                     CommandType == TEXT("sample_anim_state_machine_runtime_response") ||
+                     CommandType == TEXT("set_anim_graph_rigidbody_settings") ||
+                     CommandType == TEXT("ensure_anim_graph_input_pose_passthrough") ||
+                     CommandType == TEXT("ensure_anim_graph_modify_bone_demo") ||
+                     CommandType == TEXT("ensure_postprocess_anim_demo_variant") ||
+                     CommandType == TEXT("ensure_anim_graph_modify_curve_demo") ||
+                     CommandType == TEXT("set_anim_graph_controlrig_input_defaults") ||
+                     CommandType == TEXT("ensure_controlrig_forced_driver_animbp") ||
+                     CommandType == TEXT("ensure_anim_graph_trail_demo") ||
                      CommandType == TEXT("add_blueprint_get_self_component_reference") ||
                      CommandType == TEXT("add_blueprint_self_reference") ||
                      CommandType == TEXT("find_blueprint_nodes") ||

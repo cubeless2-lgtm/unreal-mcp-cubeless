@@ -488,7 +488,8 @@ def register_editor_tools(mcp: FastMCP):
     @mcp.tool()
     def safe_new_preview_map(
         ctx: Context,
-        map_path: str,
+        target_path: str = "",
+        map_path: str = "",
         dry_run: bool = True,
         allow_dirty_packages: bool = False,
         overwrite_existing: bool = False,
@@ -500,7 +501,8 @@ def register_editor_tools(mcp: FastMCP):
         Safely preflight or create a new blank preview map through the native bridge.
 
         Args:
-            map_path: Long package path, object path, or .umap filename for the new map.
+            target_path: Long package path, object path, or .umap filename for the new map.
+            map_path: Backwards-compatible alias for target_path.
             dry_run: If true, only validate the creation request and report blockers.
             allow_dirty_packages: If false, block real creation when dirty packages exist.
             overwrite_existing: If false, block when the target map already exists.
@@ -523,7 +525,8 @@ def register_editor_tools(mcp: FastMCP):
             response = unreal.send_command(
                 "safe_new_preview_map",
                 {
-                    "map_path": map_path,
+                    "target_path": target_path or map_path,
+                    "map_path": map_path or target_path,
                     "dry_run": dry_run,
                     "allow_dirty_packages": allow_dirty_packages,
                     "overwrite_existing": overwrite_existing,
@@ -544,16 +547,18 @@ def register_editor_tools(mcp: FastMCP):
         blueprint_name: str,
         actor_name: str,
         location: List[float] = [0.0, 0.0, 0.0],
-        rotation: List[float] = [0.0, 0.0, 0.0]
+        rotation: List[float] = [0.0, 0.0, 0.0],
+        scale: Optional[List[float]] = None,
     ) -> Dict[str, Any]:
         """Spawn an actor from a Blueprint.
         
         Args:
             ctx: The MCP context
-            blueprint_name: Name of the Blueprint to spawn from
+            blueprint_name: Blueprint short name, package path, object path, or generated class path
             actor_name: Name to give the spawned actor
             location: The [x, y, z] world location to spawn at
             rotation: The [pitch, yaw, roll] rotation in degrees
+            scale: Optional [x, y, z] actor scale
             
         Returns:
             Dict containing the spawned actor's properties
@@ -573,9 +578,13 @@ def register_editor_tools(mcp: FastMCP):
                 "location": location or [0.0, 0.0, 0.0],
                 "rotation": rotation or [0.0, 0.0, 0.0]
             }
+            if scale is not None:
+                params["scale"] = scale
             
             # Validate location and rotation formats
-            for param_name in ["location", "rotation"]:
+            for param_name in ["location", "rotation", "scale"]:
+                if param_name not in params:
+                    continue
                 param_value = params[param_name]
                 if not isinstance(param_value, list) or len(param_value) != 3:
                     logger.error(f"Invalid {param_name} format: {param_value}. Must be a list of 3 float values.")

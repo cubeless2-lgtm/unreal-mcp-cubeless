@@ -462,6 +462,93 @@ namespace
         return FVector((*Array)[0]->AsNumber(), (*Array)[1]->AsNumber(), (*Array)[2]->AsNumber());
     }
 
+    FString BuildObjectPathFromPackageName(const FString& PackageName)
+    {
+        return FString::Printf(TEXT("%s.%s"), *PackageName, *FPackageName::GetShortName(PackageName));
+    }
+
+    FString NormalizeBlueprintActorInputPath(const FString& InBlueprintPath)
+    {
+        FString BlueprintPath = FPackageName::ExportTextPathToObjectPath(InBlueprintPath).TrimStartAndEnd();
+        BlueprintPath.TrimQuotesInline();
+        BlueprintPath.ReplaceInline(TEXT("\\"), TEXT("/"));
+
+        if (BlueprintPath.EndsWith(TEXT(".uasset"), ESearchCase::IgnoreCase))
+        {
+            FString LongPackageName;
+            if (FPackageName::TryConvertFilenameToLongPackageName(BlueprintPath, LongPackageName))
+            {
+                BlueprintPath = LongPackageName;
+            }
+        }
+
+        if (!BlueprintPath.StartsWith(TEXT("/")))
+        {
+            BlueprintPath = FString::Printf(TEXT("/Game/Blueprints/%s"), *BlueprintPath);
+        }
+
+        if (!BlueprintPath.Contains(TEXT(".")))
+        {
+            BlueprintPath = BuildObjectPathFromPackageName(BlueprintPath);
+        }
+
+        return BlueprintPath;
+    }
+
+    bool ResolveBlueprintActorClass(
+        const FString& InBlueprintPath,
+        UClass*& OutActorClass,
+        FString& OutResolvedObjectPath,
+        FString& OutError)
+    {
+        OutActorClass = nullptr;
+        OutResolvedObjectPath = NormalizeBlueprintActorInputPath(InBlueprintPath);
+
+        TArray<FString> TriedPaths;
+        TriedPaths.Add(OutResolvedObjectPath);
+
+        UBlueprint* Blueprint = LoadObject<UBlueprint>(nullptr, *OutResolvedObjectPath);
+        if (Blueprint && Blueprint->GeneratedClass)
+        {
+            OutActorClass = Blueprint->GeneratedClass;
+        }
+
+        if (!OutActorClass)
+        {
+            FString ClassObjectPath = OutResolvedObjectPath;
+            if (!ClassObjectPath.EndsWith(TEXT("_C")))
+            {
+                ClassObjectPath += TEXT("_C");
+            }
+            TriedPaths.Add(ClassObjectPath);
+            OutActorClass = LoadObject<UClass>(nullptr, *ClassObjectPath);
+            if (OutActorClass)
+            {
+                OutResolvedObjectPath = ClassObjectPath;
+            }
+        }
+
+        if (!OutActorClass)
+        {
+            OutError = FString::Printf(
+                TEXT("Blueprint actor class not found for '%s'. Tried: %s"),
+                *InBlueprintPath,
+                *FString::Join(TriedPaths, TEXT(", ")));
+            return false;
+        }
+
+        if (!OutActorClass->IsChildOf(AActor::StaticClass()))
+        {
+            OutError = FString::Printf(
+                TEXT("Resolved class is not an Actor class for '%s': %s"),
+                *InBlueprintPath,
+                *OutActorClass->GetPathName());
+            return false;
+        }
+
+        return true;
+    }
+
     TArray<double> GetNumberArrayParam(const TSharedPtr<FJsonObject>& Params, const TCHAR* FieldName, const TArray<double>& DefaultValue, double MinValue, double MaxValue, int32 MaxCount)
     {
         if (!Params.IsValid() || !Params->HasTypedField<EJson::Array>(FieldName))
@@ -941,10 +1028,11 @@ TSharedPtr<FJsonObject> FUnrealMCPEditorCommands::HandleOpenEditorLevel(const TS
 TSharedPtr<FJsonObject> FUnrealMCPEditorCommands::HandleSafeNewPreviewMap(const TSharedPtr<FJsonObject>& Params)
 {
     FString RequestedMapPath;
-    if (!Params->TryGetStringField(TEXT("map_path"), RequestedMapPath) &&
+    if (!Params->TryGetStringField(TEXT("target_path"), RequestedMapPath) &&
+        !Params->TryGetStringField(TEXT("map_path"), RequestedMapPath) &&
         !Params->TryGetStringField(TEXT("level_path"), RequestedMapPath))
     {
-        return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Missing 'map_path' parameter"));
+        return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Missing 'target_path' parameter"));
     }
 
     bool bDryRun = true;
@@ -1416,24 +1504,18 @@ TSharedPtr<FJsonObject> FUnrealMCPEditorCommands::HandleSpawnBlueprintActor(cons
         return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Missing 'actor_name' parameter"));
     }
 
-    // Find the blueprint
+    // Find the blueprint actor class
     if (BlueprintName.IsEmpty())
     {
         return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Blueprint name is empty"));
     }
 
-    FString Root      = TEXT("/Game/Blueprints/");
-    FString AssetPath = Root + BlueprintName;
-
-    if (!FPackageName::DoesPackageExist(AssetPath))
+    UClass* BlueprintActorClass = nullptr;
+    FString ResolvedBlueprintPath;
+    FString ResolveError;
+    if (!ResolveBlueprintActorClass(BlueprintName, BlueprintActorClass, ResolvedBlueprintPath, ResolveError))
     {
-        return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("Blueprint '%s' not found – it must reside under /Game/Blueprints"), *BlueprintName));
-    }
-
-    UBlueprint* Blueprint = LoadObject<UBlueprint>(nullptr, *AssetPath);
-    if (!Blueprint)
-    {
-        return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("Blueprint not found: %s"), *BlueprintName));
+        return FUnrealMCPCommonUtils::CreateErrorResponse(ResolveError);
     }
 
     // Get transform parameters
@@ -1469,10 +1551,14 @@ TSharedPtr<FJsonObject> FUnrealMCPEditorCommands::HandleSpawnBlueprintActor(cons
     FActorSpawnParameters SpawnParams;
     SpawnParams.Name = *ActorName;
 
-    AActor* NewActor = World->SpawnActor<AActor>(Blueprint->GeneratedClass, SpawnTransform, SpawnParams);
+    AActor* NewActor = World->SpawnActor<AActor>(BlueprintActorClass, SpawnTransform, SpawnParams);
     if (NewActor)
     {
-        return FUnrealMCPCommonUtils::ActorToJsonObject(NewActor, true);
+        TSharedPtr<FJsonObject> ResultObj = FUnrealMCPCommonUtils::ActorToJsonObject(NewActor, true);
+        ResultObj->SetStringField(TEXT("blueprint_input"), BlueprintName);
+        ResultObj->SetStringField(TEXT("resolved_blueprint_path"), ResolvedBlueprintPath);
+        ResultObj->SetStringField(TEXT("spawned_class"), BlueprintActorClass->GetPathName());
+        return ResultObj;
     }
 
     return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Failed to spawn blueprint actor"));

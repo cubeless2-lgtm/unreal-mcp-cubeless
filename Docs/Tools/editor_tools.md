@@ -6,6 +6,12 @@ This document provides detailed information about the editor tools available in 
 
 Editor tools allow you to control the Unreal Editor viewport and other editor functionality through MCP commands. These tools are particularly useful for automating tasks like focusing the camera on specific actors or locations.
 
+## Bridge Port
+
+The Unreal-side bridge listens on `127.0.0.1:55557` by default.
+
+For local smoke tests that need to run a second Unreal project while another editor already owns the default port, start Unreal with `-UnrealMCPPort=<port>` or set `UNREAL_MCP_PORT=<port>` for both Unreal and the Python MCP wrapper. The default port remains unchanged when no override is supplied.
+
 ## Editor Tools
 
 ### focus_viewport
@@ -133,7 +139,8 @@ Safely preflight or create a new blank preview map through the native UnrealMCP 
 Use this for MCP-driven preview-map creation instead of calling `EditorLoadingAndSavingUtils.new_blank_map` or related map APIs from generic `execute_python`.
 
 **Parameters:**
-- `map_path` (string, required) - Long package path, object path, or `.umap` filename for the new map
+- `target_path` (string, optional) - Long package path, object path, or `.umap` filename for the new map
+- `map_path` (string, optional) - Backwards-compatible alias for `target_path`
 - `dry_run` (boolean, optional) - Validate only, default `true`
 - `allow_dirty_packages` (boolean, optional) - Allow real creation while dirty packages exist, default `false`
 - `overwrite_existing` (boolean, optional) - Allow overwriting an existing target map, default `false`
@@ -155,8 +162,33 @@ Use this for MCP-driven preview-map creation instead of calling `EditorLoadingAn
 {
   "command": "safe_new_preview_map",
   "params": {
-    "map_path": "/Game/_MCP_Temp/CubelessWaterPrototype/Map_CL_WaterPrototype",
+    "target_path": "/Game/_MCP_Temp/AnimStudy/M_Baddy_RigidBody_Compare_MCP",
     "dry_run": true
+  }
+}
+```
+
+### spawn_blueprint_actor
+
+Spawn an actor from a Blueprint in the currently open editor level. `blueprint_name` accepts the legacy short-name form under `/Game/Blueprints/`, a long package path, an object path, or a generated class path ending in `_C`.
+
+**Parameters:**
+- `blueprint_name` (string, required) - Blueprint short name, package path, object path, or generated class path
+- `actor_name` (string, required) - Name for the spawned actor
+- `location` (array, optional) - `[X, Y, Z]` world location
+- `rotation` (array, optional) - `[Pitch, Yaw, Roll]` rotation in degrees
+- `scale` (array, optional) - `[X, Y, Z]` actor scale
+
+**Example:**
+```json
+{
+  "command": "spawn_blueprint_actor",
+  "params": {
+    "blueprint_name": "/Game/_MCP_Sample/AnimStudy/BP_Baddy_RigidBody_StudyActor.BP_Baddy_RigidBody_StudyActor",
+    "actor_name": "MCP_BaddyStudyActor",
+    "location": [0, 0, 120],
+    "rotation": [0, 0, 0],
+    "scale": [1, 1, 1]
   }
 }
 ```

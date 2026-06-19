@@ -13,8 +13,11 @@
 #include "K2Node_VariableGet.h"
 #include "K2Node_VariableSet.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/SphereComponent.h"
+#include "Animation/AnimInstance.h"
+#include "Animation/AnimationAsset.h"
 #include "Kismet2/BlueprintEditorUtils.h"
 #include "Kismet2/CompilerResultsLog.h"
 #include "Kismet2/KismetEditorUtilities.h"
@@ -481,6 +484,10 @@ TSharedPtr<FJsonObject> FUnrealMCPBlueprintCommands::HandleCommand(const FString
     else if (CommandType == TEXT("get_component_property"))
     {
         return HandleGetComponentProperty(Params);
+    }
+    else if (CommandType == TEXT("set_skeletal_mesh_component_anim_defaults"))
+    {
+        return HandleSetSkeletalMeshComponentAnimDefaults(Params);
     }
     else if (CommandType == TEXT("set_physics_properties"))
     {
@@ -1445,6 +1452,143 @@ TSharedPtr<FJsonObject> FUnrealMCPBlueprintCommands::HandleGetComponentProperty(
     ResultObj->SetStringField(TEXT("property_type"), Property->GetCPPType());
     ResultObj->SetField(TEXT("property_value"), PropertyValueToJsonValue(Property, ComponentTemplate));
     ResultObj->SetBoolField(TEXT("success"), true);
+    return ResultObj;
+}
+
+TSharedPtr<FJsonObject> FUnrealMCPBlueprintCommands::HandleSetSkeletalMeshComponentAnimDefaults(const TSharedPtr<FJsonObject>& Params)
+{
+    FString BlueprintName;
+    if (!Params->TryGetStringField(TEXT("blueprint_name"), BlueprintName))
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Missing 'blueprint_name' parameter"));
+    }
+
+    FString ComponentName;
+    if (!Params->TryGetStringField(TEXT("component_name"), ComponentName))
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Missing 'component_name' parameter"));
+    }
+
+    FString SkeletalMeshPath;
+    Params->TryGetStringField(TEXT("skeletal_mesh"), SkeletalMeshPath);
+
+    FString AnimClassPath;
+    Params->TryGetStringField(TEXT("anim_class"), AnimClassPath);
+
+    bool bCompile = true;
+    Params->TryGetBoolField(TEXT("compile"), bCompile);
+
+    bool bSave = true;
+    Params->TryGetBoolField(TEXT("save"), bSave);
+
+    if (SkeletalMeshPath.IsEmpty() && AnimClassPath.IsEmpty())
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Set at least one of 'skeletal_mesh' or 'anim_class'"));
+    }
+
+    if (IsPlaySessionActive())
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Cannot mutate Blueprint defaults while PIE/SIE is active"));
+    }
+
+    UBlueprint* Blueprint = FUnrealMCPCommonUtils::FindBlueprint(BlueprintName);
+    if (!Blueprint)
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("Blueprint not found: %s"), *BlueprintName));
+    }
+    if (!Blueprint->SimpleConstructionScript)
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("SimpleConstructionScript not found for blueprint: %s"), *BlueprintName));
+    }
+
+    USCS_Node* ComponentNode = nullptr;
+    for (USCS_Node* Node : Blueprint->SimpleConstructionScript->GetAllNodes())
+    {
+        if (Node && Node->GetVariableName().ToString() == ComponentName)
+        {
+            ComponentNode = Node;
+            break;
+        }
+    }
+
+    if (!ComponentNode || !ComponentNode->ComponentTemplate)
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("Component not found or has no template: %s"), *ComponentName));
+    }
+
+    USkeletalMeshComponent* SkeletalMeshComponent = Cast<USkeletalMeshComponent>(ComponentNode->ComponentTemplate);
+    if (!SkeletalMeshComponent)
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(
+            TEXT("Component '%s' is not a SkeletalMeshComponent; actual class: %s"),
+            *ComponentName,
+            *ComponentNode->ComponentTemplate->GetClass()->GetName()));
+    }
+
+    USkeletalMesh* NewSkeletalMesh = nullptr;
+    if (!SkeletalMeshPath.IsEmpty())
+    {
+        NewSkeletalMesh = LoadObject<USkeletalMesh>(nullptr, *SkeletalMeshPath);
+        if (!NewSkeletalMesh)
+        {
+            return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("Failed to load skeletal mesh: %s"), *SkeletalMeshPath));
+        }
+    }
+
+    UClass* NewAnimClass = nullptr;
+    FString ResolvedAnimClassPath;
+    if (!AnimClassPath.IsEmpty())
+    {
+        ResolvedAnimClassPath = FPackageName::ExportTextPathToObjectPath(AnimClassPath).TrimStartAndEnd();
+        ResolvedAnimClassPath.TrimQuotesInline();
+        NewAnimClass = LoadObject<UClass>(nullptr, *ResolvedAnimClassPath);
+        if (!NewAnimClass && !ResolvedAnimClassPath.EndsWith(TEXT("_C")))
+        {
+            ResolvedAnimClassPath += TEXT("_C");
+            NewAnimClass = LoadObject<UClass>(nullptr, *ResolvedAnimClassPath);
+        }
+        if (!NewAnimClass || !NewAnimClass->IsChildOf(UAnimInstance::StaticClass()))
+        {
+            return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("Failed to load AnimInstance class: %s"), *AnimClassPath));
+        }
+    }
+
+    Blueprint->Modify();
+    SkeletalMeshComponent->Modify();
+
+    if (NewSkeletalMesh)
+    {
+        SkeletalMeshComponent->SetSkeletalMeshAsset(NewSkeletalMesh);
+    }
+    if (NewAnimClass)
+    {
+        SkeletalMeshComponent->SetAnimationMode(EAnimationMode::AnimationBlueprint);
+        SkeletalMeshComponent->SetAnimInstanceClass(NewAnimClass);
+    }
+
+    SkeletalMeshComponent->PostEditChange();
+    FBlueprintEditorUtils::MarkBlueprintAsModified(Blueprint);
+
+    TSharedPtr<FJsonObject> ResultObj = MakeShared<FJsonObject>();
+    ResultObj->SetBoolField(TEXT("success"), true);
+    ResultObj->SetStringField(TEXT("blueprint_name"), BlueprintName);
+    ResultObj->SetStringField(TEXT("asset_path"), Blueprint->GetPathName());
+    ResultObj->SetStringField(TEXT("component_name"), ComponentName);
+    ResultObj->SetStringField(TEXT("skeletal_mesh"), NewSkeletalMesh ? NewSkeletalMesh->GetPathName() : BlueprintObjectPathOrEmpty(SkeletalMeshComponent->GetSkeletalMeshAsset()));
+    ResultObj->SetStringField(TEXT("anim_class"), NewAnimClass ? NewAnimClass->GetPathName() : (SkeletalMeshComponent->GetAnimClass() ? SkeletalMeshComponent->GetAnimClass()->GetPathName() : FString()));
+    ResultObj->SetBoolField(TEXT("compiled"), false);
+    ResultObj->SetBoolField(TEXT("saved"), false);
+
+    if (bCompile)
+    {
+        TSharedPtr<FJsonObject> CompileResult = CompileBlueprintAndBuildValidationResult(Blueprint, bSave, false);
+        ResultObj->SetObjectField(TEXT("compile_result"), CompileResult);
+        ResultObj->SetBoolField(TEXT("compiled"), CompileResult.IsValid() && CompileResult->GetBoolField(TEXT("compiled")));
+        ResultObj->SetBoolField(TEXT("saved"), CompileResult.IsValid() && CompileResult->GetBoolField(TEXT("saved")));
+        ResultObj->SetBoolField(TEXT("validation_pass"), CompileResult.IsValid() && CompileResult->GetBoolField(TEXT("validation_pass")));
+    }
+
+    ResultObj->SetBoolField(TEXT("dirty_after"), Blueprint->GetOutermost() ? Blueprint->GetOutermost()->IsDirty() : false);
     return ResultObj;
 }
 
