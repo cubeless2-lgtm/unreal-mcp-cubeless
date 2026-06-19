@@ -2291,7 +2291,8 @@ def register_blueprint_node_tools(mcp: FastMCP):
         graph_id: str = "",
         graph_type: str = "function",
         replace_existing: bool = False,
-        input_node_position = None
+        input_node_position = None,
+        allow_non_sample: bool = False
     ) -> Dict[str, Any]:
         """
         Ensure an Animation Blueprint AnimGraph passes the incoming input pose to the root output.
@@ -2306,6 +2307,7 @@ def register_blueprint_node_tools(mcp: FastMCP):
             graph_type: Graph selector type, defaults to function because AnimGraph is reported there
             replace_existing: Replace an existing root Result pose link when it is not the input pose
             input_node_position: Optional [X, Y] position for a newly created input pose node
+            allow_non_sample: Allow editing non-`/Game/_MCP_Sample/` AnimBPs
 
         Returns:
             Response containing created/reused node metadata and connection status.
@@ -2317,6 +2319,7 @@ def register_blueprint_node_tools(mcp: FastMCP):
                 "blueprint_name": blueprint_name,
                 "replace_existing": replace_existing,
                 "input_node_position": input_node_position,
+                "allow_non_sample": allow_non_sample,
             }
             add_graph_selector(params, graph_name, graph_id, graph_type)
             return send_node_command("ensure_anim_graph_input_pose_passthrough", params)
@@ -2334,7 +2337,8 @@ def register_blueprint_node_tools(mcp: FastMCP):
         graph_name: str = "AnimGraph",
         graph_id: str = "",
         graph_type: str = "function",
-        replace_existing: bool = False
+        replace_existing: bool = False,
+        allow_non_sample: bool = False
     ) -> Dict[str, Any]:
         """
         Ensure an AnimGraph contains a safe Modify Bone demonstration chain.
@@ -2351,6 +2355,7 @@ def register_blueprint_node_tools(mcp: FastMCP):
             graph_id: Optional target graph GUID
             graph_type: Graph selector type, defaults to function because AnimGraph is reported there
             replace_existing: Replace existing pose links on the target chain pins
+            allow_non_sample: Allow editing non-`/Game/_MCP_Sample/` AnimBPs
 
         Returns:
             Response containing chain node metadata and connection status.
@@ -2363,6 +2368,7 @@ def register_blueprint_node_tools(mcp: FastMCP):
                 "bone_name": bone_name,
                 "rotation": rotation,
                 "replace_existing": replace_existing,
+                "allow_non_sample": allow_non_sample,
             }
             add_graph_selector(params, graph_name, graph_id, graph_type)
             return send_node_command("ensure_anim_graph_modify_bone_demo", params)

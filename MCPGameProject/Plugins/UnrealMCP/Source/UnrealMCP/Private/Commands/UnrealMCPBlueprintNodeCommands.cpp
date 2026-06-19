@@ -2788,6 +2788,265 @@ TArray<TSharedPtr<FJsonValue>> BlendSpaceAssetSamplesToJsonValues(const UBlendSp
     return Values;
 }
 
+bool BlendSpaceParametersEqual(const FBlendParameter& A, const FBlendParameter& B)
+{
+    return A.DisplayName.Equals(B.DisplayName, ESearchCase::CaseSensitive)
+        && FMath::IsNearlyEqual(A.Min, B.Min)
+        && FMath::IsNearlyEqual(A.Max, B.Max)
+        && A.GridNum == B.GridNum
+        && A.bSnapToGrid == B.bSnapToGrid
+        && A.bWrapInput == B.bWrapInput;
+}
+
+FBlendParameter* GetMutableBlendSpaceParameter(UBlendSpace* BlendSpace, int32 AxisIndex, FString& OutError)
+{
+    if (!BlendSpace)
+    {
+        OutError = TEXT("BlendSpace is null");
+        return nullptr;
+    }
+    if (AxisIndex < 0 || AxisIndex >= 3)
+    {
+        OutError = FString::Printf(TEXT("BlendSpace axis index out of range: %d"), AxisIndex);
+        return nullptr;
+    }
+
+    FStructProperty* BlendParametersProperty = FindFProperty<FStructProperty>(BlendSpace->GetClass(), TEXT("BlendParameters"));
+    if (!BlendParametersProperty || BlendParametersProperty->ArrayDim < 3 || BlendParametersProperty->Struct != FBlendParameter::StaticStruct())
+    {
+        OutError = TEXT("Unable to access BlendSpace BlendParameters property");
+        return nullptr;
+    }
+
+    return BlendParametersProperty->ContainerPtrToValuePtr<FBlendParameter>(BlendSpace, AxisIndex);
+}
+
+bool ResolveBlendSpaceAxisIndex(const UBlendSpace* BlendSpace, const TSharedPtr<FJsonObject>& AxisObject, int32& OutAxisIndex, FString& OutError)
+{
+    OutAxisIndex = INDEX_NONE;
+    if (!AxisObject.IsValid())
+    {
+        OutError = TEXT("Axis edit must be an object");
+        return false;
+    }
+
+    double AxisNumber = 0.0;
+    if (AxisObject->TryGetNumberField(TEXT("index"), AxisNumber) || AxisObject->TryGetNumberField(TEXT("axis_index"), AxisNumber))
+    {
+        OutAxisIndex = FMath::RoundToInt(AxisNumber);
+    }
+    else
+    {
+        FString AxisName;
+        AxisObject->TryGetStringField(TEXT("axis"), AxisName);
+        AxisName.TrimStartAndEndInline();
+        if (AxisName.Equals(TEXT("x"), ESearchCase::IgnoreCase) || AxisName.Equals(TEXT("0"), ESearchCase::IgnoreCase))
+        {
+            OutAxisIndex = 0;
+        }
+        else if (AxisName.Equals(TEXT("y"), ESearchCase::IgnoreCase) || AxisName.Equals(TEXT("1"), ESearchCase::IgnoreCase))
+        {
+            OutAxisIndex = 1;
+        }
+        else if (AxisName.Equals(TEXT("z"), ESearchCase::IgnoreCase) || AxisName.Equals(TEXT("2"), ESearchCase::IgnoreCase))
+        {
+            OutAxisIndex = 2;
+        }
+        else if (BlendSpace && !AxisName.IsEmpty())
+        {
+            for (int32 AxisIndex = 0; AxisIndex < 3; ++AxisIndex)
+            {
+                if (BlendSpace->GetBlendParameter(AxisIndex).DisplayName.Equals(AxisName, ESearchCase::IgnoreCase))
+                {
+                    OutAxisIndex = AxisIndex;
+                    break;
+                }
+            }
+        }
+    }
+
+    if (OutAxisIndex < 0 || OutAxisIndex >= 3)
+    {
+        OutError = TEXT("Axis edit must provide index/axis_index 0..2 or axis x/y/z/display name");
+        return false;
+    }
+    return true;
+}
+
+bool TryParseBlendSpaceEditVector(
+    const TSharedPtr<FJsonObject>& Object,
+    const FVector& DefaultValue,
+    bool bRequireAnyValue,
+    FVector& OutVector,
+    bool& bOutHadValue,
+    FString& OutError)
+{
+    OutVector = DefaultValue;
+    bOutHadValue = false;
+
+    const TCHAR* VectorFields[] = { TEXT("input"), TEXT("position"), TEXT("sample_value") };
+    for (const TCHAR* FieldName : VectorFields)
+    {
+        const TSharedPtr<FJsonValue> Value = Object.IsValid() ? Object->TryGetField(FieldName) : nullptr;
+        if (Value.IsValid())
+        {
+            if (!JsonValueToVector(Value, OutVector))
+            {
+                OutError = FString::Printf(TEXT("Field '%s' must be a vector array or object"), FieldName);
+                return false;
+            }
+            bOutHadValue = true;
+            return true;
+        }
+    }
+
+    double NumericValue = 0.0;
+    if (Object.IsValid() && Object->TryGetNumberField(TEXT("x"), NumericValue))
+    {
+        OutVector.X = NumericValue;
+        bOutHadValue = true;
+    }
+    if (Object.IsValid() && Object->TryGetNumberField(TEXT("y"), NumericValue))
+    {
+        OutVector.Y = NumericValue;
+        bOutHadValue = true;
+    }
+    if (Object.IsValid() && Object->TryGetNumberField(TEXT("z"), NumericValue))
+    {
+        OutVector.Z = NumericValue;
+        bOutHadValue = true;
+    }
+
+    if (bRequireAnyValue && !bOutHadValue)
+    {
+        OutError = TEXT("Sample edit requires input/position/sample_value or x/y/z");
+        return false;
+    }
+    return true;
+}
+
+bool TryParseBlendSpaceOffsetVector(const TSharedPtr<FJsonObject>& Object, FVector& OutOffset, bool& bOutHadOffset, FString& OutError)
+{
+    OutOffset = FVector::ZeroVector;
+    bOutHadOffset = false;
+    if (!Object.IsValid())
+    {
+        return true;
+    }
+
+    const TSharedPtr<FJsonValue> OffsetValue = Object->HasField(TEXT("offset"))
+        ? Object->TryGetField(TEXT("offset"))
+        : Object->TryGetField(TEXT("delta"));
+    if (!OffsetValue.IsValid())
+    {
+        return true;
+    }
+    if (!JsonValueToVector(OffsetValue, OutOffset))
+    {
+        OutError = TEXT("offset/delta must be a vector array or object");
+        return false;
+    }
+    bOutHadOffset = true;
+    return true;
+}
+
+UAnimSequence* LoadAnimSequenceForBlendSpaceEdit(const TSharedPtr<FJsonObject>& Object, const TArray<FString>& FieldNames, FString& OutRequestedPath)
+{
+    OutRequestedPath.Empty();
+    if (!Object.IsValid())
+    {
+        return nullptr;
+    }
+
+    for (const FString& FieldName : FieldNames)
+    {
+        FString CandidatePath;
+        if (Object->TryGetStringField(FieldName, CandidatePath))
+        {
+            CandidatePath.TrimStartAndEndInline();
+            if (!CandidatePath.IsEmpty())
+            {
+                OutRequestedPath = CandidatePath;
+                return Cast<UAnimSequence>(LoadAssetObjectForRuntimeProbe(CandidatePath));
+            }
+        }
+    }
+    return nullptr;
+}
+
+int32 ResolveBlendSpaceSampleIndex(const UBlendSpace* BlendSpace, const TSharedPtr<FJsonObject>& EditObject, FString& OutError)
+{
+    if (!BlendSpace || !EditObject.IsValid())
+    {
+        OutError = TEXT("Cannot resolve sample index without BlendSpace and edit object");
+        return INDEX_NONE;
+    }
+
+    double SampleIndexNumber = 0.0;
+    if (EditObject->TryGetNumberField(TEXT("index"), SampleIndexNumber) || EditObject->TryGetNumberField(TEXT("sample_index"), SampleIndexNumber))
+    {
+        const int32 SampleIndex = FMath::RoundToInt(SampleIndexNumber);
+        if (!BlendSpace->GetBlendSamples().IsValidIndex(SampleIndex))
+        {
+            OutError = FString::Printf(TEXT("Sample index out of range: %d"), SampleIndex);
+            return INDEX_NONE;
+        }
+        return SampleIndex;
+    }
+
+    FString AnimationSelector;
+    if (!EditObject->TryGetStringField(TEXT("animation"), AnimationSelector))
+    {
+        EditObject->TryGetStringField(TEXT("animation_name"), AnimationSelector);
+    }
+    AnimationSelector.TrimStartAndEndInline();
+    if (AnimationSelector.IsEmpty())
+    {
+        OutError = TEXT("Sample edit requires index/sample_index or animation/animation_name selector");
+        return INDEX_NONE;
+    }
+
+    const TArray<FBlendSample>& Samples = BlendSpace->GetBlendSamples();
+    for (int32 SampleIndex = 0; SampleIndex < Samples.Num(); ++SampleIndex)
+    {
+        const UAnimSequence* Animation = Samples[SampleIndex].Animation;
+        if (!Animation)
+        {
+            continue;
+        }
+
+        if (Animation->GetName().Equals(AnimationSelector, ESearchCase::IgnoreCase)
+            || Animation->GetPathName().Equals(AnimationSelector, ESearchCase::IgnoreCase)
+            || Animation->GetOutermost()->GetName().Equals(AnimationSelector, ESearchCase::IgnoreCase))
+        {
+            return SampleIndex;
+        }
+    }
+
+    OutError = FString::Printf(TEXT("No BlendSpace sample matched selector: %s"), *AnimationSelector);
+    return INDEX_NONE;
+}
+
+TSharedPtr<FJsonObject> SaveBlendSpaceVariantResult(UBlendSpace* BlendSpace, bool bSave)
+{
+    TSharedPtr<FJsonObject> SaveObject = MakeShared<FJsonObject>();
+    SaveObject->SetBoolField(TEXT("requested"), bSave);
+    SaveObject->SetBoolField(TEXT("saved"), false);
+    if (!BlendSpace)
+    {
+        SaveObject->SetStringField(TEXT("error"), TEXT("BlendSpace is null"));
+        return SaveObject;
+    }
+
+    SaveObject->SetBoolField(TEXT("dirty_before"), BlendSpace->GetOutermost() ? BlendSpace->GetOutermost()->IsDirty() : false);
+    if (bSave)
+    {
+        SaveObject->SetBoolField(TEXT("saved"), UEditorAssetLibrary::SaveLoadedAsset(BlendSpace, false));
+    }
+    SaveObject->SetBoolField(TEXT("dirty_after"), BlendSpace->GetOutermost() ? BlendSpace->GetOutermost()->IsDirty() : false);
+    return SaveObject;
+}
+
 bool TryParseBlendSpaceGridSampleObject(
     const TSharedPtr<FJsonObject>& Object,
     int32 SampleIndex,
@@ -8804,6 +9063,10 @@ TSharedPtr<FJsonObject> FUnrealMCPBlueprintNodeCommands::HandleCommand(const FSt
     {
         return HandleSampleBlendSpaceRuntimePoseGrid(Params);
     }
+    else if (CommandType == TEXT("ensure_blendspace_sample_variant"))
+    {
+        return HandleEnsureBlendSpaceSampleVariant(Params);
+    }
     else if (CommandType == TEXT("inspect_anim_instance_runtime_state"))
     {
         return HandleInspectAnimInstanceRuntimeState(Params);
@@ -13452,6 +13715,435 @@ TSharedPtr<FJsonObject> FUnrealMCPBlueprintNodeCommands::HandleSampleSkeletalBon
     return ResultObj;
 }
 
+TSharedPtr<FJsonObject> FUnrealMCPBlueprintNodeCommands::HandleEnsureBlendSpaceSampleVariant(const TSharedPtr<FJsonObject>& Params)
+{
+    FString SourceBlendSpacePath = GetStringParam(Params, TEXT("source_blendspace"));
+    if (SourceBlendSpacePath.IsEmpty())
+    {
+        SourceBlendSpacePath = GetStringParam(Params, TEXT("source_blendspace_path"));
+    }
+    SourceBlendSpacePath.TrimStartAndEndInline();
+    if (SourceBlendSpacePath.IsEmpty())
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Missing 'source_blendspace' parameter"));
+    }
+
+    UBlendSpace* SourceBlendSpace = Cast<UBlendSpace>(LoadAssetObjectForRuntimeProbe(SourceBlendSpacePath));
+    if (!SourceBlendSpace)
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("Source BlendSpace not found or not a UBlendSpace: %s"), *SourceBlendSpacePath));
+    }
+
+    FString VariantName = SanitizeAssetNameSegmentForAnimNodeProbe(GetStringParam(Params, TEXT("variant_name"), TEXT("Variant")));
+    const FString TargetRoot = NormalizeSampleRootForPostProcessVariant(GetStringParam(Params, TEXT("target_root"), TEXT("/Game/_MCP_Sample/AnimStudy")));
+    FString TargetBlendSpacePath = GetStringParam(Params, TEXT("target_blendspace"));
+    if (TargetBlendSpacePath.IsEmpty())
+    {
+        TargetBlendSpacePath = GetStringParam(Params, TEXT("target_blendspace_path"));
+    }
+    if (TargetBlendSpacePath.IsEmpty())
+    {
+        const FString SourceName = SanitizeAssetNameSegmentForAnimNodeProbe(SourceBlendSpace->GetName());
+        TargetBlendSpacePath = FString::Printf(TEXT("%s/%s_%s"), *TargetRoot, *SourceName, *VariantName);
+    }
+    TargetBlendSpacePath = NormalizePackagePathForPostProcessVariant(TargetBlendSpacePath);
+
+    FString PathError;
+    if (!IsValidGamePackagePathForPostProcessVariant(TargetRoot, PathError))
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("Invalid target_root. %s"), *PathError));
+    }
+    if (!IsValidGamePackagePathForPostProcessVariant(TargetBlendSpacePath, PathError))
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("Invalid target_blendspace. %s"), *PathError));
+    }
+
+    const bool bAllowNonSample = GetBoolParam(Params, TEXT("allow_non_sample"), false);
+    if (!bAllowNonSample && !IsAllowedPostProcessVariantTargetPath(TargetBlendSpacePath))
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(
+            TEXT("Refusing to create BlendSpace sample variant outside /Game/_MCP_Sample. target_blendspace='%s'. Pass allow_non_sample=true only for intentional non-sample edits."),
+            *TargetBlendSpacePath));
+    }
+
+    if (SourceBlendSpace->GetOutermost()->GetName().Equals(TargetBlendSpacePath, ESearchCase::IgnoreCase))
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Refusing to use the source BlendSpace as the target variant"));
+    }
+
+    const bool bDryRun = GetBoolParam(Params, TEXT("dry_run"), false);
+    const bool bValidateOnly = GetBoolParam(Params, TEXT("validate_only"), false);
+    const bool bOverwriteExisting = GetBoolParam(Params, TEXT("overwrite_existing"), false);
+    const bool bSave = GetBoolParam(Params, TEXT("save"), true);
+
+    TSharedPtr<FJsonObject> ResultObj = MakeShared<FJsonObject>();
+    ResultObj->SetBoolField(TEXT("success"), true);
+    ResultObj->SetBoolField(TEXT("dry_run"), bDryRun || bValidateOnly);
+    ResultObj->SetBoolField(TEXT("validate_only"), bValidateOnly);
+    ResultObj->SetBoolField(TEXT("original_assets_modified"), false);
+    ResultObj->SetStringField(TEXT("source_blendspace"), SourceBlendSpace->GetPathName());
+    ResultObj->SetStringField(TEXT("source_package"), SourceBlendSpace->GetOutermost()->GetName());
+    ResultObj->SetStringField(TEXT("source_class"), SourceBlendSpace->GetClass() ? SourceBlendSpace->GetClass()->GetPathName() : FString());
+    ResultObj->SetStringField(TEXT("target_blendspace"), TargetBlendSpacePath);
+    ResultObj->SetStringField(TEXT("target_root"), TargetRoot);
+    ResultObj->SetStringField(TEXT("variant_name"), VariantName);
+    ResultObj->SetBoolField(TEXT("overwrite_existing"), bOverwriteExisting);
+    ResultObj->SetBoolField(TEXT("target_exists"), UEditorAssetLibrary::DoesAssetExist(TargetBlendSpacePath));
+    ResultObj->SetArrayField(TEXT("source_axes"), BlendSpaceAxesToJsonValues(SourceBlendSpace));
+    ResultObj->SetArrayField(TEXT("source_samples"), BlendSpaceAssetSamplesToJsonValues(SourceBlendSpace));
+
+    if (bDryRun || bValidateOnly)
+    {
+        ResultObj->SetStringField(TEXT("runtime_note"), TEXT("Dry run only: no BlendSpace asset was duplicated, edited, or saved."));
+        return ResultObj;
+    }
+
+    TArray<TSharedPtr<FJsonValue>> ErrorValues;
+    TArray<TSharedPtr<FJsonValue>> WarningValues;
+    bool bTargetCreated = false;
+    bool bTargetReused = false;
+    UBlendSpace* TargetBlendSpace = Cast<UBlendSpace>(DuplicateOrReusePostProcessVariantAsset(
+        SourceBlendSpace,
+        TargetBlendSpacePath,
+        UBlendSpace::StaticClass(),
+        TEXT("BlendSpace"),
+        bOverwriteExisting,
+        bTargetCreated,
+        bTargetReused,
+        ErrorValues));
+
+    if (!TargetBlendSpace || ErrorValues.Num() > 0)
+    {
+        TSharedPtr<FJsonObject> ErrorObj = FUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Failed to prepare BlendSpace target asset"));
+        ErrorObj->SetArrayField(TEXT("errors"), ErrorValues);
+        ErrorObj->SetStringField(TEXT("source_blendspace"), SourceBlendSpace->GetPathName());
+        ErrorObj->SetStringField(TEXT("target_blendspace"), TargetBlendSpacePath);
+        ErrorObj->SetBoolField(TEXT("original_assets_modified"), false);
+        return ErrorObj;
+    }
+
+    ResultObj->SetBoolField(TEXT("target_blendspace_created"), bTargetCreated);
+    ResultObj->SetBoolField(TEXT("target_blendspace_reused"), bTargetReused);
+    ResultObj->SetStringField(TEXT("target_class"), TargetBlendSpace->GetClass() ? TargetBlendSpace->GetClass()->GetPathName() : FString());
+    ResultObj->SetArrayField(TEXT("target_axes_before"), BlendSpaceAxesToJsonValues(TargetBlendSpace));
+    ResultObj->SetArrayField(TEXT("target_samples_before"), BlendSpaceAssetSamplesToJsonValues(TargetBlendSpace));
+
+    bool bChanged = false;
+    TargetBlendSpace->Modify();
+
+    TArray<TSharedPtr<FJsonValue>> AxisEditResults;
+    const TArray<TSharedPtr<FJsonValue>>* AxisEditValues = nullptr;
+    if (Params->TryGetArrayField(TEXT("axis_edits"), AxisEditValues) && AxisEditValues)
+    {
+        for (int32 EditIndex = 0; EditIndex < AxisEditValues->Num(); ++EditIndex)
+        {
+            TSharedPtr<FJsonObject> EditResult = MakeShared<FJsonObject>();
+            EditResult->SetNumberField(TEXT("edit_index"), EditIndex);
+
+            const TSharedPtr<FJsonValue>& AxisEditValue = (*AxisEditValues)[EditIndex];
+            const TSharedPtr<FJsonObject>* AxisObject = nullptr;
+            if (!AxisEditValue.IsValid() || !AxisEditValue->TryGetObject(AxisObject) || !AxisObject || !AxisObject->IsValid())
+            {
+                EditResult->SetBoolField(TEXT("success"), false);
+                EditResult->SetStringField(TEXT("error"), TEXT("axis_edits entries must be objects"));
+                AxisEditResults.Add(MakeShared<FJsonValueObject>(EditResult));
+                ErrorValues.Add(MakeShared<FJsonValueString>(TEXT("axis_edits entry must be an object")));
+                continue;
+            }
+
+            int32 AxisIndex = INDEX_NONE;
+            FString AxisError;
+            if (!ResolveBlendSpaceAxisIndex(TargetBlendSpace, *AxisObject, AxisIndex, AxisError))
+            {
+                EditResult->SetBoolField(TEXT("success"), false);
+                EditResult->SetStringField(TEXT("error"), AxisError);
+                AxisEditResults.Add(MakeShared<FJsonValueObject>(EditResult));
+                ErrorValues.Add(MakeShared<FJsonValueString>(AxisError));
+                continue;
+            }
+
+            FString MutableError;
+            FBlendParameter* MutableAxis = GetMutableBlendSpaceParameter(TargetBlendSpace, AxisIndex, MutableError);
+            if (!MutableAxis)
+            {
+                EditResult->SetBoolField(TEXT("success"), false);
+                EditResult->SetStringField(TEXT("error"), MutableError);
+                AxisEditResults.Add(MakeShared<FJsonValueObject>(EditResult));
+                ErrorValues.Add(MakeShared<FJsonValueString>(MutableError));
+                continue;
+            }
+
+            const FBlendParameter BeforeAxis = *MutableAxis;
+            FBlendParameter NewAxis = BeforeAxis;
+            FString DisplayName;
+            if ((*AxisObject)->TryGetStringField(TEXT("display_name"), DisplayName) || (*AxisObject)->TryGetStringField(TEXT("name"), DisplayName))
+            {
+                NewAxis.DisplayName = DisplayName;
+            }
+            double NumberValue = 0.0;
+            if ((*AxisObject)->TryGetNumberField(TEXT("min"), NumberValue))
+            {
+                NewAxis.Min = static_cast<float>(NumberValue);
+            }
+            if ((*AxisObject)->TryGetNumberField(TEXT("max"), NumberValue))
+            {
+                NewAxis.Max = static_cast<float>(NumberValue);
+            }
+            if ((*AxisObject)->TryGetNumberField(TEXT("grid_num"), NumberValue) || (*AxisObject)->TryGetNumberField(TEXT("grid"), NumberValue))
+            {
+                NewAxis.GridNum = FMath::Max(1, FMath::RoundToInt(NumberValue));
+            }
+            bool BoolValue = false;
+            if ((*AxisObject)->TryGetBoolField(TEXT("snap_to_grid"), BoolValue))
+            {
+                NewAxis.bSnapToGrid = BoolValue;
+            }
+            if ((*AxisObject)->TryGetBoolField(TEXT("wrap_input"), BoolValue))
+            {
+                NewAxis.bWrapInput = BoolValue;
+            }
+
+            if (NewAxis.Min >= NewAxis.Max)
+            {
+                const FString Error = FString::Printf(TEXT("Axis %d has invalid min/max after edit: min=%f max=%f"), AxisIndex, NewAxis.Min, NewAxis.Max);
+                EditResult->SetBoolField(TEXT("success"), false);
+                EditResult->SetStringField(TEXT("error"), Error);
+                EditResult->SetObjectField(TEXT("before"), BlendSpaceAxisToJson(BeforeAxis, AxisIndex));
+                AxisEditResults.Add(MakeShared<FJsonValueObject>(EditResult));
+                ErrorValues.Add(MakeShared<FJsonValueString>(Error));
+                continue;
+            }
+
+            const bool bAxisChanged = !BlendSpaceParametersEqual(BeforeAxis, NewAxis);
+            if (bAxisChanged)
+            {
+                *MutableAxis = NewAxis;
+                bChanged = true;
+            }
+            EditResult->SetBoolField(TEXT("success"), true);
+            EditResult->SetNumberField(TEXT("axis_index"), AxisIndex);
+            EditResult->SetBoolField(TEXT("changed"), bAxisChanged);
+            EditResult->SetObjectField(TEXT("before"), BlendSpaceAxisToJson(BeforeAxis, AxisIndex));
+            EditResult->SetObjectField(TEXT("after"), BlendSpaceAxisToJson(NewAxis, AxisIndex));
+            AxisEditResults.Add(MakeShared<FJsonValueObject>(EditResult));
+        }
+    }
+
+    TArray<TSharedPtr<FJsonValue>> SampleEditResults;
+    const TArray<TSharedPtr<FJsonValue>>* SampleEditValues = nullptr;
+    if (Params->TryGetArrayField(TEXT("sample_edits"), SampleEditValues) && SampleEditValues)
+    {
+        for (int32 EditIndex = 0; EditIndex < SampleEditValues->Num(); ++EditIndex)
+        {
+            TSharedPtr<FJsonObject> EditResult = MakeShared<FJsonObject>();
+            EditResult->SetNumberField(TEXT("edit_index"), EditIndex);
+
+            const TSharedPtr<FJsonValue>& SampleEditValue = (*SampleEditValues)[EditIndex];
+            const TSharedPtr<FJsonObject>* SampleObject = nullptr;
+            if (!SampleEditValue.IsValid() || !SampleEditValue->TryGetObject(SampleObject) || !SampleObject || !SampleObject->IsValid())
+            {
+                EditResult->SetBoolField(TEXT("success"), false);
+                EditResult->SetStringField(TEXT("error"), TEXT("sample_edits entries must be objects"));
+                SampleEditResults.Add(MakeShared<FJsonValueObject>(EditResult));
+                ErrorValues.Add(MakeShared<FJsonValueString>(TEXT("sample_edits entry must be an object")));
+                continue;
+            }
+
+            FString ResolveError;
+            const int32 SampleIndex = ResolveBlendSpaceSampleIndex(TargetBlendSpace, *SampleObject, ResolveError);
+            if (SampleIndex == INDEX_NONE)
+            {
+                EditResult->SetBoolField(TEXT("success"), false);
+                EditResult->SetStringField(TEXT("error"), ResolveError);
+                SampleEditResults.Add(MakeShared<FJsonValueObject>(EditResult));
+                ErrorValues.Add(MakeShared<FJsonValueString>(ResolveError));
+                continue;
+            }
+
+            const FBlendSample BeforeSample = TargetBlendSpace->GetBlendSample(SampleIndex);
+            FVector DesiredValue = BeforeSample.SampleValue;
+            bool bHasValue = false;
+            FString VectorError;
+            if (!TryParseBlendSpaceEditVector(*SampleObject, BeforeSample.SampleValue, false, DesiredValue, bHasValue, VectorError))
+            {
+                EditResult->SetBoolField(TEXT("success"), false);
+                EditResult->SetStringField(TEXT("error"), VectorError);
+                SampleEditResults.Add(MakeShared<FJsonValueObject>(EditResult));
+                ErrorValues.Add(MakeShared<FJsonValueString>(VectorError));
+                continue;
+            }
+
+            FVector OffsetValue = FVector::ZeroVector;
+            bool bHasOffset = false;
+            if (!TryParseBlendSpaceOffsetVector(*SampleObject, OffsetValue, bHasOffset, VectorError))
+            {
+                EditResult->SetBoolField(TEXT("success"), false);
+                EditResult->SetStringField(TEXT("error"), VectorError);
+                SampleEditResults.Add(MakeShared<FJsonValueObject>(EditResult));
+                ErrorValues.Add(MakeShared<FJsonValueString>(VectorError));
+                continue;
+            }
+            if (bHasOffset)
+            {
+                DesiredValue += OffsetValue;
+                bHasValue = true;
+            }
+
+            bool bSampleChanged = false;
+            if (bHasValue && !BeforeSample.SampleValue.Equals(DesiredValue, KINDA_SMALL_NUMBER))
+            {
+                if (!TargetBlendSpace->EditSampleValue(SampleIndex, DesiredValue))
+                {
+                    const FString Error = FString::Printf(TEXT("Failed to edit BlendSpace sample value at index %d"), SampleIndex);
+                    EditResult->SetBoolField(TEXT("success"), false);
+                    EditResult->SetStringField(TEXT("error"), Error);
+                    SampleEditResults.Add(MakeShared<FJsonValueObject>(EditResult));
+                    ErrorValues.Add(MakeShared<FJsonValueString>(Error));
+                    continue;
+                }
+                bSampleChanged = true;
+                bChanged = true;
+            }
+
+            FString RequestedReplacementPath;
+            UAnimSequence* ReplacementAnimation = LoadAnimSequenceForBlendSpaceEdit(
+                *SampleObject,
+                TArray<FString>{ TEXT("replacement_animation"), TEXT("replacement_anim"), TEXT("new_animation") },
+                RequestedReplacementPath);
+            if (!RequestedReplacementPath.IsEmpty())
+            {
+                if (!ReplacementAnimation)
+                {
+                    const FString Error = FString::Printf(TEXT("Replacement animation not found or not UAnimSequence: %s"), *RequestedReplacementPath);
+                    EditResult->SetBoolField(TEXT("success"), false);
+                    EditResult->SetStringField(TEXT("error"), Error);
+                    SampleEditResults.Add(MakeShared<FJsonValueObject>(EditResult));
+                    ErrorValues.Add(MakeShared<FJsonValueString>(Error));
+                    continue;
+                }
+                if (!TargetBlendSpace->ReplaceSampleAnimation(SampleIndex, ReplacementAnimation))
+                {
+                    const FString Error = FString::Printf(TEXT("Failed to replace animation for BlendSpace sample index %d"), SampleIndex);
+                    EditResult->SetBoolField(TEXT("success"), false);
+                    EditResult->SetStringField(TEXT("error"), Error);
+                    SampleEditResults.Add(MakeShared<FJsonValueObject>(EditResult));
+                    ErrorValues.Add(MakeShared<FJsonValueString>(Error));
+                    continue;
+                }
+                bSampleChanged = true;
+                bChanged = true;
+            }
+
+            EditResult->SetBoolField(TEXT("success"), true);
+            EditResult->SetNumberField(TEXT("sample_index"), SampleIndex);
+            EditResult->SetBoolField(TEXT("changed"), bSampleChanged);
+            EditResult->SetObjectField(TEXT("before"), BlendSpaceAssetSampleToJson(BeforeSample, SampleIndex));
+            EditResult->SetObjectField(TEXT("after"), BlendSpaceAssetSampleToJson(TargetBlendSpace->GetBlendSample(SampleIndex), SampleIndex));
+            SampleEditResults.Add(MakeShared<FJsonValueObject>(EditResult));
+        }
+    }
+
+    TArray<TSharedPtr<FJsonValue>> AddSampleResults;
+    const TArray<TSharedPtr<FJsonValue>>* AddSampleValues = nullptr;
+    if (Params->TryGetArrayField(TEXT("add_samples"), AddSampleValues) && AddSampleValues)
+    {
+        for (int32 AddIndex = 0; AddIndex < AddSampleValues->Num(); ++AddIndex)
+        {
+            TSharedPtr<FJsonObject> AddResult = MakeShared<FJsonObject>();
+            AddResult->SetNumberField(TEXT("add_index"), AddIndex);
+
+            const TSharedPtr<FJsonValue>& AddValue = (*AddSampleValues)[AddIndex];
+            const TSharedPtr<FJsonObject>* AddObject = nullptr;
+            if (!AddValue.IsValid() || !AddValue->TryGetObject(AddObject) || !AddObject || !AddObject->IsValid())
+            {
+                AddResult->SetBoolField(TEXT("success"), false);
+                AddResult->SetStringField(TEXT("error"), TEXT("add_samples entries must be objects"));
+                AddSampleResults.Add(MakeShared<FJsonValueObject>(AddResult));
+                ErrorValues.Add(MakeShared<FJsonValueString>(TEXT("add_samples entry must be an object")));
+                continue;
+            }
+
+            FString RequestedAnimationPath;
+            UAnimSequence* Animation = LoadAnimSequenceForBlendSpaceEdit(
+                *AddObject,
+                TArray<FString>{ TEXT("animation"), TEXT("animation_path"), TEXT("anim_sequence") },
+                RequestedAnimationPath);
+            if (RequestedAnimationPath.IsEmpty() || !Animation)
+            {
+                const FString Error = RequestedAnimationPath.IsEmpty()
+                    ? TEXT("add_samples entry requires an animation path")
+                    : FString::Printf(TEXT("Animation not found or not UAnimSequence: %s"), *RequestedAnimationPath);
+                AddResult->SetBoolField(TEXT("success"), false);
+                AddResult->SetStringField(TEXT("error"), Error);
+                AddSampleResults.Add(MakeShared<FJsonValueObject>(AddResult));
+                ErrorValues.Add(MakeShared<FJsonValueString>(Error));
+                continue;
+            }
+
+            FVector SampleValue = FVector::ZeroVector;
+            bool bHasSampleValue = false;
+            FString VectorError;
+            if (!TryParseBlendSpaceEditVector(*AddObject, FVector::ZeroVector, true, SampleValue, bHasSampleValue, VectorError))
+            {
+                AddResult->SetBoolField(TEXT("success"), false);
+                AddResult->SetStringField(TEXT("error"), VectorError);
+                AddSampleResults.Add(MakeShared<FJsonValueObject>(AddResult));
+                ErrorValues.Add(MakeShared<FJsonValueString>(VectorError));
+                continue;
+            }
+
+            const int32 NewSampleIndex = TargetBlendSpace->AddSample(Animation, SampleValue);
+            if (NewSampleIndex == INDEX_NONE)
+            {
+                const FString Error = FString::Printf(TEXT("Failed to add BlendSpace sample animation='%s' value='%s'"), *RequestedAnimationPath, *SampleValue.ToString());
+                AddResult->SetBoolField(TEXT("success"), false);
+                AddResult->SetStringField(TEXT("error"), Error);
+                AddSampleResults.Add(MakeShared<FJsonValueObject>(AddResult));
+                ErrorValues.Add(MakeShared<FJsonValueString>(Error));
+                continue;
+            }
+
+            bChanged = true;
+            AddResult->SetBoolField(TEXT("success"), true);
+            AddResult->SetNumberField(TEXT("sample_index"), NewSampleIndex);
+            AddResult->SetStringField(TEXT("animation"), Animation->GetPathName());
+            AddResult->SetObjectField(TEXT("sample_value"), BlendSpaceInputToJson(SampleValue));
+            AddSampleResults.Add(MakeShared<FJsonValueObject>(AddResult));
+        }
+    }
+
+    if (bChanged)
+    {
+        TargetBlendSpace->ValidateSampleData();
+        TargetBlendSpace->MarkPackageDirty();
+        TargetBlendSpace->PostEditChange();
+    }
+
+    TSharedPtr<FJsonObject> SaveObject = SaveBlendSpaceVariantResult(TargetBlendSpace, bSave && ErrorValues.Num() == 0);
+    SaveObject->SetBoolField(TEXT("requested"), bSave);
+    if (bSave && ErrorValues.Num() > 0)
+    {
+        SaveObject->SetBoolField(TEXT("skipped_due_to_errors"), true);
+        SaveObject->SetStringField(TEXT("skip_reason"), TEXT("One or more edits failed; target asset was left dirty instead of saving a partial failure."));
+    }
+
+    ResultObj->SetBoolField(TEXT("changed"), bChanged);
+    ResultObj->SetArrayField(TEXT("axis_edit_results"), AxisEditResults);
+    ResultObj->SetArrayField(TEXT("sample_edit_results"), SampleEditResults);
+    ResultObj->SetArrayField(TEXT("add_sample_results"), AddSampleResults);
+    ResultObj->SetArrayField(TEXT("target_axes"), BlendSpaceAxesToJsonValues(TargetBlendSpace));
+    ResultObj->SetArrayField(TEXT("target_samples"), BlendSpaceAssetSamplesToJsonValues(TargetBlendSpace));
+    ResultObj->SetObjectField(TEXT("save"), SaveObject);
+    ResultObj->SetArrayField(TEXT("errors"), ErrorValues);
+    ResultObj->SetArrayField(TEXT("warnings"), WarningValues);
+    ResultObj->SetBoolField(TEXT("success"), ErrorValues.Num() == 0);
+    if (ErrorValues.Num() > 0)
+    {
+        ResultObj->SetStringField(TEXT("error"), TEXT("One or more BlendSpace variant edits failed"));
+    }
+    return ResultObj;
+}
+
 TSharedPtr<FJsonObject> FUnrealMCPBlueprintNodeCommands::HandleSampleBlendSpaceRuntimePoseGrid(const TSharedPtr<FJsonObject>& Params)
 {
     if (!Params.IsValid())
@@ -14306,6 +14998,15 @@ TSharedPtr<FJsonObject> FUnrealMCPBlueprintNodeCommands::HandleEnsureAnimGraphIn
         return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("Blueprint not found: %s"), *BlueprintName));
     }
 
+    bool bAllowNonSample = false;
+    Params->TryGetBoolField(TEXT("allow_non_sample"), bAllowNonSample);
+    if (!bAllowNonSample && !Blueprint->GetPathName().StartsWith(TEXT("/Game/_MCP_Sample/")))
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(
+            TEXT("Refusing to modify non-sample Anim Blueprint '%s'. Pass allow_non_sample=true only for intentional non-sample edits."),
+            *Blueprint->GetPathName()));
+    }
+
     FString GraphError;
     UEdGraph* TargetGraph = ResolveBlueprintGraphForNodeCommand(Blueprint, Params, GraphError);
     if (!TargetGraph)
@@ -14480,6 +15181,15 @@ TSharedPtr<FJsonObject> FUnrealMCPBlueprintNodeCommands::HandleEnsureAnimGraphMo
     if (!Blueprint)
     {
         return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("Blueprint not found: %s"), *BlueprintName));
+    }
+
+    bool bAllowNonSample = false;
+    Params->TryGetBoolField(TEXT("allow_non_sample"), bAllowNonSample);
+    if (!bAllowNonSample && !Blueprint->GetPathName().StartsWith(TEXT("/Game/_MCP_Sample/")))
+    {
+        return FUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(
+            TEXT("Refusing to modify non-sample Anim Blueprint '%s'. Pass allow_non_sample=true only for intentional non-sample edits."),
+            *Blueprint->GetPathName()));
     }
 
     FString GraphError;
@@ -14867,6 +15577,7 @@ TSharedPtr<FJsonObject> FUnrealMCPBlueprintNodeCommands::HandleEnsurePostProcess
     GraphParams->SetStringField(TEXT("blueprint_name"), TargetBlueprintPath);
     GraphParams->SetStringField(TEXT("graph_name"), GetStringParam(Params, TEXT("graph_name"), TEXT("AnimGraph")));
     GraphParams->SetStringField(TEXT("graph_type"), GetStringParam(Params, TEXT("graph_type"), TEXT("function")));
+    GraphParams->SetBoolField(TEXT("allow_non_sample"), bAllowNonSample);
     const FString GraphId = GetStringParam(Params, TEXT("graph_id"));
     if (!GraphId.IsEmpty())
     {

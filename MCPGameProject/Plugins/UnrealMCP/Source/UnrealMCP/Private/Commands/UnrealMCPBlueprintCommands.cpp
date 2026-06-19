@@ -1587,6 +1587,13 @@ TSharedPtr<FJsonObject> FUnrealMCPBlueprintCommands::HandleSetSkeletalMeshCompon
         ResultObj->SetBoolField(TEXT("saved"), CompileResult.IsValid() && CompileResult->GetBoolField(TEXT("saved")));
         ResultObj->SetBoolField(TEXT("validation_pass"), CompileResult.IsValid() && CompileResult->GetBoolField(TEXT("validation_pass")));
     }
+    else if (bSave)
+    {
+        const bool bSaved = UEditorAssetLibrary::SaveLoadedAsset(Blueprint, false);
+        ResultObj->SetBoolField(TEXT("saved"), bSaved);
+        ResultObj->SetBoolField(TEXT("validation_pass"), false);
+        ResultObj->SetStringField(TEXT("validation_note"), TEXT("Save was requested without compile; Blueprint was not compile-validated."));
+    }
 
     ResultObj->SetBoolField(TEXT("dirty_after"), Blueprint->GetOutermost() ? Blueprint->GetOutermost()->IsDirty() : false);
     return ResultObj;

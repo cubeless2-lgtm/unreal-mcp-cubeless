@@ -56,6 +56,7 @@ private:
     TSharedPtr<FJsonObject> HandleSampleAnimNodePrePostRuntimePose(const TSharedPtr<FJsonObject>& Params);
     TSharedPtr<FJsonObject> HandleSampleSkeletalBonesInSIE(const TSharedPtr<FJsonObject>& Params);
     TSharedPtr<FJsonObject> HandleSampleBlendSpaceRuntimePoseGrid(const TSharedPtr<FJsonObject>& Params);
+    TSharedPtr<FJsonObject> HandleEnsureBlendSpaceSampleVariant(const TSharedPtr<FJsonObject>& Params);
     TSharedPtr<FJsonObject> HandleInspectAnimInstanceRuntimeState(const TSharedPtr<FJsonObject>& Params);
     TSharedPtr<FJsonObject> HandleSetAnimInstanceRuntimePropertyForProbe(const TSharedPtr<FJsonObject>& Params);
     TSharedPtr<FJsonObject> HandleSampleAnimStateMachineRuntimeResponse(const TSharedPtr<FJsonObject>& Params);

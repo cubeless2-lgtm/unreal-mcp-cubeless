@@ -23,6 +23,8 @@ Ensure an Animation Blueprint `AnimGraph` passes the incoming input pose through
 
 The command creates or reuses an `AnimGraphNode_LinkedInputPose` node and connects its `Pose` output to the root node's `Result` input. If the root result pin is already linked to another node, the command fails unless `replace_existing` is `true`.
 
+By default the command refuses to modify Animation Blueprints outside `/Game/_MCP_Sample/`. Pass `allow_non_sample=true` only for deliberate non-sample edits.
+
 **Parameters:**
 - `blueprint_name` (string) - Anim Blueprint name or path
 - `graph_name` (string, optional) - Defaults to `AnimGraph`
@@ -30,6 +32,7 @@ The command creates or reuses an `AnimGraphNode_LinkedInputPose` node and connec
 - `graph_type` (string, optional) - Defaults to `function`, because Unreal reports AnimGraph through the Blueprint function graph list
 - `replace_existing` (boolean, optional) - Replace an existing root pose link
 - `input_node_position` (array, optional) - `[X, Y]` editor position for a newly created input pose node
+- `allow_non_sample` (boolean, optional) - Allow editing non-sample AnimBPs
 
 **Example:**
 ```json
@@ -54,6 +57,8 @@ The command creates or reuses this chain:
 
 The Modify Bone node is configured to ignore translation and scale, use additive rotation in bone space, and write the requested rotation both to the runtime node settings and the exposed `Rotation` input pin default.
 
+By default the command refuses to modify Animation Blueprints outside `/Game/_MCP_Sample/`. Pass `allow_non_sample=true` only for deliberate non-sample edits.
+
 **Parameters:**
 - `blueprint_name` (string) - Anim Blueprint name or path
 - `graph_name` (string, optional) - Defaults to `AnimGraph`
@@ -62,6 +67,7 @@ The Modify Bone node is configured to ignore translation and scale, use additive
 - `bone_name` (string, optional) - Target skeleton bone; defaults to `head`
 - `rotation` (array, optional) - `[Pitch, Yaw, Roll]` additive rotation in degrees; defaults to `[0, 0, 6]`
 - `replace_existing` (boolean, optional) - Replace existing pose links needed to install the demo chain
+- `allow_non_sample` (boolean, optional) - Allow editing non-sample AnimBPs
 
 **Example:**
 ```json
