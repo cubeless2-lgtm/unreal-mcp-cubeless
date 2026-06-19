@@ -4,8 +4,25 @@ import pathlib
 import unreal
 
 
+SCRIPT_DIR = pathlib.Path(
+    globals().get(
+        "__file__",
+        pathlib.Path.cwd() / "Docs" / "Analysis" / "ElectricDreams" / "export_cubeless_pcg_ecosystem_field_topdown_qa.py",
+    )
+).resolve().parent
+
+PROJECT_ROOT = pathlib.Path(
+    globals().get(
+        "PROJECT_ROOT",
+        __import__("os").environ.get(
+            "CUBELESS_PROJECT_ROOT",
+            SCRIPT_DIR.parents[2].parent / "CubelessStylized",
+        ),
+    )
+).resolve()
+
 TARGET_LEVEL = "/Game/Cubeless/Map/LVL_Cubeless_PCG_Ecosystem_Field"
-OUTPUT_DIR = pathlib.Path(r"D:\Git\CubelessStylized\Saved\MCP_Screenshots")
+OUTPUT_DIR = PROJECT_ROOT / "Saved" / "MCP_Screenshots"
 OUTPUT_JSON = OUTPUT_DIR / "pcg_field_broad_patch_topdown.json"
 OUTPUT_SVG = OUTPUT_DIR / "pcg_field_broad_patch_topdown.svg"
 

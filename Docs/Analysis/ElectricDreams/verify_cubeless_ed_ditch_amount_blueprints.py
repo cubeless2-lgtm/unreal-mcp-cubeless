@@ -4,7 +4,14 @@ from collections import defaultdict
 import unreal
 
 
-BUILDER_SCRIPT = r"D:\Git\unreal-mcp-cubeless\Docs\Analysis\ElectricDreams\build_cubeless_ed_ditch_amount_blueprints.py"
+SCRIPT_DIR = pathlib.Path(
+    globals().get(
+        "__file__",
+        pathlib.Path.cwd() / "Docs" / "Analysis" / "ElectricDreams" / "verify_cubeless_ed_ditch_amount_blueprints.py",
+    )
+).resolve().parent
+
+BUILDER_SCRIPT = str(SCRIPT_DIR / "build_cubeless_ed_ditch_amount_blueprints.py")
 VERIFY_MARKER = "MCP_CUBELESS_ED_DITCH_AMOUNT_BLUEPRINTS_VERIFY_BEGIN"
 
 

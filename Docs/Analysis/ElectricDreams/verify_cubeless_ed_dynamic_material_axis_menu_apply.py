@@ -8,13 +8,23 @@ import unreal
 SCRIPT_DIR = pathlib.Path(
     globals().get(
         "__file__",
-        r"D:\Git\unreal-mcp-cubeless\Docs\Analysis\ElectricDreams\verify_cubeless_ed_dynamic_material_axis_menu_apply.py",
+        pathlib.Path.cwd() / "Docs" / "Analysis" / "ElectricDreams" / "verify_cubeless_ed_dynamic_material_axis_menu_apply.py",
     )
 ).parent
 BUILDER_SCRIPT = SCRIPT_DIR / "build_cubeless_ed_dynamic_material_axis_actor_property_selector_compat.py"
 AXIS_VERIFY_SCRIPT = SCRIPT_DIR / "verify_cubeless_ed_dynamic_material_axis_by_point.py"
 
-PROJECT_PLUGIN_PYTHON = r"D:\Git\CubelessStylized\Plugins\CustomTools\Content\Python"
+PROJECT_ROOT = pathlib.Path(
+    globals().get(
+        "PROJECT_ROOT",
+        __import__("os").environ.get(
+            "CUBELESS_PROJECT_ROOT",
+            SCRIPT_DIR.parents[2].parent / "CubelessStylized",
+        ),
+    )
+).resolve()
+
+PROJECT_PLUGIN_PYTHON = (PROJECT_ROOT / "Plugins" / "CustomTools" / "Content" / "Python").as_posix()
 VERIFY_MARKER = "MCP_CUBELESS_ED_DYNAMIC_MATERIAL_AXIS_MENU_APPLY_VERIFY_BEGIN"
 ACTOR_LABEL = "MCP_Cubeless_ED_DynamicMaterialAxis_MenuApply_GroundFoliage_CoolLeaf_Validation"
 

@@ -9,7 +9,7 @@ import unreal
 SCRIPT_DIR = pathlib.Path(
     globals().get(
         "__file__",
-        r"D:\Git\unreal-mcp-cubeless\Docs\Analysis\ElectricDreams\audit_cubeless_pcg_production_promotion_targets.py",
+        pathlib.Path.cwd() / "Docs" / "Analysis" / "ElectricDreams" / "audit_cubeless_pcg_production_promotion_targets.py",
     )
 ).parent
 

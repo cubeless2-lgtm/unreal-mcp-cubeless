@@ -6,7 +6,7 @@ import unreal
 SCRIPT_DIR = pathlib.Path(
     globals().get(
         "__file__",
-        r"D:\Git\unreal-mcp-cubeless\Docs\Analysis\ElectricDreams\build_cubeless_ed_designer_combo_blueprints.py",
+        pathlib.Path.cwd() / "Docs" / "Analysis" / "ElectricDreams" / "build_cubeless_ed_designer_combo_blueprints.py",
     )
 ).parent
 COMBO_BUILDER_SCRIPT = SCRIPT_DIR / "build_cubeless_ed_designer_combo_presets.py"

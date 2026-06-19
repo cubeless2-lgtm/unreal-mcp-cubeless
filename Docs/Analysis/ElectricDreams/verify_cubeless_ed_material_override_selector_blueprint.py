@@ -8,13 +8,23 @@ import unreal
 SCRIPT_DIR = pathlib.Path(
     globals().get(
         "__file__",
-        r"D:\Git\unreal-mcp-cubeless\Docs\Analysis\ElectricDreams\verify_cubeless_ed_material_override_selector_blueprint.py",
+        pathlib.Path.cwd() / "Docs" / "Analysis" / "ElectricDreams" / "verify_cubeless_ed_material_override_selector_blueprint.py",
     )
 ).parent
 BUILDER_SCRIPT = SCRIPT_DIR / "build_cubeless_ed_material_override_presets.py"
 PRESET_VERIFY_SCRIPT = SCRIPT_DIR / "verify_cubeless_ed_material_override_presets.py"
 
-PROJECT_PLUGIN_PYTHON = r"D:\Git\CubelessStylized\Plugins\CustomTools\Content\Python"
+PROJECT_ROOT = pathlib.Path(
+    globals().get(
+        "PROJECT_ROOT",
+        __import__("os").environ.get(
+            "CUBELESS_PROJECT_ROOT",
+            SCRIPT_DIR.parents[2].parent / "CubelessStylized",
+        ),
+    )
+).resolve()
+
+PROJECT_PLUGIN_PYTHON = (PROJECT_ROOT / "Plugins" / "CustomTools" / "Content" / "Python").as_posix()
 BLUEPRINT_PATH = (
     "/Game/Cubeless/PCG/ElectricDreamsLearning/Blueprints/Authoring/"
     "BP_Cubeless_ED_PCGMaterialOverrideSelector.BP_Cubeless_ED_PCGMaterialOverrideSelector"

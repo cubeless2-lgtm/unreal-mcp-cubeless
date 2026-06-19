@@ -1,8 +1,16 @@
+import pathlib
 from collections import Counter
 
 
-BUILDER_SCRIPT = r"D:\Git\unreal-mcp-cubeless\Docs\Analysis\ElectricDreams\build_spline_assembly_with_post_copy_offset.py"
-VERIFY_SCRIPT = r"D:\Git\unreal-mcp-cubeless\Docs\Analysis\ElectricDreams\verify_spline_assembly_output.py"
+SCRIPT_DIR = pathlib.Path(
+    globals().get(
+        "__file__",
+        pathlib.Path.cwd() / "Docs" / "Analysis" / "ElectricDreams" / "check_side_mask_profile_matrix.py",
+    )
+).resolve().parent
+
+BUILDER_SCRIPT = str(SCRIPT_DIR / "build_spline_assembly_with_post_copy_offset.py")
+VERIFY_SCRIPT = str(SCRIPT_DIR / "verify_spline_assembly_output.py")
 
 SIDE_MASK_PROFILES_TO_CHECK = [
     "all_after_copy",

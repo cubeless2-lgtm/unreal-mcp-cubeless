@@ -35,17 +35,27 @@ def workspace_parent() -> Path:
     return mcp_repo_root().parent
 
 
-def cubeless_project_root() -> Path:
-    for name in ("CUBELESS_PROJECT_ROOT", "CUBELESS_STYLIZED_ROOT", "UNREAL_PROJECT_ROOT"):
+def sibling_or_env_root(env_names: tuple[str, ...], sibling_name: str) -> Path:
+    for name in env_names:
         value = os.environ.get(name)
         if value:
             return Path(value).expanduser().resolve()
+    return (workspace_parent() / sibling_name).resolve()
 
+
+def cubeless_ops_root() -> Path:
+    return sibling_or_env_root(("CUBELESS_OPS_ROOT",), "CubelessOps")
+
+
+def cubeless_project_root() -> Path:
     project = os.environ.get("CUBELESS_UPROJECT")
     if project:
         return Path(project).expanduser().resolve().parent
 
-    return (workspace_parent() / "CubelessStylized").resolve()
+    return sibling_or_env_root(
+        ("CUBELESS_PROJECT_ROOT", "CUBELESS_STYLIZED_ROOT", "UNREAL_PROJECT_ROOT"),
+        "CubelessStylized",
+    )
 
 
 def wrong_workspace_project_root() -> Path:

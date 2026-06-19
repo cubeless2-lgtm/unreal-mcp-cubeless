@@ -4,7 +4,7 @@ import unreal
 
 
 SCRIPT_DIR = pathlib.Path(
-    globals().get("__file__", r"D:\Git\unreal-mcp-cubeless\Docs\Analysis\ElectricDreams\build_cubeless_ditch_hierarchy_prototype.py")
+    globals().get("__file__", pathlib.Path.cwd() / "Docs" / "Analysis" / "ElectricDreams" / "build_cubeless_ditch_hierarchy_prototype.py")
 ).parent
 BASE_BUILDER_SCRIPT = SCRIPT_DIR / "build_spline_assembly_with_post_copy_offset.py"
 

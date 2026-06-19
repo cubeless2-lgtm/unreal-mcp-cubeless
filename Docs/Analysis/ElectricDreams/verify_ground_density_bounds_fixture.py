@@ -3,7 +3,14 @@ import pathlib
 import unreal
 
 
-BUILDER_SCRIPT = r"D:\Git\unreal-mcp-cubeless\Docs\Analysis\ElectricDreams\build_ground_density_bounds_fixture.py"
+SCRIPT_DIR = pathlib.Path(
+    globals().get(
+        "__file__",
+        pathlib.Path.cwd() / "Docs" / "Analysis" / "ElectricDreams" / "verify_ground_density_bounds_fixture.py",
+    )
+).resolve().parent
+
+BUILDER_SCRIPT = str(SCRIPT_DIR / "build_ground_density_bounds_fixture.py")
 VERIFY_MARKER = "MCP_PCG_DENSITY_BOUNDS_FIXTURE_VERIFY_BEGIN"
 
 

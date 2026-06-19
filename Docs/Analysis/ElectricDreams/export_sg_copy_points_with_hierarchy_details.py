@@ -1,3 +1,4 @@
+import pathlib
 import json
 import os
 import traceback
@@ -5,8 +6,15 @@ import traceback
 import unreal
 
 
+SCRIPT_DIR = pathlib.Path(
+    globals().get(
+        "__file__",
+        pathlib.Path.cwd() / "Docs" / "Analysis" / "ElectricDreams" / "export_sg_copy_points_with_hierarchy_details.py",
+    )
+).resolve().parent
+
 GRAPH_PATH = "/Game/PCG/Assets/PCGCustomNodes/SG_CopyPointsWithHierarchy.SG_CopyPointsWithHierarchy"
-OUT_PATH = r"D:\Git\unreal-mcp-cubeless\Docs\Analysis\ElectricDreams\sg_copy_points_with_hierarchy_details.json"
+OUT_PATH = str(SCRIPT_DIR / "sg_copy_points_with_hierarchy_details.json")
 
 
 def safe_str(value, limit=500):

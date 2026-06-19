@@ -7,8 +7,25 @@ import sys
 import unreal
 
 
+SCRIPT_DIR = pathlib.Path(
+    globals().get(
+        "__file__",
+        pathlib.Path.cwd() / "Docs" / "Analysis" / "ElectricDreams" / "verify_save_cubeless_pcg_ecosystem_field_layout_refine.py",
+    )
+).resolve().parent
+
+PROJECT_ROOT = pathlib.Path(
+    globals().get(
+        "PROJECT_ROOT",
+        __import__("os").environ.get(
+            "CUBELESS_PROJECT_ROOT",
+            SCRIPT_DIR.parents[2].parent / "CubelessStylized",
+        ),
+    )
+).resolve()
+
 TARGET_LEVEL = "/Game/Cubeless/Map/LVL_Cubeless_PCG_Ecosystem_Field"
-PROJECT_PLUGIN_PYTHON = r"D:\Git\CubelessStylized\Plugins\CustomTools\Content\Python"
+PROJECT_PLUGIN_PYTHON = (PROJECT_ROOT / "Plugins" / "CustomTools" / "Content" / "Python").as_posix()
 RUNTIME_BLUEPRINT_NAME = "BP_Cubeless_PCG_EcosystemRuntime"
 RUNTIME_BLUEPRINT_CLASS = (
     "/Game/Cubeless/PCG/Runtime/Blueprints/"
@@ -312,7 +329,7 @@ def validate_actor_contact(actor):
 
 
 def scan_latest_log(marker):
-    project_log = pathlib.Path(r"D:\Git\CubelessStylized\Saved\Logs\StylizedCubeless.log")
+    project_log = PROJECT_ROOT / "Saved" / "Logs" / "StylizedCubeless.log"
     if not project_log.exists():
         return str(project_log), False, ["missing_log"]
     lines = project_log.read_text(encoding="utf-8", errors="ignore").splitlines()

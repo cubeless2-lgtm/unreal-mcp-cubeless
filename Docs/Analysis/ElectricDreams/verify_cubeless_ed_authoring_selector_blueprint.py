@@ -7,7 +7,7 @@ import unreal
 SCRIPT_DIR = pathlib.Path(
     globals().get(
         "__file__",
-        r"D:\Git\unreal-mcp-cubeless\Docs\Analysis\ElectricDreams\verify_cubeless_ed_authoring_selector_blueprint.py",
+        pathlib.Path.cwd() / "Docs" / "Analysis" / "ElectricDreams" / "verify_cubeless_ed_authoring_selector_blueprint.py",
     )
 ).parent
 APPLY_SCRIPT = SCRIPT_DIR / "apply_cubeless_ed_authoring_selector.py"

@@ -5,11 +5,17 @@ import pathlib
 SCRIPT_DIR = pathlib.Path(
     globals().get(
         "__file__",
-        r"D:\Git\unreal-mcp-cubeless\Docs\Analysis\ElectricDreams\audit_cubeless_pcg_level_targets.py",
+        pathlib.Path.cwd() / "Docs" / "Analysis" / "ElectricDreams" / "audit_cubeless_pcg_level_targets.py",
     )
 ).parent
 PROJECT_ROOT = pathlib.Path(
-    globals().get("PROJECT_ROOT", r"D:\Git\CubelessStylized")
+    globals().get(
+        "PROJECT_ROOT",
+        __import__("os").environ.get(
+            "CUBELESS_PROJECT_ROOT",
+            SCRIPT_DIR.parents[2].parent / "CubelessStylized",
+        ),
+    )
 )
 CONTENT_ROOT = PROJECT_ROOT / "Content"
 

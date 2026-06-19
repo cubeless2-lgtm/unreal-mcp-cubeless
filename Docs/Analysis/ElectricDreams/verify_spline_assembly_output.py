@@ -4,7 +4,14 @@ from collections import Counter, defaultdict
 import unreal
 
 
-BUILDER_SCRIPT = r"D:\Git\unreal-mcp-cubeless\Docs\Analysis\ElectricDreams\build_spline_assembly_with_post_copy_offset.py"
+SCRIPT_DIR = pathlib.Path(
+    globals().get(
+        "__file__",
+        pathlib.Path.cwd() / "Docs" / "Analysis" / "ElectricDreams" / "verify_spline_assembly_output.py",
+    )
+).resolve().parent
+
+BUILDER_SCRIPT = str(SCRIPT_DIR / "build_spline_assembly_with_post_copy_offset.py")
 VERIFY_MARKER = "MCP_PCG_SPLINE_ASSEMBLY_VERIFY_BEGIN"
 BUILDER_CONFIG_OVERRIDE = None
 

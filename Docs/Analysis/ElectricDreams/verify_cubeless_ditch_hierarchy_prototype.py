@@ -2,7 +2,7 @@ import pathlib
 
 
 SCRIPT_DIR = pathlib.Path(
-    globals().get("__file__", r"D:\Git\unreal-mcp-cubeless\Docs\Analysis\ElectricDreams\verify_cubeless_ditch_hierarchy_prototype.py")
+    globals().get("__file__", pathlib.Path.cwd() / "Docs" / "Analysis" / "ElectricDreams" / "verify_cubeless_ditch_hierarchy_prototype.py")
 ).parent
 BASE_VERIFIER_SCRIPT = SCRIPT_DIR / "verify_spline_assembly_output.py"
 BUILDER_SCRIPT = SCRIPT_DIR / "build_cubeless_ditch_hierarchy_prototype.py"

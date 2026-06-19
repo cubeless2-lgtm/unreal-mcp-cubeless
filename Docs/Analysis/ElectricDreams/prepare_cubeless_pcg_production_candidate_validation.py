@@ -4,7 +4,7 @@ import pathlib
 SCRIPT_DIR = pathlib.Path(
     globals().get(
         "__file__",
-        r"D:\Git\unreal-mcp-cubeless\Docs\Analysis\ElectricDreams\prepare_cubeless_pcg_production_candidate_validation.py",
+        pathlib.Path.cwd() / "Docs" / "Analysis" / "ElectricDreams" / "prepare_cubeless_pcg_production_candidate_validation.py",
     )
 ).parent
 VERIFY_SCRIPT = SCRIPT_DIR / "verify_cubeless_pcg_production_candidate_blueprint.py"

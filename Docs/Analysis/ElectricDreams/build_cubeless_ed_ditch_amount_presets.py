@@ -4,7 +4,7 @@ import unreal
 
 
 SCRIPT_DIR = pathlib.Path(
-    globals().get("__file__", r"D:\Git\unreal-mcp-cubeless\Docs\Analysis\ElectricDreams\build_cubeless_ed_ditch_amount_presets.py")
+    globals().get("__file__", pathlib.Path.cwd() / "Docs" / "Analysis" / "ElectricDreams" / "build_cubeless_ed_ditch_amount_presets.py")
 ).parent
 DITCH_BUILDER_SCRIPT = SCRIPT_DIR / "build_cubeless_ditch_hierarchy_prototype.py"
 

@@ -5,10 +5,14 @@ from collections import Counter, defaultdict
 import unreal
 
 
-OUTPUT_JSON = pathlib.Path(
-    r"D:\Git\unreal-mcp-cubeless\Docs\Analysis\ElectricDreams"
-    r"\electric_dreams_pcg_extracted_settings.json"
-)
+SCRIPT_DIR = pathlib.Path(
+    globals().get(
+        "__file__",
+        pathlib.Path.cwd() / "Docs" / "Analysis" / "ElectricDreams" / "extract_electric_dreams_pcg_settings.py",
+    )
+).resolve().parent
+
+OUTPUT_JSON = SCRIPT_DIR / "electric_dreams_pcg_extracted_settings.json"
 
 GRAPH_PATHS = [
     "/Game/PCG/Graphs/Ditch/PCGDemo_Ditch.PCGDemo_Ditch",

@@ -4,7 +4,14 @@ from collections import defaultdict
 import unreal
 
 
-BUILDER_SCRIPT = r"D:\Git\unreal-mcp-cubeless\Docs\Analysis\ElectricDreams\build_cubeless_ed_designer_control_layer.py"
+SCRIPT_DIR = pathlib.Path(
+    globals().get(
+        "__file__",
+        pathlib.Path.cwd() / "Docs" / "Analysis" / "ElectricDreams" / "verify_cubeless_ed_designer_control_layer.py",
+    )
+).resolve().parent
+
+BUILDER_SCRIPT = str(SCRIPT_DIR / "build_cubeless_ed_designer_control_layer.py")
 VERIFY_MARKER = "MCP_CUBELESS_ED_DESIGNER_CONTROL_LAYER_VERIFY_BEGIN"
 
 

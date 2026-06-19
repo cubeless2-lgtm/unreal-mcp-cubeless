@@ -1,7 +1,15 @@
+import pathlib
 import unreal
 
 
-GROUND_BUILDER_SCRIPT = r"D:\Git\unreal-mcp-cubeless\Docs\Analysis\ElectricDreams\build_cubeless_ground_controls_prototype.py"
+SCRIPT_DIR = pathlib.Path(
+    globals().get(
+        "__file__",
+        pathlib.Path.cwd() / "Docs" / "Analysis" / "ElectricDreams" / "build_cubeless_ed_ground_amount_presets.py",
+    )
+).resolve().parent
+
+GROUND_BUILDER_SCRIPT = str(SCRIPT_DIR / "build_cubeless_ground_controls_prototype.py")
 PACKAGE_PATH = "/Game/Cubeless/PCG/ElectricDreamsLearning/AmountPresets"
 CORE_ASSET_NAME = "PCG_Cubeless_ED_GroundControlsCore"
 CORE_GRAPH_PATH = f"{PACKAGE_PATH}/{CORE_ASSET_NAME}.{CORE_ASSET_NAME}"

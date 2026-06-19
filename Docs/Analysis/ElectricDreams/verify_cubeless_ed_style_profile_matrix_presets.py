@@ -4,10 +4,14 @@ from collections import defaultdict
 import unreal
 
 
-BUILDER_SCRIPT = (
-    r"D:\Git\unreal-mcp-cubeless\Docs\Analysis\ElectricDreams"
-    r"\build_cubeless_ed_style_profile_matrix_presets.py"
-)
+SCRIPT_DIR = pathlib.Path(
+    globals().get(
+        "__file__",
+        pathlib.Path.cwd() / "Docs" / "Analysis" / "ElectricDreams" / "verify_cubeless_ed_style_profile_matrix_presets.py",
+    )
+).resolve().parent
+
+BUILDER_SCRIPT = str(SCRIPT_DIR / "build_cubeless_ed_style_profile_matrix_presets.py")
 VERIFY_MARKER = "MCP_CUBELESS_ED_STYLE_PROFILE_MATRIX_PRESETS_VERIFY_BEGIN"
 
 
