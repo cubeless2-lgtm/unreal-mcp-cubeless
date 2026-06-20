@@ -96,9 +96,11 @@ The PCG component operations are native-first where a focused C++ bridge exists.
 Editor level transitions should use `open_editor_level` instead of Python
 `load_level`/`load_map` calls. The command defaults to `dry_run=true` and
 returns target existence, current world, dirty package blockers, and whether a
-real load would be attempted. Real loads are blocked by default when dirty
-packages exist, avoiding the previous Python-frame world-reference crash path
-and avoiding silent loss of unsaved editor state.
+real load would be scheduled. Real loads are deferred to a later editor tick and
+must be confirmed by polling `get_editor_level_open_status` with the returned
+`request_id`. Real loads are blocked by default when dirty packages exist,
+avoiding the previous Python-frame world-reference crash path and avoiding
+silent loss of unsaved editor state.
 
 New temporary preview maps should use `safe_new_preview_map` instead of Python
 `new_blank_map` or `new_map_from_template` calls. The command defaults to

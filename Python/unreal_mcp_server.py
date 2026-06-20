@@ -554,6 +554,7 @@ def info():
     - `add_blueprint_variable(blueprint_name, variable_name, variable_type, default_value=None)` - Add member variables with defaults/metadata
     - `set_blueprint_variable_metadata(blueprint_name, variable_name, metadata)` - Update metadata on existing member variables
     - `set_blueprint_category_sorting(blueprint_name, category_order?, category_to_front?)` - Set Blueprint Details/My Blueprint category order
+    - `bind_pcg_generation_settings_to_blueprint(blueprint_name, component_variable="ForestPCG", function_class="/Script/YourRuntimeModule.YourPCGBlueprintLibrary")` - Wire Blueprint PCG generation variables to a PCG component in Construction Script
     - `add_blueprint_function_parameter(blueprint_name, parameter_name, parameter_type, direction="input")` - Add function input/output pins
     - `add_blueprint_local_variable(blueprint_name, variable_name, variable_type)` - Add function-scoped local variables
     - `add_blueprint_get_self_component_reference(blueprint_name, component_name)` - Add component refs

@@ -593,6 +593,76 @@ def register_blueprint_node_tools(mcp: FastMCP):
             return {"success": False, "message": error_msg}
 
     @mcp.tool()
+    def bind_pcg_generation_settings_to_blueprint(
+        ctx: Context,
+        blueprint_name: str,
+        component_variable: str = "ForestPCG",
+        generation_trigger_variable: str = "PCGGenerationTrigger",
+        regenerate_in_editor_variable: str = "PCGRegenerateInEditor",
+        generate_on_drop_variable: str = "",
+        generate_on_drop_default: bool = False,
+        graph_name: str = "UserConstructionScript",
+        graph_id: str = "",
+        graph_type: str = "function",
+        replace_existing: bool = True,
+        sync_component_template_defaults: bool = True,
+        function_class: str = "",
+        function_name: str = "ApplyPCGGenerationSettings",
+        compile: bool = False,
+        save: bool = False,
+    ) -> Dict[str, Any]:
+        """
+        Bind exposed Blueprint PCG generation variables to a PCG component in Construction Script.
+
+        Args:
+            blueprint_name: Name or asset path of the target Blueprint.
+            component_variable: PCG component variable name, usually ForestPCG.
+            generation_trigger_variable: Blueprint enum variable for GenerationTrigger.
+            regenerate_in_editor_variable: Blueprint bool variable for bRegenerateInEditor.
+            generate_on_drop_variable: Optional bool variable for on-demand drop generation.
+            generate_on_drop_default: Default used when no generate_on_drop_variable is provided.
+            graph_name: Construction Script graph name.
+            graph_id: Optional exact graph GUID selector.
+            graph_type: Target graph type, normally function.
+            replace_existing: Remove and replace previous ApplyPCGGenerationSettings nodes.
+            sync_component_template_defaults: Also sync PCG component template defaults from BP variable defaults.
+            function_class: Runtime BlueprintFunctionLibrary class used for the Apply node.
+            function_name: Blueprint callable function name used for the Apply node.
+            compile: Compile the Blueprint after graph mutation.
+            save: Save the Blueprint after graph mutation.
+
+        Returns:
+            Response containing created node IDs, graph metadata, and template sync status.
+        """
+        try:
+            params: Dict[str, Any] = {
+                "blueprint_name": blueprint_name,
+                "component_variable": component_variable,
+                "generation_trigger_variable": generation_trigger_variable,
+                "regenerate_in_editor_variable": regenerate_in_editor_variable,
+                "generate_on_drop_default": generate_on_drop_default,
+                "graph_name": graph_name,
+                "graph_id": graph_id,
+                "graph_type": graph_type,
+                "replace_existing": replace_existing,
+                "sync_component_template_defaults": sync_component_template_defaults,
+                "function_name": function_name,
+                "compile": compile,
+                "save": save,
+            }
+            if function_class:
+                params["function_class"] = function_class
+            if generate_on_drop_variable:
+                params["generate_on_drop_variable"] = generate_on_drop_variable
+
+            return send_node_command("bind_pcg_generation_settings_to_blueprint", params)
+
+        except Exception as e:
+            error_msg = f"Error binding PCG generation settings to Blueprint: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
     def add_blueprint_function_parameter(
         ctx: Context,
         blueprint_name: str,

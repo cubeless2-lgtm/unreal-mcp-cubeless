@@ -105,7 +105,7 @@ Capture the active editor viewport to PNG, optionally after jumping to an existi
 
 ### open_editor_level
 
-Safely preflight or open an editor level through the native UnrealMCP bridge. The default is `dry_run=true`, so the command reports target validity and blockers without changing the current map.
+Safely preflight or schedule opening an editor level through the native UnrealMCP bridge. The default is `dry_run=true`, so the command reports target validity and blockers without changing the current map. Real loads are deferred to a later editor tick and return a `request_id`; poll `get_editor_level_open_status` to confirm completion.
 
 **Parameters:**
 - `level_path` (string, required) - Long package path, object path, or `.umap` filename
@@ -113,13 +113,14 @@ Safely preflight or open an editor level through the native UnrealMCP bridge. Th
 - `allow_dirty_packages` (boolean, optional) - Allow a real transition while dirty packages exist, default `false`
 - `load_as_template` (boolean, optional) - Forwarded to `FEditorFileUtils::LoadMap`
 - `show_progress` (boolean, optional) - Forwarded to `FEditorFileUtils::LoadMap`
+- `deferred_load_delay_seconds` (number, optional) - Delay before the real load runs on a later editor tick, default `1.0`
 
 **Returns:**
 - `target_long_package_name`, `target_filename`, `target_exists`
 - `current_world_package_name`, `already_open`
 - `can_load`, `blocked_reasons`
 - `dirty_package_count_before`, `dirty_packages_before`
-- `load_attempted`, `loaded`
+- `load_scheduled`, `request_id`, `open_status`, `loaded`
 
 **Example:**
 ```json
@@ -131,6 +132,17 @@ Safely preflight or open an editor level through the native UnrealMCP bridge. Th
   }
 }
 ```
+
+### get_editor_level_open_status
+
+Poll the latest deferred `open_editor_level` request.
+
+**Parameters:**
+- `request_id` (string, optional) - Request id returned by `open_editor_level`
+
+**Returns:**
+- `pending`, `current_world_package_name_now`, `dirty_packages`
+- `last_open_status` containing the scheduled load result
 
 ### safe_new_preview_map
 

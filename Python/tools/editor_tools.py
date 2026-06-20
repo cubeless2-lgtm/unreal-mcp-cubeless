@@ -446,9 +446,10 @@ def register_editor_tools(mcp: FastMCP):
         allow_dirty_packages: bool = False,
         load_as_template: bool = False,
         show_progress: bool = True,
+        deferred_load_delay_seconds: float = 1.0,
     ) -> Dict[str, Any]:
         """
-        Safely preflight or open an editor level through the native bridge.
+        Safely preflight or schedule opening an editor level through the native bridge.
 
         Args:
             level_path: Long package path, object path, or .umap filename.
@@ -456,10 +457,11 @@ def register_editor_tools(mcp: FastMCP):
             allow_dirty_packages: If false, block real transitions when dirty packages exist.
             load_as_template: Forwarded to FEditorFileUtils::LoadMap for real loads.
             show_progress: Forwarded to FEditorFileUtils::LoadMap for real loads.
+            deferred_load_delay_seconds: Delay before the real load runs on a later editor tick.
 
         Returns:
             Dict with target path, current world, dirty package summary,
-            can_load, blocked_reasons, load_attempted, and loaded.
+            can_load, blocked_reasons, load_scheduled, request_id, and loaded.
         """
         from unreal_mcp_server import get_unreal_connection
 
@@ -477,12 +479,45 @@ def register_editor_tools(mcp: FastMCP):
                     "allow_dirty_packages": allow_dirty_packages,
                     "load_as_template": load_as_template,
                     "show_progress": show_progress,
+                    "deferred_load_delay_seconds": deferred_load_delay_seconds,
                 },
             )
             return response or {}
 
         except Exception as e:
             logger.error(f"Error opening editor level: {e}")
+            return {"success": False, "message": str(e)}
+
+    @mcp.tool()
+    def get_editor_level_open_status(
+        ctx: Context,
+        request_id: str = "",
+    ) -> Dict[str, Any]:
+        """
+        Poll the latest deferred open_editor_level request.
+
+        Args:
+            request_id: Optional request id returned by open_editor_level.
+
+        Returns:
+            Dict with pending/current-world state and last_open_status.
+        """
+        from unreal_mcp_server import get_unreal_connection
+
+        try:
+            unreal = get_unreal_connection()
+            if not unreal:
+                logger.error("Failed to connect to Unreal Engine")
+                return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+            response = unreal.send_command(
+                "get_editor_level_open_status",
+                {"request_id": request_id},
+            )
+            return response or {}
+
+        except Exception as e:
+            logger.error(f"Error polling editor level open status: {e}")
             return {"success": False, "message": str(e)}
 
     @mcp.tool()
