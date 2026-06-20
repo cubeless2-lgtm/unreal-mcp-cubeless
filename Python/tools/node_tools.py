@@ -535,6 +535,64 @@ def register_blueprint_node_tools(mcp: FastMCP):
             return {"success": False, "message": error_msg}
 
     @mcp.tool()
+    def set_blueprint_category_sorting(
+        ctx: Context,
+        blueprint_name: str,
+        category_order: Optional[List[str]] = None,
+        category_to_front: str = "",
+        append_existing: bool = True,
+        save: bool = True,
+        compile: bool = False,
+    ) -> Dict[str, Any]:
+        """
+        Set user-defined Blueprint category order for Details and My Blueprint panels.
+
+        Args:
+            blueprint_name: Name or asset path of the target Blueprint.
+            category_order: Ordered category display names to put first.
+            category_to_front: Optional single category shortcut.
+            append_existing: Preserve existing Blueprint category order after requested categories.
+            save: Save the Blueprint after changing the order.
+            compile: Compile the Blueprint inside the native command if the order changes.
+
+        Returns:
+            Response containing previous_category_order, category_order, changed, saved, and compiled.
+        """
+        from unreal_mcp_server import get_unreal_connection
+
+        try:
+            params: Dict[str, Any] = {
+                "blueprint_name": blueprint_name,
+                "append_existing": append_existing,
+                "save": save,
+                "compile": compile,
+            }
+            if category_order:
+                params["category_order"] = category_order
+            if category_to_front:
+                params["category_to_front"] = category_to_front
+
+            unreal = get_unreal_connection()
+            if not unreal:
+                logger.error("Failed to connect to Unreal Engine")
+                return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+            logger.info("Setting Blueprint category sorting for '%s'", blueprint_name)
+            response = unreal.send_command("set_blueprint_category_sorting", params)
+
+            if not response:
+                logger.error("No response from Unreal Engine")
+                return {"success": False, "message": "No response from Unreal Engine"}
+
+            logger.info(f"Blueprint category sorting response: {response}")
+            return response
+
+        except Exception as e:
+            error_msg = f"Error setting Blueprint category sorting: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
     def add_blueprint_function_parameter(
         ctx: Context,
         blueprint_name: str,

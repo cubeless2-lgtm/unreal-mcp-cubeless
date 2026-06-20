@@ -553,6 +553,7 @@ def info():
     - `delete_blueprint_node(blueprint_name, node_id, graph_name="", expected_node_class="", allow_non_exec_linked_delete=False)` - Delete one guarded Blueprint graph node
     - `add_blueprint_variable(blueprint_name, variable_name, variable_type, default_value=None)` - Add member variables with defaults/metadata
     - `set_blueprint_variable_metadata(blueprint_name, variable_name, metadata)` - Update metadata on existing member variables
+    - `set_blueprint_category_sorting(blueprint_name, category_order?, category_to_front?)` - Set Blueprint Details/My Blueprint category order
     - `add_blueprint_function_parameter(blueprint_name, parameter_name, parameter_type, direction="input")` - Add function input/output pins
     - `add_blueprint_local_variable(blueprint_name, variable_name, variable_type)` - Add function-scoped local variables
     - `add_blueprint_get_self_component_reference(blueprint_name, component_name)` - Add component refs
