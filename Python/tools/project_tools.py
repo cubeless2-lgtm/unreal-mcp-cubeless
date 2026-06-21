@@ -332,6 +332,162 @@ def register_project_tools(mcp: FastMCP):
             return {"success": False, "message": error_msg}
 
     @mcp.tool()
+    def create_volume_texture_from_2d_sheet_mcp(
+        ctx: Context,
+        source_texture_path: str,
+        target_volume_texture_path: str,
+        tile_size_x: int = 128,
+        tile_size_y: int = 128,
+        dry_run: bool = False,
+        overwrite_existing: bool = False,
+        save_asset: bool = True,
+        srgb: Optional[bool] = None,
+        compression_settings: str = "TC_VectorDisplacementmap",
+        mip_gen_settings: str = "TMGS_NoMipmaps",
+        never_stream: bool = True,
+        virtual_texture_streaming: bool = False,
+        address_mode: str = "TA_Wrap",
+    ) -> Dict[str, Any]:
+        """
+        Create or update a VolumeTexture from a 2D tiled source texture.
+
+        The Unreal-side command explicitly sets Source2D tile size before
+        rebuilding the volume, which avoids VolumeTextureFactory's ambiguous
+        auto tile inference for non-square sheets such as 2048x1024/128.
+        """
+        from unreal_mcp_server import get_unreal_connection
+
+        try:
+            unreal = get_unreal_connection()
+            if not unreal:
+                return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+            params: Dict[str, Any] = {
+                "source_texture_path": source_texture_path,
+                "target_volume_texture_path": target_volume_texture_path,
+                "tile_size_x": tile_size_x,
+                "tile_size_y": tile_size_y,
+                "dry_run": dry_run,
+                "overwrite_existing": overwrite_existing,
+                "save_asset": save_asset,
+                "compression_settings": compression_settings,
+                "mip_gen_settings": mip_gen_settings,
+                "never_stream": never_stream,
+                "virtual_texture_streaming": virtual_texture_streaming,
+                "address_mode": address_mode,
+            }
+            if srgb is not None:
+                params["srgb"] = srgb
+
+            response = unreal.send_command("create_volume_texture_from_2d_sheet_mcp", params)
+            return response or {"success": False, "message": "No response from Unreal Engine"}
+        except Exception as e:
+            error_msg = f"Error creating VolumeTexture from 2D sheet: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def create_volume_texture_from_raw_rgba16_sheet_mcp(
+        ctx: Context,
+        raw_file_path: str,
+        source_texture_path: str,
+        target_volume_texture_path: str,
+        sheet_size_x: int = 2048,
+        sheet_size_y: int = 1024,
+        tile_size_x: int = 128,
+        tile_size_y: int = 128,
+        dry_run: bool = False,
+        overwrite_existing: bool = False,
+        save_assets: bool = True,
+        srgb: bool = False,
+        source_compression_settings: str = "TC_Default",
+        volume_compression_settings: str = "TC_VectorDisplacementmap",
+        source_mip_gen_settings: str = "TMGS_FromTextureGroup",
+        volume_mip_gen_settings: str = "TMGS_NoMipmaps",
+        never_stream_volume: bool = True,
+        virtual_texture_streaming: bool = False,
+        address_mode: str = "TA_Wrap",
+    ) -> Dict[str, Any]:
+        """
+        Create or update a Texture2D and VolumeTexture from a raw RGBA16 sheet.
+
+        This bypasses Unreal's Interchange image importer and writes the
+        Texture2D editor source data directly, which is useful for large
+        procedural volume sheets generated outside Unreal.
+        """
+        from unreal_mcp_server import get_unreal_connection
+
+        try:
+            unreal = get_unreal_connection()
+            if not unreal:
+                return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+            params: Dict[str, Any] = {
+                "raw_file_path": raw_file_path,
+                "source_texture_path": source_texture_path,
+                "target_volume_texture_path": target_volume_texture_path,
+                "sheet_size_x": sheet_size_x,
+                "sheet_size_y": sheet_size_y,
+                "tile_size_x": tile_size_x,
+                "tile_size_y": tile_size_y,
+                "dry_run": dry_run,
+                "overwrite_existing": overwrite_existing,
+                "save_assets": save_assets,
+                "srgb": srgb,
+                "source_compression_settings": source_compression_settings,
+                "volume_compression_settings": volume_compression_settings,
+                "source_mip_gen_settings": source_mip_gen_settings,
+                "volume_mip_gen_settings": volume_mip_gen_settings,
+                "never_stream_volume": never_stream_volume,
+                "virtual_texture_streaming": virtual_texture_streaming,
+                "address_mode": address_mode,
+            }
+            response = unreal.send_command("create_volume_texture_from_raw_rgba16_sheet_mcp", params)
+            return response or {"success": False, "message": "No response from Unreal Engine"}
+        except Exception as e:
+            error_msg = f"Error creating VolumeTexture from raw RGBA16 sheet: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def set_material_texture_sample_sampler_type_mcp(
+        ctx: Context,
+        material_path: str,
+        texture_path: str,
+        sampler_type: str = "SAMPLERTYPE_LinearColor",
+        dry_run: bool = False,
+        save: bool = True,
+        compile: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Change sampler type on TextureSample nodes that reference a texture.
+
+        Useful after replacing or procedurally rebuilding a texture with
+        linear data, where existing sample nodes still use Color samplers.
+        """
+        from unreal_mcp_server import get_unreal_connection
+
+        try:
+            unreal = get_unreal_connection()
+            if not unreal:
+                return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+            params: Dict[str, Any] = {
+                "material_path": material_path,
+                "texture_path": texture_path,
+                "sampler_type": sampler_type,
+                "dry_run": dry_run,
+                "save": save,
+                "compile": compile,
+            }
+            response = unreal.send_command("set_material_texture_sample_sampler_type_mcp", params)
+            return response or {"success": False, "message": "No response from Unreal Engine"}
+        except Exception as e:
+            error_msg = f"Error setting material texture sample sampler type: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
     def run_content_validation_pipeline_mcp(
         ctx: Context,
         source_root: str,
