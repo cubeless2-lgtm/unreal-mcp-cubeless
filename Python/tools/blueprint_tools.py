@@ -8,6 +8,11 @@ import logging
 from typing import Dict, List, Any, Optional
 from mcp.server.fastmcp import FastMCP, Context
 
+from tools.dependency_guard import (
+    reject_mcp_dependency_reference,
+    reject_mcp_dependency_references,
+)
+
 # Get logger
 logger = logging.getLogger("UnrealMCP")
 
@@ -33,6 +38,7 @@ def register_blueprint_tools(mcp: FastMCP):
         from unreal_mcp_server import get_unreal_connection
         
         try:
+            reject_mcp_dependency_reference("parent_class", parent_class)
             unreal = get_unreal_connection()
             if not unreal:
                 logger.error("Failed to connect to Unreal Engine")
@@ -90,6 +96,8 @@ def register_blueprint_tools(mcp: FastMCP):
         from unreal_mcp_server import get_unreal_connection
         
         try:
+            reject_mcp_dependency_reference("component_type", component_type)
+            reject_mcp_dependency_references("component_properties", component_properties)
             # Ensure all parameters are properly formatted
             params = {
                 "blueprint_name": blueprint_name,
@@ -155,6 +163,7 @@ def register_blueprint_tools(mcp: FastMCP):
         from unreal_mcp_server import get_unreal_connection
 
         try:
+            reject_mcp_dependency_reference("anim_class", anim_class)
             unreal = get_unreal_connection()
             if not unreal:
                 logger.error("Failed to connect to Unreal Engine")

@@ -519,7 +519,19 @@ namespace
         FString& OutError)
     {
         OutActorClass = nullptr;
+        if (FUnrealMCPCommonUtils::IsMCPDependencyReference(InBlueprintPath))
+        {
+            OutResolvedObjectPath = InBlueprintPath;
+            OutError = FUnrealMCPCommonUtils::GetMCPDependencyReferenceError(TEXT("blueprint_name"), InBlueprintPath);
+            return false;
+        }
+
         OutResolvedObjectPath = NormalizeBlueprintActorInputPath(InBlueprintPath);
+        if (FUnrealMCPCommonUtils::IsMCPDependencyReference(OutResolvedObjectPath))
+        {
+            OutError = FUnrealMCPCommonUtils::GetMCPDependencyReferenceError(TEXT("blueprint_name"), OutResolvedObjectPath);
+            return false;
+        }
 
         TArray<FString> TriedPaths;
         TriedPaths.Add(OutResolvedObjectPath);

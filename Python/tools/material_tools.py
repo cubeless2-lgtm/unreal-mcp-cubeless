@@ -11,6 +11,11 @@ from typing import Any, Dict, List
 
 from mcp.server.fastmcp import Context, FastMCP
 
+from tools.dependency_guard import (
+    reject_mcp_dependency_reference,
+    reject_mcp_dependency_references,
+)
+
 logger = logging.getLogger("UnrealMCP")
 
 
@@ -75,6 +80,7 @@ def register_material_tools(mcp: FastMCP):
             include_pins: Include input/output metadata and links
         """
         try:
+            reject_mcp_dependency_references("replacements", replacements)
             params = {
                 "material_path": material_path,
                 "graph_type": graph_type,
@@ -293,6 +299,9 @@ def register_material_tools(mcp: FastMCP):
             properties: Optional property map to set after creation, e.g. {"Texture": "/Game/T.T"}
         """
         try:
+            reject_mcp_dependency_reference("expression_class", expression_class)
+            reject_mcp_dependency_reference("selected_asset", selected_asset)
+            reject_mcp_dependency_references("properties", properties or {})
             if node_position is None:
                 node_position = [0, 0]
             if properties is None:
@@ -384,6 +393,7 @@ def register_material_tools(mcp: FastMCP):
             graph_type: auto, material, or function
         """
         try:
+            reject_mcp_dependency_references("value", value)
             params = {
                 "material_path": material_path,
                 "node_id": node_id,

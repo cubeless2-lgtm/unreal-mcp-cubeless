@@ -579,6 +579,7 @@ def info():
     - `pcg_actor_smoke_test(graph_path, dry_run=True)` - Dry-run or run a guarded current-level PCG component smoke test without map switching
     - `resolve_pcg_graph(graph_path)` - Resolve a PCG graph by short name, package path, or object path
     - `list_pcg_graph_nodes(graph_path)` - List native PCG graph nodes and pins
+    - `set_pcg_attribute_selector(graph_path, node_id, selector_property_name, attribute_name, ...)` - Safely set PCG attribute/property selector structs through the native bridge, without Unreal Python selector mutation
     - `add_pcg_node(graph_path, settings_class)` / `connect_pcg_nodes(...)` / `set_pcg_node_setting(...)` / `save_pcg_graph(graph_path)` - Low-level PCG graph editing helpers
 
     ## Runtime Tool Management

@@ -16,6 +16,11 @@ from typing import Any, Dict, List
 
 from mcp.server.fastmcp import Context, FastMCP
 
+from tools.dependency_guard import (
+    reject_mcp_dependency_reference,
+    reject_mcp_dependency_references,
+)
+
 logger = logging.getLogger("UnrealMCP")
 
 
@@ -709,8 +714,10 @@ RESULT = {{"success": True, "count": len(saved), "saved": saved, "errors": error
         if not isinstance(graph_spec, dict):
             return {"success": False, "message": "graph_spec must be an object"}
 
-        spec_json = json.dumps(graph_spec, ensure_ascii=False)
-        code = """
+        try:
+            reject_mcp_dependency_references("graph_spec", graph_spec)
+            spec_json = json.dumps(graph_spec, ensure_ascii=False)
+            code = """
 import json
 import math
 import unreal
@@ -1177,12 +1184,16 @@ else:
         "forbidden_dependency_prefixes": forbidden_prefixes,
         "forbidden_dependency_hits": forbidden_hits,
     }
-""".replace("__SPEC_JSON__", repr(spec_json))
-        code = code.replace("__OVERWRITE_EXISTING__", repr(bool(overwrite_existing)))
-        code = code.replace("__ALLOW_OVERWRITE_NON_TEMP__", repr(bool(allow_overwrite_non_temp)))
-        code = code.replace("__SAVE_GRAPH__", repr(bool(save)))
-        code = code.replace("__DRY_RUN__", repr(bool(dry_run)))
-        return _run_unreal_python_json(code)
+            """.replace("__SPEC_JSON__", repr(spec_json))
+            code = code.replace("__OVERWRITE_EXISTING__", repr(bool(overwrite_existing)))
+            code = code.replace("__ALLOW_OVERWRITE_NON_TEMP__", repr(bool(allow_overwrite_non_temp)))
+            code = code.replace("__SAVE_GRAPH__", repr(bool(save)))
+            code = code.replace("__DRY_RUN__", repr(bool(dry_run)))
+            return _run_unreal_python_json(code)
+        except Exception as e:
+            error_msg = f"Error creating PCG graph from spec: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
 
     @mcp.tool()
     def audit_pcg_graph_contract(
@@ -2063,6 +2074,8 @@ else:
             settings: Optional settings property map
         """
         try:
+            reject_mcp_dependency_reference("settings_class", settings_class)
+            reject_mcp_dependency_references("settings", settings or {})
             if node_position is None:
                 node_position = [0, 0]
             if settings is None:
@@ -2100,6 +2113,7 @@ else:
             to_pin: Target input pin label
         """
         try:
+            reject_mcp_dependency_references("value", value)
             params = {
                 "graph_path": graph_path,
                 "from_node_id": from_node_id,
@@ -2140,6 +2154,87 @@ else:
             return send_pcg_command("set_pcg_node_setting", params)
         except Exception as e:
             error_msg = f"Error setting PCG node setting: {e}"
+            logger.error(error_msg)
+            return {"success": False, "message": error_msg}
+
+    @mcp.tool()
+    def set_pcg_attribute_selector(
+        ctx: Context,
+        graph_path: str,
+        node_id: str,
+        selector_property_name: str,
+        selector_type: str = "attribute",
+        attribute_name: str = "",
+        selected_property_name: str = "",
+        domain_name: str = "",
+        point_property: str = "",
+        extra_property: str = "",
+        extra_names: List[str] | None = None,
+        reset_extra_names: bool = True,
+        save: bool = True,
+        dry_run: bool = False,
+    ) -> Dict[str, Any]:
+        """
+        Set an FPCGAttributePropertySelector-derived property through the native bridge.
+
+        This intentionally has no Unreal Python fallback because Python mutation
+        of PCG selector structs can trip PythonScriptPlugin wrapper ensures and
+        later crash the editor on shutdown.
+
+        Args:
+            graph_path: PCG graph name or path
+            node_id: Node id/name/path/title
+            selector_property_name: Settings selector property, e.g. WeightAttribute or weight_attribute
+            selector_type: attribute, property, point_property, or extra_property
+            attribute_name: Attribute name when selector_type is attribute
+            selected_property_name: UE property name when selector_type is property
+            domain_name: Optional metadata domain name
+            point_property: EPCGPointProperties value when selector_type is point_property
+            extra_property: EPCGExtraProperties value when selector_type is extra_property
+            extra_names: Optional accessor names
+            reset_extra_names: Reset selector extra names when changing the main selector
+            save: Save the graph after changing it
+            dry_run: Preview the requested selector without mutating the asset
+        """
+        try:
+            params: Dict[str, Any] = {
+                "graph_path": graph_path,
+                "node_id": node_id,
+                "selector_property_name": selector_property_name,
+                "selector_type": selector_type,
+                "reset_extra_names": reset_extra_names,
+                "save": save,
+                "dry_run": dry_run,
+            }
+            if attribute_name or selector_type == "attribute":
+                params["attribute_name"] = attribute_name
+            if selected_property_name or selector_type == "property":
+                params["selected_property_name"] = selected_property_name
+            if domain_name:
+                params["domain_name"] = domain_name
+            if point_property or selector_type == "point_property":
+                params["point_property"] = point_property
+            if extra_property or selector_type == "extra_property":
+                params["extra_property"] = extra_property
+            if extra_names is not None:
+                params["extra_names"] = list(extra_names)
+
+            command_name = "set_pcg_attribute_selector"
+            response = send_pcg_command(command_name, params)
+            if _bridge_response_unknown_command(response, command_name):
+                return {
+                    "success": False,
+                    "message": (
+                        "The running UnrealMCP editor bridge does not expose "
+                        "set_pcg_attribute_selector yet. Update/rebuild the UnrealMCP "
+                        "plugin and restart the editor; this tool will not fall back "
+                        "to unsafe Unreal Python selector mutation."
+                    ),
+                    "native_response": response,
+                }
+            return response
+        except Exception as e:
+            error_msg = f"Error setting PCG attribute selector: {e}"
             logger.error(error_msg)
             return {"success": False, "message": error_msg}
 

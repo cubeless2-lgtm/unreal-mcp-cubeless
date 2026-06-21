@@ -4,6 +4,8 @@ These tools are local TA extensions on top of `chongdashu/unreal-mcp`.
 
 They prefer native UnrealMCP bridge commands for fast editor operations, then fall back to the generic `execute_python` bridge command when a running editor has not loaded the newer native command yet.
 
+Exception: `set_pcg_attribute_selector` is native-only. It deliberately does not fall back to Unreal Python because mutating `FPCGAttributePropertySelector` structs through Python can trigger PythonScriptPlugin wrapper ensures and later editor shutdown crashes.
+
 ## Tools
 
 - `execute_unreal_python(code, mode="ExecuteStatement")`
@@ -18,6 +20,9 @@ They prefer native UnrealMCP bridge commands for fast editor operations, then fa
   - Native-first SplineComponent point sync that avoids transient `TRASH_` components and reports final point count, length, and max point delta.
 - `set_pcg_debug_enabled(enabled=false, actor_name="", selected_only=false)`
   - Best-effort toggles common PCG component debug properties.
+- `set_pcg_attribute_selector(graph_path, node_id, selector_property_name, selector_type="attribute", attribute_name="", selected_property_name="", domain_name="", point_property="", extra_property="", extra_names=None, reset_extra_names=true, save=true, dry_run=false)`
+  - Native-only setter for PCG selector struct properties such as `WeightAttribute` / `weight_attribute`, `MatchAttribute`, `InputAttribute`, and `SetTarget`.
+  - Use this instead of `execute_python` plus `PCGAttributePropertySelectorBlueprintHelpers.set_*`.
 - `resave_pcg_assets(root_path="/Game")`
   - Loads and saves PCG-related assets under a content path.
 

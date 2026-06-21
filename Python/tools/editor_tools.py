@@ -8,6 +8,8 @@ import logging
 from typing import Dict, List, Any, Optional
 from mcp.server.fastmcp import FastMCP, Context
 
+from tools.dependency_guard import reject_mcp_dependency_reference
+
 # Get logger
 logger = logging.getLogger("UnrealMCP")
 
@@ -20,6 +22,7 @@ def register_editor_tools(mcp: FastMCP):
         from unreal_mcp_server import get_unreal_connection
         
         try:
+            reject_mcp_dependency_reference("blueprint_name", blueprint_name)
             unreal = get_unreal_connection()
             if not unreal:
                 logger.warning("Failed to connect to Unreal Engine")

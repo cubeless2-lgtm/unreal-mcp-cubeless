@@ -8,6 +8,11 @@ import logging
 from typing import Dict, List, Any, Optional
 from mcp.server.fastmcp import FastMCP, Context
 
+from tools.dependency_guard import (
+    reject_mcp_dependency_reference,
+    reject_mcp_dependency_references,
+)
+
 # Get logger
 logger = logging.getLogger("UnrealMCP")
 
@@ -262,6 +267,8 @@ def register_blueprint_node_tools(mcp: FastMCP):
             Response containing the created node metadata and pins
         """
         try:
+            reject_mcp_dependency_reference("function_class", function_class)
+            reject_mcp_dependency_references("param_defaults", param_defaults or {})
             if param_defaults is None:
                 param_defaults = {}
             if node_position is None:
@@ -314,6 +321,8 @@ def register_blueprint_node_tools(mcp: FastMCP):
         from unreal_mcp_server import get_unreal_connection
         
         try:
+            reject_mcp_dependency_reference("type_object", type_object)
+            reject_mcp_dependency_references("default_value", default_value)
             params = {
                 "blueprint_name": blueprint_name,
                 "source_node_id": source_node_id,
@@ -635,6 +644,7 @@ def register_blueprint_node_tools(mcp: FastMCP):
             Response containing created node IDs, graph metadata, and template sync status.
         """
         try:
+            reject_mcp_dependency_reference("function_class", function_class)
             params: Dict[str, Any] = {
                 "blueprint_name": blueprint_name,
                 "component_variable": component_variable,
@@ -690,6 +700,8 @@ def register_blueprint_node_tools(mcp: FastMCP):
             is_array: Whether to create an array parameter
         """
         try:
+            reject_mcp_dependency_reference("type_object", type_object)
+            reject_mcp_dependency_references("default_value", default_value)
             params = {
                 "blueprint_name": blueprint_name,
                 "parameter_name": parameter_name,
@@ -738,6 +750,8 @@ def register_blueprint_node_tools(mcp: FastMCP):
             is_array: Whether to create an array local variable
         """
         try:
+            reject_mcp_dependency_reference("type_object", type_object)
+            reject_mcp_dependency_references("default_value", default_value)
             params = {
                 "blueprint_name": blueprint_name,
                 "variable_name": variable_name,
@@ -2965,6 +2979,7 @@ def register_blueprint_node_tools(mcp: FastMCP):
     ) -> Dict[str, Any]:
         """Add a Dynamic Cast node to a Blueprint graph."""
         try:
+            reject_mcp_dependency_reference("target_class", target_class)
             if node_position is None:
                 node_position = [0, 0]
             params = {
@@ -3172,6 +3187,7 @@ def register_blueprint_node_tools(mcp: FastMCP):
             Response containing the created node metadata
         """
         try:
+            reject_mcp_dependency_reference("input_action", input_action)
             if node_position is None:
                 node_position = [0, 0]
             params = {
@@ -3211,6 +3227,7 @@ def register_blueprint_node_tools(mcp: FastMCP):
             Response containing the created node metadata
         """
         try:
+            reject_mcp_dependency_reference("target_class", target_class)
             if node_position is None:
                 node_position = [0, 0]
             params = {
@@ -3481,6 +3498,7 @@ def register_blueprint_node_tools(mcp: FastMCP):
             Response containing the created node metadata
         """
         try:
+            reject_mcp_dependency_reference("enum_type", enum_type)
             if node_position is None:
                 node_position = [0, 0]
             params = {
@@ -3680,6 +3698,7 @@ def register_blueprint_node_tools(mcp: FastMCP):
             Response containing the created node metadata
         """
         try:
+            reject_mcp_dependency_reference("enum_type", enum_type)
             if node_position is None:
                 node_position = [0, 0]
             params = {
@@ -3721,6 +3740,7 @@ def register_blueprint_node_tools(mcp: FastMCP):
             Response containing the updated pin metadata
         """
         try:
+            reject_mcp_dependency_references("value", value)
             params = {
                 "blueprint_name": blueprint_name,
                 "node_id": node_id,

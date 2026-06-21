@@ -6,11 +6,12 @@ This document records the local changes made for the user's Unreal TA workflow.
 
 Keep `chongdashu/unreal-mcp` updateable from upstream while adding project-useful PCG and Unreal Python automation.
 
-The extension deliberately avoids adding a separate C++ command for every TA operation. Instead:
+The extension avoids adding a separate C++ command for every TA operation. Instead:
 
 - C++ adds one generic `execute_python` command.
 - Python MCP tools call that command.
 - PCG-specific behavior lives in Python and can evolve quickly.
+- Crash-prone editor APIs get focused native commands. In particular, PCG attribute/property selector structs must use `set_pcg_attribute_selector` instead of Unreal Python selector mutation.
 
 ## Current Branch Model
 
@@ -26,7 +27,7 @@ The extension deliberately avoids adding a separate C++ command for every TA ope
 - `Python/tools/python_tools.py`
   - Registers `execute_unreal_python`.
 - `Python/tools/pcg_tools.py`
-  - Registers PCG-focused automation tools. Fast PCG refresh and spline point sync use native UnrealMCP bridge commands first, with Unreal Python fallback for older running editor sessions.
+  - Registers PCG-focused automation tools. Fast PCG refresh and spline point sync use native UnrealMCP bridge commands first, with Unreal Python fallback for older running editor sessions. PCG selector struct mutation is native-only and has no Python fallback.
 - `Python/tools/editor_tools.py`
   - Adds native viewport bookmark listing, bookmark/active viewport screenshot wrappers for visual QA, and protected editor level transition preflight/opening.
 - `Python/tools/texture_generation.py`
@@ -67,10 +68,12 @@ The extension deliberately avoids adding a separate C++ command for every TA ope
 
 - `execute_unreal_python(code, mode="ExecuteFile", defer_to_ticker=false, allow_unsafe_editor_scripting_during_pie=false)`
   - Unsafe editor actor cleanup calls such as `EditorLevelLibrary.destroy_actor` are blocked during PIE/SIE by default.
+  - Python map transitions and Python PCG attribute selector struct mutation are blocked by default because both have caused editor crash paths.
 - `list_pcg_assets(root_path="/Game")`
 - `list_pcg_components()`
 - `refresh_pcg_components(actor_name="", selected_only=false, cleanup=true, generate=true, wait_until_complete=false, timeout_seconds=10.0, poll_interval_seconds=0.05, max_components=1000)`
 - `set_spline_component_points(points, actor_label="", actor_tag="", actor_label_prefix="", component_name="Road_SourceSpline", closed_loop=false)`
+- `set_pcg_attribute_selector(graph_path, node_id, selector_property_name, selector_type="attribute", attribute_name="", selected_property_name="", domain_name="", point_property="", extra_property="", extra_names=None, reset_extra_names=true, save=true, dry_run=false)`
 - `list_viewport_bookmarks()`
 - `capture_viewport_bookmark_screenshot(filepath, bookmark_index=-1, redraw_count=2)`
 - `open_editor_level(level_path, dry_run=true, allow_dirty_packages=false, load_as_template=false, show_progress=true)`
@@ -92,6 +95,10 @@ The extension deliberately avoids adding a separate C++ command for every TA ope
 UE 5.7 multi-line scripts that include `import` statements should run through `ExecuteFile`. `ExecuteStatement` works for simple one-line commands but fails for the PCG helper's generated scripts.
 
 The PCG component operations are native-first where a focused C++ bridge exists. `refresh_pcg_components` sends cleanup/refresh/generate requests through the C++ bridge and returns component state/readback without sleeping on the editor game thread. When `wait_until_complete=true`, the MCP Python tool polls the native command externally with `generate=false` until PCG busy state clears or the timeout expires. The Unreal Python fallback remains best-effort and does not block for completion because blocking Python can stall editor ticking. `set_spline_component_points` uses the native helper to avoid transient `TRASH_` spline components when available.
+
+PCG attribute/property selector structs are native-only. Use `set_pcg_attribute_selector` for settings properties such as `WeightAttribute`, `MatchAttribute`, `InputAttribute`, `InputWeightAttribute`, and `SetTarget`. Do not mutate these selectors through `execute_python`, `PCGAttributePropertySelectorBlueprintHelpers.set_*`, or Python wrapper methods like `set_attribute_name`; that path has triggered `PyWrapperStruct.cpp` ensures and editor shutdown access violations. The native command only edits ordinary PCG settings properties on the target graph and does not create UnrealMCP nodes or saved `/Script/UnrealMCP` dependencies.
+
+Persisted-reference mutation APIs must reject MCP-only class, object, enum, function-owner, component, actor, material expression, and PCG settings references. The guard blocks `/Script/UnrealMCP`, `/UnrealMCP`, `UnrealMCP`, `MCPUnreal`, and `mcp_unreal` strings before authored assets can store those paths. This keeps UnrealMCP as an editor bridge rather than a required runtime/content dependency unless a user explicitly accepts that coupling.
 
 Editor level transitions should use `open_editor_level` instead of Python
 `load_level`/`load_map` calls. The command defaults to `dry_run=true` and
